@@ -33,6 +33,10 @@ manifest:
       url-base: https://github.com/nanopb
     - name: alexa
       url-base: https://github.com/alexa
+    - name: nordic-playground
+      url-base: https://github.com/NordicPlayground
+    - name: lemrey
+      url-base: https://github.com/lemrey
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -90,6 +94,9 @@ manifest:
     #
     # Some of these are also Zephyr modules which have NCS-specific
     # changes.
+    - name: libmodem
+      remote: nordic-playground
+      revision: master
     - name: mcuboot
       repo-path: sdk-mcuboot
       revision: 50eec26a462d8cbc171dbbdca623979294a6227b
@@ -99,9 +106,10 @@ manifest:
       revision: cfe5eb98a9493017448846fd1a44a9340bd0a22f
       path: modules/lib/mcumgr
     - name: nrfxlib
-      repo-path: sdk-nrfxlib
+      remote: lemrey
+      repo-path: nrfxlib
       path: nrfxlib
-      revision: 8383a3600f87940982865ea015e01843f1d4e999
+      revision: libmodem
     # Other third-party repositories.
     - name: cmock
       path: test/cmock
