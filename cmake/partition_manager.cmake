@@ -38,6 +38,17 @@ if (EXISTS ${static_configuration_file})
   set(static_configuration --static-config ${static_configuration_file})
 endif()
 
+if (NOT static_configuration AND CONFIG_PM_IMAGE_NOT_BUILT_FROM_SOURCE)
+  message(WARNING
+    "One or more child image is not configured to be built from source. \
+    However, there is no static configuration provided to the \
+    partition manager. Please provide a static configuration as described in \
+    the 'Scripts -> Partition Manager -> Static configuration' chapter in the \
+    documentation. Without this information, the build system is not able to \
+    place the image correctly in flash.")
+endif()
+
+
 # Check if current image is the dynamic partition in its domain.
 # I.E. it is the only partition without a statically configured size in this
 # domain. This is equivalent to the 'app' partition in the root domain.
@@ -129,6 +140,14 @@ elseif (DEFINED CONFIG_SOC_NRF5340_CPUAPP)
   set(otp_start_addr "0xff8100")
   set(otp_size 764)  # 191 * 4
 endif()
+
+add_region(
+  NAME sram_primary
+  SIZE ${CONFIG_PM_SRAM_SIZE}
+  BASE ${CONFIG_PM_SRAM_BASE}
+  PLACEMENT complex
+  DYNAMIC_PARTITION sram_primary
+  )
 
 math(EXPR flash_size "${CONFIG_FLASH_SIZE} * 1024" OUTPUT_FORMAT HEXADECIMAL)
 
@@ -311,13 +330,21 @@ foreach(container ${containers} ${merged})
 
 endforeach()
 
-get_target_property(runners_content runner_yml_props_target yaml_contents)
+# We need to tell the flash runner use 'merged.hex' instead of 'zephyr.hex'.
+# This is typically done by setting the 'hex_file' property of the
+# 'runners_yaml_props_target' target. However, since the CMakeLists.txt file
+# reading those properties has already run, and the 'hex_file' property
+# is not evaluated in a generator expression, it is too late at this point to
+# set that variable. Hence we must operate on the 'yaml_contents' property,
+# which is evaluated in a generator expression.
 
-string(REGEX REPLACE "--hex-file=[^\n]*"
-  "--hex-file=${PROJECT_BINARY_DIR}/${merged}.hex" new  ${runners_content})
+get_target_property(runners_content runners_yaml_props_target yaml_contents)
+
+string(REGEX REPLACE "hex_file:[^\n]*"
+  "hex_file: ${PROJECT_BINARY_DIR}/${merged}.hex" new  ${runners_content})
 
 set_property(
-  TARGET         runner_yml_props_target
+  TARGET         runners_yaml_props_target
   PROPERTY       yaml_contents
   ${new}
   )
@@ -354,6 +381,9 @@ if (is_dynamic_partition_in_domain)
   share("set(${DOMAIN}_PM_DOMAIN_HEADER_FILES ${header_files})")
   share("set(${DOMAIN}_PM_DOMAIN_IMAGES ${prefixed_images})")
   share("set(${DOMAIN}_PM_HEX_FILE ${PROJECT_BINARY_DIR}/${merged}.hex)")
+  share("set(${DOMAIN}_PM_DOTCONF_FILES ${pm_out_dotconf_file})")
+  share("set(${DOMAIN}_PM_APP_HEX ${PROJECT_BINARY_DIR}/app.hex)")
+  share("set(${DOMAIN}_PM_SIGNED_APP_HEX ${PROJECT_BINARY_DIR}/signed_by_b0_app.hex)")
 else()
   # This is the root image, generate the global pm_config.h
   # First, include the shared_vars.cmake file for all child images.
@@ -378,6 +408,51 @@ else()
       list(APPEND pm_out_region_file ${${d}_PM_DOMAIN_REGIONS})
       list(APPEND global_hex_depends ${${d}_PM_DOMAIN_DYNAMIC_PARTITION}_subimage)
       list(APPEND domain_hex_files ${${d}_PM_HEX_FILE})
+
+      # Add domain prefix cmake variables for all partitions
+      # Here, we actually overwrite the already imported kconfig values
+      # for our own domain. This is not an issue since all of these variables
+      # are accessed through the 'partition_manager' target, and most likely
+      # through generator expression, as this file is one of the last
+      # cmake files executed in the configure stage.
+      import_kconfig(PM_ ${${d}_PM_DOTCONF_FILES} ${d}_pm_var_names)
+
+      foreach(name ${${d}_pm_var_names})
+        set_property(
+          TARGET partition_manager
+          PROPERTY ${d}_${name}
+          ${${name}}
+          )
+      endforeach()
+
+      if (CONFIG_BT_RPMSG_NRF53
+          AND CONFIG_BOOTLOADER_MCUBOOT
+          AND CONFIG_SOC_NRF5340_CPUAPP
+          AND CONFIG_HCI_RPMSG_BUILD_STRATEGY_FROM_SOURCE)
+          # Create symbols for the offset reqired for moving the signed network
+          # core application to MCUBoots secondary slot. This is needed
+          # because  objcopy does not support arithmetic expressions as argument
+          # (e.g. '0x100+0x200'), and all of the symbols used to generate the
+          # offset are only available as a generator expression when MCUBoots
+          # cmake code exectues.
+
+          get_target_property(
+            net_app_addr
+            partition_manager
+            CPUNET_PM_APP_ADDRESS
+            )
+
+          # There is no padding in front of the network core application.
+          math(EXPR net_app_TO_SECONDARY
+            "${PM_MCUBOOT_SECONDARY_ADDRESS} - ${net_app_addr} + ${PM_MCUBOOT_PAD_SIZE}")
+
+          set_property(
+            TARGET partition_manager
+            PROPERTY net_app_TO_SECONDARY
+            ${net_app_TO_SECONDARY}
+            )
+        endif()
+
     endif()
   endforeach()
 

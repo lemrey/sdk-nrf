@@ -3,8 +3,8 @@
 Partition Manager
 #################
 
-The Partition Manager is a Python script that sets the start address and size of all image partitions in a multi-image build context.
-When creating an application that requires child images (for example, a bootloader), you can configure the Partition Manager to control where in memory each image should be placed.
+The Partition Manager is a Python script that sets the start address and size of all flash and RAM partitions in a multi-image build context.
+When creating an application that requires child images (for example, a bootloader), you can configure the Partition Manager to control where in memory each image should be placed, and how the RAM should be shared.
 
 See :ref:`ug_multi_image` for more information about multi-image builds.
 
@@ -15,11 +15,15 @@ The Partition Manager is activated for all multi-image builds, no matter what bu
 Overview
 ********
 
-The Partition Manager script reads configuration files named :file:`pm.yml`, which define flash partitions.
-A partition's definition includes its name and constraints on its size and placement on flash.
+The Partition Manager script reads configuration files named :file:`pm.yml`, which define flash and RAM partitions.
+A flash partition's definition includes its name and constraints on its size and placement in flash.
+A RAM partition's definition includes its name and constraints on its size.
 The Partition Manager allocates a start address and sometimes a size to each partition in a way that satisfies these constraints.
 
-There are different kinds of partitions:
+There are different kinds of **flash partitions** and **RAM partitions**, as described below.
+
+Flash partition types
+=====================
 
 Image partitions
    An image partition is the flash area reserved for an image, to which the image binary is written.
@@ -37,6 +41,26 @@ Container partitions
    A container partition does not reserve space, but is used to logically and/or physically group other partitions.
 
 The start addresses and sizes of image partitions are used in the preprocessing of the linker script for each image.
+
+RAM partition types
+=====================
+
+Default image RAM partition
+   The default image RAM partition consists of all RAM that is not defined as a permanent image RAM partition or placeholder RAM partition.
+   It is the default RAM partition associated with an image and is set as the RAM region when linking the image.
+   If an image must reserve its RAM area permanently (i.e. at the same time as other images are running), it must use a permanent image RAM partition, described below.
+
+.. _pm_permanent_image_ram_partition:
+
+Permanent image RAM partitions
+   A permanent image RAM partition reserves RAM for an image permanently.
+   It is typically used for images that will remain active after they have booted the next step in the boot chain.
+   If an image has configured a permanent image RAM partition, it is set as the RAM region when linking the image instead of the default image RAM partition.
+
+.. _pm_permanent_placeholder_ram_partition:
+
+Permanent placeholder RAM partitions
+   A permanent placeholder RAM partition is used to permanently reserve RAM regions that are not associated with an image.
 
 .. _pm_configuration:
 
@@ -85,6 +109,7 @@ Each partition is defined as follows:
          property_value
 
 *partition_name* is the name of the partition (for example, ``mcuboot``).
+
 The following partition properties and property values are available:
 
 placement: dict
@@ -273,6 +298,30 @@ region: string
    Specify the region where a partition should be placed.
    See :ref:`pm_regions`.
 
+.. _partition_manager_ram_configuration:
+
+RAM partition configuration
+   RAM partitions are partitions located in the ``sram_primary`` region.
+   A RAM partition is specified by having the partition name end with ``_sram``.
+   If a partition name consists of an image name and the ending ``_sram``, it is used as a permanent image RAM partition for the image.
+
+   .. code-block:: yaml
+      :caption: RAM partitions configuration
+
+      # This ...
+      some_permament_sram_block_used_for_logging:
+         size: 0x1000
+         region: sram_primary
+
+      # ... is equivalent to
+      some_permament_sram_block_used_for_logging_sram:
+         size: 0x1000
+
+      # Specify permanent image RAM partition for MCUboot.
+      # This will be used by the MCUboot linker script.
+      mcuboot_sram:
+          size: 0xa000
+
 All occurrences of a partition name can be replaced with a dict with the key ``one_of``, which is resolved to the first existing partition in the ``one_of`` value.
 An error is raised if no partition inside the ``one_of`` dict exists.
 
@@ -303,39 +352,71 @@ An error is raised if no partition inside the ``one_of`` dict exists.
 Configuration file preprocessing
 ================================
 
-Each :file:`pm.yml` file is preprocessed to resolve symbols from Kconfig and DTS.
+Each :file:`pm.yml` file is preprocessed to resolve symbols from Kconfig and devicetree.
 
 The following example is taken from the :file:`pm.yml` file for the :ref:`immutable_bootloader` provided with the  |NCS|.
-It includes :file:`autoconf.h` (which is generated by Kconfig) and uses a Kconfig variable to configure the size of the ``b0`` partition.
+It includes :file:`autoconf.h` and :file:`devicetree_legacy_unfixed.h` (generated by Kconfig and devicetree respectively) to read application configurations and hardware properties.
+In this example the application configuration is used to configure the size of the image and placeholder partitions.
+The application configuration is also used to decide in which region the ``otp`` partition should be stored.
+The information extracted from devicetree is the alignment value for some partitions.
+
 
 .. code-block:: yaml
 
    #include <autoconf.h>
-   #include <devicetree_unfixed.h>
+   #include <devicetree_legacy_unfixed.h>
 
-   # 'b0' is the name of the image partition.
-   b0:
-
-     # b0 is placed before the mcuboot partition if the mcuboot partition
-     # exists, otherwise it is stored before the app partition.
+   b0_image:
+     size: CONFIG_PM_PARTITION_SIZE_B0_IMAGE
      placement:
-       before: [mcuboot, app]
-       align: {end: 0x8000}  # Align to size of SPU-lockable region.
+       after: start
 
-     # The size of the b0 partition is configured in Kconfig.
-     size: CONFIG_BOOTLOADER_PARTITION_SIZE
+   b0:
+     span: [b0_image, provision]
 
-   # Don't define the provision partition if the SoC is nRF9160, because
-   # the provisioning data is stored in the UICR->OTP data region.
+   s0_pad:
+     share_size: mcuboot_pad
+     placement:
+       after: b0
+       align: {start: CONFIG_FPROTECT_BLOCK_SIZE}
 
-   #ifndef CONFIG_SOC_NRF9160
+   spm_app:
+     span: [spm, app]
 
-   # 'provision' is the name of the placeholder partition.
+   s0_image:
+     # S0 spans over the image booted by B0
+     span: {one_of: [mcuboot, spm_app]}
+
+   s0:
+     # Phony container to allow hex overriding
+     span: [s0_pad, s0_image]
+
+   s1_pad:
+     # This partition will only exist if mcuboot_pad exists.
+     share_size: mcuboot_pad
+     placement:
+       after: s0
+       align: {start: DT_FLASH_ERASE_BLOCK_SIZE}
+
+   s1_image:
+     share_size: {one_of: [mcuboot, s0_image]}
+     placement:
+       after: [s1_pad, s0]
+       align: {end: CONFIG_FPROTECT_BLOCK_SIZE}
+
+   s1:
+     # Partition which contains the whole S1 partition.
+     span: [s1_pad, s1_image]
+
    provision:
-     # This partition is stored at the very end of flash.
-     placement: {before: end}
-
-   #endif /* CONFIG_SOC_NRF9160 */
+     size: CONFIG_PM_PARTITION_SIZE_PROVISION
+   #if defined(CONFIG_SOC_NRF9160) || defined(CONFIG_SOC_NRF5340_CPUAPP)
+     region: otp
+   #else
+     placement:
+       after: b0_image
+       align: {start: DT_FLASH_ERASE_BLOCK_SIZE}
+   #endif
 
 .. _pm_regions:
 
@@ -565,25 +646,34 @@ Configuring static partitions
 Static partitions are defined through a YAML-formatted configuration file in the root application's source directory.
 This file is similar to the regular :file:`pm.yml` configuration files, except that it also defines the start address for all partitions.
 
-If the build system discovers a file named :file:`pm_static.yml`, it automatically provides it to the Partition Manager script as static configuration.
 The static configuration can be provided through a :file:`pm_static.yml` file in the application's source directory.
-Alternatively, define a ``PM_STATIC_YML_FILE`` variable that provides the path and file name for the static configuration in the application's :file:`CMakeLists.txt` file.
+Alternatively, define a ``PM_STATIC_YML_FILE`` variable that provides the path and file name for the static configuration in the application's :file:`CMakeLists.txt` file, as shown in the excerpt below.
+
+
+.. code-block:: cmake
+
+   # Use static partition layout to ensure consistency between builds.
+   # This is to ensure settings storage will be at the same location after the DFU.
+   set(PM_STATIC_YML_FILE
+     ${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}/pm_static_${CMAKE_BUILD_TYPE}.yml
+     )
 
 The current partition configuration for a build can be found in :file:`${BUILD_DIR}/partitions.yml`.
 To apply the current configuration as a static configuration, copy this file to :file:`${APPLICATION_SOURCE_DIR}/pm_static.yml`.
+
+It is also possible to build a :file:`pm_static.yml` from scratch by following the description in :ref:`ug_pm_static_add`
+
+When modifying static configurations, keep in mind the following:
+
+* There can only be one unoccupied gap per region.
+* All statically defined partitions in regions with ``end_to_start`` or ``start_to_end`` placement strategy must be packed at the end or start of the region, respectively.
+
+The default ``flash_primary`` region uses the ``complex`` placement strategy, so these limitations do not apply there.
 
 You can add or remove partitions as described in the following sections.
 
 .. note::
   If the static configuration contains an entry for the ``app`` partition, this entry is ignored.
-
-.. _ug_pm_static_remove:
-
-Removing a static partition
----------------------------
-To remove a static partition, delete its entry in :file:`pm_static.yml`.
-
-Only partitions adjacent to the ``app`` partition or other removed partitions can be removed.
 
 .. _ug_pm_static_add_dynamic:
 
@@ -601,6 +691,7 @@ Adding a static partition
 -------------------------
 To add a static partition, add an entry for it in :file:`pm_static.yml`.
 This entry must define the properties ``address``, ``size``, and - if applicable - ``span``.
+The region defaults to ``flash_primary`` if no ``region`` property is specified.
 
 .. code-block:: yaml
    :caption: Example of static configuration of a partition with span
@@ -612,3 +703,11 @@ This entry must define the properties ``address``, ``size``, and - if applicable
 
 .. note::
   Child images that are built with the build strategy *partition_name*\ _BUILD_STRATEGY_SKIP_BUILD or *partition_name*\ _BUILD_STRATEGY_USE_HEX_FILE must define a static partition to ensure correct placement of the dynamic partitions.
+
+.. _ug_pm_static_remove:
+
+Removing a static partition
+---------------------------
+To remove a static partition, delete its entry in :file:`pm_static.yml`.
+
+Only partitions adjacent to the ``app`` partition or other removed partitions can be removed.

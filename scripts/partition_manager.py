@@ -617,17 +617,29 @@ def load_reqs(input_config):
 
 
 def get_dynamic_area_start_and_size(static_config, flash_size, dp):
-    # Remove app from this dict to simplify the case where partitions before and after are removed.
+    # Remove app from this dict to simplify the case where partitions
+    # before and after are removed.
     proper_partitions = [config for name, config in static_config.items()
                          if 'span' not in config.keys() and
                          name != dp]
 
-    starts = {flash_size} | {config['address'] for config in proper_partitions}
-    ends = {0} | {config['address'] + config['size'] for config in proper_partitions}
+    starts = {flash_size} | {config['address']
+                             for config in proper_partitions}
+    ends = {0} | {config['address'] + config['size']
+                  for config in proper_partitions}
     gaps = list(zip(sorted(ends - starts), sorted(starts - ends)))
 
     if len(gaps) != 1:
-        raise PartitionError("Incorrect amount of gaps found")
+        raise PartitionError(
+            "Incorrect amount of gaps found in static configuration. "
+            "There must be exactly one gap in the static configuration to "
+            "support placing the dynamic partitions (such as 'app'). "
+            f"Gaps found ({len(gaps)}):" +
+            ' '.join([f'0x{gap[0]:x}-0x{gap[1]:x}' for gap in gaps]) +
+            " The most common solution to this problem is to fill the "
+            "smallest of these gaps with statically defined partition(s) until"
+            " there is only one gap left. Alternatively re-order the already "
+            "defined static partitions so that only one gap remains.")
 
     start, end = gaps[0]
     return start, end - start
@@ -665,7 +677,7 @@ def get_region_config(pm_config, region_config, static_conf=None):
 def solve_simple_region(pm_config, start, size, placement_strategy, region_name, device, static_conf):
     reserved = 0
     if static_conf:
-        verify_static_conf(size, start, placement_strategy, static_conf)
+        verify_static_conf_simple(size, start, placement_strategy, static_conf)
         reserved = sum([config['size'] for name, config in static_conf.items()
                         if 'region' in config.keys() and config['region'] == region_name])
         pm_config.update(static_conf)
@@ -708,11 +720,14 @@ def solve_simple_region(pm_config, start, size, placement_strategy, region_name,
             pm_config[region_name]['size'] = (start + size) - address
 
 
-def verify_static_conf(size, start, placement_strategy, static_conf):
-    # Verify that all statically defined partitions has given address,
+def verify_static_conf_simple(size, start, placement_strategy, static_conf):
+    # Verify the static configuration of a region with 'simple' placement.
+    # Ensure that all statically defined partitions have a given address,
     # and that they are packed at the end/start of the region.
-    starts = {start + size} | {c['address'] for c in static_conf.values() if 'size' in c}
-    ends = {start} | {c['address'] + c['size'] for c in static_conf.values() if 'size' in c}
+    starts = {start + size} | {c['address']
+                               for c in static_conf.values() if 'size' in c}
+    ends = {start} | {c['address'] + c['size']
+                      for c in static_conf.values() if 'size' in c}
     gaps = list(zip(sorted(ends - starts), sorted(starts - ends)))
 
     # The whole region is filled, which is valid.
@@ -724,9 +739,21 @@ def verify_static_conf(size, start, placement_strategy, static_conf):
     else:
         start_end_correct = gaps[0][0] == start
 
-    if len(gaps) != 1 or not start_end_correct:
-        raise PartitionError("Statically defined partitions are not packed at"
-                             " the start/end of region")
+    if len(gaps) != 1:
+        raise PartitionError(
+            "Incorrect amount of gaps found in static configuration for region"
+            f" '{list(static_conf.values())[0]['region']}'. "
+            "There must be exactly one gap in the static configuration to "
+            "support placing the non-statically-defined partitions. "
+            f"Gaps found ({len(gaps)}):" +
+            ' '.join([f'0x{gap[0]:x}-0x{gap[1]:x}' for gap in gaps]) +
+            " The most common solution to this problem is to re-order the "
+            "defined static partitions so that only one gap remains.")
+    elif not start_end_correct:
+        raise PartitionError(
+            f"Statically defined partitions are not packed at "
+            f"{'start' if placement_strategy == START_TO_END else 'end'} of "
+            f"region '{list(static_conf.values())[0]['region']}'.")
 
 
 def solve_complex_region(pm_config, start, size, placement_strategy, region_name, device, static_conf, dp):
@@ -821,14 +848,16 @@ def replace_app_with_dynamic_partition(d, dynamic_partition_name):
             v = dynamic_partition_name
 
 
-def set_flash_primary_region(pm_config):
-    for v in pm_config.values():
-        if 'region' not in v:
-            v['region'] = 'flash_primary'
-
-
 def fix_syntactic_sugar(pm_config):
-    set_flash_primary_region(pm_config)
+    for k, v in pm_config.items():
+        if 'region' not in v:
+            # Set SRAM primary region
+            if k.endswith('_sram'):
+                v['region'] = 'sram_primary'
+
+            # Set FLASH primary region
+            else:
+                v['region'] = 'flash_primary'
 
 
 def get_region_config_from_args(args, ranges_configuration):
@@ -886,7 +915,7 @@ def main():
             to_print = \
                 {x: {a: b for a, b in y.items() if a in
                      ['size', 'placement', 'align']}
-                 for x, y in pm_config.items()
+                 for x, y in {**pm_config, **static_config}.items()
                  if 'size' in y and 'region' in y and y['region'] == region}
             print(yaml.dump(to_print))
             sys.exit(1)
@@ -990,66 +1019,66 @@ def test():
     assert td['extflash']['address'] == 2100
     assert td['extflash']['size'] == 900
 
-    # Verify that RAM configuration is correct
-    td = {'b': {'size': 100, 'region': 'ram'}}
-    test_region = {'name': 'ram',
+    # Verify that SRAM configuration is correct
+    td = {'b': {'size': 100, 'region': 'sram'}}
+    test_region = {'name': 'sram',
                    'size': 1000,
                    'base_address': 2000,
                    'placement_strategy': END_TO_START,
                    'device': None}
     get_region_config(td, test_region)
     assert td['b']['size'] == 100
-    assert td['ram']['address'] == 2000
-    assert td['ram']['size'] == 900
+    assert td['sram']['address'] == 2000
+    assert td['sram']['size'] == 900
 
-    # Verify that RAM configuration is correct
+    # Verify that sram configuration is correct
     td = {
-        'b': {'size': 100, 'region': 'ram'},
-        'c': {'size': 200, 'region': 'ram'},
-        'd': {'size': 300, 'region': 'ram'}
+        'b': {'size': 100, 'region': 'sram'},
+        'c': {'size': 200, 'region': 'sram'},
+        'd': {'size': 300, 'region': 'sram'}
     }
-    test_region = {'name': 'ram',
+    test_region = {'name': 'sram',
                    'size': 1000,
                    'base_address': 2000,
                    'placement_strategy': END_TO_START,
                    'device': None}
     get_region_config(td, test_region)
-    assert td['ram']['address'] == 2000
-    assert td['ram']['size'] == 400
+    assert td['sram']['address'] == 2000
+    assert td['sram']['size'] == 400
     # Can not verify the placement, as this is random
     assert td['b']['size'] == 100
     assert td['c']['size'] == 200
     assert td['d']['size'] == 300
 
-    # Verify that RAM configuration with given static configuration is correct
-    test_region = {'name': 'ram',
+    # Verify that SRAM configuration with given static configuration is correct
+    test_region = {'name': 'sram',
                    'size': 1000,
                    'base_address': 2000,
                    'placement_strategy': END_TO_START,
                    'device': None}
     td = {
-        'b': {'size': 100, 'region': 'ram'},
-        'c': {'size': 200, 'region': 'ram'},
-        'd': {'size': 300, 'region': 'ram'},
+        'b': {'size': 100, 'region': 'sram'},
+        'c': {'size': 200, 'region': 'sram'},
+        'd': {'size': 300, 'region': 'sram'},
     }
     get_region_config(td,
                       test_region,
                       static_conf={'s1': {'size': 100,
                                           'address': (1000+2000)-100,
-                                          'region': 'ram'},
+                                          'region': 'sram'},
                                    's2': {'size': 200,
                                           'address': (1000+2000)-100-200,
-                                          'region': 'ram'}})
-    assert td['ram']['address'] == 2000
-    assert td['ram']['size'] == 100
+                                          'region': 'sram'}})
+    assert td['sram']['address'] == 2000
+    assert td['sram']['size'] == 100
     # Can not verify the placement, as this is random
     assert td['b']['size'] == 100
     assert td['c']['size'] == 200
     assert td['d']['size'] == 300
 
-    # Verify that RAM configuration with given static configuration fails if static RAM partitions are not
+    # Verify that SRAM configuration with given static configuration fails if static SRAM partitions are not
     # packed at the end of flash, here there is a space between the two regions
-    test_region = {'name': 'ram',
+    test_region = {'name': 'sram',
                    'size': 1000,
                    'base_address': 2000,
                    'placement_strategy': END_TO_START,
@@ -1057,9 +1086,9 @@ def test():
     failed = False
     td = {
         'a': {'placement': {'after': 'start'}, 'size': 100},
-        'b': {'size': 100, 'region': 'ram'},
-        'c': {'size': 200, 'region': 'ram'},
-        'd': {'size': 300, 'region': 'ram'},
+        'b': {'size': 100, 'region': 'sram'},
+        'c': {'size': 200, 'region': 'sram'},
+        'd': {'size': 300, 'region': 'sram'},
         'app': {}
     }
     try:
@@ -1067,28 +1096,28 @@ def test():
                           test_region,
                           static_conf={'s1': {'size': 100,
                                               'address': (1000+2000)-100,
-                                              'region': 'ram'},
+                                              'region': 'sram'},
                                        's2': {'size': 200,
                                               'address': (1000+2000)-100-300,
-                                              'region': 'ram'}})  # Note 300 not 200
+                                              'region': 'sram'}})  # Note 300 not 200
     except PartitionError:
         failed = True
 
     assert failed
 
-    # Verify that RAM configuration with given static configuration fails if static RAM partitions are not
-    # packed at the end of flash, here the partitions are packed, but does not go to the end of RAM
+    # Verify that SRAM configuration with given static configuration fails if static SRAM partitions are not
+    # packed at the end of flash, here the partitions are packed, but does not go to the end of SRAM
     failed = False
-    test_region = {'name': 'ram',
+    test_region = {'name': 'sram',
                    'size': 1000,
                    'base_address': 2000,
                    'placement_strategy': END_TO_START,
                    'device': None}
     td = {
         'a': {'placement': {'after': 'start'}, 'size': 100},
-        'b': {'size': 100, 'region': 'ram'},
-        'c': {'size': 200, 'region': 'ram'},
-        'd': {'size': 300, 'region': 'ram'},
+        'b': {'size': 100, 'region': 'sram'},
+        'c': {'size': 200, 'region': 'sram'},
+        'd': {'size': 300, 'region': 'sram'},
         'app': {}
     }
     try:
@@ -1096,10 +1125,10 @@ def test():
                           test_region,
                           static_conf={'s1': {'size': 100,
                                               'address': (1000+2000-50)-100,
-                                              'region': 'ram'},  # Note - 50
+                                              'region': 'sram'},  # Note - 50
                                        's2': {'size': 200,
                                               'address': (1000+2000-50)-100-200,
-                                              'region': 'ram'}})  # Note - 50
+                                              'region': 'sram'}})  # Note - 50
     except PartitionError:
         failed = True
 

@@ -47,12 +47,12 @@ The module enables charging when USB is powered or active.
     Make sure that the hardware configuration enables charging by default (for example, when the pin to enable charging is not configured).
     Otherwise it will be impossible to enable charging when the battery is empty.
 
-The module checks the battery state using :cpp:class:`k_delayed_work`.
+The module checks the battery state using :c:struct:`k_delayed_work`.
 The check is based on the edge interrupt count on the CSO pin in a period of time defined in ``ERROR_CHECK_TIMEOUT_MS``, and on the CSO pin state while the work is processed.
 
 On a battery state change, the new state is sent using ``battery_state_event``.
 The battery state can have one of the following values:
 
-* :cpp:enumerator:`BATTERY_STATE_IDLE` - Battery is not being charged (CSO pin set to logical high).
-* :cpp:enumerator:`BATTERY_STATE_CHARGING` - Battery is being charged (CSO pin set to logical low).
-* :cpp:enumerator:`BATTERY_STATE_ERROR` - Battery charger reported an error (a signal with the ``CONFIG_DESKTOP_BATTERY_CHARGER_CSO_FREQ`` frequency and a 50% duty cycle on the CSO pin).
+* :c:enumerator:`BATTERY_STATE_IDLE` - Battery is not being charged (CSO pin set to logical high).
+* :c:enumerator:`BATTERY_STATE_CHARGING` - Battery is being charged (CSO pin set to logical low).
+* :c:enumerator:`BATTERY_STATE_ERROR` - Battery charger reported an error (a signal with the ``CONFIG_DESKTOP_BATTERY_CHARGER_CSO_FREQ`` frequency and a 50% duty cycle on the CSO pin).

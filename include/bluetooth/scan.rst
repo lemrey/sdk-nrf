@@ -23,7 +23,7 @@ Usage
 You can use the scanning module to execute the following actions:
 
 Initialize
-   To initialize the module, call the function :cpp:func:`bt_scan_init`.
+   To initialize the module, call the function :c:func:`bt_scan_init`.
 
    You can also call the function without an initialization structure.
    When you pass the initialization structure as ``NULL``, the default static configuration is used.
@@ -31,19 +31,19 @@ Initialize
    This configuration is also used when you use an initialization structure with ``NULL`` pointers to scan parameters and connection parameters.
 
 Start scanning
-   When the initialization is completed, call the function :cpp:func:`bt_scan_start` to start scanning.
+   When the initialization is completed, call the function :c:func:`bt_scan_start` to start scanning.
 
    In simple mode, when you do not use the event handler, you can establish the connection when the scanner finds the device.
 
 Change parameters
-   To change parameters, call the function :cpp:func:`bt_scan_params_set`.
+   To change parameters, call the function :c:func:`bt_scan_params_set`.
 
 Stop scanning
    Scanning stops if the module established the connection automatically.
-   To manually stop scanning, call the function :cpp:func:`bt_scan_stop`.
+   To manually stop scanning, call the function :c:func:`bt_scan_stop`.
 
 Resume scanning
-   To resume scanning, call the function :cpp:func:`bt_scan_start`.
+   To resume scanning, call the function :c:func:`bt_scan_start`.
 
 .. _nrf_bt_scan_readme_filters:
 
@@ -97,6 +97,37 @@ Check the following table for the details on the behavior of the available filte
 |              |                                                                                                           |
 |              | If not all of these types match, the ``not found`` callback is triggered.                                 |
 +--------------+-----------------------------------------------------------------------------------------------------------+
+
+Connection attempts filter
+==========================
+
+After a scanning is started by the application, some peripheral devices can disconnect immediately for some reasons during an ongoing scanning session.
+This might result in a loop of the connection and disconnection events.
+
+To avoid this loop, you can enable the connection attempts filter that limits number of the connection attempts.
+Use the :option:`CONFIG_BT_SCAN_CONN_ATTEMPTS_FILTER` to enable this filter.
+
+This filter automatically tracks the connected devices and counts all disconnection events for them.
+If the disconnection count is greater than or equal to the number of allowed attempts, the scanning module ignores this device.
+
+Filtered devices must be removed manually from the filter array using :cpp:func:`bt_scan_conn_attempts_filter_clear`.
+It is recommended to use :cpp:func:`bt_scan_conn_attempts_filter_clear` before each scan starts, unless your application has different requirements.
+If the filter array is full, the scanning module overwrites the oldest device with the new one.
+In the default configuration, the filter allows to add two devices and limits the connection tries to two.
+
+You can increase the device number by setting the configuration option :option:`CONFIG_BT_SCAN_CONN_ATTEMPTS_FILTER_LEN`.
+The option :option:`CONFIG_BT_SCAN_CONN_ATTEMPTS_COUNT` is responsible for the number of connection attempts.
+
+Blocklist
+=========
+
+Devices can be added to the blocklist, which means that the scanning module ignores these devices and does not generate any events for them.
+Use the option :option:`CONFIG_BT_SCAN_BLOCKLIST` to enable the blocklist.
+
+In the default configuration, the scanning module allows to add up to two devices to the blocklist.
+You can increase the blocklist size by setting the option :option:`CONFIG_BT_SCAN_BLOCKLIST_LEN`.
+Use the :cpp:func:`bt_scan_blocklist_device_add` function to add a new device to the blocklist.
+To remove all devices from the blocklist, use :cpp:func:`bt_scan_blocklist_clear`.
 
 .. _nrf_bt_scan_readme_directedadvertising:
 

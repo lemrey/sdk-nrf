@@ -173,19 +173,13 @@ The `Breathe documentation`_ contains information about what you can link to.
 
 To link directly to a doxygen reference from RST, use the following Breathe domains:
 
-* Function: ``:cpp:func:``
-* Structure: ``:cpp:class:``
-* Type: ``:cpp:type:``
-* Enum (the list): ``:cpp:enum:``
-* Enumerator (an item): ``:cpp:enumerator:``
+* Function: ``:c:func:``
+* Structure: ``:c:struct:``
+* Type: ``:c:type:``
+* Enum (the list): ``:c:enum:``
+* Enumerator (an item): ``:c:enumerator:``
 * Macro or define: ``:c:macro:``
-* Structure member: ``:cpp:member:``
-
-.. note::
-   The ``:cpp:enum:`` and ``:cpp:enumerator:`` domains do not generate a link due to `Breathe issue #437`_.
-   As a workaround, use the following command::
-
-      :cpp:enumerator:`ENUM_VALUE <DOXYGEN_GROUP::ENUM_VALUE>`
+* Structure member: ``:c:member:``
 
 Hyperlinks
 ----------

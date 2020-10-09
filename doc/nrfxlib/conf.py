@@ -183,6 +183,11 @@ breathe_projects = {
     "nrfxlib": "{}/doxygen/xml".format(NRFXLIB_BUILD),
 }
 breathe_default_project = "nrfxlib"
+breathe_domain_by_extension = {
+    "h": "c",
+    "c": "c",
+}
+breathe_separate_member_pages = True
 
 # Qualifiers to a function are causing Sphinx/Breathe to warn about
 # Error when parsing function declaration and more.  This is a list
@@ -191,6 +196,7 @@ breathe_default_project = "nrfxlib"
 cpp_id_attributes = ['__syscall', '__syscall_inline', '__deprecated',
     '__may_alias', '__used', '__unused', '__weak',
     '__DEPRECATED_MACRO', 'FUNC_NORETURN' ]
+c_id_attributes = cpp_id_attributes
 
 rst_epilog = """
 .. include:: /doc/links.txt
@@ -199,6 +205,6 @@ rst_epilog = """
 
 
 def setup(app):
-    app.add_stylesheet("css/common.css")
-    app.add_stylesheet("css/nrfxlib.css")
+    app.add_css_file("css/common.css")
+    app.add_css_file("css/nrfxlib.css")
     app.add_js_file("js/ncs.js")

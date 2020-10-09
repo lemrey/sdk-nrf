@@ -94,7 +94,7 @@ You can enable the module using the :option:`CONFIG_LWM2M_CARRIER` Kconfig optio
 The :ref:`lwm2m_carrier` sample project configuration (:file:`nrf/samples/nrf9160/lwm2m_carrier/prj.conf`) contains all the configurations that are needed by the LwM2M carrier library.
 
 A bootstrap server provides the application with the configuration needed to connect to the device management servers.
-During self-testing of the certification process, you can provide the initialization parameter :cpp:type:`lwm2m_carrier_config_t` to overwrite the carrier default settings as described below:
+During self-testing of the certification process, you can provide the initialization parameter :c:type:`lwm2m_carrier_config_t` to overwrite the carrier default settings as described below:
 
  * Specify the URI of the bootstrap server by using the :option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_BOOTSTRAP_URI` and :option:`CONFIG_LWM2M_CARRIER_CUSTOM_BOOTSTRAP_URI` Kconfig options.
  * Specify the `Pre-Shared Key (PSK)`_ by using the :option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_BOOTSTRAP_PSK` and :option:`CONFIG_LWM2M_CARRIER_CUSTOM_BOOTSTRAP_PSK` Kconfig options.
@@ -110,10 +110,10 @@ A PSK *Key*  should be provided through the :option:`CONFIG_LWM2M_CARRIER_USE_CU
    To redo the bootstrap process, you must erase the flash and then load your application again.
 
 For a production build, the :c:func:`lwm2m_carrier_init` function should always be initialized without parameters.
-After calling the :cpp:func:`lwm2m_carrier_init` function, your application can call the non-returning function :cpp:func:`lwm2m_carrier_run` in its own thread.
+After calling the :c:func:`lwm2m_carrier_init` function, your application can call the non-returning function :c:func:`lwm2m_carrier_run` in its own thread.
 Both these functions are called in :file:`nrf\\lib\\bin\\lwm2m_carrier\\os\\lwm2m_carrier.c`, which is included into the project when you enable the LwM2M carrier library.
 
-The :cpp:func:`lwm2m_carrier_event_handler` function must be implemented by your application.
+The :c:func:`lwm2m_carrier_event_handler` function must be implemented by your application.
 This is shown in the :ref:`lwm2m_carrier` sample.
 A weak implementation is included in :file:`nrf\\lib\\bin\\lwm2m_carrier\\os\\lwm2m_carrier.c`.
 
@@ -183,26 +183,26 @@ LwM2M carrier library events
 
 :c:macro:`LWM2M_CARRIER_EVENT_ERROR`
    This event indicates an error.
-   The event data struct :cpp:type:`lwm2m_carrier_event_error_t` contains the information about the error (:cpp:member:`code` and :cpp:member:`value`).
+   The event data struct :c:type:`lwm2m_carrier_event_error_t` contains the information about the error (:c:member:`lwm2m_carrier_event_error_t.code` and :c:member:`lwm2m_carrier_event_error_t.value`).
 
    :c:macro:`LWM2M_CARRIER_ERROR_CONNECT_FAIL`
-      This error is generated from the :cpp:func:`lte_lc_init_and_connect` function.
+      This error is generated from the :c:func:`lte_lc_init_and_connect` function.
       It indicates possible problems with the SIM card, or insufficient network coverage.
-      See :cpp:member:`value` field of the event.
+      See :c:member:`lwm2m_carrier_event_error_t.value` field of the event.
 
    :c:macro:`LWM2M_CARRIER_ERROR_DISCONNECT_FAIL`
-      This error is generated from the :cpp:func:`lte_lc_offline` function.
-      See :cpp:member:`value` field of the event.
+      This error is generated from the :c:func:`lte_lc_offline` function.
+      See :c:member:`lwm2m_carrier_event_error_t.value` field of the event.
 
    :c:macro:`LWM2M_CARRIER_ERROR_BOOTSTRAP`
-      This error is generated from the :cpp:func:`modem_key_mgmt_write` function, if the :cpp:member:`value` field is negative.
-      If the :cpp:member:`value` field is 0, it indicates that the bootstrap sequence has failed.
+      This error is generated from the :c:func:`modem_key_mgmt_write` function, if the :c:member:`lwm2m_carrier_event_error_t.value` field is negative.
+      If the :c:member:`lwm2m_carrier_event_error_t.value` field is 0, it indicates that the bootstrap sequence has failed.
       If this error persists, contact your carrier.
 
    :c:macro:`LWM2M_CARRIER_ERROR_FOTA_PKG`
       This error indicates that the update package has been rejected.
       The integrity check has failed because of a wrong package sent from the server, or a wrong package received by client.
-      The :cpp:member:`value` field will have an error of type :cpp:type:`nrf_dfu_err_t` from the file :file:`nrfxlib\\bsdlib\\include\\nrf_socket.h`.
+      The :c:member:`lwm2m_carrier_event_error_t.value` field will have an error of type :c:type:`nrf_dfu_err_t` from the file :file:`nrfxlib\\bsdlib\\include\\nrf_socket.h`.
 
    :c:macro:`LWM2M_CARRIER_ERROR_FOTA_PROTO`
       This error indicates a protocol error.
@@ -240,7 +240,7 @@ The following values that reflect the state of the device must be kept up to dat
 * Hardware Version (Defaults to ``1.0`` if not set)
 
 For example, the carrier device management platform can observe the battery level of your device.
-The application uses the :cpp:func:`lwm2m_carrier_battery_level_set` function to indicate the current battery level of the device to the carrier.
+The application uses the :c:func:`lwm2m_carrier_battery_level_set` function to indicate the current battery level of the device to the carrier.
 
 .. _req_appln_limitations:
 
@@ -249,7 +249,7 @@ Requirements and Application limitations
 
 Below are some of the requirements and limitations of the application while running this module.
 
-* The application should not call the :cpp:func:`bsdlib_init` function.
+* The application should not call the :c:func:`bsdlib_init` function.
 
    * The LwM2M carrier library initializes and uses the :ref:`bsdlib`.
      This library is needed to track the modem FOTA states.

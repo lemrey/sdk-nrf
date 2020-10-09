@@ -105,14 +105,14 @@ struct bt_mesh_light_ctrl_srv_cfg {
 struct bt_mesh_light_ctrl_srv_reg_cfg {
 	/** Target illuminance values */
 	struct sensor_value lux[LIGHT_CTRL_STATE_COUNT];
-	/** Regulator positive integral coefficient */
-	uint16_t kiu;
-	/** Regulator negative integral coefficient */
-	uint16_t kid;
-	/** Regulator positive propotional coefficient */
-	uint16_t kpu;
-	/** Regulator negative propotional coefficient */
-	uint16_t kpd;
+	/** Regulator upwards integral coefficient */
+	float kiu;
+	/** Regulator downwards integral coefficient */
+	float kid;
+	/** Regulator upwards propotional coefficient */
+	float kpu;
+	/** Regulator downwards propotional coefficient */
+	float kpd;
 	/** Regulator dead zone (in percent) */
 	uint8_t accuracy;
 };
@@ -122,7 +122,9 @@ struct bt_mesh_light_ctrl_srv_reg {
 	/** Regulator step timer */
 	struct k_delayed_work timer;
 	/** Internal integral sum. */
-	uint16_t i;
+	float i;
+	/** Previous output */
+	uint16_t prev;
 	/** Regulator configuration */
 	struct bt_mesh_light_ctrl_srv_reg_cfg cfg;
 };
@@ -200,7 +202,7 @@ int bt_mesh_light_ctrl_srv_on(struct bt_mesh_light_ctrl_srv *srv);
  *  state). Calling this function temporarily disables occupancy sensor
  *  triggering (referred to as "manual mode" in the documentation). The server
  *  will remain in manual mode until the manual mode timer expires, see
- *  @em CONFIG_BT_MESH_LIGHT_CTRL_SRV_TIME_MANUAL.
+ *  @option{CONFIG_BT_MESH_LIGHT_CTRL_SRV_TIME_MANUAL}.
  *
  *  @param[in] srv        Light Lightness Control Server instance.
  *

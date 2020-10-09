@@ -41,20 +41,20 @@ If the Generic OnOff state is changed to On and the Default Level state is not s
 
 The Power state power up behavior is determined by the On Power Up state of the extended :ref:`bt_mesh_ponoff_srv_readme`:
 
-- :cpp:enumerator:`BT_MESH_ON_POWER_UP_OFF <bt_mesh_ponoff::BT_MESH_ON_POWER_UP_OFF>`: The Power level is set to 0 on power up.
-- :cpp:enumerator:`BT_MESH_ON_POWER_UP_ON <bt_mesh_ponoff::BT_MESH_ON_POWER_UP_ON>`: The Power level is set to Default Level on power up, or the last known   non-zero Power level if the Default level is not set.
-- :cpp:enumerator:`BT_MESH_ON_POWER_UP_RESTORE <bt_mesh_ponoff::BT_MESH_ON_POWER_UP_RESTORE>`: The Power level is set to the last known Power level (zero or otherwise).
+- :c:enumerator:`BT_MESH_ON_POWER_UP_OFF`: The Power level is set to 0 on power up.
+- :c:enumerator:`BT_MESH_ON_POWER_UP_ON`: The Power level is set to Default Level on power up, or the last known   non-zero Power level if the Default level is not set.
+- :c:enumerator:`BT_MESH_ON_POWER_UP_RESTORE`: The Power level is set to the last known Power level (zero or otherwise).
 
-The user is expected to hold the state memory and provide access to the state through the :cpp:type:`bt_mesh_plvl_srv_handlers` handler structure.
+The user is expected to hold the state memory and provide access to the state through the :c:struct:`bt_mesh_plvl_srv_handlers` handler structure.
 
 **Default Power**: ``int16_t``
 
 The Default Power state is a metastate that controls the default non-zero Generic Power Level.
 It is used when the Generic Power Level turns on, but its exact level is not specified.
 
-The memory for the Default Power state is held by the model, and the application may receive updates on state changes through the :cpp:member:`bt_mesh_plvl_srv_handlers::default_update` callback.
+The memory for the Default Power state is held by the model, and the application may receive updates on state changes through the :c:member:`bt_mesh_plvl_srv_handlers.default_update` callback.
 
-**Power Range**: :cpp:type:`bt_mesh_plvl_range`
+**Power Range**: :c:struct:`bt_mesh_plvl_range`
 
 The Power Range state is a metastate that determines the accepted Generic Power Level range.
 
@@ -63,7 +63,7 @@ If the Generic Power Level is set to a value outside the current Power Range, th
 If the Power Level Range changes to exclude the current Generic Power Level, the Generic Power Level should be changed accordingly.
 Note that the Generic Power Level may always be set to zero, even if this is outside the current Power Range.
 
-The memory for the Power Range state is held by the model, and the application may receive updates on state changes through the :cpp:member:`bt_mesh_plvl_srv_handlers::range_update` callback.
+The memory for the Power Range state is held by the model, and the application may receive updates on state changes through the :c:member:`bt_mesh_plvl_srv_handlers.range_update` callback.
 
 Extended models
 ================

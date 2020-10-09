@@ -257,6 +257,8 @@
 .. _`Add certificates to the DPS instance`: https://docs.microsoft.com/en-us/azure/iot-dps/how-to-verify-certificates
 .. _`Registering the device with Azure IoT Hub`: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-create-through-portal#register-a-new-device-in-the-iot-hub
 
+.. _`AWS IoT Just-in-time-provisioning`: https://aws.amazon.com/blogs/iot/just-in-time-registration-of-device-certificates-on-aws-iot/
+
 .. ### Links to Bluetooth specs
 
 .. _`Bluetooth Core Specification`: https://www.bluetooth.com/specifications/bluetooth-core-specification
@@ -338,6 +340,8 @@
 .. _`Zigbee Alliance`: https://www.zigbeealliance.org
 
 .. _`Zigbee Specification`: https://zigbeealliance.org/developer_resources/
+
+.. _`Zigbee Cluster Library specification`: https://zigbeealliance.org/developer_resources/zigbee-cluster-library
 
 .. _`Stack commissioning start sequence`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/zboss_api_doc/using_zigbee__z_c_l.html#stack_start_initiation
 
@@ -465,6 +469,10 @@
 
 .. _`Nanopb`: https://jpa.kapsi.fi/nanopb/
 .. _`Nanopb Downloads`: https://jpa.kapsi.fi/nanopb/download/
+
+.. _`LwM2M`: https://www.omaspecworks.org/what-is-oma-specworks/iot/lightweight-m2m-lwm2m/
+
+.. _`Leshan Demo Server`: https://github.com/eclipse/leshan/blob/master/README.md
 
 .. ### Links to specific files on GitHub
 

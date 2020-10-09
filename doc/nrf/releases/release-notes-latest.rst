@@ -23,7 +23,7 @@ The following list summarizes the most important changes inherited from upstream
   * Fixed an issue where after erasing an image, an image trailer might be left behind.
   * Added a ``CONFIG_BOOT_INTR_VEC_RELOC`` option to relocate interrupts to application.
   * Fixed single image compilation with serial recovery.
-  * Added support for single-image applications (see :option:`CONFIG_SINGLE_IMAGE_DFU`).
+  * Added support for single-image applications (see `CONFIG_SINGLE_IMAGE_DFU`).
   * Added a ``CONFIG_BOOT_SIGNATURE_TYPE_NONE`` option to disable the cryptographic check of the image.
   * Reduced the minimum number of members in SMP packet for serial recovery.
   * Introduced direct execute-in-place (XIP) mode (see ``CONFIG_BOOT_DIRECT_XIP``).
@@ -73,7 +73,7 @@ The following list summarizes the most important changes inherited from upstream
   * Removed the ``CONFIG_KERNEL_DEBUG`` Kconfig option, which was used to enable ``printk()`` based debugging of the kernel internals.
     The kernel now uses the standard Zephyr logging API at DBG log level for this purpose.
     The logging module used for the kernel is named ``os``.
-  * Added :cpp:func:`k_delayed_work_pending` to check if work has been submitted.
+  * Added :c:func:`k_delayed_work_pending` to check if work has been submitted.
   * Updated the kernel to not call swap if the next thread that is ready is the current thread.
 
 * Boards:
@@ -99,13 +99,13 @@ The following list summarizes the most important changes inherited from upstream
     * Fixed Security and Server object instance matching.
     * Fixed handling of fds polling (in case there is another socket open).
     * Made ``send()`` calls on the same socket thread-safe.
-    * Fixed the size of the :cpp:class:`sockaddr` structure that was insufficient when provided on an IPv6 socket while IPv4 was enabled as well.
+    * Fixed the size of the :c:struct:`sockaddr` structure that was insufficient when provided on an IPv6 socket while IPv4 was enabled as well.
     * Fixed PUSH mode FOTA.
     * Fixed bootstrap procedure.
 
   * MQTT:
 
-    * The ``utf8`` pointer in the :cpp:class:`mqtt_utf8` struct is now const.
+    * The ``utf8`` pointer in the :c:struct:`mqtt_utf8` struct is now const.
     * The default ``clean_session`` value is now configurable with Kconfig (see :option:`CONFIG_MQTT_CLEAN_SESSION`).
     * Prevented double CONNACK event notification on server reject.
 
@@ -159,27 +159,27 @@ The following list summarizes the most important changes inherited from upstream
   * Added legacy OOB pairing support.
   * Multiple improvements to OOB data access and pairing.
   * Deprecated ``BT_LE_SCAN_FILTER_DUPLICATE``.
-    Use :cpp:enumerator:`BT_LE_SCAN_OPT_FILTER_DUPLICATE <bt_gap::BT_LE_SCAN_OPT_FILTER_DUPLICATE>` instead.
+    Use :c:enumerator:`BT_LE_SCAN_OPT_FILTER_DUPLICATE` instead.
   * Deprecated ``BT_LE_SCAN_FILTER_WHITELIST``.
-    Use :cpp:enumerator:`BT_LE_SCAN_OPT_FILTER_WHITELIST <bt_gap::BT_LE_SCAN_OPT_FILTER_WHITELIST>` instead.
+    Use :c:enumerator:`BT_LE_SCAN_OPT_FILTER_WHITELIST` instead.
   * Deprecated ``bt_le_scan_param::filter_dup``.
-    Use :cpp:member:`bt_le_scan_param::options` instead.
+    Use :c:member:`bt_le_scan_param.options` instead.
   * Deprecated ``bt_conn_create_le()``.
-    Use :cpp:func:`bt_conn_le_create` instead.
+    Use :c:func:`bt_conn_le_create` instead.
   * Deprecated ``bt_conn_create_auto_le()``.
-    Use :cpp:func:`bt_conn_le_create_auto` instead.
+    Use :c:func:`bt_conn_le_create_auto` instead.
   * Deprecated ``bt_conn_create_slave_le()``.
-    Use :cpp:func:`bt_le_adv_start` instead, with :cpp:member:`bt_le_adv_param::peer` set to the remote peer's address.
+    Use :c:func:`bt_le_adv_start` instead, with :c:member:`bt_le_adv_param.peer` set to the remote peer's address.
   * Deprecated the ``BT_LE_ADV_*`` macros.
     Use the ``BT_GAP_ADV_*`` enums instead.
   * Updated L2CAP RX MTU to be controlled by :option:`CONFIG_BT_L2CAP_RX_MTU` (instead of :option:`CONFIG_BT_RX_BUF_LEN`) when :option:`CONFIG_BT_HCI_ACL_FLOW_CONTROL` is disabled.
     If :option:`CONFIG_BT_RX_BUF_LEN` is changed from its default value, :option:`CONFIG_BT_L2CAP_RX_MTU` should be set to ``CONFIG_BT_RX_BUF_LEN - 8``.
   * Added support for periodic advertisement to the Host.
-  * Added a :cpp:member:`bt_conn_auth_cb::bond_deleted` callback to the Host.
+  * Added a :c:member:`bt_conn_auth_cb.bond_deleted` callback to the Host.
   * Added support for starting a persistent advertiser when the maximum number of connections has been reached.
   * Fixed the settings of Advertising Data on extended advertising instances.
   * Updated the SMP implementation in the Host to reject legacy pairing early in SC-only mode.
-  * Fixed an issue with :cpp:func:`bt_gatt_service_unregister` not clearing CCC information, which might result in no space to store the CCC configuration.
+  * Fixed an issue with :c:func:`bt_gatt_service_unregister` not clearing CCC information, which might result in no space to store the CCC configuration.
   * Added support in L2CAP for elevating the security level before sending the connection request if the application has set a required security level on the channel.
   * Added an option to disable GATT security checks (see :option:`CONFIG_BT_CONN_DISABLE_SECURITY`).
   * Added support for automatic discovery of CCC when subscribing (see :option:`CONFIG_BT_GATT_AUTO_DISCOVER_CCC`).
@@ -227,7 +227,7 @@ The following list summarizes the most important changes inherited from upstream
 
   * Bluetooth HCI:
 
-    * Fixed missing ``gpio_dt_flags`` in :cpp:class:`spi_cs_control` in the HCI driver over SPI transport.
+    * Fixed missing ``gpio_dt_flags`` in :c:struct:`spi_cs_control` in the HCI driver over SPI transport.
 
   * Clock control:
 
@@ -248,7 +248,7 @@ The following list summarizes the most important changes inherited from upstream
 
   * Flash:
 
-    * Extended the flash API with the :cpp:func:`flash_get_parameters` function.
+    * Extended the flash API with the :c:func:`flash_get_parameters` function.
     * Fixed an issue in the Nordic Semiconductor nRF flash driver (soc_flash_nrf) that caused operations to fail if a Bluetooth central had multiple connections.
     * Added support for a 2 IO pin setup in the nRF QSPI NOR flash driver (nrf_qspi_nor).
     * Added support for sub-word lengths of read and write transfers in the nRF QSPI NOR flash driver (nrf_qspi_nor).
@@ -285,19 +285,19 @@ The following list summarizes the most important changes inherited from upstream
   * Sensors:
 
     * Added support for the IIS2DH accelerometer.
-    * Added the :cpp:func:`sensor_attr_get` API function for getting the value of a sensor attribute.
+    * Added the :c:func:`sensor_attr_get` API function for getting the value of a sensor attribute.
     * Added support for the :ref:`zephyr:wsen-itds`.
 
   * Serial:
 
-    * Clarified in the UART API that the :cpp:enumerator:`UART_RX_RDY <uart_interface::UART_RX_RDY>` event is to be generated before :cpp:enumerator:`UART_RX_DISABLED <uart_interface::UART_RX_DISABLED>` if any received data remains.
+    * Clarified in the UART API that the :c:enumerator:`UART_RX_RDY` event is to be generated before :c:enumerator:`UART_RX_DISABLED` if any received data remains.
       Updated all drivers in this regard.
     * Changed the nRF UART nrfx drivers (uart_nrfx_uart/uarte) to use the DT ``hw-flow-control`` property instead of Kconfig options.
     * Fixed disabling of the TX interrupt in the uart_nrfx_uart driver.
-    * Fixed the uart_nrfx_uarte driver to prevent spurious :cpp:enumerator:`UART_RX_BUF_REQUEST <uart_interface::UART_RX_BUF_REQUEST>` events.
-    * Removed counters reset from :cpp:func:`uart_rx_enable` in the nrf_uarte driver.
+    * Fixed the uart_nrfx_uarte driver to prevent spurious :c:enumerator:`UART_RX_BUF_REQUEST` events.
+    * Removed counters reset from :c:func:`uart_rx_enable` in the nrf_uarte driver.
     * Changed wrappers of optional API functions to always be present and return ``-ENOTSUP`` when a given function is not implemented in the driver that is used.
-    * Added another error code (``-EACCES``) that can be returned by the :cpp:func:`uart_rx_buf_rsp` API function.
+    * Added another error code (``-EACCES``) that can be returned by the :c:func:`uart_rx_buf_rsp` API function.
       Updated all existing drivers that implement this function accordingly.
     * Added initial clean-up of the receiver state in the nRF UARTE driver (uart_nrfx_uarte).
     * Added initial disabling of the UART peripheral before its pins are configured in the nRF UART/UARTE drivers (uart_nrfx_uart/uarte).
@@ -319,7 +319,7 @@ The following list summarizes the most important changes inherited from upstream
     * Unified endpoint helper macros across all USB device drivers.
     * Fixed handling of fragmented transfers on the control OUT endpoint in the Nordic Semiconductor USB Device Controller driver (usb_dc_nrfx).
     * Introduced names for threads used in USB classes, to aid debugging.
-    * Updated the way the :cpp:func:`usb_enable` function should be used.
+    * Updated the way the :c:func:`usb_enable` function should be used.
       For some samples, this function was invoked automatically on system boot-up to enable the USB subsystem, but now it must be called explicitly by the application.
       If your application relies on any of the following Kconfig options, it must also enable the USB subsystem:
 
@@ -337,7 +337,7 @@ The following list summarizes the most important changes inherited from upstream
 
   * Watchdog:
 
-    * Updated the description of the :cpp:func:`wdt_feed` API function to reflect an additional error return code.
+    * Updated the description of the :c:func:`wdt_feed` API function to reflect an additional error return code.
 
 * Storage and file systems:
 
@@ -443,7 +443,7 @@ The following list summarizes the most important changes inherited from upstream
   * Implemented ``nanosleep`` in the POSIX subsystem.
   * Deprecated the Zephyr-specific types in favor of the standard C99 int types.
   * Removed ``CONFIG_NET_IF_USERSPACE_ACCESS``, because it is no longer needed.
-  * Renamed some attributes in the :cpp:class:`device` struct: ``config_info`` to ``config``, ``driver_api`` to ``api``, and ``driver_data`` to ``data``.
+  * Renamed some attributes in the :c:struct:`device` struct: ``config_info`` to ``config``, ``driver_api`` to ``api``, and ``driver_data`` to ``data``.
 
 The following list contains |NCS| specific additions:
 

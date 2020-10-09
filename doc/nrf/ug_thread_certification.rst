@@ -11,12 +11,7 @@ For general information about the certification process, check the `Thread Group
 Thread certification options
 ****************************
 
-Depending on your development approach, you have the following certification options when using Nordic Semiconductor devices.
-
-.. contents::
-	:local:
-	:depth: 2
-
+Depending on your development approach, you have several certification options when using Nordic Semiconductor devices.
 
 Certification by inheritance without modifications to binaries
 ==============================================================
@@ -69,6 +64,7 @@ Complete the following steps to run the certification tests:
 
    .. note::
       The overlay file selects the precompiled OpenThread libraries by default.
+      It also enables OpenThread debug logs on the RTT backend.
 
 #. Prepare Thread Test Harness.
 

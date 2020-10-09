@@ -53,12 +53,12 @@ The DFU module implementation is centered around the transmission and the storag
 * `Partition preparation`_ - How the module prepares for receiving an image.
 
 The firmware transfer operation can also be carried out by :ref:`nrf_desktop_smp`.
-The application module must call the :cpp:func:`dfu_lock` function before the transfer operation, as well as before erasing the flash area.
+The application module must call the :c:func:`dfu_lock` function before the transfer operation, as well as before erasing the flash area.
 This is done to make sure that only one application module could modify the secondary image flash partition.
 The modification of the data by multiple application modules would result in a broken image that would be rejected by the bootloader.
-After the operation is finished, the application module can call the :cpp:func:`dfu_unlock` to let other modules modify the secondary image flash partition.
+After the operation is finished, the application module can call the :c:func:`dfu_unlock` to let other modules modify the secondary image flash partition.
 
-You can find the header file of the :cpp:func:`dfu_lock` and :cpp:func:`dfu_unlock` at the following path: :file:`src/util/dfu_lock.h`.
+You can find the header file of the :c:func:`dfu_lock` and :c:func:`dfu_unlock` at the following path: :file:`src/util/dfu_lock.h`.
 
 Protocol operations
 ===================
@@ -156,7 +156,7 @@ The image data that is received from the host is initially buffered in RAM.
 Writing the data to flash is triggered when the host performs the fetch operation on the ``sync`` option.
 At that point, the :ref:`nrf_desktop_config_channel_script` waits until the data is written to flash before providing more image data chunks.
 
-The data is stored in a secondary image flash partition using a dedicated work (:cpp:class:`k_delayed_work`).
+The data is stored in a secondary image flash partition using a dedicated work (:c:struct:`k_delayed_work`).
 The work stores a single chunk of data and resubmits itself.
 
 To ensure that the flash write will not interfere with the device usability, the stored data is split into small chunks and written only if there are no HID reports transmitted and the Bluetooth connection state does not change.

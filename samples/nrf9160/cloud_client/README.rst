@@ -36,7 +36,7 @@ The sample supports the following development kits:
 
 .. table-from-rows:: /includes/sample_board_rows.txt
    :header: heading
-   :rows: thingy91_nrf9160ns, nrf9160dk_nrf9160ns
+   :sample-yaml-rows:
 
 Setup
 *****
@@ -72,38 +72,38 @@ Functions
 =========
 The sample uses the following functions:
 
-* :cpp:func:`cloud_get_binding()` : Binds to a desired cloud backend using an identifiable string.
+* :c:func:`cloud_get_binding` : Binds to a desired cloud backend using an identifiable string.
 
 
-* :cpp:func:`cloud_init()` : Sets up the cloud connection.
+* :c:func:`cloud_init` : Sets up the cloud connection.
 
 
-* :cpp:func:`cloud_connect()` : Connects to the cloud service.
+* :c:func:`cloud_connect` : Connects to the cloud service.
 
 
-* :cpp:func:`cloud_ping()` : Pings the cloud service.
+* :c:func:`cloud_ping` : Pings the cloud service.
 
 
-* :cpp:func:`cloud_input()` : Retrieves data from the cloud service.
+* :c:func:`cloud_input` : Retrieves data from the cloud service.
 
 
-* :cpp:func:`cloud_send()` : Sends data to the cloud service.
+* :c:func:`cloud_send` : Sends data to the cloud service.
 
 
 Cloud events used in the sample
 ===============================
 The sample uses the following cloud events:
 
-* :cpp:enumerator:`CLOUD_EVT_CONNECTED <cloud_api::CLOUD_EVT_CONNECTED>` : Connected to the cloud service.
+* :c:enumerator:`CLOUD_EVT_CONNECTED` : Connected to the cloud service.
 
 
-* :cpp:enumerator:`CLOUD_EVT_READY<cloud_api::CLOUD_EVT_READY>` : Ready for cloud communication.
+* :c:enumerator:`CLOUD_EVT_READY` : Ready for cloud communication.
 
 
-* :cpp:enumerator:`CLOUD_EVT_DISCONNECTED<cloud_api::CLOUD_EVT_DISCONNECTED>` : Disconnected from the cloud service.
+* :c:enumerator:`CLOUD_EVT_DISCONNECTED` : Disconnected from the cloud service.
 
 
-* :cpp:enumerator:`CLOUD_EVT_DATA_RECEIVED<cloud_api::CLOUD_EVT_DATA_RECEIVED>` : Data received from the cloud service.
+* :c:enumerator:`CLOUD_EVT_DATA_RECEIVED` : Data received from the cloud service.
 
 .. note::
    Not all functionalities present in the generic cloud API are used by the different cloud backends.

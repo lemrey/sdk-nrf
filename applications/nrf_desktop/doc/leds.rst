@@ -13,19 +13,19 @@ This allows for different RGB or monochromatic colors.
 An example may be an LED that is blinking or breathing with a given color.
 Such LED behavior is referred to as *LED effect*.
 
-The LED effect (:cpp:class:`led_effect`) is described by the following characteristics:
+The LED effect (:c:struct:`led_effect`) is described by the following characteristics:
 
-* Pointer to array of LED steps (:cpp:member:`steps`).
-* Size of the array (:cpp:member:`step_count`).
-* Flag indicating if the sequence should start over after it finishes (:cpp:member:`loop_forever`).
+* Pointer to array of LED steps (:c:member:`led_effect.steps`).
+* Size of the array (:c:member:`led_effect.step_count`).
+* Flag indicating if the sequence should start over after it finishes (:c:member:`led_effect.loop_forever`).
 
 To achieve the desired LED effect, the LED color is updated periodically based on LED steps defined for the given LED effect, which in turn are divided in multiple smaller updates called *substeps*.
 
-During every substep, the next LED color is calculated using a linear approximation between the current LED color and the :cpp:member:`color` described in the next LED step.
-A single LED step also defines the number of substeps for color change between the given LED step and the previous one (:cpp:member:`substep_count`), as well as the period of time between color updates (:cpp:member:`substep_time`).
+During every substep, the next LED color is calculated using a linear approximation between the current LED color and the :c:member:`led_effect_step.color` described in the next LED step.
+A single LED step also defines the number of substeps for color change between the given LED step and the previous one (:c:member:`led_effect_step.substep_count`), as well as the period of time between color updates (:c:member:`led_effect_step.substep_time`).
 After achieving the color described in the next step, the index of the next step is updated.
 
-After the last step, the sequence restarts if the :cpp:member:`loop_forever` flag is set for the given LED effect.
+After the last step, the sequence restarts if the :c:member:`led_effect.loop_forever` flag is set for the given LED effect.
 If the flag is not set, the sequence stops and the given LED effect ends.
 
 Module events
@@ -66,7 +66,7 @@ Implementation details
 **********************
 
 The LED color is achieved by setting the proper pulse widths for the PWM signals.
-To achieve the desired LED effect, colors for the given LED are periodically updated using work (:cpp:class:`k_delayed_work`).
+To achieve the desired LED effect, colors for the given LED are periodically updated using work (:c:struct:`k_delayed_work`).
 One work automatically updates the color of a single LED.
 
 This module turns off all LEDs when the application goes to the power down state.

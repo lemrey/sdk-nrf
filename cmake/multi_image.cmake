@@ -27,6 +27,11 @@ if(IMAGE_NAME)
   share("set(${IMAGE_NAME}KERNEL_ELF_NAME ${KERNEL_ELF_NAME})")
   share("list(APPEND ${IMAGE_NAME}BUILD_BYPRODUCTS ${PROJECT_BINARY_DIR}/${KERNEL_HEX_NAME})")
   share("list(APPEND ${IMAGE_NAME}BUILD_BYPRODUCTS ${PROJECT_BINARY_DIR}/${KERNEL_ELF_NAME})")
+  # Share the signing key file so that the parent image can use it to
+  # generate signed update candidates.
+  if(CONFIG_BOOT_SIGNATURE_KEY_FILE)
+   share("set(${IMAGE_NAME}SIGNATURE_KEY_FILE ${CONFIG_BOOT_SIGNATURE_KEY_FILE})")
+  endif()
 
   file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/shared_vars.cmake
     CONTENT $<TARGET_PROPERTY:zephyr_property_target,shared_vars>
@@ -34,6 +39,20 @@ if(IMAGE_NAME)
 endif(IMAGE_NAME)
 
 function(add_child_image)
+  # Adds a child image to the build.
+  #
+  # Required arguments are:
+  # NAME - The name of the child image
+  # SOURCE_DIR - The source dir of the child image
+  #
+  # Optional arguments are:
+  # DOMAIN - The domain to place the child image in.
+  #
+  # Depending on the value of CONFIG_${NAME}_BUILD_STRATEGY the child image
+  # is either built from source, included as a hex file, or ignored.
+  #
+  # See chapter "Multi-image builds" in the documentation for more details.
+
   set(oneValueArgs NAME SOURCE_DIR DOMAIN)
   cmake_parse_arguments(ACI "" "${oneValueArgs}" "" ${ARGN})
 
@@ -57,8 +76,8 @@ function(add_child_image)
   endif()
 endfunction()
 
-# See 'add_child_image'
 function(add_child_image_from_source)
+  # See 'add_child_image'
   set(oneValueArgs NAME SOURCE_DIR DOMAIN BOARD)
   cmake_parse_arguments(ACI "" "${oneValueArgs}" "" ${ARGN})
 

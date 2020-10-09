@@ -161,7 +161,7 @@ struct download_client {
 	k_tid_t tid;
 	/** Internal download thread. */
 	struct k_thread thread;
-	/** Internal thread stack. */
+	/* Internal thread stack. */
 	K_THREAD_STACK_MEMBER(thread_stack,
 			      CONFIG_DOWNLOAD_CLIENT_STACK_SIZE);
 
@@ -198,8 +198,8 @@ int download_client_connect(struct download_client *client, const char *host,
  * @brief Download a file.
  *
  * The download is carried out in fragments of up to
- * @c CONFIG_DOWNLOAD_CLIENT_HTTP_FRAG_SIZE bytes for HTTP, or
- * @c CONFIG_DOWNLOAD_CLIENT_COAP_BLOCK_SIZE bytes for CoAP,
+ * @option{CONFIG_DOWNLOAD_CLIENT_HTTP_FRAG_SIZE} bytes for HTTP, or
+ * @option{CONFIG_DOWNLOAD_CLIENT_COAP_BLOCK_SIZE} bytes for CoAP,
  * which are delivered to the application
  * via @ref DOWNLOAD_CLIENT_EVT_FRAGMENT events.
  *

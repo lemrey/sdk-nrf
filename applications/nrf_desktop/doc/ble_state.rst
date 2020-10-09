@@ -5,9 +5,9 @@ Bluetooth LE state module
 
 Use the Bluetooth LE state module to:
 
-* Enable Bluetooth (:cpp:func:`bt_enable`).
-* Handle Zephyr connection callbacks (:cpp:type:`bt_conn_cb`).
-* Handle Zephyr authenticated pairing callbacks (:cpp:type:`bt_conn_auth_cb`).
+* Enable Bluetooth (:c:func:`bt_enable`).
+* Handle Zephyr connection callbacks (:c:struct:`bt_conn_cb`).
+* Handle Zephyr authenticated pairing callbacks (:c:struct:`bt_conn_auth_cb`).
 * Propagate information about the connection state and parameters by using :ref:`event_manager` events.
 
 Module events
@@ -36,14 +36,14 @@ The |ble_state| module is used by both Bluetooth Peripheral and Bluetooth Centra
 Connection state change
 =======================
 
-The module propagates information about the connection state changes using ``ble_peer_event``, where :cpp:member:`id` is a pointer to the connection object, and :cpp:member:`state` is the connection state.
+The module propagates information about the connection state changes using :c:struct:`ble_peer_event`, where :c:member:`ble_peer_event.id` is a pointer to the connection object, and :c:member:`ble_peer_event.state` is the connection state.
 
 The connection state can be set to one of the following values:
 
-* :cpp:enum:`PEER_STATE_CONNECTED` - successfully connected to the remote peer.
-* :cpp:enum:`PEER_STATE_CONN_FAILED` - failed to connect the remote peer.
-* :cpp:enum:`PEER_STATE_SECURED` - set the connection security at least to level 2 (encryption and no authentication).
-* :cpp:enum:`PEER_STATE_DISCONNECTED` - disconnected from the remote peer.
+* :c:enum:`PEER_STATE_CONNECTED` - successfully connected to the remote peer.
+* :c:enum:`PEER_STATE_CONN_FAILED` - failed to connect the remote peer.
+* :c:enum:`PEER_STATE_SECURED` - set the connection security at least to level 2 (encryption and no authentication).
+* :c:enum:`PEER_STATE_DISCONNECTED` - disconnected from the remote peer.
 
 Connection parameters change
 ============================
@@ -59,9 +59,9 @@ The :ref:`nrf_desktop_ble_conn_params` updates the connection parameters on ``bl
 Connection references
 =====================
 
-The |ble_state| keeps references to :cpp:class:`bt_conn` objects to ensure that they remain valid when other application modules access them.
-When a new connection is established, the module calls :cpp:func:`bt_conn_ref` to increase the object reference counter.
-After ``ble_peer_event`` regarding disconnection or connection failure is received by all other application modules, the |ble_state| unreferences the :cpp:class:`bt_conn` object by using :cpp:func:`bt_conn_unref`.
+The |ble_state| keeps references to :c:struct:`bt_conn` objects to ensure that they remain valid when other application modules access them.
+When a new connection is established, the module calls :c:func:`bt_conn_ref` to increase the object reference counter.
+After ``ble_peer_event`` regarding disconnection or connection failure is received by all other application modules, the |ble_state| unreferences the :c:struct:`bt_conn` object by using :c:func:`bt_conn_unref`.
 
 For Bluetooth Peripheral, the |ble_state| is used to request the connection security level 2.
 If the connection security level 2 is not established, the peripheral device disconnects.
@@ -69,7 +69,7 @@ If the connection security level 2 is not established, the peripheral device dis
 Passkey enabled
 ===============
 
-If you set the ``CONFIG_DESKTOP_BLE_ENABLE_PASSKEY`` option, the |ble_state| registers the set of authenticated pairing callbacks (:cpp:type:`bt_conn_auth_cb`).
+If you set the ``CONFIG_DESKTOP_BLE_ENABLE_PASSKEY`` option, the |ble_state| registers the set of authenticated pairing callbacks (:c:struct:`bt_conn_auth_cb`).
 The callbacks can be used to achieve higher security levels.
 The passkey input is handled in the :ref:`nrf_desktop_passkey`.
 

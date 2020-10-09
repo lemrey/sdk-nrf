@@ -59,6 +59,17 @@ div.figure {
  padding-top: 10px;
 }
 
+/* differentiate more between headings */
+
+h5 {
+ font-size: 105%;
+}
+
+h6 {
+ font-size: 90%;
+}
+
+
 /* Background colors for the different sets */
 .ncs {
  background-color: #00a9ce;
@@ -182,4 +193,33 @@ div.numbered-step>h5::before {
 div.numbered-step>h6::before {
   counter-increment: step-count-h6;
   content: counter(step-count-h6);
+}
+
+
+/* add a section divider */
+
+.rst-content h2 {
+ border-top: 1px solid #ddd;
+ padding-top: 20px;
+}
+
+
+/* add styling for a local ToC */
+
+.contents.local {
+    float: right;
+    border: 1px solid #ddd;
+    background-color: #fafafa;
+    padding: 10px 10px 0px 0px;
+    margin: 5px;
+    max-width: 30%;
+}
+
+.contents.local a {
+    font-size: 13px;
+    line-height: 13px;
+}
+
+.contents.local ul p {
+    margin-bottom: 0px;
 }
