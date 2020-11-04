@@ -11,6 +11,7 @@
 #include <nrfx_ipc.h>
 #include <nrf_modem.h>
 #include <nrf_modem_platform.h>
+#include <pm_config.h>
 
 #ifdef CONFIG_LTE_LINK_CONTROL
 #include <modem/lte_lc.h>
@@ -47,9 +48,25 @@ static int _nrf_modem_lib_init(const struct device *unused)
 		    nrfx_isr, nrfx_ipc_irq_handler, 0);
 
 	const nrf_modem_init_params_t init_params = {
-		.trace_on = true,
-		.memory_address = NRF_MODEM_RESERVED_MEMORY_ADDRESS,
-		.memory_size = NRF_MODEM_RESERVED_MEMORY_SIZE
+		.ipc_irq_prio = NRF_MODEM_NETWORK_IRQ_PRIORITY,
+		.shmem.ctrl = {
+			.base = PM_NRF_MODEM_LIB_CTRL_ADDRESS,
+			.size = CONFIG_NRF_MODEM_LIB_SHMEM_CTRL_SIZE,
+		},
+		.shmem.tx = {
+			.base = PM_NRF_MODEM_LIB_TX_ADDRESS,
+			.size = CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE,
+		},
+		.shmem.rx = {
+			.base = PM_NRF_MODEM_LIB_RX_ADDRESS,
+			.size = CONFIG_NRF_MODEM_LIB_SHMEM_RX_SIZE,
+		},
+#if CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
+		.shmem.trace = {
+			.base = PM_NRF_MODEM_LIB_TRACE_ADDRESS,
+			.size = CONFIG_NRF_MODEM_LIB_SHMEM_TRACE_SIZE,
+		},
+#endif
 	};
 
 	init_ret = nrf_modem_init(&init_params);

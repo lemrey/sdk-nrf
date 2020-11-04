@@ -14,6 +14,7 @@
 #include <nrfx_ipc.h>
 #include <nrf_errno.h>
 #include <errno.h>
+#include <pm_config.h>
 #include <logging/log.h>
 
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
@@ -46,8 +47,6 @@
 /* Use UARTE1 as a dedicated peripheral to print traces. */
 static const nrfx_uarte_t uarte_inst = NRFX_UARTE_INSTANCE(1);
 #endif
-
-void IPC_IRQHandler(void);
 
 #define THREAD_MONITOR_ENTRIES 10
 
@@ -395,7 +394,8 @@ void trace_task_create(void)
 
 void read_task_create(void)
 {
-	IRQ_DIRECT_CONNECT(NRF_MODEM_APPLICATION_IRQ, NRF_MODEM_APPLICATION_IRQ_PRIORITY,
+	IRQ_DIRECT_CONNECT(NRF_MODEM_APPLICATION_IRQ,
+			   NRF_MODEM_APPLICATION_IRQ_PRIORITY,
 			   rpc_proxy_irq_handler, UNUSED_FLAGS);
 	irq_enable(NRF_MODEM_APPLICATION_IRQ);
 }
@@ -426,7 +426,34 @@ void trace_uart_init(void)
 #endif
 }
 
-/* This function is called by nrf_modem_init and must not be called explicitly. */
+
+/* Shared memory heap */
+static struct k_heap shmem_heap;
+
+void *nrf_modem_os_shm_tx_alloc(size_t bytes)
+{
+	return k_heap_alloc(&shmem_heap, bytes, K_NO_WAIT);
+}
+
+void nrf_modem_os_shm_tx_free(void *mem)
+{
+	k_heap_free(&shmem_heap, mem);
+}
+
+/* Library heap */
+static K_HEAP_DEFINE(library_heap, CONFIG_NRF_MODEM_LIB_HEAP_SIZE);
+
+void *nrf_modem_os_alloc(size_t bytes)
+{
+	return k_heap_alloc(&library_heap, bytes, K_NO_WAIT);
+}
+
+void nrf_modem_os_free(void *mem)
+{
+	k_heap_free(&library_heap, mem);
+}
+
+/* This function is called by nrf_modem_init() */
 void nrf_modem_os_init(void)
 {
 	sys_slist_init(&sleeping_threads);
@@ -437,6 +464,11 @@ void nrf_modem_os_init(void)
 	/* Configure and enable modem tracing over UART. */
 	trace_uart_init();
 	trace_task_create();
+
+	/* Initialize TX heap */
+	k_heap_init(&shmem_heap,
+		    (void *)PM_NRF_MODEM_LIB_TX_ADDRESS,
+		    CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE);
 }
 
 int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)
