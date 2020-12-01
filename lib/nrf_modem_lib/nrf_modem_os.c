@@ -7,7 +7,6 @@
 #include <string.h>
 #include <init.h>
 #include <zephyr.h>
-#include <zephyr/types.h>
 #include <nrf_modem_os.h>
 #include <nrf_modem_platform.h>
 #include <nrf.h>
@@ -50,7 +49,11 @@ static const nrfx_uarte_t uarte_inst = NRFX_UARTE_INSTANCE(1);
 
 #define THREAD_MONITOR_ENTRIES 10
 
-LOG_MODULE_REGISTER(nrf_modem_lib);
+LOG_MODULE_REGISTER(nrf_modem_lib, CONFIG_NRF_MODEM_LIB_LOG_LEVEL);
+
+struct mem_diagnostic_info {
+	uint32_t failed_allocs;
+};
 
 struct sleeping_thread {
 	sys_snode_t node;
@@ -430,28 +433,106 @@ void trace_uart_init(void)
 /* Shared memory heap */
 static struct k_heap shmem_heap;
 
+static struct mem_diagnostic_info shmem_diag;
+
 void *nrf_modem_os_shm_tx_alloc(size_t bytes)
 {
-	return k_heap_alloc(&shmem_heap, bytes, K_NO_WAIT);
+	void *addr = k_heap_alloc(&shmem_heap, bytes, K_NO_WAIT);
+#ifdef NRF_MODEM_DEBUG_SHM_TX_ALLOC
+	if (addr) {
+		LOG_DBG("bytes: %d; addr: %p", bytes, addr);
+	} else {
+		shmem_diag.failed_allocs++;
+	}
+#endif
+	return addr;
 }
 
 void nrf_modem_os_shm_tx_free(void *mem)
 {
 	k_heap_free(&shmem_heap, mem);
+#ifdef NRF_MODEM_DEBUG_SHM_TX_ALLOC
+	LOG_DBG("addr: %p", mem);
+#endif
 }
 
 /* Library heap */
 static K_HEAP_DEFINE(library_heap, CONFIG_NRF_MODEM_LIB_HEAP_SIZE);
 
+void nrf_modem_os_shm_tx_diagnose(void)
+{
+	printk("Libmodem Shared Memory Heap Dump:\n");
+	sys_heap_dump(&shmem_heap.heap);
+	printk("Failed allocations: %u\n", shmem_diag.failed_allocs);
+}
+
+static struct mem_diagnostic_info heap_diag;
+
 void *nrf_modem_os_alloc(size_t bytes)
 {
-	return k_heap_alloc(&library_heap, bytes, K_NO_WAIT);
+	void *addr = k_heap_alloc(&library_heap, bytes, K_NO_WAIT);
+#ifdef NRF_MODEM_DEBUG_ALLOC
+	if (addr) {
+		LOG_DBG("bytes: %d; addr: %p", bytes, addr);
+	} else {
+		heap_diag.failed_allocs++;
+	}
+#endif
+	return addr;
 }
 
 void nrf_modem_os_free(void *mem)
 {
 	k_heap_free(&library_heap, mem);
+#ifdef NRF_MODEM_DEBUG_ALLOC
+	LOG_DBG("addr: %p", mem);
+#endif
 }
+
+void nrf_modem_os_heap_diagnose(void)
+{
+	printk("Libmodem Heap Dump:\n");
+	sys_heap_dump(&library_heap.heap);
+	printk("Failed allocations: %u\n", heap_diag.failed_allocs);
+}
+
+#if defined(CONFIG_NRF_MODEM_LIB_SHMEM_HEAP_DUMP_PERIODIC) || \
+	defined(CONFIG_NRF_MODEM_LIB_HEAP_DUMP_PERIODIC)
+enum heap_type {
+	SHMEM, LIBRARY
+};
+
+struct task {
+	struct k_delayed_work work;
+	enum heap_type type;
+};
+
+static struct task shmem_task = {.type = SHMEM};
+static struct task heap_task = {.type = LIBRARY};
+
+void diagnose_heap(struct k_work *item)
+{
+	struct task *t = CONTAINER_OF(item, struct task, work);
+
+	switch (t->type) {
+	case SHMEM:
+		nrf_modem_os_shm_heap_diagnose();
+		k_delayed_work_submit(&shmem_task.work,
+			K_MSEC(CONFIG_NRF_MODEM_LIB_SHMEM_HEAP_DUMP_PERIOD_MS));
+		break;
+	case LIBRARY:
+		nrf_modem_os_heap_diagnose();
+		k_delayed_work_submit(&heap_task.work,
+			K_MSEC(CONFIG_NRF_MODEM_LIB_HEAP_DUMP_PERIOD_MS));
+		break;
+	default:
+		break;
+	}
+}
+
+K_THREAD_STACK_DEFINE(work_q_stack_area, 512);
+struct k_work_q diagnostics_work_q;
+#endif
 
 /* This function is called by nrf_modem_init() */
 void nrf_modem_os_init(void)
@@ -469,6 +550,27 @@ void nrf_modem_os_init(void)
 	k_heap_init(&shmem_heap,
 		    (void *)PM_NRF_MODEM_LIB_TX_ADDRESS,
 		    CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE);
+
+	shmem_diag.failed_allocs = 0;
+	heap_diag.failed_allocs = 0;
+
+#if defined(CONFIG_NRF_MODEM_LIB_SHMEM_HEAP_DUMP_PERIODIC) || \
+	defined(CONFIG_NRF_MODEM_LIB_HEAP_DUMP_PERIODIC)
+	k_work_q_start(&diagnostics_work_q, work_q_stack_area,
+		       K_THREAD_STACK_SIZEOF(work_q_stack_area), 5);
+#endif
+
+#ifdef CONFIG_NRF_MODEM_LIB_SHMEM_HEAP_DUMP_PERIODIC
+	k_delayed_work_init(&shmem_task.work, diagnose_heap);
+	k_delayed_work_submit(&shmem_task.work,
+		K_MSEC(CONFIG_NRF_MODEM_LIB_SHMEM_HEAP_DUMP_PERIOD_MS));
+#endif
+
+#ifdef CONFIG_NRF_MODEM_LIB_HEAP_DUMP_PERIODIC
+	k_delayed_work_init(&heap_task.work, diagnose_heap);
+	k_delayed_work_submit(&heap_task.work,
+		K_MSEC(CONFIG_NRF_MODEM_LIB_HEAP_DUMP_PERIOD_MS));
+#endif
 }
 
 int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)
