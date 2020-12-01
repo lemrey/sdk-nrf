@@ -100,6 +100,36 @@ config NRF_MODEM_LIB_SHMEM_TRACE_SIZE
 	help
 	  Size of the shared memory area used to receive modem traces.
 
+config NRF_MODEM_LIB_SHMEM_TX_HEAP_DUMP_PERIOD_MS
+    depends on NRF_MODEM_LIB_SHMEM_TX_HEAP_DUMP_PERIODIC
+    int "Period of the periodical execution of a heap dump of the IPC heap owned by the application"
+    default 1000
+
+config NRF_MODEM_LIB_SHMEM_TX_HEAP_DUMP_PERIODIC
+    bool "Enable to start a thread that periodically executes a heap dump of the IPC heap owned by the application"
+
+config NRF_MODEM_LIB_HEAP_DUMP_PERIOD_MS
+    depends on NRF_MODEM_LIB_HEAP_DUMP_PERIODIC
+    int "Period of the periodical execution of a heap dump of the local heap"
+    default 1000
+
+config NRF_MODEM_LIB_HEAP_DUMP_PERIODIC
+    bool "Enable to start a thread that periodically executes a heap dump of the local heap"
+
+config NRF_MODEM_DEBUG_SHM_TX_ALLOC
+    depends on LOG
+    depends on NRF_MODEM_LIB_LOG_LEVEL_DBG
+    bool "Enable alloc/free debugging for the IPC heap owned by the application"
+
+config NRF_MODEM_DEBUG_ALLOC
+    depends on LOG
+    depends on NRF_MODEM_LIB_LOG_LEVEL_DBG
+    bool "Enable alloc/free debugging for the local heap"
+
+module = NRF_MODEM_LIB
+module-str = nrf_modem_lib
+source "subsys/logging/Kconfig.template.log_config"
+
 endif # NRF_MODEM_LIB
 
 # Leave a set of deprecated entries to smooth transition to NRF_MODEM_LIB

@@ -62,6 +62,16 @@ int nrf_modem_lib_get_init_ret(void);
  */
 int nrf_modem_lib_shutdown(void);
 
+/**
+ * @brief Print diagnostics information for the TX heap.
+ */
+void nrf_modem_os_shm_tx_diagnose(void);
+
+/**
+ * @brief Print diagnostics information for the library heap.
+ */
+void nrf_modem_os_heap_diagnose(void);
+
 #ifdef __cplusplus
 }
 #endif
