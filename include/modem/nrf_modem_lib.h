@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+#include <nrf_modem.h>
+
 /**
  * @brief Initialize the Modem library.
  *
@@ -18,9 +20,21 @@ extern "C" {
  * initializing the library manually to have control of what
  * the application should do while initialization is ongoing.
  *
+ * Library has two operation modes, normal and DFU.
+ * In normal operation mode, the DFU functionality should is disabled.
+ *
+ * Library can alternatively be initialized in DFU mode, which means that
+ * all shared memory regions are now reserved for DFU operation,
+ * and therefore no other modem functionality can be used.
+ *
+ * To switch between DFU and normal modes, nrf_modem_shutdown() should be
+ * called in between.
+ *
+ * @param[in] mode Library mode.
+ *
  * @return int Zero on success, non-zero otherwise.
  */
-int nrf_modem_lib_init(void);
+int nrf_modem_lib_init(enum nrf_modem_mode_t mode);
 
 /**
  * @brief Makes a thread sleep until next time nrf_modem_lib_init() is called.
