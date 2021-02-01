@@ -13,6 +13,7 @@
 #include <modem/at_notif.h>
 #include <modem/modem_key_mgmt.h>
 #include <net/download_client.h>
+#include <nrf_modem.h>
 
 #define URL CONFIG_SAMPLE_FILE_URL
 #define SEC_TAG CONFIG_SAMPLE_SEC_TAG
@@ -194,7 +195,7 @@ void main(void)
 
 	printk("Download client sample started\n");
 
-	err = nrf_modem_lib_init();
+	err = nrf_modem_lib_init(NORMAL_MODE);
 	if (err) {
 		printk("Failed to initialize modem library!");
 		return;

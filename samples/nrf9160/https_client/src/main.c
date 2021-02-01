@@ -14,6 +14,7 @@
 #include <modem/at_cmd.h>
 #include <modem/at_notif.h>
 #include <modem/modem_key_mgmt.h>
+#include <nrf_modem.h>
 
 #define HTTPS_PORT 443
 
@@ -155,7 +156,7 @@ void main(void)
 
 	printk("HTTPS client sample started\n\r");
 
-	err = nrf_modem_lib_init();
+	err = nrf_modem_lib_init(NORMAL_MODE);
 	if (err) {
 		printk("Failed to initialize modem library!");
 		return;
