@@ -109,7 +109,8 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib
       path: nrfxlib
-      revision: 7fd9985281327230839be6118eef01b56379bbac
+      remote: MirkoCovizzi
+      revision: SoftSIM
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tfm

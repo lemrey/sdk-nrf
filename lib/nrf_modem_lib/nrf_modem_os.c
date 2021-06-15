@@ -17,6 +17,15 @@
 #include <errno.h>
 #include <pm_config.h>
 #include <logging/log.h>
+#include <nrf_modem_softsim.h>
+
+/* todo: find another way to set this define so that the
+ * tfm veneer gets declared
+ */
+#define TFM_PARTITION_TEE_PARTITION 1
+#include <psa/client.h>
+#include <psa_manifest/sid.h>
+
 
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_MEDIUM_UART
 #include <nrfx_uarte.h>
@@ -178,6 +187,237 @@ static void sleeping_thread_remove(struct sleeping_thread *thread)
 void nrf_modem_os_busywait(int32_t usec)
 {
 	k_busy_wait(usec);
+}
+
+#define SOFTSIM_STACK_SIZE 512
+#define SOFTSIM_PRIORITY 5
+
+K_THREAD_STACK_DEFINE(softsim_stack_area, SOFTSIM_STACK_SIZE);
+
+struct softsim_req_node {
+	void *fifo_reserved;
+	enum nrf_modem_softsim_uicc_req req;
+	uint16_t req_id;
+	struct nrf_modem_softsim_payload payload;
+};
+
+static void softsim_req_task(struct k_work *item);
+
+static K_FIFO_DEFINE(softsim_req_fifo);
+static K_WORK_DEFINE(softsim_req_work, softsim_req_task);
+static uint8_t softsim_buffer_out[SIM_HAL_MAX_LE];
+
+__weak void nrf_modem_softsim_reset_handler(void)
+{
+	LOG_INF("SoftSIM RESET");
+}
+
+static psa_status_t tee_softsim_driver_init(struct nrf_modem_softsim_payload *payload_out)
+{
+	psa_status_t status;
+	psa_handle_t handle;
+
+	psa_invec in_vec[] = {
+		{ .base = NULL, .len = 0 },
+	};
+
+	psa_outvec out_vec[] = {
+		{ .base = payload_out->data, .len = payload_out->data_len}
+	};
+
+	handle = psa_connect(TFM_TEE_SOFTSIM_INIT_SID,
+			     TFM_TEE_SOFTSIM_INIT_VERSION);
+	if (!PSA_HANDLE_IS_VALID(handle)) {
+		return PSA_ERROR_GENERIC_ERROR;
+	}
+
+	status = psa_call(handle, PSA_IPC_CALL, in_vec, IOVEC_LEN(in_vec),
+			  out_vec, IOVEC_LEN(out_vec));
+
+	psa_close(handle);
+
+	/* Update payload data_len with size obtained from tfm */
+	payload_out->data_len = out_vec[0].len;
+
+	return status;
+}
+
+static psa_status_t tee_softsim_driver_apdu(struct nrf_modem_softsim_payload *payload_in,
+					    struct nrf_modem_softsim_payload *payload_out)
+{
+	psa_status_t status;
+	psa_handle_t handle;
+
+	psa_invec in_vec[] = {
+		{ .base = payload_in->data, .len = payload_in->data_len}
+	};
+
+	psa_outvec out_vec[] = {
+		{ .base = payload_out->data, .len = payload_out->data_len}
+	};
+
+	handle = psa_connect(TFM_TEE_SOFTSIM_APDU_SID,
+			     TFM_TEE_SOFTSIM_APDU_VERSION);
+	if (!PSA_HANDLE_IS_VALID(handle)) {
+		return PSA_ERROR_GENERIC_ERROR;
+	}
+
+	status = psa_call(handle, PSA_IPC_CALL, in_vec, IOVEC_LEN(in_vec),
+			  out_vec, IOVEC_LEN(out_vec));
+
+	psa_close(handle);
+
+	/* Update payload data_len with size obtained from tfm */
+	payload_out->data_len = out_vec[0].len;
+
+	return status;
+}
+
+static psa_status_t tee_softsim_driver_deinit()
+{
+	psa_status_t status;
+	psa_handle_t handle;
+
+	psa_invec in_vec[] = {
+		{ .base = NULL, .len = 0 },
+	};
+
+	psa_invec out_vec[] = {
+		{ .base = NULL, .len = 0 },
+	};
+
+	handle = psa_connect(TFM_TEE_SOFTSIM_DEINIT_SID,
+			     TFM_TEE_SOFTSIM_DEINIT_VERSION);
+	if (!PSA_HANDLE_IS_VALID(handle)) {
+		return PSA_ERROR_GENERIC_ERROR;
+	}
+
+	status = psa_call(handle, PSA_IPC_CALL, in_vec, IOVEC_LEN(in_vec),
+			  out_vec, IOVEC_LEN(out_vec));
+
+	psa_close(handle);
+
+	return status;
+}
+
+static void softsim_req_task(struct k_work *item)
+{
+	int err;
+	int ret;
+	struct softsim_req_node *s_req;
+
+	while ((s_req = k_fifo_get(&softsim_req_fifo, K_NO_WAIT))) {
+		switch(s_req->req) {
+		case INIT: {
+			struct nrf_modem_softsim_payload payload_out = {
+				.data = softsim_buffer_out,
+				.data_len = SIM_HAL_MAX_LE
+			};
+
+			ret = tee_softsim_driver_init(&payload_out);
+
+			if (ret != PSA_SUCCESS) {
+				LOG_ERR("SoftSIM INIT request failed with err: %d", err);
+			}
+
+			err = nrf_softsim_init(ret, s_req->req_id, &payload_out);
+
+			if (err) {
+				LOG_ERR("SoftSIM INIT response failed with err: %d", err);
+			}
+
+			break;
+		}
+		case APDU: {
+			struct nrf_modem_softsim_payload payload_out = {
+				.data = softsim_buffer_out,
+				.data_len = SIM_HAL_MAX_LE
+			};
+
+			ret = tee_softsim_driver_apdu(&s_req->payload, &payload_out);
+
+			if (ret != PSA_SUCCESS) {
+				LOG_ERR("SoftSIM APDU request failed with err: %d", err);
+			}
+
+			err = nrf_softsim_apdu(ret, s_req->req_id, &payload_out);
+
+			if (err) {
+				LOG_ERR("SoftSIM APDU response failed with err: %d", err);
+			}
+
+			nrf_modem_os_free(s_req->payload.data);
+			nrf_modem_os_free(s_req);
+
+			break;
+		}
+		case DEINIT: {
+			/* As per specs, this request should not fail,
+			 * but we check anyways.
+			 */
+			ret = tee_softsim_driver_deinit();
+
+			if (ret != PSA_SUCCESS) {
+				LOG_ERR("SoftSIM DEINIT request failed with err: %d", err);
+			}
+
+			err = nrf_softsim_deinit(ret, s_req->req_id);
+
+			if (err) {
+				LOG_ERR("SoftSIM DEINIT response failed with err: %d", err);
+			}
+
+			break;
+		}
+		case RESET: {
+			/* We reply to the modem after executing the handler
+			 * so that it implicitly informs that the handling
+			 * has been completed.
+			 */
+			err = nrf_softsim_reset(s_req->req_id);
+
+			if (err) {
+				LOG_ERR("SoftSIM RESET response failed with err: %d", err);
+			}
+
+			nrf_modem_softsim_reset_handler();
+
+			break;
+		}
+		default:
+			break;
+		}
+	}
+}
+
+void nrf_modem_os_softsim_defer_req(enum nrf_modem_softsim_uicc_req req, uint16_t req_id,
+				    uint16_t data_len, uint8_t const *data)
+{
+	struct softsim_req_node *req_node = NULL;
+	void *payload_data = NULL;
+
+	req_node = nrf_modem_os_alloc(sizeof(struct softsim_req_node));
+
+	if (data_len != 0) {
+		payload_data = nrf_modem_os_alloc(data_len);
+	}
+
+	if (req_node &&
+	    ((data_len != 0 && payload_data) || (data_len == 0 && !payload_data))) {
+		if (data_len != 0) {
+			memcpy(payload_data, data, data_len);
+		}
+
+		req_node->req = req;
+		req_node->req_id = req_id;
+		req_node->payload.data = payload_data;
+		req_node->payload.data_len = data_len;
+
+		k_fifo_put(&softsim_req_fifo, req_node);
+		k_work_submit(&softsim_req_work);
+	} else {
+		LOG_ERR("Couldn't allocate SoftSIM deferred request.");
+	}
 }
 
 int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)

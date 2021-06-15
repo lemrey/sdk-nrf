@@ -1,0 +1,30 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2018-2021, Arm Limited. All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+#-------------------------------------------------------------------------------
+
+{
+  "name": "TF-M secure partition manifests",
+  "type": "manifest_list",
+  "version_major": 0,
+  "version_minor": 1,
+  "manifest_list": [
+    {
+      "name": "TEE Partition",
+      "short_name": "TFM_TP",
+      "manifest": "${NRF_DIR}/lib/nrf_modem_lib/tee_partition/tfm_tee_partition.yaml",
+      "source_path": "${NRF_DIR}/lib/nrf_modem_lib/tee_partition",
+      "tfm_partition_ipc": true,
+      "conditional": "TFM_PARTITION_TEE_PARTITION",
+      "version_major": 0,
+      "version_minor": 1,
+      "linker_pattern": {
+        "library_list": [
+           "*tfm_*partition_tp.*"
+         ],
+      }
+    },
+  ]
+}
