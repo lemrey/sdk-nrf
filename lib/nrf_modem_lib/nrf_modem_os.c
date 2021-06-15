@@ -16,6 +16,13 @@
 #include <pm_config.h>
 #include <logging/log.h>
 
+/* todo: find another way to set this define so that the
+ * tfm veneer gets declared
+ */
+#define TFM_PARTITION_TEE_PARTITION 1
+#include <tfm_ns_interface.h>
+#include <tfm_veneers.h>
+
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
 #include <nrfx_uarte.h>
 #endif
@@ -188,6 +195,192 @@ static void sleeping_thread_remove(struct sleeping_thread *thread)
 void nrf_modem_os_busywait(int32_t usec)
 {
 	k_busy_wait(usec);
+}
+
+#define SOFTSIM_STACK_SIZE 512
+#define SOFTSIM_PRIORITY 5
+
+K_THREAD_STACK_DEFINE(softsim_stack_area, SOFTSIM_STACK_SIZE);
+
+struct k_work_q softsim_work_q;
+
+struct softsim_req {
+	struct k_work work;
+	const enum UICCReq req;
+	uint16_t req_id;
+	struct softsim_payload payload;
+};
+
+static struct softsim_req softsim_init = { .req = INIT };
+static struct softsim_req softsim_apdu = { .req = APDU };
+static struct softsim_req softsim_deinit = { .req = DEINIT };
+
+static void (*modem_softsim_init)(int32_t ret,
+				  uint16_t req_id,
+				  struct softsim_payload payload);
+static void (*modem_softsim_apdu)(int32_t ret,
+				  uint16_t req_id,
+				  struct softsim_payload payload);
+static void (*modem_softsim_deinit)(uint16_t req_id);
+
+static psa_status_t tee_softsim_driver_init(struct softsim_payload *payload_out)
+{
+	psa_status_t status;
+
+	psa_invec in_vec[] = {
+		{ .base = NULL, .len = 0 },
+	};
+
+	psa_outvec out_vec[] = {
+		{ .base = payload_out->data, .len = payload_out->data_len}
+	};
+
+	status = tfm_ns_interface_dispatch(
+		(veneer_fn)tfm_tee_softsim_init_req_veneer,
+		(uint32_t)in_vec,  IOVEC_LEN(in_vec),
+		(uint32_t)out_vec, IOVEC_LEN(out_vec));
+
+	if (status == PSA_SUCCESS) {
+		/* Update output data_len */
+		payload_out->data_len = out_vec[0].len;
+	}
+
+	return status;
+}
+
+static psa_status_t tee_softsim_driver_apdu(struct softsim_payload *payload_in,
+					    struct softsim_payload *payload_out)
+{
+	psa_status_t status;
+
+	psa_invec in_vec[] = {
+		{ .base = payload_in->data, .len = payload_in->data_len}
+	};
+
+	psa_outvec out_vec[] = {
+		{ .base = payload_out->data, .len = payload_out->data_len}
+	};
+
+	status = tfm_ns_interface_dispatch(
+		(veneer_fn)tfm_tee_softsim_apdu_req_veneer,
+		(uint32_t)in_vec,  IOVEC_LEN(in_vec),
+		(uint32_t)out_vec, IOVEC_LEN(out_vec));
+
+	if (status == PSA_SUCCESS) {
+		/* Update output data_len */
+		payload_out->data_len = out_vec[0].len;
+	}
+
+	return status;
+}
+
+static psa_status_t tee_softsim_driver_deinit()
+{
+	psa_status_t status;
+
+	psa_invec in_vec[] = {
+		{ .base = NULL, .len = 0 },
+	};
+
+	psa_invec out_vec[] = {
+		{ .base = NULL, .len = 0 },
+	};
+
+	status = tfm_ns_interface_dispatch(
+		(veneer_fn)tfm_tee_softsim_deinit_req_veneer,
+		(uint32_t)in_vec,  IOVEC_LEN(in_vec),
+		(uint32_t)out_vec, IOVEC_LEN(out_vec));
+
+	return status;
+}
+
+static void work_softsim_req(struct k_work *item)
+{
+	int ret;
+
+	struct softsim_req *s_req =
+		CONTAINER_OF(item, struct softsim_req, work);
+
+	switch(s_req->req) {
+	case INIT: {
+		struct softsim_payload payload = {
+			.data_len = NRF_SOFTSIM_PAYLOAD_SIZE
+		};
+
+		ret = tee_softsim_driver_init(&payload);
+
+		modem_softsim_init(ret, s_req->req_id, payload);
+
+		break;
+	}
+	case APDU: {
+		struct softsim_payload payload = {
+			.data_len = NRF_SOFTSIM_PAYLOAD_SIZE
+		};
+
+		ret = tee_softsim_driver_apdu(&s_req->payload, &payload);
+
+		modem_softsim_apdu(ret, s_req->req_id, payload);
+
+		break;
+	}
+	case DEINIT: {
+		/* As per specs, the request may not fail */
+		tee_softsim_driver_deinit();
+
+		modem_softsim_deinit(s_req->req_id);
+
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void nrf_modem_os_softsim_setup(struct nrf_softsim_callbacks cbs)
+{
+	modem_softsim_init = cbs.init;
+	modem_softsim_apdu = cbs.apdu;
+	modem_softsim_deinit = cbs.deinit;
+
+	k_work_init(&softsim_init.work, work_softsim_req);
+	k_work_init(&softsim_apdu.work, work_softsim_req);
+	k_work_init(&softsim_deinit.work, work_softsim_req);
+}
+
+void nrf_modem_os_softsim_defer_req(enum UICCReq req, uint16_t req_id,
+				    uint16_t data_len, uint8_t const *data)
+{
+	switch (req) {
+	case INIT: {
+		softsim_init.req_id = req_id;
+
+		k_work_submit_to_queue(&softsim_work_q, &softsim_init.work);
+
+		break;
+	}
+	case APDU: {
+		softsim_apdu.req_id = req_id;
+		/* todo: use proper real data */
+//		softsim_apdu.payload.data_len = data_len;
+//		memcpy(softsim_apdu.payload.data, data, data_len);
+		softsim_apdu.payload.data_len = 8;
+		memset(softsim_apdu.payload.data, 0, 8);
+
+		k_work_submit_to_queue(&softsim_work_q, &softsim_apdu.work);
+
+		break;
+	}
+	case DEINIT: {
+		softsim_deinit.req_id = req_id;
+
+		k_work_submit_to_queue(&softsim_work_q, &softsim_deinit.work);
+
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
@@ -634,6 +827,9 @@ void nrf_modem_os_init(void)
 	k_work_reschedule(&heap_task.work,
 		K_MSEC(CONFIG_NRF_MODEM_LIB_HEAP_DUMP_PERIOD_MS));
 #endif
+	k_work_queue_start(&softsim_work_q, softsim_stack_area,
+			   K_THREAD_STACK_SIZEOF(softsim_stack_area),
+			   SOFTSIM_PRIORITY, NULL);
 }
 
 int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)
