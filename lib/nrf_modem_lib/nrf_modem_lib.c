@@ -10,6 +10,7 @@
 #include <zephyr/types.h>
 #include <nrfx_ipc.h>
 #include <nrf_modem.h>
+#include <nrf_modem_at.h>
 #include <nrf_modem_platform.h>
 #include <pm_config.h>
 
@@ -82,6 +83,8 @@ static int _nrf_modem_lib_init(const struct device *unused)
 		}
 	}
 	k_mutex_unlock(&slist_mutex);
+
+	(void) nrf_modem_at_init();
 
 	if (IS_ENABLED(CONFIG_NRF_MODEM_LIB_SYS_INIT)) {
 		/* nrf_modem_init() returns values from a different namespace
