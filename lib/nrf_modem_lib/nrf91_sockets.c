@@ -618,16 +618,7 @@ static int nrf91_socket_offload_accept(void *obj, struct sockaddr *addr,
 	if ((addr != NULL) && (addrlen != NULL)) {
 		nrf_addr_ptr = (struct nrf_sockaddr *)&nrf_addr;
 		nrf_addrlen_ptr = &nrf_addrlen;
-
-		/* Workaround for the nrf_modem_lib issue, making `nrf_accept` to
-		 * expect `nrf_addrlen` to be exactly of
-		 * sizeof(struct nrf_sockaddr_in) size for IPv4
-		 */
-		if (*addrlen == sizeof(struct sockaddr_in)) {
-			nrf_addrlen = sizeof(struct nrf_sockaddr_in);
-		} else {
-			nrf_addrlen = sizeof(struct nrf_sockaddr_in6);
-		}
+		nrf_addrlen = sizeof(struct nrf_sockaddr_in6);
 	}
 
 	new_sd = nrf_accept(sd, nrf_addr_ptr, nrf_addrlen_ptr);
