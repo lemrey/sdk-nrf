@@ -194,7 +194,7 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 
 	if (*timeout == 0) {
 		k_yield();
-		return NRF_ETIMEDOUT;
+		return -NRF_ETIMEDOUT;
 	}
 
 	if (*timeout < 0) {
@@ -220,7 +220,7 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 	*timeout = remaining > 0 ? remaining : 0;
 
 	if (*timeout == 0) {
-		return NRF_ETIMEDOUT;
+		return -NRF_ETIMEDOUT;
 	}
 
 	return 0;
