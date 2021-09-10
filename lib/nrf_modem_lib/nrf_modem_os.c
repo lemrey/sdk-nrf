@@ -355,6 +355,139 @@ void nrf_modem_os_errno_set(int err_code)
 	}
 }
 
+
+int nrf_modem_os_errno_get(void)
+{
+	switch (errno) {
+	case 0:
+		return 0;
+		break;
+	case EPERM:
+		return NRF_EPERM;
+		break;
+	case ENOENT:
+		return NRF_ENOENT;
+		break;
+	case EIO:
+		return NRF_EIO;
+		break;
+	case ENOEXEC:
+		return NRF_ENOEXEC;
+		break;
+	case EBADF:
+		return NRF_EBADF;
+		break;
+	case ENOMEM:
+		return NRF_ENOMEM;
+		break;
+	case EACCES:
+		return NRF_EACCES;
+		break;
+	case EFAULT:
+		return NRF_EFAULT;
+		break;
+	case EINVAL:
+		return NRF_EINVAL;
+		break;
+	case EMFILE:
+		return NRF_EMFILE;
+		break;
+	case EAGAIN:
+		return NRF_EAGAIN;
+		break;
+	case EDOM:
+		return NRF_EDOM;
+		break;
+	case EPROTOTYPE:
+		return NRF_EPROTOTYPE;
+		break;
+	case ENOPROTOOPT:
+		return NRF_ENOPROTOOPT;
+		break;
+	case EPROTONOSUPPORT:
+		return NRF_EPROTONOSUPPORT;
+		break;
+	case ESOCKTNOSUPPORT:
+		return NRF_ESOCKTNOSUPPORT;
+		break;
+	case EOPNOTSUPP:
+		return NRF_EOPNOTSUPP;
+		break;
+	case EAFNOSUPPORT:
+		return NRF_EAFNOSUPPORT;
+		break;
+	case EADDRINUSE:
+		return NRF_EADDRINUSE;
+		break;
+	case ENETDOWN:
+		return NRF_ENETDOWN;
+		break;
+	case ENETUNREACH:
+		return NRF_ENETUNREACH;
+		break;
+	case ENETRESET:
+		return NRF_ENETRESET;
+		break;
+	case ECONNRESET:
+		return NRF_ECONNRESET;
+		break;
+	case EISCONN:
+		return NRF_EISCONN;
+		break;
+	case ENOTCONN:
+		return NRF_ENOTCONN;
+		break;
+	case ETIMEDOUT:
+		return NRF_ETIMEDOUT;
+		break;
+	case ECONNREFUSED:
+		return NRF_ECONNREFUSED;
+		break;
+	case ENOBUFS:
+		return NRF_ENOBUFS;
+		break;
+	case EHOSTDOWN:
+		return NRF_EHOSTDOWN;
+		break;
+	case EINPROGRESS:
+		return NRF_EINPROGRESS;
+		break;
+	case EALREADY:
+		return NRF_EALREADY;
+		break;
+	case ECANCELED:
+		return NRF_ECANCELED;
+		break;
+	case ENOKEY:
+		return NRF_ENOKEY;
+		break;
+	case EKEYEXPIRED:
+		return NRF_EKEYEXPIRED;
+		break;
+	case EKEYREVOKED:
+		return NRF_EKEYREVOKED;
+		break;
+	case EKEYREJECTED:
+		return NRF_EKEYREJECTED;
+		break;
+	case EMSGSIZE:
+		return NRF_EMSGSIZE;
+		break;
+	case ECONNABORTED:
+		return NRF_ECONNABORTED;
+		break;
+	default:
+		/* Catch untranslated errnos.
+		 * Log the untranslated errno and return a magic value
+		 * to make sure this situation is clearly distinguishable.
+		 */
+		__ASSERT(false, "Untranslated errno %d for the nrf_modem_lib!", err_code);
+		LOG_ERR("Untranslated errno %d for the nrf_modem_lib!", err_code);
+		return 0xBAADBAAD;
+		break;
+	}
+}
+
 void nrf_modem_os_application_irq_set(void)
 {
 	NVIC_SetPendingIRQ(NRF_MODEM_APPLICATION_IRQ);
