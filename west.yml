@@ -35,6 +35,8 @@ manifest:
       url-base: https://github.com/PelionIoT
     - name: memfault
       url-base: https://github.com/memfault
+    - name: lemrey
+      url-base: https://github.com/lemrey
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -102,9 +104,10 @@ manifest:
       revision: v1.7.99-ncs3-rc2
       path: bootloader/mcuboot
     - name: nrfxlib
+      remote: lemrey
       repo-path: sdk-nrfxlib
       path: nrfxlib
-      revision: fa2bbe65f4e13ba5a0a4e8904beb8926393f4493
+      revision: 46b0fcebddcc9ee8cb146abcee4db97fd79ce00b
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tfm
