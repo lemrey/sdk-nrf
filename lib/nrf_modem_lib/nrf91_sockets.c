@@ -140,9 +140,6 @@ static int z_to_nrf_level(int z_in_level, int *nrf_out_level)
 	case SOL_DFU:
 		*nrf_out_level = NRF_SOL_DFU;
 		break;
-	case SOL_PDN:
-		*nrf_out_level = NRF_SOL_PDN;
-		break;
 	default:
 		retval = -1;
 		break;
@@ -274,23 +271,6 @@ static int z_to_nrf_optname(int z_in_level, int z_in_optname,
 		}
 		break;
 
-	case SOL_PDN:
-		switch (z_in_optname) {
-		case SO_PDN_AF:
-			*nrf_out_optname = NRF_SO_PDN_AF;
-			break;
-		case SO_PDN_CONTEXT_ID:
-			*nrf_out_optname = NRF_SO_PDN_CONTEXT_ID;
-			break;
-		case SO_PDN_STATE:
-			*nrf_out_optname = NRF_SO_PDN_STATE;
-			break;
-		default:
-			retval = -1;
-			break;
-		}
-		break;
-
 	default:
 		retval = -1;
 		break;
@@ -413,8 +393,6 @@ static int nrf_to_z_protocol(int proto)
 		return IPPROTO_UDP;
 	case NRF_SPROTO_TLS1v2:
 		return IPPROTO_TLS_1_2;
-	case NRF_PROTO_PDN:
-		return NPROTO_PDN;
 	case NRF_PROTO_DFU:
 		return NPROTO_DFU;
 	case NRF_PROTO_AT:
@@ -458,8 +436,6 @@ static int z_to_nrf_protocol(int proto)
 		return NRF_PROTO_AT;
 	case NPROTO_DFU:
 		return NRF_PROTO_DFU;
-	case NPROTO_PDN:
-		return NRF_PROTO_PDN;
 	case PROTO_WILDCARD:
 		return 0;
 	/*
@@ -1093,7 +1069,6 @@ static int nrf91_socket_offload_getaddrinfo(const char *node,
 {
 	int error;
 	struct nrf_addrinfo nrf_hints;
-	struct nrf_addrinfo nrf_hints_pdn;
 	struct nrf_addrinfo *nrf_res = NULL;
 	struct nrf_addrinfo *nrf_hints_ptr = NULL;
 	static K_MUTEX_DEFINE(getaddrinfo_lock);
@@ -1107,17 +1082,6 @@ static int nrf91_socket_offload_getaddrinfo(const char *node,
 		} else if (error == -EAFNOSUPPORT) {
 			return DNS_EAI_ADDRFAMILY;
 		}
-
-		if (hints->ai_next != NULL) {
-			z_to_nrf_addrinfo_hints(hints->ai_next, &nrf_hints_pdn);
-			if (error == -EPROTONOSUPPORT) {
-				return DNS_EAI_SOCKTYPE;
-			} else if (error == -EAFNOSUPPORT) {
-				return DNS_EAI_ADDRFAMILY;
-			}
-			nrf_hints.ai_next = &nrf_hints_pdn;
-		}
-		nrf_hints_ptr = &nrf_hints;
 	}
 
 	k_mutex_lock(&getaddrinfo_lock, K_FOREVER);
