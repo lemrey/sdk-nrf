@@ -1103,6 +1103,7 @@ static int nrf91_socket_offload_getaddrinfo(const char *node,
 		} else if (error == -EAFNOSUPPORT) {
 			return DNS_EAI_ADDRFAMILY;
 		}
+		nrf_hints_ptr = &nrf_hints;
 	}
 
 	k_mutex_lock(&getaddrinfo_lock, K_FOREVER);
