@@ -269,12 +269,7 @@ static int init_app(void)
 		return -1;
 	}
 
-	/* Initialize and configure GNSS */
-	if (nrf_modem_gnss_init() != 0) {
-		printk("Failed to initialize GNSS interface\n");
-		return -1;
-	}
-
+	/* Configure GNSS */
 	if (nrf_modem_gnss_event_handler_set(gnss_event_handler) != 0) {
 		printk("Failed to set GNSS event handler\n");
 		return -1;
