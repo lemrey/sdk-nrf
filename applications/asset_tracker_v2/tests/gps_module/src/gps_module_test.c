@@ -263,7 +263,6 @@ static void setup_gps_module_in_init_state(void)
 	__wrap_at_cmd_write_AddCallback(&validate_at_cmd_write);
 	__wrap_at_cmd_write_ExpectAnyArgsAndReturn(0);
 	__wrap_at_cmd_write_ExpectAnyArgsAndReturn(0);
-	__wrap_nrf_modem_gnss_init_ExpectAndReturn(0);
 	__wrap_nrf_modem_gnss_event_handler_set_AddCallback(
 		&nrf_modem_gnss_event_handler_set_callback);
 	__wrap_nrf_modem_gnss_event_handler_set_ExpectAnyArgsAndReturn(0);
