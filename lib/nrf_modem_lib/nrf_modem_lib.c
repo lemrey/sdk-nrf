@@ -31,6 +31,12 @@ static sys_slist_t shutdown_threads;
 static bool first_time_init;
 static struct k_mutex slist_mutex;
 
+/* AT filter */
+#ifdef CONFIG_NRF_MODEM_LIB_AT_CMD_FILTER
+extern int nrf_modem_at_cmd_filter_init(void);
+extern int nrf_modem_at_cmd_filter_deinit(void);
+#endif /* CONFIG_NRF_MODEM_LIB_AT_CMD_FILTER */
+
 static int init_ret;
 
 static const nrf_modem_init_params_t init_params = {
@@ -83,6 +89,15 @@ static int _nrf_modem_lib_init(const struct device *unused)
 	}
 	k_mutex_unlock(&slist_mutex);
 
+	if (IS_ENABLED(CONFIG_NRF_MODEM_LIB_AT_CMD_FILTER)) {
+		int err;
+
+		err = nrf_modem_at_cmd_filter_init();
+		if (err) {
+			return err;
+		}
+	}
+
 	if (IS_ENABLED(CONFIG_NRF_MODEM_LIB_SYS_INIT)) {
 		/* nrf_modem_init() returns values from a different namespace
 		 * than Zephyr's. Make sure to return something in Zephyr's
@@ -130,7 +145,12 @@ int nrf_modem_lib_shutdown(void)
 {
 #ifdef CONFIG_LTE_LINK_CONTROL
 	lte_lc_deinit();
-#endif
+#endif /* CONFIG_LTE_LINK_CONTROL */
+
+	if (IS_ENABLED(CONFIG_NRF_MODEM_LIB_AT_CMD_FILTER)) {
+		nrf_modem_at_cmd_filter_deinit();
+	}
+
 	nrf_modem_shutdown();
 
 	return 0;
