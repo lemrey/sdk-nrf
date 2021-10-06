@@ -32,8 +32,10 @@ static bool first_time_init;
 static struct k_mutex slist_mutex;
 
 /* AT filter */
+#ifdef CONFIG_NRF_MODEM_LIB_AT_CMD_FILTER
 extern int nrf_modem_at_cmd_filter_init(void);
 extern int nrf_modem_at_cmd_filter_deinit(void);
+#endif /* CONFIG_NRF_MODEM_LIB_AT_CMD_FILTER */
 
 static int init_ret;
 
