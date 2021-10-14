@@ -370,7 +370,7 @@ bool nrf_modem_os_is_in_isr(void)
 	return k_is_in_isr();
 }
 
-#define NRF_MODEM_OS_SEM_MAX 2
+#define NRF_MODEM_OS_SEM_MAX 3
 static struct k_sem nrf_modem_os_sems[NRF_MODEM_OS_SEM_MAX];
 
 int nrf_modem_os_sem_init(void **sem,
