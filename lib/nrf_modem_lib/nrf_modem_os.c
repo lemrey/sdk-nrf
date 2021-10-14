@@ -660,16 +660,27 @@ const char *nrf_modem_os_log_strdup(const char *str)
 void nrf_modem_os_log(int level, const char *fmt, ...)
 {
 	if (IS_ENABLED(CONFIG_LOG)) {
-		struct log_msg_ids src_level = {
-			.level = log_level_lu(level),
-			.domain_id = CONFIG_LOG_DOMAIN_ID,
-			.source_id = LOG_CURRENT_MODULE_ID()
-		};
+		uint16_t lev = log_level_lu(level);
 
 		va_list ap;
 
 		va_start(ap, fmt);
-		log_generic(src_level, fmt, ap, LOG_STRDUP_SKIP);
+
+		if (IS_ENABLED(CONFIG_LOG_MINIMAL)) {
+			/* Fallback to minimal implementation. */
+			/* Based on Zephyr's. */
+			printk("%c: ", z_log_minimal_level_to_char(lev));
+			vprintk(fmt, ap);
+			printk("\n");
+		} else {
+			struct log_msg_ids src_level = {
+				.level = lev,
+				.domain_id = CONFIG_LOG_DOMAIN_ID,
+				.source_id = LOG_CURRENT_MODULE_ID()
+			};
+
+			log_generic(src_level, fmt, ap, LOG_STRDUP_SKIP);
+		}
 		va_end(ap);
 	}
 }
@@ -677,12 +688,23 @@ void nrf_modem_os_log(int level, const char *fmt, ...)
 void nrf_modem_os_logdump(int level, const char *str, const void *data, size_t len)
 {
 	if (IS_ENABLED(CONFIG_LOG)) {
-		struct log_msg_ids src_level = {
-			.level = log_level_lu(level),
-			.domain_id = CONFIG_LOG_DOMAIN_ID,
-			.source_id = LOG_CURRENT_MODULE_ID()
-		};
-		log_hexdump(str, data, len, src_level);
+		uint16_t lev = log_level_lu(level);
+
+		if (IS_ENABLED(CONFIG_LOG_MINIMAL)) {
+			/* Fallback to minimal implementation. */
+			/* Based on Zephyr's. */
+			printk("%c: %s\n",
+			       z_log_minimal_level_to_char(lev),
+			       str);
+			z_log_minimal_hexdump_print(lev, data, len);
+		} else {
+			struct log_msg_ids src_level = {
+				.level = lev,
+				.domain_id = CONFIG_LOG_DOMAIN_ID,
+				.source_id = LOG_CURRENT_MODULE_ID()
+			};
+			log_hexdump(str, data, len, src_level);
+		}
 	}
 }
 
