@@ -43,7 +43,8 @@ extern "C" {
  *
  * @param[in] mode Library mode.
  *
- * @return int Zero on success, non-zero otherwise.
+ * @retval Zero on success.
+ * @retval A negative errno on failiure.
  */
 int nrf_modem_lib_init(enum nrf_modem_mode_t mode);
 
@@ -62,14 +63,15 @@ void nrf_modem_lib_shutdown_wait(void);
  * nrf_modem_lib_init. This can be used to check the state of a modem
  * firmware exchange when the Modem library was initialized at boot-time.
  *
- * @return int The last return value of nrf_modem_lib_init.
+ * @retval The last return value of @ref nrf_modem_lib_init().
  */
 int nrf_modem_lib_get_init_ret(void);
 
 /**
  * @brief Shutdown the Modem library, releasing its resources.
  *
- * @return int Zero on success, non-zero otherwise.
+ * @retval Zero on success.
+ * @retval A negative value errno on failiure.
  */
 int nrf_modem_lib_shutdown(void);
 
