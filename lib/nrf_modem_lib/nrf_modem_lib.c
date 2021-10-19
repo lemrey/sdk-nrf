@@ -131,12 +131,25 @@ int nrf_modem_lib_get_init_ret(void)
 
 int nrf_modem_lib_shutdown(void)
 {
-#ifdef CONFIG_LTE_LINK_CONTROL
-	lte_lc_deinit();
-#endif
-	nrf_modem_shutdown();
+	int err = 0;
+	int err_temp;
 
-	return 0;
+#ifdef CONFIG_LTE_LINK_CONTROL
+	err = lte_lc_deinit();
+	if (err) {
+		LOG_ERR("LTE LC deinit failed, error: %d", err);
+	}
+
+#endif /* CONFIG_LTE_LINK_CONTROL */
+
+	/* Do not overwrite lte_lc_deinit error */
+	err_temp = nrf_modem_shutdown();
+	if (err_temp) {
+		LOG_ERR("Modem shutdown failed, error: %d", err);
+		err = (err == 0 ? err_temp : err);
+	}
+
+	return err;
 }
 
 #if defined(CONFIG_NRF_MODEM_LIB_SYS_INIT)
