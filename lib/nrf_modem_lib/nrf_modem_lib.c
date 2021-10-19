@@ -12,6 +12,7 @@
 #include <nrf_modem.h>
 #include <nrf_modem_platform.h>
 #include <pm_config.h>
+#include <logging/log.h>
 
 #ifdef CONFIG_LTE_LINK_CONTROL
 #include <modem/lte_lc.h>
@@ -21,6 +22,8 @@
 #error  nrf_modem_lib must be run as non-secure firmware.\
 	Are you building for the correct board ?
 #endif
+
+LOG_MODULE_REGISTER(nrf_modem_lib, CONFIG_NRF_MODEM_LIB_LOG_LEVEL);
 
 struct shutdown_thread {
 	sys_snode_t node;
