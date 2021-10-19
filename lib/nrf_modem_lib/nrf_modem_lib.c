@@ -120,7 +120,8 @@ int nrf_modem_lib_init(enum nrf_modem_mode_t mode)
 	if (mode == NORMAL_MODE) {
 		return _nrf_modem_lib_init(NULL);
 	} else {
-		return nrf_modem_init(&init_params, FULL_DFU_MODE);
+		init_ret = nrf_modem_init(&init_params, FULL_DFU_MODE);
+		return init_ret;
 	}
 }
 
