@@ -25,22 +25,6 @@
 #include <SEGGER_RTT.h>
 #endif
 
-#ifndef ENOKEY
-#define ENOKEY 2001
-#endif
-
-#ifndef EKEYEXPIRED
-#define EKEYEXPIRED 2002
-#endif
-
-#ifndef EKEYREVOKED
-#define EKEYREVOKED 2003
-#endif
-
-#ifndef EKEYREJECTED
-#define EKEYREJECTED 2004
-#endif
-
 #define UNUSED_FLAGS 0
 
 /* Handle modem traces from IRQ context with lower priority. */
@@ -236,133 +220,17 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 	return 0;
 }
 
+/* Set OS errno from modem library.
+ *
+ * Note: The nrf_errnos are aligned with the libc minimal errnos used in Zephyr. Hence,
+ *       we set the errno directly to the error code. A translation table is required if
+ *       the os errnos does not align with the nrf_errnos. See @ref nrf_errno.h for a list
+ *       of all errnos required. When adding a translation table, the errno_sanity.c file
+ *       could be removed.
+ */
 void nrf_modem_os_errno_set(int err_code)
 {
-	switch (err_code) {
-	case NRF_EPERM:
-		errno = EPERM;
-		break;
-	case NRF_ENOENT:
-		errno = ENOENT;
-		break;
-	case NRF_EIO:
-		errno = EIO;
-		break;
-	case NRF_ENOEXEC:
-		errno = ENOEXEC;
-		break;
-	case NRF_EBADF:
-		errno = EBADF;
-		break;
-	case NRF_ENOMEM:
-		errno = ENOMEM;
-		break;
-	case NRF_EACCES:
-		errno = EACCES;
-		break;
-	case NRF_EFAULT:
-		errno = EFAULT;
-		break;
-	case NRF_EINVAL:
-		errno = EINVAL;
-		break;
-	case NRF_EMFILE:
-		errno = EMFILE;
-		break;
-	case NRF_EAGAIN:
-		errno = EAGAIN;
-		break;
-	case NRF_EDOM:
-		errno = EDOM;
-		break;
-	case NRF_EPROTOTYPE:
-		errno = EPROTOTYPE;
-		break;
-	case NRF_ENOPROTOOPT:
-		errno = ENOPROTOOPT;
-		break;
-	case NRF_EPROTONOSUPPORT:
-		errno = EPROTONOSUPPORT;
-		break;
-	case NRF_ESOCKTNOSUPPORT:
-		errno = ESOCKTNOSUPPORT;
-		break;
-	case NRF_EOPNOTSUPP:
-		errno = EOPNOTSUPP;
-		break;
-	case NRF_EAFNOSUPPORT:
-		errno = EAFNOSUPPORT;
-		break;
-	case NRF_EADDRINUSE:
-		errno = EADDRINUSE;
-		break;
-	case NRF_ENETDOWN:
-		errno = ENETDOWN;
-		break;
-	case NRF_ENETUNREACH:
-		errno = ENETUNREACH;
-		break;
-	case NRF_ENETRESET:
-		errno = ENETRESET;
-		break;
-	case NRF_ECONNRESET:
-		errno = ECONNRESET;
-		break;
-	case NRF_EISCONN:
-		errno = EISCONN;
-		break;
-	case NRF_ENOTCONN:
-		errno = ENOTCONN;
-		break;
-	case NRF_ETIMEDOUT:
-		errno = ETIMEDOUT;
-		break;
-	case NRF_ECONNREFUSED:
-		errno = ECONNREFUSED;
-		break;
-	case NRF_ENOBUFS:
-		errno = ENOBUFS;
-		break;
-	case NRF_EHOSTDOWN:
-		errno = EHOSTDOWN;
-		break;
-	case NRF_EINPROGRESS:
-		errno = EINPROGRESS;
-		break;
-	case NRF_EALREADY:
-		errno = EALREADY;
-		break;
-	case NRF_ECANCELED:
-		errno = ECANCELED;
-		break;
-	case NRF_ENOKEY:
-		errno = ENOKEY;
-		break;
-	case NRF_EKEYEXPIRED:
-		errno = EKEYEXPIRED;
-		break;
-	case NRF_EKEYREVOKED:
-		errno = EKEYREVOKED;
-		break;
-	case NRF_EKEYREJECTED:
-		errno = EKEYREJECTED;
-		break;
-	case NRF_EMSGSIZE:
-		errno = EMSGSIZE;
-		break;
-	case NRF_ECONNABORTED:
-		errno = ECONNABORTED;
-		break;
-	default:
-		/* Catch untranslated errnos.
-		 * Log the untranslated errno and return a magic value
-		 * to make sure this situation is clearly distinguishable.
-		 */
-		__ASSERT(false, "Untranslated errno %d set by nrf_modem_lib!", err_code);
-		LOG_ERR("Untranslated errno %d set by nrf_modem_lib!", err_code);
-		errno = 0xBAADBAAD;
-		break;
-	}
+	errno = err_code;
 }
 
 bool nrf_modem_os_is_in_isr(void)
