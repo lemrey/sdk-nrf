@@ -8,6 +8,7 @@
 #include <string.h>
 #include <init.h>
 #include <zephyr.h>
+#include <nrf_modem.h>
 #include <nrf_modem_os.h>
 #include <nrf_modem_platform.h>
 #include <nrf.h>
@@ -306,7 +307,7 @@ ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
 {
 	atomic_inc(&rpc_event_cnt);
 
-	nrf_modem_os_application_irq_handler();
+	nrf_modem_application_irq_handler();
 
 	struct sleeping_thread *thread;
 
@@ -327,7 +328,7 @@ ISR_DIRECT_DECLARE(trace_proxy_irq_handler)
 	 * Process traces.
 	 * The function has to be called even if UART traces are disabled.
 	 */
-	nrf_modem_os_trace_irq_handler();
+	nrf_modem_trace_irq_handler();
 	ISR_DIRECT_PM(); /* PM done after servicing interrupt for best latency
 			  */
 	return 1; /* We should check if scheduling decision should be made */
