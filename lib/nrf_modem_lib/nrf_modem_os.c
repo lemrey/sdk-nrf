@@ -628,6 +628,8 @@ void nrf_modem_os_init(void)
 
 int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)
 {
+	int err;
+
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_MEDIUM_UART
 	/* Max DMA transfers are 255 bytes.
 	 * Split RAM buffer into smaller chunks
@@ -649,6 +651,10 @@ int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)
 	 * allocated for the modem trace
 	 */
 	if (trace_rtt_channel < 0) {
+		err = nrf_modem_trace_processed_callback(data, len);
+
+		__ASSERT(err == 0, "nrf_modem_trace_processed_callback returns error");
+
 		return 0;
 	}
 
@@ -663,5 +669,9 @@ int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)
 		remaining_bytes -= transfer_len;
 	}
 #endif
+	err = nrf_modem_trace_processed_callback(data, len);
+
+	__ASSERT(err == 0, "nrf_modem_trace_processed_callback returns error");
+
 	return 0;
 }
