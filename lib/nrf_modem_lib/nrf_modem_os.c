@@ -567,12 +567,19 @@ void nrf_modem_os_init(void)
 
 int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)
 {
-#ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
-	int err = nrf_modem_lib_trace_process(data, len);
+	int err;
 
-	if (err != 0) {
-		LOG_ERR("nrf_modem_lib_trace_process returns %d", err);
+#ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
+	err = nrf_modem_lib_trace_process(data, len);
+	if (err) {
+		LOG_ERR("nrf_modem_lib_trace_process failed, err %d", err);
 	}
 #endif
+
+	err = nrf_modem_trace_processed_callback(data, len);
+	if (err) {
+		LOG_ERR("nrf_modem_trace_processed_callback failed, err %d", err);
+	}
+
 	return 0;
 }
