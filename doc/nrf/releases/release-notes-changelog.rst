@@ -476,6 +476,10 @@ Libraries for networking
 
   * Updated to v0.21.0. See the :ref:`liblwm2m_carrier_changelog` for detailed information.
 
+* :ref:`lib_dfu_target` library:
+
+  * Updated the implementation of modem delta upgrades in the DFU target library to use the new socketless interface provided by the :ref:`nrf_modem`.
+
 Libraries for NFC
 -----------------
 
