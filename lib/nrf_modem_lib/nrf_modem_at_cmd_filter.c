@@ -265,7 +265,6 @@ static int at_cmd_filter_cmgw(char *buf, size_t len, const char *at_cmd)
 			/* Make AT response. */
 			return response_buffer_fill(buf, len,
 					"+CMGW: %d\r\nOK\r\n", i+1);
-			return 0;
 		}
 	}
 
