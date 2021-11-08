@@ -158,7 +158,7 @@ static int load_segments(const struct device *fdev, uint8_t *meta_buf,
 			err = nrf_modem_full_dfu_verify(wrapper_len,
 							(void *)meta_buf);
 			if (err != 0) {
-				LOG_ERR("nrf_fmfu_verify_signature failed, err: %d",err);
+				LOG_ERR("nrf_fmfu_verify_signature failed, err: %d", err);
 				return err;
 			}
 #else
