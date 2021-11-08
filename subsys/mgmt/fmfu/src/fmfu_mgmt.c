@@ -159,8 +159,7 @@ static int fmfu_firmware_upload(struct mgmt_ctxt *ctx)
 							 packet.data_len,
 							 packet.data);
 			if (rc != 0) {
-				LOG_ERR("Error in writing data,"
-					" err: %d", rc);
+				LOG_ERR("Error in writing data, err: %d", rc);
 				return MGMT_ERR_EBADSTATE;
 			}
 		}
