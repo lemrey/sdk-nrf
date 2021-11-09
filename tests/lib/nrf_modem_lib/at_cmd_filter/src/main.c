@@ -34,7 +34,7 @@ static void test_at_cmd_filter_setup(void)
 		err = nrf_modem_at_cmd(response, sizeof(response), "AT+CEREG?");
 		zassert_equal(0, err, "nrf_modem_at_printf failed, error: %d", err);
 
-		err = sscanf(response, "+CEREG: %d,%d", &err, &connected);
+		err = sscanf(response, "\r\n+CEREG: %d,%d", &err, &connected);
 		zassert_equal(2, err, "sscanf failed, error: %d", err);
 		retries--;
 		if (retries == 0) {
@@ -54,16 +54,17 @@ static void test_at_cmd_filter_cmd_cpms(void)
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CPMS=\"TA\",\"TA\"");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CPMS: 0,3,0,3", strlen("+CPMS: 0,3,0,3"), NULL);
+	zassert_mem_equal(response, "\r\n+CPMS: 0,3,0,3", strlen("\r\n+CPMS: 0,3,0,3"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CPMS?");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CPMS: \"TA\",0,3,\"TA\",0,3",
-			strlen("+CPMS: \"TA\",0,3,\"TA\",0,3"), NULL);
+	zassert_mem_equal(response, "\r\n+CPMS: \"TA\",0,3,\"TA\",0,3",
+			strlen("\r\n+CPMS: \"TA\",0,3,\"TA\",0,3"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CPMS=?");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CPMS: (\"TA\"),(\"TA\")", strlen("+CPMS: (\"TA\"),(\"TA\")"),
+	zassert_mem_equal(response, "\r\n+CPMS: (\"TA\"),(\"TA\")",
+			strlen("\r\n+CPMS: (\"TA\"),(\"TA\")"),
 			NULL);
 }
 
@@ -73,19 +74,19 @@ static void test_at_cmd_filter_cmd_csms(void)
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS=0");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSMS: 1,1,0", strlen("+CSMS: 1,1,0"), NULL);
+	zassert_mem_equal(response, "\r\n+CSMS: 1,1,0", strlen("\r\n+CSMS: 1,1,0"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS=1");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSMS: 0,0,0", strlen("+CSMS: 0,0,0"), NULL);
+	zassert_mem_equal(response, "\r\n+CSMS: 0,0,0", strlen("\r\n+CSMS: 0,0,0"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS?");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSMS: 0,1,1,0", strlen("+CSMS: 0,1,1,0"), NULL);
+	zassert_mem_equal(response, "\r\n+CSMS: 0,1,1,0", strlen("\r\n+CSMS: 0,1,1,0"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS=?");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSMS: 0", strlen("+CSMS: 0"), NULL);
+	zassert_mem_equal(response, "\r\n+CSMS: 0", strlen("\r\n+CSMS: 0"), NULL);
 }
 
 static void test_at_cmd_filter_cmd_csca(void)
@@ -94,11 +95,12 @@ static void test_at_cmd_filter_cmd_csca(void)
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSCA=\"+358501234567\"");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSMS: OK", strlen("+CSMS: OK"), NULL);
+	zassert_mem_equal(response, "\r\n+CSMS: OK", strlen("\r\n+CSMS: OK"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSCA?");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSMS: \"+358501234567\"", strlen("+CSMS: \"+358501234567\""),
+	zassert_mem_equal(response, "\r\n+CSMS: \"+358501234567\"",
+			strlen("\r\n+CSMS: \"+358501234567\""),
 			NULL);
 }
 
@@ -108,11 +110,11 @@ static void test_at_cmd_filter_cmd_cmgd(void)
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGD=2");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSGD: OK", strlen("+CSGD: OK"), NULL);
+	zassert_mem_equal(response, "\r\nOK", strlen("\r\nOK"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGD=?");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CMGD: (1-3)", strlen("+CMGD: (1-3)"), NULL);
+	zassert_mem_equal(response, "\r\n+CMGD: (1-3)", strlen("\r\n+CMGD: (1-3)"), NULL);
 }
 
 static void test_at_cmd_filter_cmd_cmgw(void)
@@ -121,11 +123,11 @@ static void test_at_cmd_filter_cmd_cmgw(void)
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CMGW: 1", strlen("+CMGW: 1"), NULL);
+	zassert_mem_equal(response, "\r\n+CMGW: 1", strlen("\r\n+CMGW: 1"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CMGW: 2", strlen("+CMGW: 2"), NULL);
+	zassert_mem_equal(response, "\r\n+CMGW: 2", strlen("\r\n+CMGW: 2"), NULL);
 }
 
 static void test_at_cmd_filter_cmd_cmss(void)
@@ -142,15 +144,15 @@ static void test_at_cmd_filter_cmd_cmgw_cmgd(void)
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGD=2");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CSGD: OK", strlen("+CSGD: OK"), NULL);
+	zassert_mem_equal(response, "\r\nOK", strlen("\r\nOK"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CMGW: 2", strlen("+CMGW: 2"), NULL);
+	zassert_mem_equal(response, "\r\n+CMGW: 2", strlen("\r\n+CMGW: 2"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "+CMGW: 3", strlen("+CMGW: 3"), NULL);
+	zassert_mem_equal(response, "\r\n+CMGW: 3", strlen("\r\n+CMGW: 3"), NULL);
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
 	zassert_equal(1<<16, err, "nrf_modem_at_cmd failed, error: %d", err);
