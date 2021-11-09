@@ -72,6 +72,7 @@ Kconfig*                                  @tejlmand
 /lib/at_host/                             @rlubos
 /lib/at_monitor/                          @emdi @rlubos
 /lib/at_notif/                            @rlubos
+/lib/at_sms_cert/                         @eivindj-nordic
 /lib/agps/                                @jtguggedal @simensrostad
 /lib/nrf_modem_lib/                       @rlubos
 /lib/edge_impulse/                        @pdunaj
@@ -164,7 +165,7 @@ Kconfig*                                  @tejlmand
 /tests/bluetooth/tester/                  @carlescufi @trond-snekvik
 /tests/drivers/flash_nop_device/          @de-nordic
 /tests/lib/edge_impulse/                  @pdunaj @MarekPieta
-/tests/lib/nrf_modem_lib/at_cmd_filter/   @eivindj-nordic
+/tests/lib/at_sms_cert/                   @eivindj-nordic
 /tests/lib/hw_unique_key*/                @oyvindronningstad @Vge0rge
 /tests/lib/modem_jwt/                     @SeppoTakalo
 /tests/modules/tfm/                       @hakonfam

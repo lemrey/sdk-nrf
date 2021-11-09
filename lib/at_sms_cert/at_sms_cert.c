@@ -15,7 +15,7 @@
 #include <nrf_modem_at.h>
 #include <logging/log.h>
 
-LOG_MODULE_DECLARE(nrf_modem_lib);
+LOG_MODULE_REGISTER(at_sms_cert, CONFIG_AT_SMS_CERT_LOG_LEVEL);
 
 /* Buffer size for SMS messages. */
 #define SMS_BUFFER_LIST_SIZE (3)
@@ -37,26 +37,26 @@ static struct sms_buffer sms_buffer_list[SMS_BUFFER_LIST_SIZE];
 static char sca_buff[SCA_BUFFER_SIZE];
 
 /* AT filter function declarations. */
-static int at_cmd_filter_cpms(char *buf, size_t len, const char *at_cmd);
-static int at_cmd_filter_csms(char *buf, size_t len, const char *at_cmd);
-static int at_cmd_filter_csca(char *buf, size_t len, const char *at_cmd);
-static int at_cmd_filter_cscs(char *buf, size_t len, const char *at_cmd);
-static int at_cmd_filter_cmgd(char *buf, size_t len, const char *at_cmd);
-static int at_cmd_filter_cmss(char *buf, size_t len, const char *at_cmd);
-static int at_cmd_filter_cmgw(char *buf, size_t len, const char *at_cmd);
+static int at_cmd_callback_cpms(char *buf, size_t len, const char *at_cmd);
+static int at_cmd_callback_csms(char *buf, size_t len, const char *at_cmd);
+static int at_cmd_callback_csca(char *buf, size_t len, const char *at_cmd);
+static int at_cmd_callback_cscs(char *buf, size_t len, const char *at_cmd);
+static int at_cmd_callback_cmgd(char *buf, size_t len, const char *at_cmd);
+static int at_cmd_callback_cmss(char *buf, size_t len, const char *at_cmd);
+static int at_cmd_callback_cmgw(char *buf, size_t len, const char *at_cmd);
 
 /* AT filter lits
  * Including all comands the filter should check for and function ptr
  * to functions to be called on detection.
  */
 static const struct nrf_modem_at_cmd_filter at_cmd_filter_list[] = {
-	{"AT+CPMS", &at_cmd_filter_cpms},
-	{"AT+CSMS", &at_cmd_filter_csms},
-	{"AT+CSCA", &at_cmd_filter_csca},
-	{"AT+CSCS", &at_cmd_filter_cscs},
-	{"AT+CMGD", &at_cmd_filter_cmgd},
-	{"AT+CMSS", &at_cmd_filter_cmss},
-	{"AT+CMGW", &at_cmd_filter_cmgw}
+	{"AT+CPMS", &at_cmd_callback_cpms},
+	{"AT+CSMS", &at_cmd_callback_csms},
+	{"AT+CSCA", &at_cmd_callback_csca},
+	{"AT+CSCS", &at_cmd_callback_cscs},
+	{"AT+CMGD", &at_cmd_callback_cmgd},
+	{"AT+CMSS", &at_cmd_callback_cmss},
+	{"AT+CMGW", &at_cmd_callback_cmgw}
 };
 
 /* Match string. */
@@ -90,7 +90,7 @@ static int response_buffer_fill(char *buf, size_t len,
  * AT Filter callback functions.
  */
 
-static int at_cmd_filter_cpms(char *buf, size_t len, const char *at_cmd)
+static int at_cmd_callback_cpms(char *buf, size_t len, const char *at_cmd)
 {
 	int sms_storage_used = 0;
 
@@ -148,7 +148,7 @@ static int at_cmd_filter_cpms(char *buf, size_t len, const char *at_cmd)
 	return response_buffer_fill(buf, len, "ERROR\r\n");
 }
 
-static int at_cmd_filter_csms(char *buf, size_t len, const char *at_cmd)
+static int at_cmd_callback_csms(char *buf, size_t len, const char *at_cmd)
 {
 	/* Test */
 	if (match_string("AT+CSMS=?", at_cmd)) {
@@ -171,7 +171,7 @@ static int at_cmd_filter_csms(char *buf, size_t len, const char *at_cmd)
 	return response_buffer_fill(buf, len, "ERROR\r\n");
 }
 
-static int at_cmd_filter_csca(char *buf, size_t len, const char *at_cmd)
+static int at_cmd_callback_csca(char *buf, size_t len, const char *at_cmd)
 {
 	/* Set */
 	if (match_string("AT+CSCA=", at_cmd)) {
@@ -189,7 +189,7 @@ static int at_cmd_filter_csca(char *buf, size_t len, const char *at_cmd)
 	return response_buffer_fill(buf, len, "ERROR\r\n");
 }
 
-static int at_cmd_filter_cscs(char *buf, size_t len, const char *at_cmd)
+static int at_cmd_callback_cscs(char *buf, size_t len, const char *at_cmd)
 {
 	/* Set */
 	if (match_string("AT+CSCS=", at_cmd)) {
@@ -201,7 +201,7 @@ static int at_cmd_filter_cscs(char *buf, size_t len, const char *at_cmd)
 	return response_buffer_fill(buf, len, "ERROR\r\n");
 }
 
-static int at_cmd_filter_cmgd(char *buf, size_t len, const char *at_cmd)
+static int at_cmd_callback_cmgd(char *buf, size_t len, const char *at_cmd)
 {
 	/* Test */
 	if (match_string("AT+CMGD=?", at_cmd)) {
@@ -223,7 +223,7 @@ static int at_cmd_filter_cmgd(char *buf, size_t len, const char *at_cmd)
 	return response_buffer_fill(buf, len, "ERROR\r\n");
 }
 
-static int at_cmd_filter_cmss(char *buf, size_t len, const char *at_cmd)
+static int at_cmd_callback_cmss(char *buf, size_t len, const char *at_cmd)
 {
 	int err;
 	int sms_buffer_index;
@@ -258,7 +258,7 @@ static int at_cmd_filter_cmss(char *buf, size_t len, const char *at_cmd)
 	return err;
 }
 
-static int at_cmd_filter_cmgw(char *buf, size_t len, const char *at_cmd)
+static int at_cmd_callback_cmgw(char *buf, size_t len, const char *at_cmd)
 {
 	char *s1 = NULL;
 	char *s2 = NULL;
@@ -298,9 +298,12 @@ static int at_cmd_filter_cmgw(char *buf, size_t len, const char *at_cmd)
 
 /* Initialize AT filter
  */
-int nrf_modem_at_cmd_filter_init(void)
+int at_sms_cert_init(const struct device *unused)
 {
 	int err;
+
+	(void)unused;
+	LOG_INF("IN INIT");
 
 	err = nrf_modem_at_cmd_filter_set(at_cmd_filter_list, ARRAY_SIZE(at_cmd_filter_list));
 	if (err) {
@@ -316,7 +319,7 @@ int nrf_modem_at_cmd_filter_init(void)
 
 /* Deinitialize AT filter
  */
-int nrf_modem_at_cmd_filter_deinit(void)
+int at_sms_cert_deinit(void)
 {
 	int err;
 
@@ -327,3 +330,8 @@ int nrf_modem_at_cmd_filter_deinit(void)
 
 	return 0;
 }
+
+#if defined(CONFIG_AT_SMS_CERT_SYS_INIT)
+/* Initialize during SYS_INIT */
+SYS_INIT(at_sms_cert_init, POST_KERNEL, 0);
+#endif
