@@ -45,9 +45,6 @@ static int at_cmd_filter_cmgd(char *buf, size_t len, const char *at_cmd);
 static int at_cmd_filter_cmss(char *buf, size_t len, const char *at_cmd);
 static int at_cmd_filter_cmgw(char *buf, size_t len, const char *at_cmd);
 
-/* Number of at_cmd_filter instances in at_cmd_filter_list. */
-#define AT_CMD_FILTER_LIST_SIZE (6)
-
 /* AT filter lits
  * Including all comands the filter should check for and function ptr
  * to functions to be called on detection.
@@ -305,7 +302,7 @@ int nrf_modem_at_cmd_filter_init(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd_filter_set(at_cmd_filter_list, AT_CMD_FILTER_LIST_SIZE);
+	err = nrf_modem_at_cmd_filter_set(at_cmd_filter_list, ARRAY_SIZE(at_cmd_filter_list));
 	if (err) {
 		return err;
 	}
