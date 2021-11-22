@@ -35,6 +35,10 @@ manifest:
       url-base: https://github.com/PelionIoT
     - name: memfault
       url-base: https://github.com/memfault
+    - name: lemrey
+      url-base: https://github.com/lemrey
+    - name: MirkoCovizzi
+      url-base: https://github.com/MirkoCovizzi
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -53,8 +57,9 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/introduction/index.html
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
+      remote: MirkoCovizzi
       repo-path: sdk-zephyr
-      revision: 55d771849cc1b6bd44c10431ae69a1aa7077cb6c
+      revision: tfm-sample
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -108,7 +113,8 @@ manifest:
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tfm
-      revision: f9884923ea99cd96d47432b4fa04eb760cc2fa1a
+      remote: MirkoCovizzi
+      revision: tfm-sample
     - name: tfm-mcuboot # This is used by the trusted-firmware-m module.
       repo-path: sdk-mcuboot
       path: modules/tee/tfm-mcuboot
