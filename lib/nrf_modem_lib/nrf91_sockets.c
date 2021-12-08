@@ -322,8 +322,6 @@ static int z_to_nrf_family(sa_family_t z_family)
 		return NRF_AF_INET;
 	case AF_INET6:
 		return NRF_AF_INET6;
-	case AF_LTE:
-		return NRF_AF_LTE;
 	case AF_PACKET:
 		return NRF_AF_PACKET;
 	case AF_UNSPEC:
@@ -340,8 +338,6 @@ static int nrf_to_z_family(nrf_socket_family_t nrf_family)
 		return AF_INET;
 	case NRF_AF_INET6:
 		return AF_INET6;
-	case NRF_AF_LTE:
-		return AF_LTE;
 	case NRF_AF_PACKET:
 		return AF_PACKET;
 	case NRF_AF_UNSPEC:
@@ -360,8 +356,6 @@ static int nrf_to_z_protocol(int proto)
 		return IPPROTO_UDP;
 	case NRF_SPROTO_TLS1v2:
 		return IPPROTO_TLS_1_2;
-	case NRF_PROTO_AT:
-		return NPROTO_AT;
 	case 0:
 		return PROTO_WILDCARD;
 	/*
@@ -395,8 +389,6 @@ static int z_to_nrf_protocol(int proto)
 		return NRF_IPPROTO_UDP;
 	case IPPROTO_TLS_1_2:
 		return NRF_SPROTO_TLS1v2;
-	case NPROTO_AT:
-		return NRF_PROTO_AT;
 	case PROTO_WILDCARD:
 		return 0;
 	/*
