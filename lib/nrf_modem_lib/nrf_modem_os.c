@@ -230,8 +230,7 @@ bool nrf_modem_os_is_in_isr(void)
 	return k_is_in_isr();
 }
 
-#define NRF_MODEM_OS_SEM_MAX 3
-static struct k_sem nrf_modem_os_sems[NRF_MODEM_OS_SEM_MAX];
+static struct k_sem nrf_modem_os_sems[NRF_MODEM_OS_NUM_SEM_REQUIRED];
 
 int nrf_modem_os_sem_init(void **sem,
 	unsigned int initial_count, unsigned int limit)
@@ -242,7 +241,7 @@ int nrf_modem_os_sem_init(void **sem,
 		goto recycle;
 	}
 
-	__ASSERT(used < NRF_MODEM_OS_SEM_MAX,
+	__ASSERT(used < NRF_MODEM_OS_NUM_SEM_REQUIRED,
 		 "Not enough semaphores in glue layer");
 
 	*sem = &nrf_modem_os_sems[used++];
