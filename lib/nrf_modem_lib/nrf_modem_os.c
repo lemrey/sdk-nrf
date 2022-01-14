@@ -9,7 +9,6 @@
 #include <zephyr/kernel.h>
 #include <nrf_modem.h>
 #include <nrf_modem_os.h>
-#include <nrf_modem_platform.h>
 #include <nrf.h>
 #include <nrfx_ipc.h>
 #include <nrf_errno.h>
@@ -17,14 +16,12 @@
 #include <pm_config.h>
 #include <zephyr/logging/log.h>
 
+/* Interrupt used for communication with the application layer. */
+#define NRF_MODEM_APPLICATION_IRQ DT_IRQ_BY_IDX(DT_NODELABEL(egu1), 0, irq)
+BUILD_ASSERT(EGU1_IRQn == NRF_MODEM_APPLICATION_IRQ,
+	"NRF_MODEM_APPLICATION_IRQ mismatch");
+
 #define UNUSED_FLAGS 0
-
-/* Handle communication with application from IRQ contexts
- * with the lowest available priority.
- */
-#define APPLICATION_IRQ EGU1_IRQn
-#define APPLICATION_IRQ_PRIORITY IRQ_PRIO_LOWEST
-
 #define THREAD_MONITOR_ENTRIES 10
 
 LOG_MODULE_REGISTER(nrf_modem, CONFIG_NRF_MODEM_LIB_LOG_LEVEL);
@@ -276,12 +273,12 @@ unsigned int nrf_modem_os_sem_count_get(void *sem)
 
 void nrf_modem_os_application_irq_set(void)
 {
-	NVIC_SetPendingIRQ(APPLICATION_IRQ);
+	NVIC_SetPendingIRQ(NRF_MODEM_APPLICATION_IRQ);
 }
 
 void nrf_modem_os_application_irq_clear(void)
 {
-	NVIC_ClearPendingIRQ(APPLICATION_IRQ);
+	NVIC_ClearPendingIRQ(NRF_MODEM_APPLICATION_IRQ);
 }
 
 void nrf_modem_os_event_notify(void)
@@ -309,9 +306,9 @@ ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
 
 void read_task_create(void)
 {
-	IRQ_DIRECT_CONNECT(APPLICATION_IRQ, APPLICATION_IRQ_PRIORITY,
+	IRQ_DIRECT_CONNECT(NRF_MODEM_APPLICATION_IRQ, CONFIG_NRF_MODEM_APPLICATION_IRQ_PRIO,
 			   rpc_proxy_irq_handler, UNUSED_FLAGS);
-	irq_enable(APPLICATION_IRQ);
+	irq_enable(NRF_MODEM_APPLICATION_IRQ);
 }
 
 void *nrf_modem_os_alloc(size_t bytes)

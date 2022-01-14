@@ -31,6 +31,8 @@ manifest:
       url-base: https://github.com/NordicSemiconductor
     - name: memfault
       url-base: https://github.com/memfault
+    - name: eivindj-nordic
+      url-base: https://github.com/eivindj-nordic
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -50,7 +52,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr
-      revision: 3db330717c1ca3ec4fb133400bf3eb7156aa6cbd
+      remote: eivindj-nordic
+      revision: 8167_review_platform_h_file
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
