@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <pm_config.h>
 #include <logging/log.h>
+#include <modem/modem_info.h>
 
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
 #include <nrfx_uarte.h>
@@ -552,6 +553,9 @@ static void diag_task(struct k_work *item)
 /* This function is called by nrf_modem_init() */
 void nrf_modem_os_init(void)
 {
+	char info_str[MODEM_INFO_MAX_RESPONSE_SIZE + 1];
+	int ret;
+
 	sys_slist_init(&sleeping_threads);
 	atomic_clear(&rpc_event_cnt);
 
@@ -587,6 +591,16 @@ void nrf_modem_os_init(void)
 	k_work_reschedule(&heap_task.work,
 		K_MSEC(CONFIG_NRF_MODEM_LIB_HEAP_DUMP_PERIOD_MS));
 #endif
+
+	ret = modem_info_string_get(MODEM_INFO_FW_VERSION,
+				    info_str,
+				    sizeof(info_str));
+
+	if (ret == 0) {
+		LOG_INF("Modem FW version:      %s", info_str);
+	} else {
+		LOG_INF("Unable to obtain modem FW version (%d)", ret);
+	}
 }
 
 int32_t nrf_modem_os_trace_put(const uint8_t * const data, uint32_t len)

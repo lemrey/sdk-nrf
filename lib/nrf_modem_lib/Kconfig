@@ -8,6 +8,7 @@ menuconfig NRF_MODEM_LIB
 	imply NRFX_IPC
 	imply NET_SOCKETS_OFFLOAD
 	imply NET_SOCKETS_POSIX_NAMES if !POSIX_API
+	imply MODEM_INFO
 	select NRF_MODEM
 	help
 	  Use Nordic Modem library.
