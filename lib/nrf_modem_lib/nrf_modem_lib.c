@@ -12,6 +12,10 @@
 #include <nrf_modem.h>
 #include <nrf_modem_platform.h>
 #include <pm_config.h>
+#include <nrf_modem_at.h>
+#include <logging/log.h>
+
+LOG_MODULE_DECLARE(nrf_modem_lib, CONFIG_NRF_MODEM_LIB_LOG_LEVEL);
 
 #ifdef CONFIG_LTE_LINK_CONTROL
 #include <modem/lte_lc.h>
@@ -55,6 +59,42 @@ static const nrf_modem_init_params_t init_params = {
 #endif
 };
 
+static void log_fw_version_uuid(void)
+{
+	int err;
+	char fw_version_buf[32];
+	char *fw_version;
+	char fw_uuid_buf[64];
+	char *fw_uuid;
+
+	err = nrf_modem_at_cmd(fw_version_buf, sizeof(fw_version_buf), "AT+CGMR");
+	if (err == 0) {
+		/* Get first token before '\r\n' which
+		 * corresponds to FW version string.
+		 */
+		fw_version = strtok(fw_version_buf, "\r\n");
+		LOG_INF("Modem FW version: %s", log_strdup(fw_version));
+	} else {
+		LOG_ERR("Unable to obtain modem FW version (ERR: %d, ERR TYPE: %d)",
+			nrf_modem_at_err(err), nrf_modem_at_err_type(err));
+	}
+
+	err = nrf_modem_at_cmd(fw_uuid_buf, sizeof(fw_uuid_buf), "AT%%XMODEMUUID");
+	if (err == 0) {
+		/* Get first token before ' ' which
+		 * corresponds to "%XMODEMUUID:", then
+		 * move to the next token before '\r\n'
+		 * which corresponds to the FW UUID string.
+		 */
+		fw_uuid = strtok(fw_uuid_buf, " ");
+		fw_uuid = strtok(NULL, "\r\n");
+		LOG_INF("Modem FW UUID: %s\n", log_strdup(fw_uuid));
+	} else {
+		LOG_ERR("Unable to obtain modem FW UUID (ERR: %d, ERR TYPE: %d)\n",
+			nrf_modem_at_err(err), nrf_modem_at_err_type(err));
+	}
+}
+
 static int _nrf_modem_lib_init(const struct device *unused)
 {
 	if (!first_time_init) {
@@ -70,6 +110,10 @@ static int _nrf_modem_lib_init(const struct device *unused)
 		    nrfx_isr, nrfx_ipc_irq_handler, 0);
 
 	init_ret = nrf_modem_init(&init_params, NORMAL_MODE);
+
+#if CONFIG_NRF_MODEM_LIB_LOG_FW_VERSION_UUID
+	log_fw_version_uuid();
+#endif
 
 	k_mutex_lock(&slist_mutex, K_FOREVER);
 	if (sys_slist_peek_head(&shutdown_threads) != NULL) {
