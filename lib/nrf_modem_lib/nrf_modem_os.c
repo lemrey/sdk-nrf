@@ -173,6 +173,7 @@ void nrf_modem_os_busywait(int32_t usec)
 
 int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 {
+	#if 0
 	struct sleeping_thread thread;
 	int64_t start, remaining;
 
@@ -208,6 +209,8 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 	if (*timeout == 0) {
 		return NRF_ETIMEDOUT;
 	}
+	#endif
+	k_sleep(K_MSEC(*timeout));
 
 	return 0;
 }

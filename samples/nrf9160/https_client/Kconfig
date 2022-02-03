@@ -14,6 +14,15 @@ config SAMPLE_TFM_MBEDTLS
 
 endmenu
 
+# Workaround for not being able to have commas in macro arguments
+DT_CHOSEN_Z_IPC := zephyr,ipc
+
+config OPENAMP_IPC_DEV_NAME
+	string
+	default "$(dt_chosen_label,$(DT_CHOSEN_Z_IPC))"
+	help
+	  This option specifies the device name for the IPC device to be used
+
 menu "Zephyr Kernel"
 source "Kconfig.zephyr"
 endmenu

@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+#include "kernel.h"
 #include <string.h>
 #include <zephyr.h>
 #include <stdlib.h>
 #include <net/socket.h>
+#include <nrf_modem_at.h>
 #include <modem/nrf_modem_lib.h>
 #include <net/tls_credentials.h>
 #include <modem/lte_lc.h>
@@ -153,6 +155,22 @@ void main(void)
 
 	printk("HTTPS client sample started\n\r");
 
+	err = nrf_modem_lib_init(NORMAL_MODE);
+	if (err) {
+		printk("Could not initialize modem library\n");
+		return ;
+	}
+
+	char buf[64];
+
+	err = nrf_modem_at_cmd(buf, sizeof(buf), "AT%%XMODEMUUID");
+	if (err) {
+		printk("\nERORR ERROR\n");
+		return;
+	}
+
+	printk("Modem response: %s", buf);
+
 #if !defined(CONFIG_SAMPLE_TFM_MBEDTLS)
 	/* Provision certificates before connecting to the LTE network */
 	err = cert_provision();
@@ -177,11 +195,7 @@ void main(void)
 
 	((struct sockaddr_in *)res->ai_addr)->sin_port = htons(HTTPS_PORT);
 
-	if (IS_ENABLED(CONFIG_SAMPLE_TFM_MBEDTLS)) {
-		fd = socket(AF_INET, SOCK_STREAM | SOCK_NATIVE_TLS, IPPROTO_TLS_1_2);
-	} else {
-		fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TLS_1_2);
-	}
+	fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TLS_1_2);
 	if (fd == -1) {
 		printk("Failed to open socket!\n");
 		goto clean_up;

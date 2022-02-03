@@ -4,6 +4,14 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+/ {
+	chosen {
+		/* shared memory reserved for the inter-processor communication */
+		zephyr,ipc_shm = &sram0_modem;
+		zephyr,ipc = &ipc;
+	};
+};
+
 /* Disable uart1 in nonsecure since it is used by the TFM secure app. */
 &uart1 {
 	status = "disabled";
