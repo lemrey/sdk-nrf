@@ -1,0 +1,35 @@
+# Copyright (c) 2022 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig GCF_SMS_LIB
+	bool "Custom SMS commands for GCF certification"
+	depends on SOC_NRF9160_SICA
+	imply AT_CUSTOM_CMD
+	help
+	  Add implementations for the following AT commands:
+	  AT+CPMS
+	  AT+CSMS
+	  AT+CSCA
+	  AT+CSCS
+	  AT+CMGD
+	  AT+CMSS
+	  AT+CMGW
+	  AT+CMGF=0
+	  AT+CMMS
+
+if GCF_SMS_LIB
+
+config GCF_SMS_LIB_SYS_INIT
+	bool "Initialize during SYS_INIT"
+	imply AT_CUSTOM_CMD_SYS_INIT
+	default y
+	help
+	  Initialize the GCF SMS library automatically during the SYS_INIT sequence.
+
+module = GCF_SMS_LIB
+module-str = GCF SMS Lib
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # GCF_SMS_LIB

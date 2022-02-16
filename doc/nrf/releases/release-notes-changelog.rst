@@ -197,7 +197,9 @@ Bootloader libraries
 Modem libraries
 ---------------
 
-|no_changes_yet_note|
+* Added :ref:`at_custom_cmd_readme` library.
+* Renamed the AT SMS Cert library to :ref:`gcf_sms_lib_readme`.
+* The :ref:`gcf_sms_lib_readme` library now uses the :ref:`at_custom_cmd_readme` library to register filtered AT commands.
 
 Libraries for networking
 ------------------------
