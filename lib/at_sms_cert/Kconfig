@@ -6,6 +6,7 @@
 menuconfig AT_SMS_CERT
 	bool "AT SMS commands for certification"
 	depends on SOC_NRF9160_SICA
+	imply AT_CUSTOM_CMD
 	help
 	  Provide an implementation of the following SMS-related AT commands for certification purposes:
 	  AT+CPMS
@@ -20,6 +21,7 @@ if AT_SMS_CERT
 
 config AT_SMS_CERT_SYS_INIT
 	bool "Initialize during SYS_INIT"
+	imply AT_CUSTOM_CMD_SYS_INIT
 	default y
 	help
 	  Initialize the AT SMS Certification library automatically during the SYS_INIT sequence.

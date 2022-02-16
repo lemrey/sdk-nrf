@@ -14,7 +14,7 @@
 
 static char response[64];
 
-static void test_at_cmd_filter_setup(void)
+static void test_at_sms_cert_setup(void)
 {
 	int err;
 	int retries = 50;
@@ -34,7 +34,7 @@ static void test_at_cmd_filter_setup(void)
 		err = nrf_modem_at_cmd(response, sizeof(response), "AT+CEREG?");
 		zassert_equal(0, err, "nrf_modem_at_printf failed, error: %d", err);
 
-		err = sscanf(response, "\r\n+CEREG: %d,%d", &err, &connected);
+		err = sscanf(response, "+CEREG: %d,%d\r\n", &err, &connected);
 		zassert_equal(2, err, "sscanf failed, error: %d", err);
 		retries--;
 		if (retries == 0) {
@@ -45,143 +45,220 @@ static void test_at_cmd_filter_setup(void)
 
 	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CNMI=3,2,0,1");
 	zassert_equal(0, err, "nrf_modem_at_printf failed, error: %d", err);
-	zassert_mem_equal(response, "OK", strlen("OK"), NULL);
+	zassert_mem_equal(response, "OK\r\n", strlen("OK\r\n"), NULL);
 }
 
-static void test_at_cmd_filter_cmd_cpms(void)
+static void test_at_sms_cert_cpms(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CPMS=\"TA\",\"TA\"");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CPMS: 0,3,0,3", strlen("\r\n+CPMS: 0,3,0,3"), NULL);
+#define CPMS_1_CMD "AT+CPMS=\"TA\",\"TA\""
+#define CPMS_1_RES "+CPMS: 0,3,0,3\r\nOK\r\n"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CPMS?");
+	err = nrf_modem_at_cmd(response, sizeof(response), CPMS_1_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CPMS: \"TA\",0,3,\"TA\",0,3",
-			strlen("\r\n+CPMS: \"TA\",0,3,\"TA\",0,3"), NULL);
+	zassert_mem_equal(response, CPMS_1_RES, strlen(CPMS_1_RES), NULL);
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CPMS=?");
+#define CPMS_2_CMD "AT+CPMS?"
+#define CPMS_2_RES "+CPMS: \"TA\",0,3,\"TA\",0,3\r\nOK\r\n"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CPMS_2_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CPMS: (\"TA\"),(\"TA\")",
-			strlen("\r\n+CPMS: (\"TA\"),(\"TA\")"),
-			NULL);
+	zassert_mem_equal(response, CPMS_2_RES, strlen(CPMS_2_RES), NULL);
+
+#define CPMS_3_CMD "AT+CPMS=?"
+#define CPMS_3_RES "+CPMS: (\"TA\"),(\"TA\")\r\nOK\r\n"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CPMS_3_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CPMS_3_RES, strlen(CPMS_3_RES), NULL);
 }
 
-static void test_at_cmd_filter_cmd_csms(void)
+static void test_at_sms_cert_csms(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS=0");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CSMS: 1,1,0", strlen("\r\n+CSMS: 1,1,0"), NULL);
+#define CSMS_1_CMD "AT+CSMS=0"
+#define CSMS_1_RES "+CSMS: 1,1,0\r\nOK\r\n"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS=1");
+	err = nrf_modem_at_cmd(response, sizeof(response), CSMS_1_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CSMS: 0,0,0", strlen("\r\n+CSMS: 0,0,0"), NULL);
+	zassert_mem_equal(response, CSMS_1_RES, strlen(CSMS_1_RES), NULL);
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS?");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CSMS: 0,1,1,0", strlen("\r\n+CSMS: 0,1,1,0"), NULL);
+#define CSMS_2_CMD "AT+CSMS=1"
+#define CSMS_2_RES "+CSMS: 0,0,0\r\nOK\r\n"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSMS=?");
+	err = nrf_modem_at_cmd(response, sizeof(response), CSMS_2_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CSMS: 0", strlen("\r\n+CSMS: 0"), NULL);
+	zassert_mem_equal(response, CSMS_2_RES, strlen(CSMS_2_RES), NULL);
+
+#define CSMS_3_CMD "AT+CSMS?"
+#define CSMS_3_RES "+CSMS: 0,1,1,0\r\nOK\r\n"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CSMS_3_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CSMS_3_RES, strlen(CSMS_3_RES), NULL);
+
+#define CSMS_4_CMD "AT+CSMS=?"
+#define CSMS_4_RES "+CSMS: 0\r\nOK\r\n"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CSMS_4_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CSMS_4_RES, strlen(CSMS_4_RES), NULL);
 }
 
-static void test_at_cmd_filter_cmd_csca(void)
+static void test_at_sms_cert_csca(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSCA=\"+358501234567\"");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CSMS: OK", strlen("\r\n+CSMS: OK"), NULL);
+#define CSCA_1_CMD "AT+CSCA=\"+358501234567\""
+#define CSCA_1_RES "OK\r\n"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CSCA?");
+	err = nrf_modem_at_cmd(response, sizeof(response), CSCA_1_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CSMS: \"+358501234567\"",
-			strlen("\r\n+CSMS: \"+358501234567\""),
-			NULL);
+	zassert_mem_equal(response, CSCA_1_RES, strlen(CSCA_1_RES), NULL);
+
+#define CSCA_2_CMD "AT+CSCA?"
+#define CSCA_2_RES "+CSMS: \"+358501234567\""
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CSCA_2_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CSCA_2_RES, strlen(CSCA_2_RES), NULL);
 }
 
-static void test_at_cmd_filter_cmd_cmgd(void)
+static void test_at_sms_cert_cmgd(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGD=2");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\nOK", strlen("\r\nOK"), NULL);
+#define CMGD_1_CMD "AT+CMGD=2"
+#define CMGD_1_RES "OK\r\n"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGD=?");
+	err = nrf_modem_at_cmd(response, sizeof(response), CMGD_1_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CMGD: (1-3)", strlen("\r\n+CMGD: (1-3)"), NULL);
+	zassert_mem_equal(response, CMGD_1_RES, strlen(CMGD_1_RES), NULL);
+
+#define CMGD_2_CMD "AT+CMGD=?"
+#define CMGD_2_RES "+CMGD: (0-2)\r\nOK\r\n"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CMGD_2_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CMGD_2_RES, strlen(CMGD_2_RES), NULL);
 }
 
-static void test_at_cmd_filter_cmd_cmgw(void)
+static void test_at_sms_cert_cmgw(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CMGW: 1", strlen("\r\n+CMGW: 1"), NULL);
+#define CMGW_CMD "AT+CMGW=1,9<CR>010017116031621300<CR><ESC>"
+#define CMGW_1_RES "+CMGW: 0"
+#define CMGW_2_RES "+CMGW: 1"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
+	err = nrf_modem_at_cmd(response, sizeof(response),
+		CMGW_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CMGW: 2", strlen("\r\n+CMGW: 2"), NULL);
+	zassert_mem_equal(response, CMGW_1_RES, strlen(CMGW_1_RES), NULL);
+
+	err = nrf_modem_at_cmd(response, sizeof(response),
+		CMGW_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CMGW_2_RES, strlen(CMGW_2_RES), NULL);
+
 }
 
-static void test_at_cmd_filter_cmd_cmss(void)
+static void test_at_sms_cert_cmss(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMSS=1\x1a");
-	zassert_mem_equal(response, "+CMS ERROR:", strlen("+CMS ERROR:"), NULL);
+#define CMSS_1_CMD "AT+CMSS=1"
+#define CMSS_1_RES "+CMSS: "
+
+	/* Require a SIM supporting SMS and mfw 1.3.2(?) or newer. */
+	err = nrf_modem_at_cmd(response, sizeof(response), CMSS_1_CMD);
+	//zassert_mem_equal(response, "+CMSS: ", strlen("+CMSS: "), NULL); //TODO
 }
 
-static void test_at_cmd_filter_cmd_cmgw_cmgd(void)
+static void test_at_sms_cert_cmgw_cmgd(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGD=2");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\nOK", strlen("\r\nOK"), NULL);
+#define CMGW_CMGD_CMD "AT+CMGW=1,9<CR>010017116031621300<CR><ESC>"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
-	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CMGW: 2", strlen("\r\n+CMGW: 2"), NULL);
+#define CMGW_CMGD_1_CMD "AT+CMGD=1"
+#define CMGW_CMGD_1_RES "OK\r\n"
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
+	err = nrf_modem_at_cmd(response, sizeof(response), CMGW_CMGD_1_CMD);
 	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "\r\n+CMGW: 3", strlen("\r\n+CMGW: 3"), NULL);
+	zassert_mem_equal(response, CMGW_CMGD_1_RES, strlen(CMGW_CMGD_1_RES), NULL);
 
-	err = nrf_modem_at_cmd(response, sizeof(response), "AT+CMGW=1,9\r010017116031621300\x1a");
+#define CMGW_CMGD_2_RES "+CMGW: 1"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CMGW_CMGD_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CMGW_CMGD_2_RES, strlen(CMGW_CMGD_2_RES), NULL);
+
+#define CMGW_CMGD_3_RES "+CMGW: 2"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CMGW_CMGD_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CMGW_CMGD_3_RES, strlen(CMGW_CMGD_3_RES), NULL);
+
+#define CMGW_CMGD_4_RES "ERROR\r\n"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CMGW_CMGD_CMD);
 	zassert_equal(1<<16, err, "nrf_modem_at_cmd failed, error: %d", err);
-	zassert_mem_equal(response, "ERROR", strlen("ERROR"), NULL);
+	zassert_mem_equal(response, CMGW_CMGD_4_RES, strlen(CMGW_CMGD_4_RES), NULL);
 }
 
-static void test_at_cmd_filter_buffer_size(void)
+static void test_at_sms_cert_concatenated(void)
 {
 	int err;
 
-	err = nrf_modem_at_cmd(response, 1, "AT+CMGD=2");
-	zassert_equal(-NRF_E2BIG, err, "nrf_modem_at_cmd failed, error: %d", err);
+#define CONCAT_1_CMD "AT+CMGD=1;+CMGD=2"
+#define CONCAT_1_RES "OK\r\nOK\r\n"
 
-	err = nrf_modem_at_cmd(NULL, 100, "AT+CMGD=2");
-	zassert_equal(-NRF_EFAULT, err, "nrf_modem_at_cmd failed, error: %d", err);
+	err = nrf_modem_at_cmd(response, sizeof(response), CONCAT_1_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CONCAT_1_RES, strlen(CONCAT_1_RES), NULL);
+
+#define CONCAT_2_CMD "AT+CPMS=\"TA\",\"TA\""
+#define CONCAT_2_RES "+CPMS: 1,3,1,3\r\nOK\r\n"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CONCAT_2_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	zassert_mem_equal(response, CONCAT_2_RES, strlen(CONCAT_2_RES), NULL);
+
+#define CONCAT_3_CMD "AT+CMGD=?;+CEREG?"
+#define CONCAT_3_RES "+CMGD: (0-2)\r\nOK\r\n+CEREG:"
+
+	err = nrf_modem_at_cmd(response, sizeof(response), CONCAT_3_CMD);
+	zassert_equal(0, err, "nrf_modem_at_cmd failed, error: %d", err);
+	printk("%s", response);
+	zassert_mem_equal(response, CONCAT_3_RES, strlen(CONCAT_3_RES), NULL);
+}
+
+static void test_at_sms_cert_shutdown(void)
+{
+	int err;
+
+	err = nrf_modem_at_printf("AT+CFUN=0");
+	zassert_equal(0, err, "nrf_modem_at_printf failed, error: %d", err);
 }
 
 void test_main(void)
 {
 	ztest_test_suite(at_cmd_filter,
-		ztest_unit_test(test_at_cmd_filter_setup),
-		ztest_unit_test(test_at_cmd_filter_cmd_cpms),
-		ztest_unit_test(test_at_cmd_filter_cmd_csms),
-		ztest_unit_test(test_at_cmd_filter_cmd_csca),
-		ztest_unit_test(test_at_cmd_filter_cmd_cmgd),
-		ztest_unit_test(test_at_cmd_filter_cmd_cmgw),
-		ztest_unit_test(test_at_cmd_filter_cmd_cmss),
-		ztest_unit_test(test_at_cmd_filter_cmd_cmgw_cmgd),
-		ztest_unit_test(test_at_cmd_filter_buffer_size)
+		ztest_unit_test(test_at_sms_cert_setup),
+
+		ztest_unit_test(test_at_sms_cert_cpms),
+		ztest_unit_test(test_at_sms_cert_csms),
+		ztest_unit_test(test_at_sms_cert_csca),
+		ztest_unit_test(test_at_sms_cert_cmgd),
+		ztest_unit_test(test_at_sms_cert_cmgw),
+		ztest_unit_test(test_at_sms_cert_cmss),
+		ztest_unit_test(test_at_sms_cert_cmgw_cmgd),
+		ztest_unit_test(test_at_sms_cert_concatenated),
+
+		ztest_unit_test(test_at_sms_cert_shutdown)
 	);
 
 	ztest_run_test_suite(at_cmd_filter);
