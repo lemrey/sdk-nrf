@@ -127,8 +127,7 @@ static void nrf_to_z_ipv6(struct sockaddr *z_out,
 	/* nrf_sockaddr_in6 fields .sin6_flowinfo and .sin6_len not used */
 	ptr->sin6_port = nrf_in->sin6_port;
 	ptr->sin6_family = AF_INET6;
-	memcpy(ptr->sin6_addr.s6_addr, nrf_in->sin6_addr.s6_addr,
-		sizeof(struct nrf_in6_addr));
+	memcpy(ptr->sin6_addr.s6_addr, nrf_in->sin6_addr.s6_addr, sizeof(struct nrf_in6_addr));
 	ptr->sin6_scope_id = (uint8_t)nrf_in->sin6_scope_id;
 }
 

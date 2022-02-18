@@ -18,7 +18,7 @@
 #include <pm_config.h>
 
 #ifndef CONFIG_TRUSTED_EXECUTION_NONSECURE
-#error  nrf_modem_lib must be run as non-secure firmware.\
+#error nrf_modem_lib must be run as non-secure firmware.\
 	Are you building for the correct board ?
 #endif /* CONFIG_TRUSTED_EXECUTION_NONSECURE */
 
@@ -42,9 +42,9 @@ static bool first_time_init;
 static struct k_mutex slist_mutex;
 
 static int init_ret;
-static enum nrf_modem_mode_t init_mode;
+static enum nrf_modem_mode init_mode;
 
-static const nrf_modem_init_params_t init_params = {
+static const struct nrf_modem_init_params init_params = {
 	.ipc_irq_prio = NRF_MODEM_NETWORK_IRQ_PRIORITY,
 	.shmem.ctrl = {
 		.base = PM_NRF_MODEM_LIB_CTRL_ADDRESS,
@@ -123,8 +123,8 @@ static int _nrf_modem_lib_init(const struct device *unused)
 	/* Setup the network IRQ used by the Modem library.
 	 * Note: No call to irq_enable() here, that is done through nrf_modem_init().
 	 */
-	IRQ_CONNECT(NRF_MODEM_NETWORK_IRQ, NRF_MODEM_NETWORK_IRQ_PRIORITY,
-		    nrfx_isr, nrfx_ipc_irq_handler, 0);
+	IRQ_CONNECT(NRF_MODEM_NETWORK_IRQ, NRF_MODEM_NETWORK_IRQ_PRIORITY, nrfx_isr,
+		    nrfx_ipc_irq_handler, 0);
 
 	init_ret = nrf_modem_init(&init_params, NORMAL_MODE);
 
@@ -137,8 +137,7 @@ static int _nrf_modem_lib_init(const struct device *unused)
 		struct shutdown_thread *thread, *next_thread;
 
 		/* Wake up all sleeping threads. */
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&shutdown_threads, thread,
-					     next_thread, node) {
+		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&shutdown_threads, thread, next_thread, node) {
 			k_sem_give(&thread->sem);
 		}
 	}
@@ -186,7 +185,7 @@ void nrf_modem_lib_shutdown_wait(void)
 	k_mutex_unlock(&slist_mutex);
 }
 
-int nrf_modem_lib_init(enum nrf_modem_mode_t mode)
+int nrf_modem_lib_init(enum nrf_modem_mode mode)
 {
 	init_mode = mode;
 	if (mode == NORMAL_MODE) {
