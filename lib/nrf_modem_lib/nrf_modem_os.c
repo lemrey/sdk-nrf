@@ -184,7 +184,7 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 
 	if (*timeout == 0) {
 		k_yield();
-		return NRF_ETIMEDOUT;
+		return -NRF_EAGAIN;
 	}
 
 	if (*timeout < 0) {
@@ -201,6 +201,10 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 
 	sleeping_thread_remove(&thread);
 
+	if (!nrf_modem_is_initialized()) {
+		return -NRF_ESHUTDOWN;
+	}
+
 	if (*timeout == SYS_FOREVER_MS) {
 		return 0;
 	}
@@ -210,7 +214,7 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 	*timeout = remaining > 0 ? remaining : 0;
 
 	if (*timeout == 0) {
-		return NRF_ETIMEDOUT;
+		return -NRF_EAGAIN;
 	}
 
 	return 0;
@@ -226,6 +230,7 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
  */
 void nrf_modem_os_errno_set(int err_code)
 {
+	__ASSERT(err_code > 0, "Tried to set negative error code, %d", err_code);
 	errno = err_code;
 }
 
@@ -312,11 +317,9 @@ void nrf_modem_os_trace_irq_enable(void)
 	irq_enable(TRACE_IRQ);
 }
 
-ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
+void nrf_modem_os_event_notify(void)
 {
 	atomic_inc(&rpc_event_cnt);
-
-	nrf_modem_application_irq_handler();
 
 	struct sleeping_thread *thread;
 
@@ -324,6 +327,14 @@ ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
 	SYS_SLIST_FOR_EACH_CONTAINER(&sleeping_threads, thread, node) {
 		k_sem_give(&thread->sem);
 	}
+}
+
+ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
+{
+
+	nrf_modem_application_irq_handler();
+
+	nrf_modem_os_event_notify();
 
 	ISR_DIRECT_PM(); /* PM done after servicing interrupt for best latency
 			  */
@@ -577,21 +588,35 @@ void nrf_modem_os_logdump(int level, const char *str, const void *data, size_t l
 	}
 }
 
-/* This function is called by nrf_modem_init() */
-void nrf_modem_os_init(void)
+/* On application initialization */
+static int on_init(const struct device *dev)
 {
+	(void) dev;
+
+	/* The list of sleeping threads should only be initialized once at the application
+	 * initialization. This is because we want to keep the list intact regardless of modem
+	 * reinitialization to wake sleeping threads on modem initialization.
+	 */
 	sys_slist_init(&sleeping_threads);
 	atomic_clear(&rpc_event_cnt);
 
+	return 0;
+}
+
+/* On modem initialization.
+ * This function is called by nrf_modem_init()
+ */
+void nrf_modem_os_init(void)
+{
 	read_task_create();
 
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
 	int err = nrf_modem_lib_trace_init(&trace_heap);
 
-	if (err != 0) {
-		LOG_ERR("nrf_modem_lib_trace_init failed with error %d.", err);
-	} else {
+	if (err == 0) {
 		trace_irq_init();
+	} else {
+		LOG_ERR("nrf_modem_lib_trace_init failed with error %d.", err);
 	}
 
 #endif
@@ -631,6 +656,16 @@ void nrf_modem_os_init(void)
 #endif
 }
 
+void nrf_modem_os_shutdown(void)
+{
+	struct sleeping_thread *thread;
+
+	/* Wake up all sleeping threads. */
+	SYS_SLIST_FOR_EACH_CONTAINER(&sleeping_threads, thread, node) {
+ 		k_sem_give(&thread->sem);
+	}
+}
+
 int32_t nrf_modem_os_trace_put(const uint8_t *const data, uint32_t len)
 {
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
@@ -651,3 +686,5 @@ int32_t nrf_modem_os_trace_put(const uint8_t *const data, uint32_t len)
 #endif /* CONFIG_NRF_MODEM_LIB_TRACE_ENABLED */
 	return 0;
 }
+
+SYS_INIT(on_init, POST_KERNEL, 0);

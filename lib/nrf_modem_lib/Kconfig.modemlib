@@ -149,6 +149,30 @@ config NRF_MODEM_LIB_TRACE_HEAP_SIZE
 	  Size of the heap buffer used for modem traces.
 	  This heap is allocated in the application's RAM.
 
+choice NRF_MODEM_LIB_ON_FAULT
+	prompt "nRF modem fault action"
+	default NRF_MODEM_LIB_ON_FAULT_NO_ACTION
+
+config NRF_MODEM_LIB_ON_FAULT_NO_ACTION
+	bool "Reset application on modem fault"
+	help
+	  Perform no action if the application is notified of a fault in the modem.
+
+config NRF_MODEM_LIB_ON_FAULT_RESET_APPLICATION
+	bool "Reset application on modem fault"
+	help
+	  If the application is notified of a fault in the modem it will restart the entire
+	  application.
+
+config NRF_MODEM_LIB_ON_FAULT_RESET_MODEM
+	bool "Reset modem only on modem fault"
+	help
+	  If the application is notified of a fault in the modem it will shut down and reinitialize
+	  the modem and modem library. The reinitialization will destroy all sockets and state of
+	  the modem, and it is up to the application to recover properly.
+
+endchoice # NRF_MODEM_LIB_FAULT_RECOVERY
+
 menu "Diagnostics"
 
 config NRF_MODEM_LIB_DEBUG_ALLOC

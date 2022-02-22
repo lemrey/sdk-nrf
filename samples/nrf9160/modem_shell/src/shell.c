@@ -50,9 +50,9 @@ extern struct k_poll_signal mosh_signal;
 /**
  * @brief Overriding modem library error handler.
  */
-void nrf_modem_recoverable_error_handler(uint32_t error)
+void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {
-	mosh_error("modem lib recoverable error: %u\n", error);
+	mosh_error("modem lib recoverable error: %u\n", fault_info->reason);
 }
 
 #if defined(CONFIG_LWM2M_CARRIER)
