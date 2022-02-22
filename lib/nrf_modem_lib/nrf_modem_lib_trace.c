@@ -183,6 +183,10 @@ static bool rtt_init(void)
 int nrf_modem_lib_trace_init(struct k_heap *trace_heap)
 {
 	t_heap = trace_heap;
+	if (is_transport_initialized) {
+		return 0;
+	}
+
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_MEDIUM_UART
 	is_transport_initialized = uart_init();
 #endif

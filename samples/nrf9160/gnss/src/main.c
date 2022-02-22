@@ -64,11 +64,6 @@ BUILD_ASSERT(IS_ENABLED(CONFIG_LTE_NETWORK_MODE_LTE_M_GPS) ||
 	     "CONFIG_LTE_NETWORK_MODE_NBIOT_GPS or "
 	     "CONFIG_LTE_NETWORK_MODE_LTE_M_NBIOT_GPS must be enabled");
 
-void nrf_modem_recoverable_error_handler(uint32_t error)
-{
-	LOG_ERR("Modem library recoverable error: %u", error);
-}
-
 static void gnss_event_handler(int event)
 {
 	int retval;

@@ -103,6 +103,23 @@ If increasing the trace heap size does not help, either optimize the medium spee
 
 .. _partition_mgr_integration:
 
+Modem fault handling
+********************
+On initialization of the Modem library, the Application registers a Modem fault handler through the initialization parameters.
+
+If a fault occurs in the modem, the application is notified through the fault handler, which enables the application to read the fault reason (and in some cases the modem's Program Counter) and take appropriate action.
+By default, the :c:func:`nrf_modem_fault_handler` in :file:`nrf/lib/nrf_modem_lib/nrf_modem_lib.c` is called, which restarts the modem application. It is also possible to
+only restart and reinitialize the modem and Modem library by setting :kconfig:option:`CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_MODEM`.
+If other action is required on a modem failure, the weak implementation of :c:func:`nrf_modem_fault_handler` in :file:`nrf/lib/nrf_modem_lib/nrf_modem_lib.c` can be overwritten.
+
+Notes on implementing a custom fault handler:
+--------------------------------------
+
+* The Fault handler is called in an interrupt context and should be as short as possible.
+* Reinitialization of the Modem library must be done outside of the fault handler.
+* If the Modem trace module is enabled, the modem will send a Coredump through the trace interface on modem failure. To ensure correct trace output, the Modem should not be reinitializes before all trace data is handled.
+
+
 Partition manager integration
 *****************************
 

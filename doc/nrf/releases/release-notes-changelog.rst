@@ -428,6 +428,11 @@ Modem libraries
       * :kconfig:option:`CONFIG_NRF_MODEM_LIB_LOG_FW_VERSION_UUID` to enable logging for both FW version and UUID at the end of the library initialization step.
       * :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_THREAD_PROCESSING` to process modem traces in a thread (experimental).
 
+    * Changed:
+      * The modem fault handlers signature now takes a pointer to a :c:struct:`nrf_modem_fault_info` structure as parameter.
+      * The modem fault handler callback is now configurable through the :c:struct:`nrf_modem_init_params_t`structure.
+      * By default, the :c:func:`nrf_modem_fault_handler` fault handler shut down and reinitializes the modem on a modem fault. Application specific use cases, as managing sockets and AT calls, must be handled by the application to ensure a proper recovery.
+
     * Deprecated :c:func:`nrf_modem_lib_shutdown_wait` function, in favor of :c:macro:`NRF_MODEM_LIB_ON_INIT`.
 
   * :ref:`lte_lc_readme` library:
