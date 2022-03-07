@@ -36,10 +36,18 @@ jobs:
         BASE_REF: ${{ github.base_ref }}
       working-directory: ncs/nrf
       run: |
-        export PATH="$HOME/.local/bin:$PATH"
-        export PATH="$HOME/bin:$PATH"
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
+        # disable the keychain credential helper
+        git config --global credential.helper ""
+        # enable the local store credential helper
+        git config --global --add credential.helper store
+        # add credential
+        echo "https://x-access-token:${{ secrets.NCS_GITHUB_TOKEN }}@github.com" >> ~/.git-credentials
+        echo "git-credentials file:"
+        cat ~/.git-credentials
+        export PATH="$HOME/.local/bin:$PATH"
+        export PATH="$HOME/bin:$PATH"
         git remote -v
         git rebase origin/${BASE_REF}
         # debug
