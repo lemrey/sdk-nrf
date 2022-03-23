@@ -274,15 +274,6 @@ unsigned int nrf_modem_os_sem_count_get(void *sem)
 	return k_sem_count_get(sem);
 }
 
-void nrf_modem_os_application_irq_set(void)
-{
-	NVIC_SetPendingIRQ(APPLICATION_IRQ);
-}
-
-void nrf_modem_os_application_irq_clear(void)
-{
-	NVIC_ClearPendingIRQ(APPLICATION_IRQ);
-}
 
 void nrf_modem_os_event_notify(void)
 {
@@ -294,24 +285,6 @@ void nrf_modem_os_event_notify(void)
 	SYS_SLIST_FOR_EACH_CONTAINER(&sleeping_threads, thread, node) {
 		k_sem_give(&thread->sem);
 	}
-}
-
-ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
-{
-	nrf_modem_application_irq_handler();
-
-	nrf_modem_os_event_notify();
-
-	ISR_DIRECT_PM(); /* PM done after servicing interrupt for best latency
-			  */
-	return 1; /* We should check if scheduling decision should be made */
-}
-
-void read_task_create(void)
-{
-	IRQ_DIRECT_CONNECT(APPLICATION_IRQ, APPLICATION_IRQ_PRIORITY,
-			   rpc_proxy_irq_handler, UNUSED_FLAGS);
-	irq_enable(APPLICATION_IRQ);
 }
 
 void *nrf_modem_os_alloc(size_t bytes)
@@ -445,9 +418,6 @@ static int on_init(const struct device *dev)
  */
 void nrf_modem_os_init(void)
 {
-	read_task_create();
-
-	/* Initialize heaps */
 	k_heap_init(&nrf_modem_lib_heap, library_heap_buf, sizeof(library_heap_buf));
 	k_heap_init(&nrf_modem_lib_shmem_heap, (void *)PM_NRF_MODEM_LIB_TX_ADDRESS,
 		    CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE);
