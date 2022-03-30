@@ -122,7 +122,7 @@ config NRF_MODEM_LIB_SHMEM_RX_SIZE
 	  This area holds all incoming data from the modem, plus the modem's own control structures.
 
 config NRF_MODEM_LIB_SHMEM_TRACE_SIZE_OVERRIDE
-	bool "Custom Trace region size"
+	bool "Custom trace region size"
 	depends on NRF_MODEM_LIB_TRACE_ENABLED
 	help
 	  Override the default size of the Trace region (16384 bytes).
@@ -141,9 +141,9 @@ config NRF_MODEM_LIB_TRACE_HEAP_SIZE_OVERRIDE
 	  Override the default trace heap size.
 
 config NRF_MODEM_LIB_TRACE_HEAP_SIZE
-	int "Modem trace heap size" if NRF_MODEM_LIB_TRACE_HEAP_SIZE_OVERRIDE
-	default 2048 if NRF_MODEM_LIB_TRACE_THREAD_PROCESSING
-	default 64 if NRF_MODEM_LIB_TRACE_ENABLED
+	int "Trace heap size" if NRF_MODEM_LIB_TRACE_HEAP_SIZE_OVERRIDE
+	default 2048 if (NRF_MODEM_LIB_TRACE_ENABLED && NRF_MODEM_LIB_TRACE_THREAD_PROCESSING)
+	default 64 if (NRF_MODEM_LIB_TRACE_ENABLED && !NRF_MODEM_LIB_TRACE_THREAD_PROCESSING)
 	default 0
 	help
 	  Size of the heap buffer used for modem traces.
@@ -164,6 +164,16 @@ config NRF_MODEM_LIB_HEAP_DUMP_PERIODIC
 
 config NRF_MODEM_LIB_HEAP_DUMP_PERIOD_MS
 	depends on NRF_MODEM_LIB_HEAP_DUMP_PERIODIC
+	int "Period (millisec)"
+	default 20000
+
+config NRF_MODEM_LIB_TRACE_HEAP_DUMP_PERIODIC
+	bool "Periodically dump trace heap contents"
+	depends on NRF_MODEM_LIB_TRACE_ENABLED
+
+config NRF_MODEM_LIB_TRACE_HEAP_DUMP_PERIOD_MS
+	depends on NRF_MODEM_LIB_TRACE_HEAP_DUMP_PERIODIC
+	depends on NRF_MODEM_LIB_TRACE_ENABLED
 	int "Period (millisec)"
 	default 20000
 
