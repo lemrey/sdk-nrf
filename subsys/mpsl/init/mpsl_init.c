@@ -30,7 +30,20 @@ const uint32_t z_mpsl_used_nrf_ppi_groups;
 	#define MPSL_LOW_PRIO_IRQn SWI5_IRQn
 #elif IS_ENABLED(CONFIG_SOC_SERIES_NRF53X)
 	#define MPSL_LOW_PRIO_IRQn SWI0_IRQn
+#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
+	#define MPSL_LOW_PRIO_IRQn ECB030_IRQn
 #endif
+
+#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
+	#define MPSL_TIMER_IRQn TIMER0_IRQn
+	#define MPSL_RTC_IRQn   RTC0_IRQn
+	#define MPSL_RADIO_IRQn RADIO_IRQn
+#elif IS_ENABLED(CONFIG_EMULATOR_FPGA)
+	#define MPSL_TIMER_IRQn TIMER020_IRQn
+	#define MPSL_RTC_IRQn   TIMER021_IRQn
+	#define MPSL_RADIO_IRQn RADIO_0_IRQn
+#endif
+
 #define MPSL_LOW_PRIO (4)
 
 static struct k_work mpsl_low_prio_work;
@@ -67,7 +80,7 @@ static void mpsl_low_prio_work_handler(struct k_work *item)
 	MULTITHREADING_LOCK_RELEASE();
 }
 
-ISR_DIRECT_DECLARE(mpsl_timer0_isr_wrapper)
+ISR_DIRECT_DECLARE(mpsl_timer_isr_wrapper)
 {
 	MPSL_IRQ_TIMER0_Handler();
 
@@ -80,7 +93,7 @@ ISR_DIRECT_DECLARE(mpsl_timer0_isr_wrapper)
 	return 1;
 }
 
-ISR_DIRECT_DECLARE(mpsl_rtc0_isr_wrapper)
+ISR_DIRECT_DECLARE(mpsl_rtc_isr_wrapper)
 {
 	MPSL_IRQ_RTC0_Handler();
 
@@ -130,6 +143,8 @@ static uint8_t m_config_clock_source_get(void)
 	return MPSL_CLOCK_LF_SRC_EXT_LOW_SWING;
 #elif CONFIG_CLOCK_CONTROL_NRF_K32SRC_EXT_FULL_SWING
 	return MPSL_CLOCK_LF_SRC_EXT_FULL_SWING;
+#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
+	return 0;
 #else
 	#error "Clock source is not supported or not defined"
 	return 0;
@@ -142,6 +157,8 @@ static int mpsl_lib_init(const struct device *dev)
 	int err = 0;
 	mpsl_clock_lfclk_cfg_t clock_cfg;
 
+	/* TODO: Clock config should be adapted in the future to new architecture. */
+#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
 	clock_cfg.source = m_config_clock_source_get();
 	clock_cfg.accuracy_ppm = CONFIG_CLOCK_CONTROL_NRF_ACCURACY;
 	clock_cfg.skip_wait_lfclk_started =
@@ -161,6 +178,7 @@ static int mpsl_lib_init(const struct device *dev)
 	clock_cfg.rc_ctiv = 0;
 	clock_cfg.rc_temp_ctiv = 0;
 #endif
+#endif
 
 	err = mpsl_init(&clock_cfg, MPSL_LOW_PRIO_IRQn, m_assert_handler);
 	if (err) {
@@ -175,11 +193,11 @@ static int mpsl_lib_init(const struct device *dev)
 	}
 #endif
 
-	IRQ_DIRECT_CONNECT(TIMER0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
-			   mpsl_timer0_isr_wrapper, IRQ_ZERO_LATENCY);
-	IRQ_DIRECT_CONNECT(RTC0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
-			   mpsl_rtc0_isr_wrapper, IRQ_ZERO_LATENCY);
-	IRQ_DIRECT_CONNECT(RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+	IRQ_DIRECT_CONNECT(MPSL_TIMER_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			   mpsl_timer_isr_wrapper, IRQ_ZERO_LATENCY);
+	IRQ_DIRECT_CONNECT(MPSL_RTC_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			   mpsl_rtc_isr_wrapper, IRQ_ZERO_LATENCY);
+	IRQ_DIRECT_CONNECT(MPSL_RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY,
 			   mpsl_radio_isr_wrapper, IRQ_ZERO_LATENCY);
 
 	return 0;
