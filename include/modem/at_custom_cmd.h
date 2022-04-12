@@ -58,17 +58,37 @@ int at_custom_cmd_response_buffer_fill(char *buf, size_t len,
 		const char *content, ...);
 
 /**
- * @brief Define an AT filter.
+ * @brief Define an pre modem AT filter.
+ *
+ * @details For more information on the callback handling, see @c nrf_modem_at_pre_modem_handler_t
+ *          in @file nrf_modem_at.h
  *
  * @param name The filter name.
  * @param _cmd The AT command on which the filter should trigger.
  * @param _callback Filtered AT commands callback function.
  */
-#define AT_FILTER(name, _cmd, _callback) \
-	STRUCT_SECTION_ITERABLE(nrf_modem_at_cmd_filter, nrf_modem_at_cmd_filter_##name) = { \
-		.cmd = _cmd, \
-		.callback = _callback \
-	}
+#define AT_FILTER_PRE_MODEM(name, _cmd, _pre_callback)                                             \
+	static int _pre_callback(char *buf, size_t len, const char * const at_cmd);                \
+	STRUCT_SECTION_ITERABLE(nrf_modem_at_pre_modem_filter,                                     \
+				nrf_modem_at_pre_modem_filter_##name) = {                          \
+					.cmd = _cmd,                                               \
+					.callback = _pre_callback                                  \
+					}
+
+/**
+ * @brief Define an post modem AT filter.
+ *
+ * @param name The filter name.
+ * @param _cmd The AT command on which the filter should trigger.
+ * @param _callback Filtered AT commands callback function.
+ */
+#define AT_FILTER_POST_MODEM(name, _cmd, _post_callback)                                           \
+	static void _post_callback(char *at_cmd);                                                  \
+	STRUCT_SECTION_ITERABLE(nrf_modem_at_post_modem_filter,                                    \
+				nrf_modem_at_post_modem_filter_##name) = {                         \
+					.cmd = _cmd,                                               \
+					.callback = _post_callback                                 \
+					}
 
 #ifdef __cplusplus
 }

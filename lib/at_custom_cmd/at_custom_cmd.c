@@ -20,28 +20,50 @@ LOG_MODULE_REGISTER(at_filter);
 
 int at_custom_cmd_init(void)
 {
-	static struct nrf_modem_at_cmd_filter *at_cmd_filter_list;
+	static struct nrf_modem_at_pre_modem_filter *pre_modem_filter_list;
+	static struct nrf_modem_at_post_modem_filter *post_modem_filter_list;
+	int pre_modem_num_items = 0;
+	int post_modem_num_items = 0;
 	bool first_list_item = true;
-	int num_items = 0;
 	int err;
 
-	STRUCT_SECTION_FOREACH(nrf_modem_at_cmd_filter, e) {
+	STRUCT_SECTION_FOREACH(nrf_modem_at_pre_modem_filter, e)
+	{
 		if (first_list_item) {
-			at_cmd_filter_list = e;
+			pre_modem_filter_list = e;
 			first_list_item = false;
 		}
-		num_items++;
+		pre_modem_num_items++;
 	}
 
-	err = nrf_modem_at_cmd_filter_set(at_cmd_filter_list, num_items);
-	LOG_INF("AT filter enabled with %d entries.", num_items);
+	first_list_item = true;
+
+	STRUCT_SECTION_FOREACH(nrf_modem_at_post_modem_filter, e)
+	{
+		if (first_list_item) {
+			post_modem_filter_list = e;
+			first_list_item = false;
+		}
+		post_modem_num_items++;
+	}
+
+	pre_modem_filter_list = pre_modem_num_items > 0 ? pre_modem_filter_list : NULL;
+	post_modem_filter_list = post_modem_num_items > 0 ? post_modem_filter_list : NULL;
+
+	err = nrf_modem_at_filters_set(pre_modem_filter_list, pre_modem_num_items,
+				      post_modem_filter_list, post_modem_num_items);
+
+	if (pre_modem_num_items || post_modem_filter_list) {
+		LOG_INF("AT filter enabled with %d pre modem and %d post modem entries.",
+			pre_modem_num_items, post_modem_num_items);
+	}
 
 	return err;
 }
 
 int at_custom_cmd_deinit(void)
 {
-	return nrf_modem_at_cmd_filter_set(NULL, 0);
+	return nrf_modem_at_filters_set(NULL, 0, NULL, 0);
 }
 
 int at_custom_cmd_sys_init(const struct device *unused)

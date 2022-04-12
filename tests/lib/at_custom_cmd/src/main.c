@@ -15,27 +15,28 @@
 
 static char response[64];
 
-/* AT filter function declarations. */
-static int at_cmd_callback_cmd1(char *buf, size_t len, char *at_cmd)
-{
-	zassert_mem_equal("AT+CMD1", at_cmd, strlen("AT+CMD1"), NULL);
-	return at_custom_cmd_response_buffer_fill(buf, len, "\r\n+CMD1: OK\r\n");
-}
-
-static int at_cmd_callback_cmd2(char *buf, size_t len, char *at_cmd)
-{
-	zassert_mem_equal("AT+CMD2", at_cmd, strlen("AT+CMD2"), NULL);
-	return at_custom_cmd_response_buffer_fill(buf, len,
-	"\r\n+CPMS: \"TA\",%d,%d,\"TA\",%d,%d\r\nOK\r\n", 0, 3, 0, 3);
-}
-
 /* AT filter list
  * Including all comands the filter should check for and function ptr
  * to functions to be called on detection.
  */
 
-AT_FILTER(GCF1, "AT+CMD1", &at_cmd_callback_cmd1);
-AT_FILTER(GCF2, "AT+CMD2", &at_cmd_callback_cmd2);
+AT_FILTER_PRE_MODEM(CMD1, "AT+CMD1", pre_callback_1);
+AT_FILTER_PRE_MODEM(CMD2, "AT+CMD2", pre_callback_2);
+
+
+/* AT filter function declarations. */
+static int pre_callback_1(char *buf, size_t len, const char * const at_cmd)
+{
+	zassert_mem_equal("AT+CMD1", at_cmd, strlen("AT+CMD1"), NULL);
+	return at_custom_cmd_response_buffer_fill(buf, len, "\r\n+CMD1: OK\r\n");
+}
+
+static int pre_callback_2(char *buf, size_t len, const char * const at_cmd)
+{
+	zassert_mem_equal("AT+CMD2", at_cmd, strlen("AT+CMD2"), NULL);
+	return at_custom_cmd_response_buffer_fill(buf, len,
+	"\r\n+CPMS: \"TA\",%d,%d,\"TA\",%d,%d\r\nOK\r\n", 0, 3, 0, 3);
+}
 
 static void test_at_custom_cmd_setup(void)
 {
