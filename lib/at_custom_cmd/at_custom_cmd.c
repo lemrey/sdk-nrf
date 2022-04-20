@@ -79,8 +79,12 @@ int at_custom_cmd_response_buffer_fill(char *buf, size_t len,
 {
 	va_list args;
 
+	if ((buf == NULL) && (len == 0)) {
+		return 0;
+	}
+
 	if (buf == NULL) {
-		LOG_ERR("%s called with NULL buffer", __func__);
+		LOG_ERR("%s called with NULL buffer and non-zero length", __func__);
 		return -NRF_EFAULT;
 	}
 
