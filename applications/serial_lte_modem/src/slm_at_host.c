@@ -28,7 +28,8 @@ LOG_MODULE_REGISTER(slm_at_host, CONFIG_SLM_LOG_LEVEL);
 #define SLM_SYNC_STR	"Ready\r\n"
 
 /** The maximum allowed length of an AT command passed through the SLM
- *  The space is allocated statically. */
+ *  The space is allocated statically.
+ */
 #define AT_MAX_CMD_LEN          4096
 
 #define UART_RX_BUF_NUM         2
