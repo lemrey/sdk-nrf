@@ -114,6 +114,12 @@ manifest:
       repo-path: sdk-ic-next
       path: modules/ic-next
       revision: b820b179ed2008eeae18a7c2be48103366cc8ab4
+    - name: sdk-secdom
+      revision: 1b2d8dbd4fa34203f64a4b183fc9640558c2b7e8
+      path: core_fw/secdom
+      import:
+        name-allowlist:
+          - nrf-regtool
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
