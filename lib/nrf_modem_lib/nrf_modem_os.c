@@ -277,6 +277,11 @@ int nrf_modem_os_sem_take(void *sem, int timeout)
 	return 0;
 }
 
+unsigned int nrf_modem_os_sem_count_get(void *sem)
+{
+	return k_sem_count_get(sem);
+}
+
 void nrf_modem_os_application_irq_set(void)
 {
 	NVIC_SetPendingIRQ(NRF_MODEM_APPLICATION_IRQ);
