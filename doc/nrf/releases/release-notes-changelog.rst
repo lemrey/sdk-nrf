@@ -431,7 +431,7 @@ Modem libraries
     * Changed:
       * The modem fault handlers signature now takes a pointer to a :c:struct:`nrf_modem_fault_info` structure as parameter.
       * The modem fault handler callback is now configurable through the :c:struct:`nrf_modem_init_params_t`structure.
-      * By default, the :c:func:`nrf_modem_fault_handler` fault handler shut down and reinitializes the modem on a modem fault. Application specific use cases, as managing sockets and AT calls, must be handled by the application to ensure a proper recovery.
+      * By default, the :c:func:`nrf_modem_fault_handler` fault handler prints the modem fault. If other handling is required, the :kconfig:option:`NRF_MODEM_LIB_ON_FAULT` must be chosen accordingly.
 
     * Deprecated :c:func:`nrf_modem_lib_shutdown_wait` function, in favor of :c:macro:`NRF_MODEM_LIB_ON_INIT`.
 

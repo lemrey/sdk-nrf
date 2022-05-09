@@ -144,10 +144,12 @@ void nrf_modem_lib_shm_tx_diagnose(void);
 void nrf_modem_lib_heap_diagnose(void);
 
 /**
- * @brief Modem recoverable error handler.
+ * @brief Modem fault handler.
  *
- * @note The default handler in @file nrf_modem_lib.c can be overridden in the application if a
- *       different error handling is required.
+ * @note Two default handlers are given in @file nrf_modem_lib.c for logging the fault (default) and
+ *       reinitializing the modem (by setting CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_MODEM). If other
+ *       handling is required the fault handler can be defined outside of the Modem library
+ *       integration layer by setting CONFIG_NRF_MODEM_LIB_ON_FAULT_APPLICATION_SPECIFIC.
  *
  * @param[in] fault_info Modem fault information. Contain the fault reason, and,
  *                       in some cases, the modem program counter.
