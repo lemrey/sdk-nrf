@@ -8,6 +8,686 @@
 #    - None
 
 - scenarios:
-    - None
+    - applications.nrf_desktop.zdebug
   platforms:
-    - None
+    - nrf52840gmouse_nrf52840
+    - nrf52810dmouse_nrf52810
+    - nrf52dmouse_nrf52832
+    - nrf52kbd_nrf52832
+
+- scenarios:
+    - applications.nrf_desktop.zdebugwithshell
+  platforms:
+    - nrf52840gmouse_nrf52840
+
+- scenarios:
+    - applications.nrf_desktop.zdebug_b0
+  platforms:
+    - nrf52840gmouse_nrf52840
+
+- scenarios:
+    - applications.nrf_desktop.zdebug_mcuboot_smp
+  platforms:
+    - nrf52840gmouse_nrf52840
+
+- scenarios:
+    - applications.nrf_desktop.zrelease_b0
+  platforms:
+    - nrf52840gmouse_nrf52840
+
+- scenarios:
+    - applications.nrf_desktop.zrelease
+  platforms:
+    - nrf52810dmouse_nrf52810
+    - nrf52840gmouse_nrf52840
+    - nrf52dmouse_nrf52832
+
+- scenarios:
+    - samples.nrf5340.multiprotocol_rpmsg.build
+  platforms:
+    - nrf5340dk_nrf5340_cpunet
+
+- scenarios:
+    - samples.nrf9160.download.tfm
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.nrf9160.modem_shell
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.nrf9160.modem_shell.cloud_mqtt
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.nrf9160.modem_shell.cloud_mqtt_rest
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.nrf9160.modem_shell.esp_wifi
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.nrf9160.modem_shell.fota
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.nrf9160.modem_shell.lwm2m
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.nrf9160.modem_shell.ppp
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.peripheral.802154_phy_test
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpunet
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.peripheral.radio_test.nrf5340_nrf21540
+  platforms:
+    - nrf5340dk_nrf5340_cpunet
+
+- scenarios:
+    - samples.bluetooth.direct_test_mode
+  platforms:
+    - nrf5340dk_nrf5340_cpunet
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.bluetooth.alexa_gadget
+  platforms:
+    - nrf5340dk_nrf5340_cpunet
+    - nrf52dk_nrf52810
+
+- scenarios:
+    - samples.bluetooth.nrf_dm.timeslot
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+
+- scenarios:
+    - samples.bluetooth.direct_test_mode.nrf5340_nrf21540
+  platforms:
+    - nrf5340dk_nrf5340_cpunet
+
+- scenarios:
+    - nrfx_integration_test.build
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpunet
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf9160dk_nrf9160
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - nrfx_integration_test.build.bt.softdevice
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpunet
+
+- scenarios:
+    - nrfx_integration_test.build.bt.sw_split
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpunet
+
+- scenarios:
+    - samples.peripheral.radio_test
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpunet
+
+- scenarios:
+    - debug.cpu_load
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - debug.cpu_load.shared_dppi
+  platforms:
+    - nrf9160dk_nrf9160
+
+- scenarios:
+    - samples.psa_tls.client.ecdsa.cc3xx
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.psa_tls.client.rsa.cc3xx
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.psa_tls.server.ecdsa.cc3xx
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.psa_tls.server.rsa.cc3xx
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.chacha_poly
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.ecdh
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.persistent_key_usage
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.ecdsa
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.hkdf
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.hmac
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.rng
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.rsa
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.sha256
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.keys.hw_unique_key
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - lib.hw_unique_key_tfm.hw_unique_key_tfm1
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - tfm.secure_services
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.openthread.cli
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.cli.minimal_multiprotocol
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.cli.minimal_singleprotocol
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.cli.thread_1_2
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.cli.usb
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+    - nrf52840dongle_nrf52840
+
+- scenarios:
+    - samples.openthread.coap_client
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.coap_client.mtd.multiprotocol_ble
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.coap_server
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.coprocessor
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - samples.openthread.coprocessor.usb
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+    - nrf52840dongle_nrf52840
+
+- scenarios:
+    - sample.tfm.helloworld
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.tfm.secure_partition
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - samples.spm
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf5340dk_nrf5340_cpuapp
+
+- scenarios:
+    - samples.spm_shared_uart
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf5340dk_nrf5340_cpuapp
+
+- scenarios:
+    - debug.cpu_load.cpu_load
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - debug.cpu_load.shared_dppi.cpu_load
+  platforms:
+    - nrf9160dk_nrf9160
+
+- scenarios:
+    - matter.lock.smp_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.lock.debug
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+
+- scenarios:
+    - matter.lock.low_power
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.lock.no_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.lock.release
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - matter.light_switch.smp_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.light_switch.debug
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+
+- scenarios:
+    - matter.light_switch.low_power
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.light_switch.no_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.light_switch.release
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - matter.light_bulb.smp_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.light_bulb.debug
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+
+- scenarios:
+    - matter.light_bulb.low_power
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.light_bulb.no_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.light_bulb.release
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - matter.template.debug
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.template.no_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - matter.template.release
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - zigbee.light_bulb
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - zigbee.light_bulb.with_shell
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - zigbee.light_switch
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - zigbee.light_switch.fota
+  platforms:
+    - nrf21540dk_nrf52840
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - zigbee.light_switch.fota_and_multiprotocol
+  platforms:
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - zigbee.light_switch.current_measurement
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+
+- scenarios:
+    - zigbee.light_switch.multiprotocol
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+
+- scenarios:
+    - zigbee.light_switch.with_shell
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - zigbee.ncp
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - zigbee.ncp.with_nrf21540ek
+  platforms:
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - zigbee.ncp.usb
+  platforms:
+    - nrf52840dongle_nrf52840
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+
+- scenarios:
+    - zigbee.network_coordinator
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+
+- scenarios:
+    - zigbee.shell
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+    - nrf52833dk_nrf52833
+
+- scenarios:
+    - zigbee.template
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+    - nrf52833dk_nrf52833
+
+- scenarios:
+    - zigbee.zboss_api.alarm_api
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - zigbee.zboss_api.callback_api
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+
+- scenarios:
+    - sample.aes_cbc
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - sample.aes_ccm
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - sample.aes_ctr
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - sample.aes_gcm.cc310
+  platforms:
+    - nrf9160dk_nrf9160_ns
+
+- scenarios:
+    - sample.aes_gcm.cc312
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - nrf5340_audio.sw_codec_lc3_test
+  platforms:
+    - nrf5340_audio_dk_nrf5340_cpuapp
+
+- scenarios:
+    - zigbee.osif.nvram
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+
+- scenarios:
+    - lib.hw_unique_key_tfm
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+
+- scenarios:
+    - lib.modem_trace_uart
+  platforms:
+    - qemu_cortex_m3
+
+- scenarios:
+    - applications.matter_weather_station
+  platforms:
+    - thingy53_nrf5340_cpuapp
+
+- scenarios:
+    - applications.zigbee_weather_station.debug
+  platforms:
+    - thingy53_nrf5340_cpuapp
+
+- scenarios:
+    - applications.zigbee_weather_station
+  platforms:
+    - thingy53_nrf5340_cpuapp
+
+- scenarios:
+    - applications.nrf5340_audio.gateway
+  platforms:
+    - nrf5340_audio_dk_nrf5340_cpuapp
+
+- scenarios:
+    - applications.nrf5340_audio.headset
+  platforms:
+    - nrf5340_audio_dk_nrf5340_cpuapp
+
+- scenarios:
+    - bluetooth.general.tester
+  platforms:
+    - qemu_x86
