@@ -10,6 +10,7 @@
 #include <device.h>
 #include <shell/shell.h>
 #include <modem/lte_lc.h>
+#include <modem/nrf_modem_lib.h>
 
 #if defined(CONFIG_LWM2M_CARRIER)
 #include <lwm2m_carrier.h>
@@ -48,7 +49,7 @@
 extern struct k_sem nrf_modem_lib_initialized;
 extern struct k_poll_signal mosh_signal;
 /**
- * @brief Overriding modem library error handler.
+ * @brief Modem fault handler.
  */
 void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {

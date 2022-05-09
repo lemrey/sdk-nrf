@@ -144,7 +144,7 @@ void nrf_cloud_error_handler(int err)
 	error_handler(ERROR_NRF_CLOUD, err);
 }
 
-/**@brief Recoverable modem library error. */
+/**@brief Modem fault handler. */
 void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {
 	error_handler(ERROR_MODEM_RECOVERABLE, (int)fault_info->reason);

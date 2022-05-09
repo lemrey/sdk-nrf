@@ -16,10 +16,6 @@
 #include <pm_config.h>
 #include <nrf_modem_at.h>
 
-#if defined NRF_MODEM_LIB_ON_FAULT_RESET_APPLICATION
-#include <sys/reboot.h>
-#endif /* NRF_MODEM_LIB_ON_FAULT_RESET_APPLICATION */
-
 #ifndef CONFIG_TRUSTED_EXECUTION_NONSECURE
 #error  nrf_modem_lib must be run as non-secure firmware.\
 	Are you building for the correct board ?
@@ -207,29 +203,31 @@ int nrf_modem_lib_shutdown(void)
 	return 0;
 }
 
-/*
- * Modem library recoverable error handler.
+/**
+ * Modem library fault handler.
  *
- * @note This can be overridden in the application if a different error handling is required.
+ * If a different error handling is required, the handler can be defined in the application
+ * by setting the NRF_MODEM_LIB_ON_FAULT_APPLICATION_SPECIFIC Kconfig option.
  *
  * @param[in] fault_info Modem fault information. Contain the fault reason, and,
  *                       in some cases, the modem program counter.
  */
-__weak void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
+
+#if defined CONFIG_NRF_MODEM_LIB_ON_FAULT_DO_NOTHING
+void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {
 	LOG_ERR("Modem error: %d, PC: %d", fault_info->reason, fault_info->program_counter);
+}
+#endif /* CONFIG_NRF_MODEM_LIB_ON_FAULT_DO_NOTHING */
 
 #if defined CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_MODEM
-		/* For now we wait for 10 ms to give the trace handler time to process trace data. */
-		k_work_reschedule(&modem_failure_shutdown_work, K_MSEC(10));
-#endif /* CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_MODEM */
-
-#if defined CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_APPLICATION
-		sys_reboot(SYS_REBOOT_COLD);
-#endif /* CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_APPLICATION */
+void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
+{
+	LOG_ERR("Modem error: %d, PC: %d", fault_info->reason, fault_info->program_counter);
+	/* For now we wait 10 ms to give the trace handler time to process trace data. */
+	k_work_reschedule(&modem_failure_shutdown_work, K_MSEC(10));
 }
 
-#if defined CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_MODEM
 static void on_modem_failure_shutdown(struct k_work *item)
 {
 	(void)item;

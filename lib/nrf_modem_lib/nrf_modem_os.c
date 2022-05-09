@@ -331,7 +331,6 @@ void nrf_modem_os_event_notify(void)
 
 ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
 {
-
 	nrf_modem_application_irq_handler();
 
 	nrf_modem_os_event_notify();
@@ -613,7 +612,7 @@ void nrf_modem_os_init(void)
 #ifdef CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
 	int err = nrf_modem_lib_trace_init(&trace_heap);
 
-	if (err == 0) {
+	if (!err) {
 		trace_irq_init();
 	} else {
 		LOG_ERR("nrf_modem_lib_trace_init failed with error %d.", err);
@@ -662,7 +661,7 @@ void nrf_modem_os_shutdown(void)
 
 	/* Wake up all sleeping threads. */
 	SYS_SLIST_FOR_EACH_CONTAINER(&sleeping_threads, thread, node) {
- 		k_sem_give(&thread->sem);
+		k_sem_give(&thread->sem);
 	}
 }
 
