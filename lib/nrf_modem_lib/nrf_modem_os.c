@@ -535,15 +535,6 @@ static uint8_t log_level_translate(uint8_t level)
 	}
 }
 
-const char *nrf_modem_os_log_strdup(const char *str)
-{
-	if (IS_ENABLED(CONFIG_LOG)) {
-		return log_strdup(str);
-	}
-
-	return str;
-}
-
 void nrf_modem_os_log(int level, const char *fmt, ...)
 {
 #if defined(CONFIG_LOG)
