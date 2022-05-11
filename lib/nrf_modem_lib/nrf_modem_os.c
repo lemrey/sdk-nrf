@@ -398,6 +398,10 @@ void *nrf_modem_os_trace_alloc(size_t bytes)
 		trace_heap_diag.failed_allocs++;
 		LOG_WRN("trace_alloc(%d) -> %p", bytes, addr);
 	}
+#else
+	if (!addr) {
+		LOG_WRN("trace_alloc(%d) failed", bytes);
+	}
 #endif
 	return addr;
 }
