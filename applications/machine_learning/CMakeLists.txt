@@ -25,7 +25,6 @@ endif()
 # The application uses the configuration/<board> scheme for configuration files.
 set(APPLICATION_CONFIG_DIR "configuration/\${BOARD}")
 
-
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project("Machine learning"
         VERSION 0.1)
@@ -56,4 +55,9 @@ add_subdirectory(src/util)
 
 if(CONFIG_BT_RPMSG)
   assert_exists(hci_rpmsg_CONF_FILE)
+endif()
+
+if (CONFIG_SOC_SERIES_NRF54X)
+  build_secdom()
+  create_app_uicr()
 endif()

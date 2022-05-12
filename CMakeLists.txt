@@ -14,6 +14,7 @@ set(CONF_FILE_BUILD_TYPE ${CONF_FILE_BUILD_TYPE} CACHE INTERNAL "The build type"
 include(cmake/extensions.cmake)
 include(cmake/version.cmake)
 include(cmake/multi_image.cmake)
+include(cmake/core_fw.cmake)
 
 zephyr_include_directories(include)
 

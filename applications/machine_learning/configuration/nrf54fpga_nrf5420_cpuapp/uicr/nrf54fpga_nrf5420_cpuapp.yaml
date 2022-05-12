@@ -1,0 +1,200 @@
+#
+# Copyright (c) 2021 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+###################################
+# Memory
+###################################
+
+mem_config:
+  - READ: Allowed
+    WRITE: NotAllowed
+    EXECUTE: Allowed
+    SECURE: Secure # Means non-secure is not allowed, i.e. is secure
+    OWNERID: 2
+    ADDRESS: 0x0E054000
+  - READ: Allowed
+    WRITE: Allowed
+    EXECUTE: NotAllowed
+    SECURE: Secure
+    OWNERID: 0
+    ADDRESS: 0x2F000000
+  - READ: Allowed
+    WRITE: Allowed
+    EXECUTE: NotAllowed
+    SECURE: Secure
+    OWNERID: 2
+    ADDRESS: 0x2F080000
+  - READ: Allowed
+    WRITE: Allowed
+    EXECUTE: Allowed
+    SECURE: Secure
+    OWNERID: 2 # app
+    ADDRESS: 0x2FC00000 # GRAM30 for APP
+
+mem_size:
+  - SIZE: 0x56000
+  - SIZE: 0x80000
+  - SIZE: 0x60000
+  - SIZE: 0x8000
+
+
+###################################
+# Peripherals
+###################################
+
+periph_config:
+  - SECURE: Secure
+    DMASEC: Secure
+    PROCESSOR: 2
+    ADDRESS:
+      - UARTE136_S
+
+
+###################################
+# GPIO
+###################################
+
+gpio_own:
+  - Own
+  - Own
+  - Own
+  - Own
+  - Own
+  - Own
+
+###################################
+# GPIOTE
+###################################
+
+gpiote_ch_own:
+  - CH_2: Own
+
+gpiote_ch_secure:
+  - CH_2: NonSecure
+
+
+###################################
+# GRTC
+###################################
+
+grtc_cc_own:
+  CC_0: Own
+  CC_1: Own
+
+grtc_cc_secure:
+  CC_0: NonSecure
+  CC_1: Secure
+
+
+###################################
+# IPCT (Local)
+###################################
+
+ipct_local_ch_secure:
+  CH_0: NonSecure
+
+ipct_local_interrupt_secure:
+  INT_1: NonSecure
+
+
+###################################
+# IPCT (Global)
+###################################
+
+# ipct_global_ch_own: Own --> request ownership by This (i.e. APP) domain
+ipct_global_ch_own:
+  - NotOwn            # IPCT120[ch#0..15]
+  - NotOwn            # IPCT130[ch#0..15]
+
+ipct_global_ch_secure:
+  # (for channels irrelevant to the APP domain operation, the default value "Secure" is used)
+  - Secure            # IPCT120[ch#0..15]
+  - Secure            # IPCT130[ch#0..15]
+
+ipct_global_interrupt_own:
+  - NotOwn            # IPCT120[int#0..]
+  - NotOwn            # IPCT130[int#0..]
+
+ipct_global_interrupt_secure:
+  # (for lines irrelevant to the APP domain operation, the default value "Secure" is used)
+  - Secure            # IPCT120[int#0..]
+  - Secure            # IPCT130[int#0..]
+
+
+###################################
+# DPPI (Global)
+###################################
+
+dppi_global_ch_own:
+  - NotOwn            # DPPIC120[ch#0..7]
+  - NotOwn            # DPPIC130[ch#0..7]
+  - NotOwn            # DPPIC131[ch#0..7]
+  - NotOwn            # DPPIC132[ch#0..7]
+  - NotOwn            # DPPIC133[ch#0..7]
+  - NotOwn            # DPPIC134[ch#0..7]
+  - NotOwn            # DPPIC135[ch#0..7]
+  - NotOwn            # DPPIC136[ch#0..7]
+
+dppi_global_ch_secure:
+  # (for DPPIs irrelevant to the APP domain operation, the default value "Secure" is used)
+  - Secure            # DPPIC120[ch#0..7]
+  - Secure            # DPPIC130[ch#0..7]
+  - Secure            # DPPIC131[ch#0..7]
+  - Secure            # DPPIC132[ch#0..7]
+  - Secure            # DPPIC133[ch#0..7]
+  - Secure            # DPPIC134[ch#0..7]
+  - Secure            # DPPIC135[ch#0..7]
+  - Secure            # DPPIC136[ch#0..7]
+
+dppi_global_ch_link_source:
+  - NotLinked         # DPPIC120[ch#0..7]
+  - NotLinked         # DPPIC130[ch#0..7]
+  - NotLinked         # DPPIC131[ch#0..7]
+  - NotLinked         # DPPIC132[ch#0..7]
+  - NotLinked         # DPPIC133[ch#0..7]
+  - NotLinked         # DPPIC134[ch#0..7]
+  - NotLinked         # DPPIC135[ch#0..7]
+  - NotLinked         # DPPIC136[ch#0..7]
+
+dppi_global_ch_link_sink:
+  - NotLinked         # DPPIC120[ch#0..7]
+  - NotLinked         # DPPIC130[ch#0..7]
+  - NotLinked         # DPPIC131[ch#0..7]
+  - NotLinked         # DPPIC132[ch#0..7]
+  - NotLinked         # DPPIC133[ch#0..7]
+  - NotLinked         # DPPIC134[ch#0..7]
+  - NotLinked         # DPPIC135[ch#0..7]
+  - NotLinked         # DPPIC136[ch#0..7]
+
+dppi_global_chg_own:
+  - NotOwn           # DPPIC120[chg#0..1]
+  - NotOwn           # DPPIC130[chg#0..1]
+  - NotOwn           # DPPIC131[chg#0..1]
+  - NotOwn           # DPPIC132[chg#0..1]
+  - NotOwn           # DPPIC133[chg#0..1]
+  - NotOwn           # DPPIC134[chg#0..1]
+  - NotOwn           # DPPIC135[chg#0..1]
+  - NotOwn           # DPPIC136[chg#0..1]
+
+dppi_global_chg_secure:
+  # (for groups irrelevant to the APP domain operation, the default value "Secure" is used)
+  - Secure           # DPPIC120[chg#0..1]
+  - Secure           # DPPIC130[chg#0..1]
+  - Secure           # DPPIC131[chg#0..1]
+  - Secure           # DPPIC132[chg#0..1]
+  - Secure           # DPPIC133[chg#0..1]
+  - Secure           # DPPIC134[chg#0..1]
+  - Secure           # DPPIC135[chg#0..1]
+  - Secure           # DPPIC136[chg#0..1]
+
+
+#####################################
+# Vector Table Offset Register (VTOR)
+#####################################
+
+initsvtor: 0x1E054000
+
+initnsvtor: 0x0E054000
