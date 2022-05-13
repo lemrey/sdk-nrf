@@ -23,6 +23,24 @@ function(build_secdom)
   endif()
 endfunction()
 
+function(build_sysctrl)
+  if (CONFIG_SOC_SERIES_NRF54X)
+    include(ExternalProject)
+    set(BOARD_REMOTE "nrf54sysc_nrf5420_cpusys")
+
+    ExternalProject_Add(
+      sysctrl
+      SOURCE_DIR ${NRF_DIR}/../core_fw/sysctrl/sysctrl
+      INSTALL_COMMAND ""
+      CMAKE_CACHE_ARGS
+        -DBOARD:STRING=${BOARD_REMOTE}
+      BUILD_ALWAYS True
+    )
+  else()
+    message(FATAL_ERROR "Incorrect SoC series")
+  endif()
+endfunction()
+
 function(create_app_uicr)
   # Adds an uicr to the build.
   #

@@ -59,5 +59,6 @@ endif()
 
 if (CONFIG_SOC_SERIES_NRF54X)
   build_secdom()
+  build_sysctrl()
   create_app_uicr()
 endif()
