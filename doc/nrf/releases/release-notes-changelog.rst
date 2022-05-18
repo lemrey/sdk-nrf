@@ -186,7 +186,10 @@ nrf5340 Samples
 * Added:
 
   * :ref:`nrf5340_remote_shell` sample.
-  * :ref:`nrf5340_multicore` sample.
+
+* Updated:
+
+  * Moved ``nRF5340: Multicore application`` sample to :ref:`multicore_hello_world`.
 
 nrf9160 Samples
 ---------------
