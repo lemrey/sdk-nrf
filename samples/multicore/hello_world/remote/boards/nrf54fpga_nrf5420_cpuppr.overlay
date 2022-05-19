@@ -1,0 +1,29 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+ /* Delete the node to avoid confusion in dts. */
+ /delete-node/ &serial_buffer_gram3;
+
+ / {
+	reserved-memory {
+		serial_buffer: memory@2fc08000 {
+			compatible = "mmio-sram";
+			reg = <0x2fc07800 DT_SIZE_K(4)>;
+		};
+	};
+
+	chosen {
+		zephyr,console = &uart135;
+		/* Assign unique region to uart buffer. */
+		nrfx,uarte-gram-buffer = &serial_buffer;
+	};
+};
+
+ &uart135 {
+	tx-pin = <7>;
+	rx-pin = <6>;
+	status = "okay";
+};

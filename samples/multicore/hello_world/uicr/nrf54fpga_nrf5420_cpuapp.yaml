@@ -1,0 +1,67 @@
+#
+# Copyright (c) 2022 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+###################################
+# Memory
+###################################
+
+mem_config:
+  - READ: Allowed
+    WRITE: NotAllowed
+    EXECUTE: Allowed
+    SECURE: Secure
+    OWNERID: 2
+    ADDRESS: 0x0E054000 # APP code
+  - READ: Allowed
+    WRITE: NotAllowed
+    EXECUTE: Allowed
+    SECURE: Secure
+    OWNERID: 2
+    ADDRESS: 0x1E0A0000 # PPR code
+  - READ: Allowed
+    WRITE: Allowed
+    EXECUTE: Allowed
+    SECURE: Secure
+    OWNERID: 0
+    ADDRESS: 0x2F000000 # GRAM0 for everyone
+  - READ: Allowed
+    WRITE: Allowed
+    EXECUTE: Allowed
+    SECURE: Secure
+    OWNERID: 2
+    ADDRESS:
+      - 0x2F880000 # GRAM2 for APP
+      - 0x2FC00000 # GRAM3 for APP
+
+mem_size:
+  - SIZE: 0x56000 # APP code
+  - SIZE: 0xA000  # PPR code
+  - SIZE: 0xE0000 # GRAM0
+  - SIZE: 0x10000 # GRAM2
+  - SIZE: 0x8000  # GRAM3
+
+periph_config:
+  - SECURE: Secure
+    DMASEC: Secure
+    PROCESSOR: 2
+    ADDRESS:
+      - UARTE135_S
+      - UARTE136_S
+      - VPR130_S # PPR start address
+
+gpio_own:
+  - Own
+  - Own
+  - Own
+  - Own
+
+#####################################
+# Vector Table Offset Register (VTOR)
+#####################################
+
+initsvtor: 0x1E054000
+
+initnsvtor: 0x0E054000

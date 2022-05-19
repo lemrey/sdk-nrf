@@ -12,3 +12,8 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(app)
 
 target_sources(app PRIVATE src/main.c)
+
+if (CONFIG_SOC_SERIES_NRF54X)
+  build_secdom()
+  create_app_uicr()
+endif()
