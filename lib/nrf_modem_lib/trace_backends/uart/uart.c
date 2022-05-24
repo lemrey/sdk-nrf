@@ -23,6 +23,8 @@ static const nrfx_uarte_t uarte_inst = NRFX_UARTE_INSTANCE(1);
 /* Semaphore used to check if the last UART transfer was completed. */
 static K_SEM_DEFINE(tx_sem, 1, 1);
 
+static trace_backend_processed_cb trace_processed_callback;
+
 static void uarte_callback(nrfx_uarte_event_t const *event, void *p_context)
 {
 	__ASSERT(k_sem_count_get(&tx_sem) == 0,
@@ -52,7 +54,7 @@ static void wait_for_tx_done(void)
 	k_sem_give(&tx_sem);
 }
 
-int trace_backend_init(void)
+int trace_backend_init(trace_backend_processed_cb trace_processed_cb)
 {
 	int err;
 	const uint8_t irq_priority = DT_IRQ(UART1_NL, priority);
@@ -65,6 +67,12 @@ int trace_backend_init(void)
 		.interrupt_priority = irq_priority,
 		.p_context = NULL,
 	};
+
+	if (trace_processed_cb == NULL) {
+		return -EFAULT;
+	}
+
+	trace_processed_callback = trace_processed_cb;
 
 	err = pinctrl_apply_state(PINCTRL_DT_DEV_CONFIG_GET(UART1_NL), PINCTRL_STATE_DEFAULT);
 	__ASSERT_NO_MSG(err == 0);
@@ -126,6 +134,11 @@ int trace_backend_write(const void *data, size_t len)
 	}
 
 	wait_for_tx_done();
+
+	err = trace_processed_callback(len);
+	if (err) {
+		return err;
+	}
 
 	return len;
 }
