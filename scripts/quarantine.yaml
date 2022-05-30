@@ -691,3 +691,32 @@
     - bluetooth.general.tester
   platforms:
     - qemu_x86
+
+- scenarios:
+    - project.sdfw
+  platforms:
+    - nrf54fpga_nrf5420_cpusec
+    - nrf92emu_nrf9280_cpusec
+    - nrf54emu_nrf5420_cpusec
+
+- scenarios:
+    - samples.local_domain.reset
+  platforms:
+    - nrf54fpga_nrf5420_cpuapp
+    - nrf54fpga_nrf5420_cpunet
+    - nrf54emu_nrf5420_cpuapp
+    - nrf54emu_nrf5420_cpunet
+    - nrf92emu_nrf9280_cpuapp
+    - nrf92emu_nrf9280_cpunet
+    - nrf92emu_nrf9280_cpumod
+
+- scenarios:
+    - samples.local_domain
+  platforms:
+    - nrf54fpga_nrf5420_cpuapp
+    - nrf54fpga_nrf5420_cpunet
+    - nrf54emu_nrf5420_cpuapp
+    - nrf54emu_nrf5420_cpunet
+    - nrf92emu_nrf9280_cpuapp
+    - nrf92emu_nrf9280_cpunet
+    - nrf92emu_nrf9280_cpumod
