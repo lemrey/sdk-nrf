@@ -11,3 +11,7 @@
 		acc-signal = "wave";
 	};
 };
+
+&uart136 {
+	status = "okay";
+};
