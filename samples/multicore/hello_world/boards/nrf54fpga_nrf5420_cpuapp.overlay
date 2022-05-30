@@ -6,12 +6,4 @@
 
  &uart136 {
 	 status = "okay";
-	 tx-pin = <5>;
-	 rx-pin = <4>;
  };
-
- / {
-	chosen {
-		zephyr,console = &uart136;
-	};
-};
