@@ -168,9 +168,6 @@ static int z_to_nrf_optname(int z_in_level, int z_in_optname,
 		case TLS_CIPHERSUITE_LIST:
 			*nrf_out_optname = NRF_SO_SEC_CIPHERSUITE_LIST;
 			break;
-		case TLS_CIPHERSUITE_USED:
-			*nrf_out_optname = NRF_SO_SEC_CIPHER_IN_USE;
-			break;
 		case TLS_PEER_VERIFY:
 			*nrf_out_optname = NRF_SO_SEC_PEER_VERIFY;
 			break;
