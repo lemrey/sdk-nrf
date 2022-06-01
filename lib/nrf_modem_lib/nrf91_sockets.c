@@ -307,7 +307,7 @@ static int z_to_nrf_family(sa_family_t z_family)
 	}
 }
 
-static int nrf_to_z_family(nrf_socket_family_t nrf_family)
+static int nrf_to_z_family(nrf_sa_family_t nrf_family)
 {
 	switch (nrf_family) {
 	case NRF_AF_INET:
