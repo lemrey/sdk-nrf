@@ -48,7 +48,6 @@ static char sca_buff[SCA_BUFFER_SIZE + 1];
  * Including all commands the filter should check for and the respective
  * functions to be called on detection.
  */
-
 AT_FILTER(CPMS, "AT+CPMS", gcf_sms_lib_filter_callback, PAUSED);
 AT_FILTER(CSMS, "AT+CSMS", gcf_sms_lib_filter_callback, PAUSED);
 AT_FILTER(CSCA, "AT+CSCA", gcf_sms_lib_filter_callback, PAUSED);
@@ -464,15 +463,15 @@ int gcf_sms_lib_init(void)
 		sms_buffers_clear_index(i);
 	}
 
-	at_filter_resume(CPMS);
-	at_filter_resume(CSMS);
-	at_filter_resume(CSCA);
-	at_filter_resume(CSCS);
-	at_filter_resume(CMGD);
-	at_filter_resume(CMSS);
-	at_filter_resume(CMGW);
-	at_filter_resume(CMMS);
-	at_filter_resume(CMGF0);
+	at_filter_resume(&CPMS);
+	at_filter_resume(&CSMS);
+	at_filter_resume(&CSCA);
+	at_filter_resume(&CSCS);
+	at_filter_resume(&CMGD);
+	at_filter_resume(&CMSS);
+	at_filter_resume(&CMGW);
+	at_filter_resume(&CMMS);
+	at_filter_resume(&CMGF0);
 
 return 0;
 }

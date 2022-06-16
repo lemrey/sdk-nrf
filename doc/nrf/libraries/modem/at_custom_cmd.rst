@@ -94,7 +94,7 @@ The following code snippet shows how to resume a filter that is paused by defaul
 	int resume_my_command_filter(void)
 	{
 		/* resume the filter */
-		at_filter_resume(my_command_filter);
+		at_filter_resume(&my_command_filter);
 	}
 
 	int my_command_callback(char *buf, size_t len, char *at_cmd);

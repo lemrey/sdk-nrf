@@ -27,6 +27,7 @@ extern "C" {
 #include <kernel.h>
 #include <sys/util_macro.h>
 #include <toolchain/common.h>
+#include <nrf_modem_at.h>
 
 /**
  * @brief Initialize custom AT commands.
@@ -74,7 +75,7 @@ int at_custom_cmd_response_buffer_fill(char *buf, size_t buf_size,
  */
 #define AT_FILTER(name, _cmd, _callback, ...)                                                      \
 	static int _callback(char *buf, size_t len, char *at_cmd);                                 \
-	STRUCT_SECTION_ITERABLE(nrf_modem_at_cmd_filter, nrf_modem_at_cmd_filter_##name) = {       \
+	static STRUCT_SECTION_ITERABLE(nrf_modem_at_cmd_filter, name) = {                          \
 		.cmd = _cmd,                                                                       \
 		.callback = _callback,                                                             \
 		COND_CODE_1(__VA_ARGS__, (.paused = __VA_ARGS__,), ())                             \
@@ -85,16 +86,20 @@ int at_custom_cmd_response_buffer_fill(char *buf, size_t buf_size,
  *
  * @param filter The filter to pause.
  */
-#define at_filter_pause(filter) \
-	nrf_modem_at_cmd_filter_##filter.paused = 1
+static inline void at_filter_pause(struct nrf_modem_at_cmd_filter *filter)
+{
+	filter->paused = true;
+}
 
 /**
  * @brief Resume filter.
  *
  * @param filter The filter to resume.
  */
-#define at_filter_resume(filter) \
-	nrf_modem_at_cmd_filter_##filter.paused = 0
+static inline void at_filter_resume(struct nrf_modem_at_cmd_filter *filter)
+{
+	filter->paused = false;
+}
 
 #ifdef __cplusplus
 }
