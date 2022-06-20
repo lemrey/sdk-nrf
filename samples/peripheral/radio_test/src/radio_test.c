@@ -642,9 +642,15 @@ static void timer_init(const struct radio_test_config *config)
 {
 	nrfx_err_t          err;
 	nrfx_timer_config_t timer_cfg = {
-		.frequency = NRF_TIMER_FREQ_1MHz,
-		.mode      = NRF_TIMER_MODE_TIMER,
-		.bit_width = NRF_TIMER_BIT_WIDTH_24,
+		.nrfy_config = {
+#if defined(NRF52_SERIES) || defined(NRF53_SERIES)
+			.prescaler = 4, /* 16MHz/2^4 = 1MHz */
+#else
+#error Unknown device, set correct prescaler
+#endif
+			.mode = NRF_TIMER_MODE_TIMER,
+			.bit_width = NRF_TIMER_BIT_WIDTH_24,
+		},
 		.p_context = (void *) config,
 	};
 
