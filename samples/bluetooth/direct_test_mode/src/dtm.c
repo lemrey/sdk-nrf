@@ -589,9 +589,15 @@ static int timer_init(void)
 {
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
-		.frequency = NRF_TIMER_FREQ_1MHz,
-		.mode = NRF_TIMER_MODE_TIMER,
-		.bit_width = NRF_TIMER_BIT_WIDTH_16,
+		.nrfy_config = {
+#if defined(NRF52_SERIES) || defined(NRF53_SERIES)
+			.prescaler = 4, /* 16MHz/2^4 = 1MHz */
+#else
+#error Unknown device, set correct prescaler
+#endif
+			.mode = NRF_TIMER_MODE_TIMER,
+			.bit_width = NRF_TIMER_BIT_WIDTH_16,
+		},
 	};
 
 	err = nrfx_timer_init(&dtm_inst.timer, &timer_cfg, dtm_timer_handler);
@@ -618,9 +624,15 @@ static int wait_timer_init(void)
 {
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
-		.frequency = NRF_TIMER_FREQ_1MHz,
-		.mode = NRF_TIMER_MODE_TIMER,
-		.bit_width = NRF_TIMER_BIT_WIDTH_16,
+		.nrfy_config = {
+#if defined(NRF52_SERIES) || defined(NRF53_SERIES)
+			.prescaler = 4, /* 16MHz/2^4 = 1MHz */
+#else
+#error Unknown device, set correct prescaler
+#endif
+			.mode = NRF_TIMER_MODE_TIMER,
+			.bit_width = NRF_TIMER_BIT_WIDTH_16,
+		},
 	};
 
 	err = nrfx_timer_init(&dtm_inst.wait_timer, &timer_cfg, wait_timer_handler);
@@ -645,9 +657,11 @@ static int anomaly_timer_init(void)
 {
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
-		.frequency = NRF_TIMER_FREQ_125kHz,
-		.mode = NRF_TIMER_MODE_TIMER,
-		.bit_width = NRF_TIMER_BIT_WIDTH_16,
+		.nrfy_config = {
+			.prescaler = 7, /* 16MHz/2^7 = 125kHz */
+			.mode = NRF_TIMER_MODE_TIMER,
+			.bit_width = NRF_TIMER_BIT_WIDTH_16,
+		},
 	};
 
 	err = nrfx_timer_init(&dtm_inst.anomaly_timer, &timer_cfg,
