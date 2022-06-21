@@ -5,14 +5,19 @@
  */
 
 #include <string.h>
-#include <zephyr/kernel.h>
 #include <unity.h>
+#include <zephyr/kernel.h>
 
 #include "trace_backend.h"
 
 #include "mock_SEGGER_RTT.h"
 
 #define BACKEND_RTT_BUF_SIZE CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_RTT_BUF_SIZE
+
+static int callback(size_t len)
+{
+	return 0;
+}
 
 extern int unity_main(void);
 
@@ -58,7 +63,7 @@ void test_trace_backend_init_rtt(void)
 	__wrap_SEGGER_RTT_AllocUpBuffer_ExpectAnyArgsAndReturn(trace_rtt_channel);
 	__wrap_SEGGER_RTT_AllocUpBuffer_AddCallback(&rtt_allocupbuffer_callback);
 
-	ret = trace_backend_init();
+	ret = trace_backend_init(callback);
 
 	TEST_ASSERT_EQUAL(0, ret);
 }
@@ -70,8 +75,16 @@ void test_trace_backend_init_rtt_ebusy(void)
 	/* Simulate failure by returning negative RTT channel. */
 	__wrap_SEGGER_RTT_AllocUpBuffer_ExpectAnyArgsAndReturn(-1);
 
-	ret = trace_backend_init();
+	ret = trace_backend_init(callback);
 	TEST_ASSERT_EQUAL(-EBUSY, ret);
+}
+
+void test_trace_backend_init_rtt_efault(void)
+{
+	int ret;
+
+	ret = trace_backend_init(NULL);
+	TEST_ASSERT_EQUAL(-EFAULT, ret);
 }
 
 /* Test that when RTT is configured as trace transport, the traces are forwarded to RTT API. */

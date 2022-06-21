@@ -42,9 +42,9 @@ static bool first_time_init;
 static struct k_mutex slist_mutex;
 
 static int init_ret;
-static enum nrf_modem_mode_t init_mode;
+static enum nrf_modem_mode init_mode;
 
-static const nrf_modem_init_params_t init_params = {
+static const struct nrf_modem_init_params init_params = {
 	.ipc_irq_prio = NRF_MODEM_NETWORK_IRQ_PRIORITY,
 	.shmem.ctrl = {
 		.base = PM_NRF_MODEM_LIB_CTRL_ADDRESS,
@@ -58,7 +58,7 @@ static const nrf_modem_init_params_t init_params = {
 		.base = PM_NRF_MODEM_LIB_RX_ADDRESS,
 		.size = CONFIG_NRF_MODEM_LIB_SHMEM_RX_SIZE,
 	},
-#if CONFIG_NRF_MODEM_LIB_TRACE_ENABLED
+#if CONFIG_NRF_MODEM_LIB_TRACE
 	.shmem.trace = {
 		.base = PM_NRF_MODEM_LIB_TRACE_ADDRESS,
 		.size = CONFIG_NRF_MODEM_LIB_SHMEM_TRACE_SIZE,
@@ -144,13 +144,6 @@ static int _nrf_modem_lib_init(const struct device *unused)
 	}
 	k_mutex_unlock(&slist_mutex);
 
-#if defined(CONFIG_NRF_MODEM_LIB_TRACE_LEVEL)
-	err = nrf_modem_lib_trace_start(CONFIG_NRF_MODEM_LIB_TRACE_LEVEL);
-	if (err) {
-		LOG_ERR("Failed to start modem trace, err %d", err);
-	}
-#endif
-
 	LOG_DBG("Modem library has initialized, ret %d", init_ret);
 	STRUCT_SECTION_FOREACH(nrf_modem_lib_init_cb, e) {
 		LOG_DBG("Modem init callback: %p", e->callback);
@@ -186,7 +179,7 @@ void nrf_modem_lib_shutdown_wait(void)
 	k_mutex_unlock(&slist_mutex);
 }
 
-int nrf_modem_lib_init(enum nrf_modem_mode_t mode)
+int nrf_modem_lib_init(enum nrf_modem_mode mode)
 {
 	init_mode = mode;
 	if (mode == NORMAL_MODE) {
@@ -210,6 +203,8 @@ int nrf_modem_lib_shutdown(void)
 	}
 
 	nrf_modem_shutdown();
+
+	nrf_modem_lib_trace_processing_done_wait(K_FOREVER);
 
 	return 0;
 }
@@ -242,6 +237,13 @@ void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 static void on_modem_failure_shutdown(struct k_work *item)
 {
 	(void)item;
+	bool trace_done;
+
+	trace_done = nrf_modem_lib_trace_processing_done_wait(K_NO_WAIT) ? 0 : 1;
+	if (!trace_done) {
+		k_work_reschedule(&modem_failure_shutdown_work, K_MSEC(10));
+		return;
+	}
 
 	nrf_modem_lib_shutdown();
 	k_work_reschedule(&modem_failure_reinit_work, K_MSEC(10));
