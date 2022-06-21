@@ -466,6 +466,20 @@ Modem libraries
     * Updated:
 
       * Ability to add :ref:`custom trace backends <adding_custom_modem_trace_backends>`.
+      * The trace module has been updated to use the new APIs in Modem library.
+        The modem trace output is now handled by a dedicated thread that starts automatically.
+        The trace thread is synchronized with the initialization and shutdown operations of the Modem library.
+      * The Kconfig option ``CONFIG_NRF_MODEM_LIB_TRACE_ENABLED`` has been renamed to :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE`.
+
+    * Removed:
+
+      * The following Kconfig options:
+
+        * ``CONFIG_NRF_MODEM_LIB_TRACE_THREAD_PROCESSING``
+        * ``CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE``
+        * ``CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE_OVERRIDE``
+        * ``CONFIG_NRF_MODEM_LIB_TRACE_HEAP_DUMP_PERIODIC``
+        * ``CONFIG_NRF_MODEM_LIB_TRACE_HEAP_DUMP_PERIOD_MS``
 
   * :ref:`lib_location` library:
 
