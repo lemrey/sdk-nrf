@@ -18,6 +18,7 @@ set(partition_includes
 set(board_includes
   board
   ${CMAKE_BINARY_DIR}/../zephyr/misc/generated/syscalls_links/include
+  ${ZEPHYR_BASE}/include/zephyr
   ${ZEPHYR_BASE}/include
   )
 
@@ -26,7 +27,14 @@ target_include_directories(platform_region_defs INTERFACE ${partition_includes})
 target_compile_definitions(platform_s
   PRIVATE
   $<$<BOOL:${PLATFORM_DEFAULT_CRYPTO_KEYS}>:PLATFORM_DEFAULT_CRYPTO_KEYS>
+  FIRMWARE_INFO_MAGIC=${FIRMWARE_INFO_MAGIC}
+  EXT_API_MAGIC=${EXT_API_MAGIC}
   )
+
+if (CONFIG_BOOTLOADER_MCUBOOT)
+  # Needed to compile in the MCUBoot secondary region in flash layout.
+  target_compile_definitions(platform_region_defs INTERFACE BL2)
+endif()
 
 target_include_directories(platform_s
   PUBLIC ${partition_includes} ${board_includes}
@@ -60,6 +68,10 @@ endif()
 
 if (${TFM_PARTITION_CRYPTO})
   target_link_libraries(platform_s PRIVATE platform_cc3xx)
+endif()
+
+if (NRF_ALLOW_NON_SECURE_RESET)
+  target_compile_definitions(platform_s PUBLIC NRF_ALLOW_NON_SECURE_RESET)
 endif()
 
 target_compile_definitions(platform_s PUBLIC CONFIG_HW_UNIQUE_KEY CONFIG_HW_UNIQUE_KEY_RANDOM)
@@ -100,6 +112,13 @@ if(TFM_PARTITION_PLATFORM)
     PUBLIC
     include
     ${NRF_DIR}/include/tfm
+    ${NRF_DIR}/include
+    )
+
+  target_compile_definitions(platform_ns
+    PUBLIC
+    FIRMWARE_INFO_MAGIC=${FIRMWARE_INFO_MAGIC}
+    EXT_API_MAGIC=${EXT_API_MAGIC}
     )
 
   target_sources(platform_ns

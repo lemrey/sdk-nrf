@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <dk_buttons_and_leds.h>
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 #include <ram_pwrdn.h>
-#include <device.h>
-#include <pm/device.h>
+#include <zephyr/device.h>
+#include <zephyr/pm/device.h>
 
 #include "coap_client_utils.h"
 
@@ -32,11 +32,6 @@ LOG_MODULE_REGISTER(coap_client, CONFIG_COAP_CLIENT_LOG_LEVEL);
 static void on_nus_received(struct bt_conn *conn, const uint8_t *const data,
 			    uint16_t len)
 {
-	if (len != 1) {
-		LOG_WRN("Received invalid data length (%hd) from NUS", len);
-		return;
-	}
-
 	LOG_INF("Received data: %c", data[0]);
 
 	switch (*data) {

@@ -19,17 +19,17 @@ Requirements
 
 The sample supports the following development kits:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf5340dk_nrf5340_cpuapp, nrf5340dk_nrf5340_cpuapp_ns, nrf52840dk_nrf52840, nrf52833dk_nrf52833, nrf21540dk_nrf52840
+.. table-from-sample-yaml::
 
 You can use one or more of the development kits listed above as the Thread CoAP Client.
 You also need one or more compatible development kits programmed with the :ref:`coap_server_sample` sample.
 
+.. include:: /includes/tfm.txt
+
 Multiprotocol extension requirements
 ====================================
 
-If you enable the :ref:`coap_client_sample_multi_ext`, make sure you have a phone or a tablet with the `nRF Toolbox`_ application installed.
+If you enable the :ref:`coap_client_sample_multi_ext`, make sure you have a phone with the `nRF Toolbox`_ application installed or an additional development kit programmed with :ref:`central_uart` sample.
 
 .. note::
   The :ref:`testing instructions <coap_client_sample_testing_ble>` refer to nRF Toolbox, but similar applications can be used as well, for example `nRF Connect for Mobile`_.
@@ -134,11 +134,6 @@ FEM support
 .. include:: /includes/sample_fem_support.txt
 
 
-Trusted Firmware-M support
-==========================
-
-.. include:: /includes/tfm.txt
-
 Building and running
 ********************
 
@@ -146,7 +141,7 @@ Building and running
 
 |enable_thread_before_testing|
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 Testing
 =======
@@ -190,7 +185,10 @@ Switching between SED and MED modes does not affect the standard testing procedu
 Testing multiprotocol Bluetooth LE extension
 --------------------------------------------
 
-To test the multiprotocol Bluetooth LE extension, you need to first set up nRF Toolbox as follows:
+To test the multiprotocol Bluetooth LE extension, you can use nRF Toolbox or the :ref:`central_uart` sample.
+The steps below assume nRF Toolbox as the Bluetooth tester.
+
+First, you need to set up nRF Toolbox as follows:
 
 1. Tap :guilabel:`UART` to open the UART application in nRF Toolbox.
 

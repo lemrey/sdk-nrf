@@ -44,9 +44,9 @@
 
 #include "audio_datapath.h"
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <nrfx_clock.h>
-#include <shell/shell.h>
+#include <zephyr/shell/shell.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -62,7 +62,7 @@
 #include "contin_array.h"
 #include "pcm_mix.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(audio_datapath, CONFIG_LOG_AUDIO_DATAPATH_LEVEL);
 
 /*
@@ -331,12 +331,12 @@ static void pres_comp_state_set(enum pres_comp_state new_state)
  *
  * @note The audio sync is based on sdu_ref_us
  *
- * @param cur_time Timestamp of when frame was received
+ * @param recv_frame_ts_us Timestamp of when frame was received
  * @param sdu_ref_us ISO timestamp reference from BLE controller
  * @param sdu_ref_not_consecutive True if sdu_ref_us and previous sdu_ref_us
  *				  origins from non-consecutive frames
  */
-static void audio_datapath_presentation_compensation(uint32_t cur_time, uint32_t sdu_ref_us,
+static void audio_datapath_presentation_compensation(uint32_t recv_frame_ts_us, uint32_t sdu_ref_us,
 						     bool sdu_ref_not_consecutive)
 {
 	if (ctrl_blk.drift_comp.state != DRFT_STATE_LOCKED) {
@@ -352,7 +352,7 @@ static void audio_datapath_presentation_compensation(uint32_t cur_time, uint32_t
 		pres_comp_state_set(PRES_STATE_WAIT);
 	}
 
-	int32_t wanted_pres_dly_us = PRES_DLY_US - (cur_time - sdu_ref_us);
+	int32_t wanted_pres_dly_us = PRES_DLY_US - (recv_frame_ts_us - sdu_ref_us);
 	int32_t pres_adj_us = 0;
 
 	switch (ctrl_blk.pres_comp.state) {
@@ -441,7 +441,7 @@ static void audio_datapath_presentation_compensation(uint32_t cur_time, uint32_t
 
 			/* Record producer block start reference */
 			ctrl_blk.out.prod_blk_ts[ctrl_blk.out.prod_blk_idx] =
-				cur_time - ((pres_adj_blks - i) * BLK_PERIOD_US);
+				recv_frame_ts_us - ((pres_adj_blks - i) * BLK_PERIOD_US);
 
 			ctrl_blk.out.prod_blk_idx = NEXT_IDX(ctrl_blk.out.prod_blk_idx);
 		}
@@ -598,41 +598,46 @@ static void audio_datapath_i2s_blk_complete(uint32_t frame_start_ts, uint32_t *r
 	/********** I2S TX **********/
 	static uint8_t *tx_buf;
 
-	/* Double buffered index */
-	uint32_t next_out_blk_idx = NEXT_IDX(ctrl_blk.out.cons_blk_idx);
+	if (tx_buf_released != NULL) {
+		/* Double buffered index */
+		uint32_t next_out_blk_idx = NEXT_IDX(ctrl_blk.out.cons_blk_idx);
 
-	if (next_out_blk_idx != ctrl_blk.out.prod_blk_idx) {
-		/* Only increment if not in underrun condition */
-		ctrl_blk.out.cons_blk_idx = next_out_blk_idx;
-		if (underrun_condition) {
-			underrun_condition = false;
-			LOG_WRN("Data received, total underruns: %d",
-				ctrl_blk.out.total_blk_underruns);
-		}
-
-		tx_buf = (uint8_t *)&ctrl_blk.out.fifo[next_out_blk_idx * BLK_MONO_SIZE_OCTETS];
-
-	} else {
-		if (stream_state_get() == STATE_STREAMING) {
-			underrun_condition = true;
-			ctrl_blk.out.total_blk_underruns++;
-			if ((ctrl_blk.out.total_blk_underruns % UNDERRUN_LOG_INTERVAL_BLKS) == 0) {
-				LOG_WRN("In I2S TX underrun condition, total: %d",
+		if (next_out_blk_idx != ctrl_blk.out.prod_blk_idx) {
+			/* Only increment if not in underrun condition */
+			ctrl_blk.out.cons_blk_idx = next_out_blk_idx;
+			if (underrun_condition) {
+				underrun_condition = false;
+				LOG_WRN("Data received, total underruns: %d",
 					ctrl_blk.out.total_blk_underruns);
 			}
+
+			tx_buf = (uint8_t *)&ctrl_blk.out
+					 .fifo[next_out_blk_idx * BLK_MONO_SIZE_OCTETS];
+
+		} else {
+			if (stream_state_get() == STATE_STREAMING) {
+				underrun_condition = true;
+				ctrl_blk.out.total_blk_underruns++;
+
+				if ((ctrl_blk.out.total_blk_underruns %
+				     UNDERRUN_LOG_INTERVAL_BLKS) == 0) {
+					LOG_WRN("In I2S TX underrun condition, total: %d",
+						ctrl_blk.out.total_blk_underruns);
+				}
+			}
+
+			/* No data available in out.fifo
+			 * use alternative buffers
+			 */
+			ret = alt_buffer_get((void **)&tx_buf);
+			ERR_CHK(ret);
+
+			memset(tx_buf, 0, BLK_STEREO_SIZE_OCTETS);
 		}
 
-		/* No data available in out.fifo
-		 * use alternative buffers
-		 */
-		ret = alt_buffer_get((void **)&tx_buf);
-		ERR_CHK(ret);
-
-		memset(tx_buf, 0, BLK_STEREO_SIZE_OCTETS);
-	}
-
-	if (tone_active) {
-		tone_mix(tx_buf);
+		if (tone_active) {
+			tone_mix(tx_buf);
+		}
 	}
 
 	/********** I2S RX **********/
@@ -688,12 +693,13 @@ static void audio_datapath_i2s_start(void)
 	int ret;
 
 	/* Double buffer I2S */
-	uint8_t *tx_buf_one;
-	uint8_t *tx_buf_two;
-	uint32_t *rx_buf_one;
-	uint32_t *rx_buf_two;
+	uint8_t *tx_buf_one = NULL;
+	uint8_t *tx_buf_two = NULL;
+	uint32_t *rx_buf_one = NULL;
+	uint32_t *rx_buf_two = NULL;
 
 	/* TX */
+#if (CONFIG_STREAM_BIDIRECTIONAL || (CONFIG_AUDIO_DEV == HEADSET))
 	ctrl_blk.out.cons_blk_idx = PREV_IDX(ctrl_blk.out.cons_blk_idx);
 	tx_buf_one =
 		(uint8_t *)&ctrl_blk.out.fifo[ctrl_blk.out.cons_blk_idx * BLK_STEREO_NUM_SAMPS];
@@ -701,6 +707,7 @@ static void audio_datapath_i2s_start(void)
 	ctrl_blk.out.cons_blk_idx = PREV_IDX(ctrl_blk.out.cons_blk_idx);
 	tx_buf_two =
 		(uint8_t *)&ctrl_blk.out.fifo[ctrl_blk.out.cons_blk_idx * BLK_STEREO_NUM_SAMPS];
+#endif /* (CONFIG_STREAM_BIDIRECTIONAL || (CONFIG_AUDIO_DEV == HEADSET)) */
 
 	/* RX */
 	uint32_t alloced_cnt;
@@ -736,10 +743,9 @@ void audio_datapath_sdu_ref_update(uint32_t sdu_ref_us)
 	}
 }
 
-void audio_datapath_stream_out(const uint8_t *buf, size_t size, uint32_t sdu_ref_us, bool bad_frame)
+void audio_datapath_stream_out(const uint8_t *buf, size_t size, uint32_t sdu_ref_us, bool bad_frame,
+			       uint32_t recv_frame_ts_us)
 {
-	uint32_t cur_time = audio_sync_timer_curr_time_get();
-
 	if (!ctrl_blk.stream_started) {
 		LOG_WRN("Stream not started");
 		return;
@@ -791,7 +797,8 @@ void audio_datapath_stream_out(const uint8_t *buf, size_t size, uint32_t sdu_ref
 
 	/*** Presentation compensation ***/
 
-	audio_datapath_presentation_compensation(cur_time, sdu_ref_us, sdu_ref_not_consecutive);
+	audio_datapath_presentation_compensation(recv_frame_ts_us, sdu_ref_us,
+						 sdu_ref_not_consecutive);
 
 	/*** Decode ***/
 
@@ -827,7 +834,7 @@ void audio_datapath_stream_out(const uint8_t *buf, size_t size, uint32_t sdu_ref
 		       BLK_STEREO_SIZE_OCTETS);
 
 		/* Record producer block start reference */
-		ctrl_blk.out.prod_blk_ts[out_blk_idx] = cur_time + (i * BLK_PERIOD_US);
+		ctrl_blk.out.prod_blk_ts[out_blk_idx] = recv_frame_ts_us + (i * BLK_PERIOD_US);
 
 		out_blk_idx = NEXT_IDX(out_blk_idx);
 	}

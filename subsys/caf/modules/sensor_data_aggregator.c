@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
-#include <drivers/sensor.h>
-#include <event_manager.h>
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/sensor.h>
+#include <app_event_manager.h>
 
 #include <caf/events/sensor_event.h>
 #include <caf/events/sensor_data_aggregator_event.h>
@@ -15,27 +15,47 @@
 #define MODULE sensor_data_aggregator
 #include <caf/events/module_state_event.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_CAF_SENSOR_MANAGER_LOG_LEVEL);
 
 #define DT_DRV_COMPAT caf_aggregator
 
 #define __DEFINE_DATA(i, agg_id, size)							\
-	static uint8_t agg_ ## agg_id ## _buff_ ## i ## _data[size] __aligned(4);
+	static uint8_t agg_ ## agg_id ## _buff_ ## i ## _data[size] __aligned(4)
+
+#if (DT_INST_NODE_HAS_PROP(agg_id, memory_region))
 
 #define __INITIALIZE_BUF(i, agg_id)							\
-	{(uint8_t *) &agg_ ## agg_id ## _buff_ ## i ## _data},
+	{										\
+		(uint8_t *) DT_REG_ADDR(DT_INST_PHANDLE(agg_id, memory_region)) +	\
+		i * DT_INST_PROP(agg_id, buf_data_length)				\
+	},
+
+
 
 /* buf_len has to be equal to n*sensor_data_size. */
 #define __DEFINE_BUF_DATA(i)									\
-	UTIL_LISTIFY(DT_INST_PROP(i, buf_count), __DEFINE_DATA, i,				\
-		DT_INST_PROP(i, buf_data_length))						\
 	static struct aggregator_buffer agg_ ## i ## _bufs[] = {				\
 		UTIL_LISTIFY(DT_INST_PROP(i, buf_count), __INITIALIZE_BUF, i)			\
 	};											\
 	BUILD_ASSERT((DT_INST_PROP(i, buf_data_length) % DT_INST_PROP(i, sensor_data_size)) == 0,\
 		"Wrong sensor data or buffer size");
 
+#else
+#define __INITIALIZE_BUF(i, agg_id)							\
+	{(uint8_t *) &agg_ ## agg_id ## _buff_ ## i ## _data}
+
+/* buf_len has to be equal to n*sensor_data_size. */
+#define __DEFINE_BUF_DATA(i)									\
+	LISTIFY(DT_INST_PROP(i, buf_count), __DEFINE_DATA, (;), i,				\
+		DT_INST_PROP(i, buf_data_length));						\
+	static struct aggregator_buffer agg_ ## i ## _bufs[] = {				\
+		LISTIFY(DT_INST_PROP(i, buf_count), __INITIALIZE_BUF, (,), i)			\
+	};											\
+	BUILD_ASSERT((DT_INST_PROP(i, buf_data_length) % DT_INST_PROP(i, sensor_data_size)) == 0,\
+		"Wrong sensor data or buffer size");
+
+#endif
 
 #define __DEFINE_AGGREGATOR(i)								\
 	[i].sensor_descr = DT_INST_PROP(i, sensor_descr),				\
@@ -113,7 +133,7 @@ static void send_buffer(struct aggregator *agg, struct aggregator_buffer *ab)
 	event->sample_cnt = ab->sample_cnt;
 	event->sensor_state = agg->sensor_state;
 	event->sensor_descr = agg->sensor_descr;
-	EVENT_SUBMIT(event);
+	APP_EVENT_SUBMIT(event);
 }
 
 static int enqueue_sample(struct aggregator *agg, struct sensor_event *event)
@@ -133,7 +153,6 @@ static int enqueue_sample(struct aggregator *agg, struct sensor_event *event)
 		__ASSERT_NO_MSG(false);
 		return -ENOMEM;
 	}
-
 	memcpy(&ab->data[pos], event->dyndata.data, event->dyndata.size);
 	ab->sample_cnt++;
 	avail -= event->dyndata.size;
@@ -146,10 +165,10 @@ static int enqueue_sample(struct aggregator *agg, struct sensor_event *event)
 	return 0;
 }
 
-static bool event_handler(const struct event_header *eh)
+static bool event_handler(const struct app_event_header *aeh)
 {
-	if (is_sensor_event(eh)) {
-		struct sensor_event *event = cast_sensor_event(eh);
+	if (is_sensor_event(aeh)) {
+		struct sensor_event *event = cast_sensor_event(aeh);
 		struct aggregator *agg = get_aggregator(event->descr);
 
 		if (agg) {
@@ -165,9 +184,9 @@ static bool event_handler(const struct event_header *eh)
 		return false;
 	}
 
-	if (is_sensor_data_aggregator_release_buffer_event(eh)) {
+	if (is_sensor_data_aggregator_release_buffer_event(aeh)) {
 		const struct sensor_data_aggregator_release_buffer_event *event =
-				cast_sensor_data_aggregator_release_buffer_event(eh);
+				cast_sensor_data_aggregator_release_buffer_event(aeh);
 		struct aggregator *agg = get_aggregator(event->sensor_descr);
 
 		__ASSERT_NO_MSG(agg);
@@ -182,8 +201,8 @@ static bool event_handler(const struct event_header *eh)
 		return false;
 	}
 
-	if (is_sensor_state_event(eh)) {
-		struct sensor_state_event *event = cast_sensor_state_event(eh);
+	if (is_sensor_state_event(aeh)) {
+		struct sensor_state_event *event = cast_sensor_state_event(aeh);
 		struct aggregator *agg = get_aggregator(event->descr);
 
 		if (agg) {
@@ -203,7 +222,7 @@ static bool event_handler(const struct event_header *eh)
 	return false;
 }
 
-EVENT_LISTENER(MODULE, event_handler);
-EVENT_SUBSCRIBE(MODULE, sensor_data_aggregator_release_buffer_event);
-EVENT_SUBSCRIBE(MODULE, sensor_state_event);
-EVENT_SUBSCRIBE(MODULE, sensor_event);
+APP_EVENT_LISTENER(MODULE, event_handler);
+APP_EVENT_SUBSCRIBE(MODULE, sensor_data_aggregator_release_buffer_event);
+APP_EVENT_SUBSCRIBE(MODULE, sensor_state_event);
+APP_EVENT_SUBSCRIBE(MODULE, sensor_event);

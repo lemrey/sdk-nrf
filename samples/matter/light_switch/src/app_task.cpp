@@ -6,7 +6,6 @@
 
 #include "app_task.h"
 #include "app_config.h"
-#include "binding_handler.h"
 #include "led_widget.h"
 #include "light_switch.h"
 #include "thread_util.h"
@@ -23,16 +22,12 @@
 #include <system/SystemError.h>
 
 #ifdef CONFIG_CHIP_OTA_REQUESTOR
-#include <app/clusters/ota-requestor/BDXDownloader.h>
-#include <app/clusters/ota-requestor/DefaultOTARequestorStorage.h>
-#include <app/clusters/ota-requestor/GenericOTARequestorDriver.h>
-#include <app/clusters/ota-requestor/OTARequestor.h>
-#include <platform/nrfconnect/OTAImageProcessorImpl.h>
+#include "ota_util.h"
 #endif
 
 #include <dk_buttons_and_leds.h>
-#include <logging/log.h>
-#include <zephyr.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/zephyr.h>
 
 using namespace ::chip;
 using namespace ::chip::app;
@@ -74,15 +69,6 @@ bool sWasDimmerTriggered = false;
 k_timer sFunctionTimer;
 k_timer sDimmerPressKeyTimer;
 k_timer sDimmerTimer;
-
-#ifdef CONFIG_CHIP_OTA_REQUESTOR
-DefaultOTARequestorStorage sRequestorStorage;
-GenericOTARequestorDriver sOTARequestorDriver;
-OTAImageProcessorImpl sOTAImageProcessor;
-BDXDownloader sBDXDownloader;
-OTARequestor sOTARequestor;
-#endif
-
 } /* namespace */
 
 AppTask AppTask::sAppTask;
@@ -115,7 +101,7 @@ CHIP_ERROR AppTask::Init()
 #elif CONFIG_OPENTHREAD_MTD
 	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_MinimalEndDevice);
 #else
-	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_FullEndDevice);
+	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_Router);
 #endif
 	if (err != CHIP_NO_ERROR) {
 		LOG_ERR("ConnectivityMgr().SetThreadDeviceType() failed: %s", ErrorStr(err));
@@ -158,8 +144,10 @@ CHIP_ERROR AppTask::Init()
 
 	/* Print initial configs */
 	SetDeviceAttestationCredentialsProvider(Examples::GetExampleDACProvider());
-	InitOTARequestor();
-	ReturnErrorOnFailure(Server::GetInstance().Init());
+	static chip::CommonCaseDeviceServerInitParams initParams;
+	(void)initParams.InitializeStaticResourcesBeforeServerInit();
+
+	ReturnErrorOnFailure(chip::Server::GetInstance().Init(initParams));
 	ConfigurationMgr().LogDeviceConfig();
 	PrintOnboardingCodes(RendezvousInformationFlags(RendezvousInformationFlag::kBLE));
 
@@ -175,18 +163,6 @@ CHIP_ERROR AppTask::Init()
 	}
 
 	return err;
-}
-
-void AppTask::InitOTARequestor()
-{
-#ifdef CONFIG_CHIP_OTA_REQUESTOR
-	sOTAImageProcessor.SetOTADownloader(&sBDXDownloader);
-	sBDXDownloader.SetImageProcessorDelegate(&sOTAImageProcessor);
-	sOTARequestorDriver.Init(&sOTARequestor, &sOTAImageProcessor);
-	sRequestorStorage.Init(Server::GetInstance().GetPersistentStorage());
-	sOTARequestor.Init(Server::GetInstance(), sRequestorStorage, sOTARequestorDriver, sBDXDownloader);
-	SetRequestorInstance(&sOTARequestor);
-#endif
 }
 
 CHIP_ERROR AppTask::StartApp()
@@ -363,6 +339,13 @@ void AppTask::ChipEventHandler(const ChipDeviceEvent *aEvent, intptr_t /* arg */
 		sIsThreadProvisioned = ConnectivityMgr().IsThreadProvisioned();
 		sIsThreadEnabled = ConnectivityMgr().IsThreadEnabled();
 		UpdateStatusLED();
+		break;
+	case DeviceEventType::kThreadConnectivityChange:
+#if CONFIG_CHIP_OTA_REQUESTOR
+		if (aEvent->ThreadConnectivityChange.Result == kConnectivity_Established) {
+			InitBasicOTARequestor();
+		}
+#endif
 		break;
 	default:
 		if ((ConnectivityMgr().NumBLEConnections() == 0) && (!sIsThreadProvisioned || !sIsThreadEnabled)) {

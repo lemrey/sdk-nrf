@@ -206,8 +206,8 @@ Bluetooth Low Energy
   * :ref:`bms_readme` - This module implements the Bond Management Service with the corresponding set of characteristics.
   * :ref:`peripheral_bms` sample - This sample demonstrates how to use the GATT Bond Management Service (BMS).
   * :ref:`direct_test_mode` sample - This sample demonstrates the Direct Test Mode functions described in Bluetooth Core Specification, Version 5.2, Vol. 6, Part F.
-  * :ref:`gadgets_service_readme`
-  * :ref:`peripheral_alexa_gadgets` sample - This sample demonstrates how a Bluetooth LE device can connect to an Amazon Echo device using the Alexa Gadgets Bluetooth Service and Profile.
+  * Alexa Gadgets Service
+  * Bluetooth: Peripheral Alexa Gadgets sample - This sample demonstrates how a Bluetooth LE device can connect to an Amazon Echo device using the Alexa Gadgets Bluetooth Service and Profile.
   * :ref:`bluetooth_central_hr_coded` sample (external contribution) - This sample demonstrates how to create a connection as a central using LE Coded PHY.
   * :ref:`peripheral_hr_coded` sample (external contribution) - This sample demonstrates how to use the extended advertising API to create a connectable advertiser on LE Coded PHY.
 
@@ -327,7 +327,7 @@ Thread
     * Added support for :ref:`Thread Certification Test Harness <ug_thread_cert>`.
     * Added hardware cryptography acceleration support.
     * Enabled UART HWFC by default.
-    * Added the overlay for :ref:`Thread v1.2 support <ot_cli_sample_thread_v12>`.
+    * Added an overlay for Thread v1.2 support.
 
   * :ref:`coap_client_sample` sample:
 
@@ -580,7 +580,7 @@ nRF5340
 nRF Desktop
 -----------
 
-* :ref:`nrf_desktop_profiler_sync` - updated configuration and implementation details
+* :ref:`nrf_desktop_nrf_profiler_sync` - updated configuration and implementation details
 * :ref:`nrf_desktop_cpu_meas` - updated configuration and implementation details
 * :ref:`nrf_desktop_smp` - updated configuration and implementation details
 * :ref:`nrf_desktop_config_channel` - updated transport configuration and listener configuration
@@ -638,7 +638,7 @@ Libraries
 * :ref:`lib_eth_rtt` - added
 * :ref:`lib_aws_iot` - updated with additional information about enabling connection polling
 * :ref:`lib_download_client` - moved :ref:`cert_dwload` to :ref:`modem_key_mgmt`
-* :ref:`lib_nrf_cloud` - updated with :ref:`use_nrfcloud_cloudapi`
+* :ref:`lib_nrf_cloud` - updated cloud API usage section
 * :ref:`lib_at_host` - added
 
 User guides

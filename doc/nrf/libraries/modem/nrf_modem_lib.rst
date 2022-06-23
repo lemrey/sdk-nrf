@@ -75,7 +75,8 @@ In this case, the characteristics of the allocations made by these functions dep
 
 Modem trace module
 ******************
-The modem trace module is implemented in :file:`nrf/lib/nrf_modem_lib/nrf_modem_lib_trace.c`.
+The modem trace module is implemented in :file:`nrf/lib/nrf_modem_lib/nrf_modem_lib_trace_sync.c`.
+If the experimental :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_THREAD_PROCESSING` Kconfig option is enabled, the :file:`nrf/lib/nrf_modem_lib/nrf_modem_lib_trace.c` file is used.
 
 The module provides the functionality for starting, stopping, and forwarding of modem traces to a transport medium that can be set by enabling any one of the following Kconfig options:
 
@@ -83,9 +84,45 @@ The module provides the functionality for starting, stopping, and forwarding of 
 * :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_MEDIUM_RTT` to send modem traces over SEGGER RTT
 
 If the application wants the trace data, :c:func:`nrf_modem_lib_trace_init` must be called before :c:func:`nrf_modem_lib_init`.
-This is done automatically when using the OS Abstraction layer.
+This is done automatically when using the OS abstraction layer.
+
 If the application wants to stop an ongoing trace session, it can use the :c:func:`nrf_modem_lib_trace_stop` function.
 The :c:func:`nrf_modem_lib_trace_start` function supports activating a subset of traces or all traces.
+
+Thread-based processing
+=======================
+
+For better load distribution on the application, enable the experimental thread-based trace processing through the :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_THREAD_PROCESSING` Kconfig option.
+Trace processing is done in ``trace_handler_thread``.
+When the modem trace module receives trace data, it places it in a FIFO queue.
+The thread reads from the FIFO queue and forwards the trace data to the configured trace transport medium.
+The FIFO queue used by the modem trace module uses dedicated heap memory.
+If the modem trace medium is unable to keep up with the modem traces, the heap size can be increased by enabling :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE_OVERRIDE` and configuring :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE`.
+Increasing the heap size allows more traces in the FIFO queue, but the trace heap will still be depleted if the modem continues to send traces at a rate faster than the rate at which the medium can handle over time.
+If increasing the trace heap size does not help, either optimize the medium speed or use a faster trace transport medium.
+
+Modem fault handling
+********************
+If a fault occurs in the modem, the application is notified through the fault handler function that is registered with the Modem library during initialization.
+This enables the application to read the fault reason (in some cases the modem's program counter) and take appropriate action.
+
+On initialization, the Modem library integration layer registers the :c:func:`nrf_modem_fault_handler` function through the Modem library initialization parameters.
+The behavior of the :c:func:`nrf_modem_fault_handler` function is controlled with the :kconfig:option:`CONFIG_NRF_MODEM_LIB_ON_FAULT` Kconfig option.
+The Modem library integration layer provides the following three options for :kconfig:option:`CONFIG_NRF_MODEM_LIB_ON_FAULT` Kconfig option:
+
+* :kconfig:option:`CONFIG_NRF_MODEM_LIB_ON_FAULT_DO_NOTHING` - This is the default Kconfig option that lets the fault handler log the Modem fault and return.
+* :kconfig:option:`CONFIG_NRF_MODEM_LIB_ON_FAULT_RESET_MODEM`- This Kconfig option schedules a workqueue task to reinitialize the modem and Modem library.
+* :kconfig:option:`CONFIG_NRF_MODEM_LIB_ON_FAULT_APPLICATION_SPECIFIC`- This Kconfig option results in a call to the :c:func:`nrf_modem_fault_handler` function that is defined in the application, outside of the Modem library integration layer.
+
+Implementing a custom fault handler
+===================================
+
+If you want to implement a custom fault handler, consider the following points:
+
+* The fault handler is called in an interrupt context and must be as short as possible.
+* Reinitialization of the Modem library must be done outside of the fault handler.
+* If the modem trace is enabled, the modem sends a coredump through the trace medium on modem failure.
+  To ensure correct trace output, the modem must not be reinitialized before all trace data is handled.
 
 .. _partition_mgr_integration:
 

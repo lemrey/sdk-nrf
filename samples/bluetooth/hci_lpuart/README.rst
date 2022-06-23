@@ -14,14 +14,16 @@ Requirements
 
 The sample supports the following development kit:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf9160dk_nrf52840
+.. table-from-sample-yaml::
 
 Overview
 ********
 
 The sample implements the Bluetooth® HCI controller using the :ref:`uart_nrf_sw_lpuart` for UART communication.
+
+This sample is also supported on the Thingy:91.
+However, it must be programmed using a debugger and a 10-pin SWD cable.
+Firmware updates over serial using MCUboot are not supported for either of the MCUs on the Thingy:91 in this configuration.
 
 Building and running
 ********************

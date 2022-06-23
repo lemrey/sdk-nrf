@@ -4,13 +4,11 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <ztest.h>
 
 #include <test_events.h>
 #include <order_event.h>
-
-#include "test_config.h"
 
 
 static enum test_id cur_test_id;

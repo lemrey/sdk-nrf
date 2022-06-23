@@ -7,9 +7,9 @@
 #ifndef NRF_CLOUD_H__
 #define NRF_CLOUD_H__
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
-#include <net/mqtt.h>
+#include <zephyr/net/mqtt.h>
 #if defined(CONFIG_MODEM_INFO)
 #include <modem/modem_info.h>
 #endif
@@ -95,6 +95,8 @@ enum nrf_cloud_evt_type {
 	NRF_CLOUD_EVT_READY,
 	/** The device received data from the cloud. */
 	NRF_CLOUD_EVT_RX_DATA,
+	/** The device has received a ping response from the cloud. */
+	NRF_CLOUD_EVT_PINGRESP,
 	/** The data sent to the cloud was acknowledged. */
 	NRF_CLOUD_EVT_SENSOR_DATA_ACK,
 	/** The transport was disconnected. */
@@ -326,6 +328,8 @@ struct nrf_cloud_tx_data {
 	enum nrf_cloud_topic_type topic_type;
 	/** Quality of Service of the message. */
 	enum mqtt_qos qos;
+	/** Message ID */
+	uint32_t id;
 };
 
 /**@brief Controls which values are added to the FOTA array in the "serviceInfo" shadow section */
@@ -341,7 +345,7 @@ struct nrf_cloud_svc_info_fota {
 struct nrf_cloud_svc_info_ui {
 	/** Items with UI support on nRF Cloud */
 	uint8_t temperature:1;
-	uint8_t gps:1;
+	uint8_t gps:1; /* Location (map) */
 	uint8_t flip:1; /* Orientation */
 	uint8_t humidity:1;
 	uint8_t air_pressure:1;
@@ -427,8 +431,8 @@ struct nrf_cloud_init_param {
 /**
  * @brief Initialize the module.
  *
- * @warning This API must be called prior to using nRF Cloud
- *  and it must return successfully.
+ * @note This API must be called prior to using nRF Cloud
+ *       and it must return successfully.
  *
  * @param[in] param Initialization parameters.
  *
@@ -677,6 +681,7 @@ int nrf_cloud_bootloader_fota_slot_set(struct nrf_cloud_settings_fota_job * cons
  * @retval -ENOENT Error code found, but did not match specified app_id and msg_type.
  * @retval -ENOMSG No error code found.
  * @retval -EBADMSG Invalid error code data format.
+ * @retval -ENODATA JSON data was not found.
  * @return A negative value indicates an error.
  */
 int nrf_cloud_handle_error_message(const char *const buf,

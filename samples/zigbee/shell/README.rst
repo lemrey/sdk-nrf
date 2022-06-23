@@ -19,9 +19,7 @@ Requirements
 
 The sample supports the following development kits:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf52840dk_nrf52840, nrf52833dk_nrf52833, nrf5340dk_nrf5340_cpuapp, nrf21540dk_nrf52840
+.. table-from-sample-yaml::
 
 You can use one or more of the development kits listed above and mix different development kits.
 
@@ -70,7 +68,7 @@ Button 4:
     Starts or cancels the Identify mode.
 
 All other interactions with the application can be handled using serial communication.
-See :ref:`zigbee_cli_reference` for available serial commands.
+See :ref:`zigbee_shell_reference` for available serial commands.
 
 Configuration
 *************

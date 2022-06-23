@@ -17,11 +17,9 @@ Requirements
 
 The sample supports the following development kit:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf9160dk_nrf9160_ns
+.. table-from-sample-yaml::
 
-.. include:: /includes/spm.txt
+.. include:: /includes/tfm.txt
 
 Overview
 ********
@@ -35,10 +33,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/nrf9160/http_update/modem_delta_update`
 
-.. include:: /includes/build_and_run.txt
-
-The sample is built as a non-secure firmware image for the ``nrf9160dk_nrf9160_ns`` build target.
-Because of this, it automatically includes the :ref:`secure_partition_manager`.
+.. include:: /includes/build_and_run_ns.txt
 
 Testing
 =======
@@ -57,7 +52,6 @@ Dependencies
 This sample uses the following |NCS| libraries:
 
 * :ref:`lib_fota_download`
-* :ref:`secure_partition_manager`
 
 It uses the following `sdk-nrfxlib`_ library:
 
@@ -69,3 +63,7 @@ It uses the following Zephyr libraries:
 * :ref:`zephyr:logging_api`
 * :ref:`zephyr:gpio_api`
 * :ref:`zephyr:shell_api`
+
+In addition, it uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

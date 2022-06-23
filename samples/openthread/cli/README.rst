@@ -10,24 +10,18 @@ Thread: CLI
 The :ref:`Thread <ug_thread>` CLI sample demonstrates how to send commands to a Thread device using the OpenThread Command Line Interface (CLI).
 The CLI is integrated into the Zephyr shell.
 
-This sample supports the optional :ref:`ot_cli_sample_thread_v12` that you can turn on or off.
-See :ref:`ot_cli_sample_thread_v12` for details.
-
 Requirements
 ************
 
 The sample supports the following development kits for testing the network status:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf5340dk_nrf5340_cpuapp, nrf5340dk_nrf5340_cpuapp_ns, nrf52840dk_nrf52840, nrf52840dongle_nrf52840, nrf52833dk_nrf52833, nrf21540dk_nrf52840
+.. table-from-sample-yaml::
 
 Optionally, you can use one or more compatible development kits programmed with this sample or another :ref:`Thread sample <openthread_samples>` for :ref:`testing communication or diagnostics <ot_cli_sample_testing_multiple>` and :ref:`thread_ot_commissioning_configuring_on-mesh`.
 
-Thread 1.2 extension requirements
-=================================
+You need `nRF Sniffer for 802.15.4`_ to observe messages sent from the router to the leader kit when :ref:`ot_cli_sample_testing_multiple_v12`.
 
-If you enable the :ref:`ot_cli_sample_thread_v12`, you need `nRF Sniffer for 802.15.4`_ to observe messages sent from the router to the leader kit when :ref:`ot_cli_sample_testing_multiple_v12`.
+.. include:: /includes/tfm.txt
 
 Overview
 ********
@@ -38,6 +32,7 @@ To indicate a Thread command, the ``ot`` keyword needs to precede the command.
 
 The number of commands you can test depends on the application configuration.
 The CLI sample comes with the :ref:`full set of OpenThread functionalities <thread_ug_feature_sets>` enabled (:kconfig:option:`CONFIG_OPENTHREAD_NORDIC_LIBRARY_MASTER`).
+Thread 1.2 version is selected as default.
 
 If used alone, the sample allows you to test the network status.
 It is recommended to use at least two development kits running the same sample for testing the communication.
@@ -88,27 +83,14 @@ For more information about using configuration overlay files, see :ref:`zephyr:i
 
 The following configuration files are available:
 
-* :file:`overlay-minimal_singleprotocol.conf` - Enables the minimal single protocol variant.
-  Optimizes the memory footprint for single protocol use.
-  For more information, see :ref:`app_memory`.
-* :file:`overlay-minimal_multiprotocol.conf` - Enables the minimal multiprotocol variant.
-  Optimizes the memory footprint for multiprotocol use.
-  For more information, see :ref:`app_memory`.
 * :file:`overlay-usb.conf` - Enables USB transport support.
   Additionally, you need to set :makevar:`DTC_OVERLAY_FILE` to :file:`usb.overlay`.
 * :file:`overlay-logging.conf` - Turns on logging.
 * :file:`overlay-rtt.conf` - Redirects logs to RTT.
   For more information about RTT please refer to :ref:`RTT logging <ug_logging>`.
 * :file:`overlay-debug.conf` - Enables debbuging the Thread sample with GDB thread awareness.
-
-.. _ot_cli_sample_thread_v12:
-
-Optional Thread 1.2 extension
-=============================
-
-This optional extension allows you to test :ref:`available features from the Thread 1.2 Specification <thread_ug_thread_specification_options>`.
-To enable this extension, set ``-DCONF_FILE=prj_thread_1_2.conf``.
-See :ref:`gs_modifying_build_types` for details.
+* :file:`overlay-ci.conf` - Disables boot banner and shell prompt.
+* :file:`overlay-multiprotocol.conf` - Enables Bluetooth LE support in this sample.
 
 FEM support
 ===========
@@ -117,13 +99,10 @@ FEM support
 
 .. _ot_cli_sample_minimal:
 
-Minimal configuration
-=====================
+Memory optimization
+===================
 
-This optional extension demonstrates an optimized configuration for the Thread CLI sample.
-The provided configurations optimize the memory footprint of the sample for single protocol and multiprotocol use.
-
-For more information, see :ref:`app_memory`.
+See :ref:`app_memory` for actions and configuration options you can use to optimize the memory footprint of the sample.
 
 Serial transport
 ================
@@ -132,11 +111,6 @@ The Thread CLI sample supports UART and USB CDC ACM as serial transports.
 By default, it uses UART transport.
 To switch to USB transport, :ref:`activate the USB overlay extension <ot_cli_sample_activating_variants>`.
 
-Trusted Firmware-M support
-==========================
-
-.. include:: /includes/tfm.txt
-
 Building and running
 ********************
 
@@ -144,7 +118,7 @@ Building and running
 
 |enable_thread_before_testing|
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 To update the OpenThread libraries provided by ``nrfxlib``, invoke ``west build -b nrf52840dk_nrf52840 -t install_openthread_libraries``.
 
@@ -290,7 +264,7 @@ Testing Thread 1.2 features
 
 To test the Thread 1.2 features, complete the following steps:
 
-#. Make sure both development kits are programmed with the CLI sample with the :ref:`ot_cli_sample_thread_v12` enabled.
+#. Make sure both development kits are programmed with the CLI sample.
 #. Turn on the developments kits.
 #. |connect_terminal_both_ANSI|
 #. .. include:: /includes/thread_configure_network.txt

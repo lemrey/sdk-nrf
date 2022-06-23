@@ -18,9 +18,7 @@ Requirements
 
 The sample supports the following development kit:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf9160dk_nrf9160_ns
+.. table-from-sample-yaml::
 
 .. include:: /includes/spm.txt
 
@@ -74,6 +72,12 @@ The workqueue ensures that the main thread is not blocked during the operation.
 When assistance support is enabled, the sample receives an A-GPS data request notification from the GNSS module, and it starts downloading the assistance data requested by the GNSS module.
 The sample then displays the information in the terminal about the download process.
 Finally, after the download completes, the sample switches back to the previous display mode.
+
+.. note::
+   To download assistance data, your device must have a valid JWT signing key installed and registered with `nRF Cloud`_.
+
+   .. include:: /includes/nrf_cloud_rest_sample_requirements.txt
+       :start-after: requirement_keysign_moreinfo_start
 
 Minimal assistance
 ==================
@@ -154,12 +158,19 @@ CONFIG_GNSS_SAMPLE_LTE_ON_DEMAND - To disable LTE after assistance download
    When using assistance, LTE may block the GNSS operation and increase the time needed to get a fix.
    This configuration option disables LTE after the assistance data has been downloaded, so that GNSS can run without interruptions.
 
+Additional configuration
+========================
+
+Check and configure the following library option that is used by the sample:
+
+* :kconfig:option:`CONFIG_MODEM_ANTENNA_GNSS_EXTERNAL` - Selects an external GNSS antenna.
+
 Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/nrf9160/gnss`
 
-.. include:: /includes/build_and_run_nrf9160.txt
+.. include:: /includes/build_and_run.txt
 
 If the sample is to be used with the SUPL client library, the library must be downloaded and enabled in the sample configuration.
 You can download it from the `Nordic Semiconductor website`_.
@@ -312,6 +323,7 @@ This sample uses the following |NCS| libraries:
 * :ref:`lib_nrf_cloud_pgps`
 * :ref:`lib_nrf_cloud_rest`
 * :ref:`supl_client`
+* :ref:`lib_at_host`
 
 It uses the following `sdk-nrfxlib`_ library:
 

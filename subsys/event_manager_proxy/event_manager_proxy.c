@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
-#include <spinlock.h>
+#include <zephyr/kernel.h>
+#include <zephyr/spinlock.h>
 #include <app_event_manager.h>
 #include <event_manager_proxy.h>
-#include <logging/log.h>
-#include <ipc/ipc_service.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/ipc/ipc_service.h>
 
 LOG_MODULE_REGISTER(event_manager_proxy, CONFIG_APP_EVENT_MANAGER_LOG_LEVEL);
 
@@ -202,7 +202,7 @@ static void handle_remote_command_start(struct emp_ipc_data *ipc, const void *da
 
 	/* Check if all remote cores started. */
 	for (size_t i = 0; i < ARRAY_SIZE(emp_ipc_data); ++i) {
-		struct emp_ipc_data *ipc = &emp_ipc_data[i];
+		ipc = &emp_ipc_data[i];
 
 		if (ipc->used && !ipc->started) {
 			return;
@@ -276,6 +276,7 @@ static void handle_ipc_endpoint_error(const char *message, void *priv)
 static int send_event_to_remote(struct emp_ipc_data *ipc, const struct app_event_header *eh)
 {
 	const struct event_type *remote_ev = ipc->event_type_map[et2idx(eh->type_id)];
+	int ret;
 
 	if (remote_ev == NULL) {
 		return 0;
@@ -288,7 +289,12 @@ static int send_event_to_remote(struct emp_ipc_data *ipc, const struct app_event
 	memcpy(buffer, eh, sizeof(buffer));
 	remote_eh->type_id = remote_ev;
 
-	int ret = ipc_service_send(&ipc->ept, buffer, sizeof(buffer));
+	for (size_t cnt = CONFIG_EVENT_MANAGER_PROXY_SEND_RETRIES + 1; cnt > 0; --cnt) {
+		ret = ipc_service_send(&ipc->ept, buffer, sizeof(buffer));
+		if (ret >= 0) {
+			break;
+		}
+	}
 
 	if (ret < 0) {
 		LOG_ERR("Cannot send event to remote %p", ipc);
@@ -362,6 +368,10 @@ static int add_ipc_instace(struct emp_ipc_data *ipc, const struct device *instan
 int event_manager_proxy_add_remote(const struct device *instance)
 {
 	__ASSERT_NO_MSG(find_ipc_by_instance(instance) == NULL);
+
+	if (find_ipc_by_instance(instance) != NULL) {
+		return -EALREADY;
+	}
 
 	for (size_t i = 0; i < ARRAY_SIZE(emp_ipc_data); ++i) {
 		if (!emp_ipc_data[i].used) {

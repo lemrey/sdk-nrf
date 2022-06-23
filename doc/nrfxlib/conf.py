@@ -21,7 +21,7 @@ NRFXLIB_BASE = utils.get_projdir("nrfxlib")
 project = "nrfxlib"
 copyright = "2019-2022, Nordic Semiconductor"
 author = "Nordic Semiconductor"
-version = release = "1.9.99"
+version = release = "2.0.0"
 
 sys.path.insert(0, str(ZEPHYR_BASE / "doc" / "_extensions"))
 sys.path.insert(0, str(NRF_BASE / "doc" / "_extensions"))
@@ -53,7 +53,7 @@ html_last_updated_fmt = "%b %d, %Y"
 html_show_sourcelink = True
 html_show_sphinx = False
 
-html_theme_options = {"docsets": utils.get_docsets("nrfxlib")}
+html_theme_options = {"docset": "nrfxlib", "docsets": utils.ALL_DOCSETS}
 
 # Options for intersphinx ------------------------------------------------------
 
@@ -117,7 +117,6 @@ ncs_cache_manifest = NRF_BASE / "west.yml"
 
 
 def setup(app):
-    app.add_css_file("css/common.css")
     app.add_css_file("css/nrfxlib.css")
 
     utils.add_google_analytics(app)

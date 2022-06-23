@@ -6,17 +6,17 @@
 
 #include <stdlib.h>
 #include <zephyr/types.h>
-#include <settings/settings.h>
+#include <zephyr/settings/settings.h>
 
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/conn.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/conn.h>
 
 #define MODULE ble_adv
 #include <caf/events/module_state_event.h>
 #include <caf/events/ble_common_event.h>
 #include <caf/events/power_event.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_CAF_BLE_ADV_LOG_LEVEL);
 
 #define SWIFT_PAIR_SECTION_SIZE 1 /* number of struct bt_data objects */
@@ -542,8 +542,6 @@ static bool handle_ble_peer_event(const struct ble_peer_event *event)
 
 static bool handle_ble_peer_operation_event(const struct ble_peer_operation_event *event)
 {
-	int err;
-
 	switch (event->op)  {
 	case PEER_OPERATION_SELECTED:
 	case PEER_OPERATION_ERASE_ADV:
@@ -555,7 +553,11 @@ static bool handle_ble_peer_operation_event(const struct ble_peer_operation_even
 			break;
 		}
 
-		err = ble_adv_stop();
+		int err = ble_adv_stop();
+
+		if (err) {
+			module_set_state(MODULE_STATE_ERROR);
+		}
 
 		struct bt_conn *conn = NULL;
 
@@ -573,6 +575,9 @@ static bool handle_ble_peer_operation_event(const struct ble_peer_operation_even
 		}
 		if (!conn) {
 			err = ble_adv_start(true);
+			if (err) {
+				module_set_state(MODULE_STATE_ERROR);
+			}
 		}
 		break;
 

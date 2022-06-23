@@ -9,6 +9,7 @@ menuconfig NRF_MODEM_LIB
 	imply NRFX_IPC
 	imply NET_SOCKETS_OFFLOAD
 	imply NET_SOCKETS_POSIX_NAMES if !POSIX_API
+	select REQUIRES_FULL_LIBC
 	select NRF_MODEM
 	# The modem must be turned on to achieve low power consumption.
 	# But disable it for ZTEST's as some tests have HW
@@ -20,9 +21,5 @@ menuconfig NRF_MODEM_LIB
 if NRF_MODEM_LIB
 
 rsource "Kconfig.modemlib"
-
-config NRF_MODEM_LIB_LOG_FW_VERSION_UUID
-	depends on LOG
-	bool "Log FW version and UUID during initialization"
 
 endif # NRF_MODEM_LIB

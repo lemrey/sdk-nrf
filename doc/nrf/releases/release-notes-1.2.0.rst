@@ -83,18 +83,18 @@ In addition to the tools mentioned in :ref:`gs_installing`, the following tool v
      - v1.4.6 or later
      - :ref:`gs_installing_tools`
    * - GCC
-     - See :ref:`gs_installing_toolchain`
+     - See Install the GNU Arm Embedded Toolchain
      - `GNU Arm Embedded Toolchain`_
 
 
-As IDE, we recommend to use |SES| (Nordic Edition) version 4.42a.
-It is available from the following links:
+As IDE, we recommend to use SEGGER Embedded Studio (Nordic Edition) version 4.42a.
+It is available from the following platforms:
 
-* `SEGGER Embedded Studio (Nordic Edition) - Windows x86`_
-* `SEGGER Embedded Studio (Nordic Edition) - Windows x64`_
-* `SEGGER Embedded Studio (Nordic Edition) - Mac OS x64`_
-* `SEGGER Embedded Studio (Nordic Edition) - Linux x86`_
-* `SEGGER Embedded Studio (Nordic Edition) - Linux x64`_
+* Windows x86
+* Windows x64
+* Mac OS x64
+* Linux x86
+* Linux x64
 
 
 Changelog
@@ -108,7 +108,7 @@ nRF9160
 
 * Added the following samples:
 
-  * :ref:`cloud_client` - shows how to connect to and communicate with a cloud service using the generic :ref:`cloud_api_readme`.
+  * Cloud client - shows how to connect to and communicate with a cloud service using the generic cloud API.
   * :ref:`https_client` - shows how to provision a TLS certificate and connect to an HTTPS server.
   * :ref:`serial_lte_modem` - demonstrates sending AT commands between a host and a client device.
     The sample is an enhancement to the :ref:`at_client_sample` sample.
@@ -437,7 +437,7 @@ Documentation
 
   * nRF9160:
 
-    * :ref:`cloud_client` - added
+    * Cloud client - added
     * :ref:`gps_with_supl_support_sample` - added
     * :ref:`https_client` - added
     * :ref:`serial_lte_modem` - added
@@ -468,7 +468,7 @@ Documentation
   * nRF9160:
 
     * :ref:`lib_aws_iot` - added
-    * :ref:`cloud_api_readme` - added
+    * Cloud API - added
     * :ref:`modem_key_mgmt` - added
     * :ref:`sms_readme` - added
     * :ref:`supl_client` - added

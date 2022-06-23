@@ -3,18 +3,18 @@
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
-#include <zephyr.h>
-#include <drivers/gpio.h>
-#include <drivers/flash.h>
-#include <toolchain.h>
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/flash.h>
+#include <zephyr/toolchain.h>
 #include <modem/lte_lc.h>
 #include <modem/modem_key_mgmt.h>
-#include <net/socket.h>
+#include <zephyr/net/socket.h>
 #include <net/fota_download.h>
 #include <nrf_socket.h>
 #include <stdio.h>
-#include <sys/reboot.h>
-#include <shell/shell.h>
+#include <zephyr/sys/reboot.h>
+#include <zephyr/shell/shell.h>
 #include "update.h"
 
 static const struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
@@ -24,12 +24,6 @@ static struct gpio_callback sw0_cb;
 static struct k_work fota_work;
 static update_start_cb update_start;
 static char filename[128] = {0};
-
-/**@brief Recoverable modem library error. */
-void nrf_modem_recoverable_error_handler(uint32_t err)
-{
-	printk("Modem library recoverable error: %u\n", err);
-}
 
 int cert_provision(void)
 {

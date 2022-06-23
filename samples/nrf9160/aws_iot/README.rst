@@ -15,11 +15,9 @@ Requirements
 
 The sample supports the following development kits:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: thingy91_nrf9160_ns, nrf9160dk_nrf9160_ns
+.. table-from-sample-yaml::
 
-.. include:: /includes/spm.txt
+.. include:: /includes/tfm_spm_thingy91.txt
 
 Overview
 ********
@@ -94,9 +92,8 @@ Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/nrf9160/aws_iot`
-.. include:: /includes/build_and_run.txt
-.. include:: /includes/spm.txt
 
+.. include:: /includes/thingy91_build_and_run.txt
 
 .. note::
 
@@ -183,6 +180,7 @@ It uses the following `sdk-nrfxlib`_ library:
 
 * :ref:`nrfxlib:nrf_modem`
 
-In addition, it uses the following sample:
+In addition, it uses the following secure firmware components:
 
 * :ref:`secure_partition_manager`
+* :ref:`Trusted Firmware-M <ug_tfm>`

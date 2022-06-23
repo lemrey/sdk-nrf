@@ -7,14 +7,15 @@
 #ifndef _BLE_HCI_VSC_H_
 #define _BLE_HCI_VSC_H_
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 #define HCI_OPCODE_VS_SET_OP_FLAGS BT_OP(BT_OGF_VS, 0x3F3)
 #define HCI_OPCODE_VS_SET_BD_ADDR BT_OP(BT_OGF_VS, 0x3F0)
 #define HCI_OPCODE_VS_SET_ADV_TX_PWR BT_OP(BT_OGF_VS, 0x3F5)
 #define HCI_OPCODE_VS_SET_CONN_TX_PWR BT_OP(BT_OGF_VS, 0x3F6)
-#define HCI_OPCODE_VS_SET_LED_PIN_MAP BT_OP(BT_OGF_VS, 0x3A2)
+#define HCI_OPCODE_VS_SET_LED_PIN_MAP BT_OP(BT_OGF_VS, 0x001)
 #define HCI_OPCODE_VS_SET_RADIO_FE_CFG BT_OP(BT_OGF_VS, 0x3A3)
+#define HCI_OPCODE_VS_SET_PRI_EXT_ADV_MAX_TX_PWR BT_OP(BT_OGF_VS, 0x000)
 
 /* This bit setting enables the flag from controller from controller
  * if an ISO packet is lost.
@@ -56,7 +57,6 @@ struct ble_hci_vs_cp_set_radio_fe_cfg {
 } __packed;
 
 enum ble_hci_vs_tx_power {
-	BLE_HCI_VSC_TX_PWR_Pos3dBm = 3,
 	BLE_HCI_VSC_TX_PWR_0dBm = 0,
 	BLE_HCI_VSC_TX_PWR_Neg1dBm = -1,
 	BLE_HCI_VSC_TX_PWR_Neg2dBm = -2,
@@ -70,6 +70,8 @@ enum ble_hci_vs_tx_power {
 	BLE_HCI_VSC_TX_PWR_Neg16dBm = -16,
 	BLE_HCI_VSC_TX_PWR_Neg20dBm = -20,
 	BLE_HCI_VSC_TX_PWR_Neg40dBm = -40,
+	BLE_HCI_VSC_TX_PWR_INVALID = 99,
+	BLE_HCI_VSC_PRI_EXT_ADV_MAX_TX_PWR_DISABLE = 127,
 };
 
 enum ble_hci_vs_led_function_id {
@@ -86,8 +88,22 @@ enum ble_hci_vs_led_function_mode {
 };
 
 /**
+ * @brief Enable VREGRADIO.VREQH in NET core for getting +3dBm TX power
+ *        Note, this will add +3 dBm for the primary advertisement channels
+ *        as well even ble_hci_vsc_set_pri_ext_adv_max_tx_pwr() has been used
+ * @param high_power_mode	Enable VREGRADIO.VREQH or not
+ *
+ * @return 0 for success, error otherwise.
+ */
+int ble_hci_vsc_set_radio_high_pwr_mode(bool high_power_mode);
+
+/**
  * @brief Set Bluetooth MAC device address
  * @param bd_addr	Bluetooth MAC device address
+ *
+ * @note	This can be used to set a public address for the device
+ *		Note that bt_setup_public_id_addr(void) should be called
+ *		after this function to properly set the address.
  *
  * @return 0 for success, error otherwise.
  */
@@ -120,6 +136,18 @@ int ble_hci_vsc_set_adv_tx_pwr(enum ble_hci_vs_tx_power tx_power);
  * @return 0 for success, error otherwise.
  */
 int ble_hci_vsc_set_conn_tx_pwr(uint16_t conn_handle, enum ble_hci_vs_tx_power tx_power);
+
+/**
+ * @brief Set the maximum transmit power on primary advertising channels
+ * @param tx_power TX power setting for the primary advertising channels
+ *                 in advertising extension, which are BLE channel 37, 38 and 39
+ *                 Please check ble_hci_vs_tx_power for possible settings
+ *                 Set to BLE_HCI_VSC_PRI_EXT_ADV_MAX_TX_PWR_DISABLE (-127) for
+ *                 disabling this feature
+ *
+ * @return 0 for success, error otherwise.
+ */
+int ble_hci_vsc_set_pri_ext_adv_max_tx_pwr(enum ble_hci_vs_tx_power tx_power);
 
 /**
  * @brief Map LED pin to a specific controller function

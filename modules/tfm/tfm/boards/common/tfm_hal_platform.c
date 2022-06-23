@@ -1,9 +1,7 @@
 /*
- * Copyright (c) 2019-2020, Arm Limited. All rights reserved.
- * Copyright (c) 2021 Nordic Semiconductor ASA.
+ * Copyright (c) 2021 - 2022 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: BSD-3-Clause
- *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
 #if defined(TFM_PARTITION_CRYPTO)
@@ -54,6 +52,26 @@ static enum tfm_hal_status_t crypto_platform_init(void)
 }
 #endif /* defined(TFM_PARTITION_CRYPTO) */
 
+/* To write into AIRCR register, 0x5FA value must be written to the VECTKEY field,
+ * otherwise the processor ignores the write.
+ */
+#define AIRCR_VECTKEY_PERMIT_WRITE ((0x5FAUL << SCB_AIRCR_VECTKEY_Pos))
+
+static void allow_nonsecure_reset(void)
+{
+    uint32_t reg_value = SCB->AIRCR;
+
+    /* Clear SCB_AIRCR_VECTKEY value */
+    reg_value &= ~(uint32_t)(SCB_AIRCR_VECTKEY_Msk);
+
+    /* Clear SCB_AIRC_SYSRESETREQS value */
+    reg_value &= ~(uint32_t)(SCB_AIRCR_SYSRESETREQS_Msk);
+
+    /* Add VECTKEY value needed to write the register. */
+    reg_value |= (uint32_t)(AIRCR_VECTKEY_PERMIT_WRITE);
+
+    SCB->AIRCR = reg_value;
+}
 
 enum tfm_hal_status_t tfm_hal_platform_init(void)
 {
@@ -71,6 +89,10 @@ enum tfm_hal_status_t tfm_hal_platform_init(void)
 		return status;
 	}
 #endif /* defined(TFM_PARTITION_CRYPTO) */
+
+#if defined(NRF_ALLOW_NON_SECURE_RESET)
+	allow_nonsecure_reset();
+#endif
 
 	return TFM_HAL_SUCCESS;
 }

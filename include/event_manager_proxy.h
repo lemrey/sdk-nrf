@@ -11,9 +11,10 @@
 #ifndef _EVENT_MANAGER_PROXY_H_
 #define _EVENT_MANAGER_PROXY_H_
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
-#include <device.h>
+#include <zephyr/device.h>
+#include <app_event_manager.h>
 
 /**
  * @defgroup event_manager_proxy Event Manager Proxy
@@ -39,6 +40,7 @@
  * This function registers endpoint used to communication with another core.
  *
  * @param instance The instance used for IPC service to transfer data between cores.
+ * @retval -EALREADY Given remote instance was added already.
  * @retval -ENOMEM No place for the new endpoint. See @kconfig{CONFIG_EVENT_MANAGER_PROXY_CH_COUNT}.
  * @retval -EIO    Comes from IPC service,
  *                 see ipc_service_open_instance or ipc_service_register_endpoint.

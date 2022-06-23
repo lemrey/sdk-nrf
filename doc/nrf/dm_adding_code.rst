@@ -56,8 +56,8 @@ More information about application development and the |NCS| build and configura
 The drawback with this approach is that any changes you make to the set of |NCS| repositories are not directly trackable using Git, since you do not have any of the |NCS| repositories forked.
 If you are tracking the main branch of the |NCS|, you can instead send the changes you require to the official repositories as Pull Requests, so that they are incorporated into the codebase.
 
-Workflow 3: Application in a fork of `sdk-nrf`_
-===============================================
+Workflow 3: Application in a fork of sdk-nrf
+============================================
 
 Forking the `sdk-nrf`_ repository and adding the application to it is another valid option to develop and maintain your application.
 This approach also allows you to fork additional |NCS| repositories and point to those.
@@ -92,7 +92,7 @@ This is demonstrated by the following code:
        - name: nrf
          repo-path: sdk-nrf
          remote: ncs
-         revision: v1.9.1
+         revision: v2.0.0
          import: true
      self:
        path: application
@@ -119,7 +119,7 @@ For example:
      projects:
        - name: nrf
          remote: ncs
-         revision: v1.9.1
+         revision: v2.0.0
          import: true
        # Example for how to override a repository in the nRF Connect SDK with your own:
        - name: mcuboot

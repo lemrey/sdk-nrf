@@ -1,8 +1,6 @@
-:root {
-    --docset-color: #6D42C8;
-}
+/* section divider before h2 */
 
 .rst-content h2 {
-    border-top: unset;
-    padding-top: unset;
+  border-top: unset;
+  padding-top: unset;
 }

@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
-#include <assert.h>
-#include <drivers/led.h>
-#include <pm/device.h>
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/led.h>
+#include <zephyr/pm/device.h>
 
 #include <caf/events/power_event.h>
 #include <caf/events/led_event.h>
@@ -15,7 +14,7 @@
 #define MODULE leds
 #include <caf/events/module_state_event.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_CAF_LEDS_LOG_LEVEL);
 
 #define LED_ID(led) ((led) - &leds[0])

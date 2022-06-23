@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <zephyr.h>
-#include <logging/log.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 #include <modem/modem_info.h>
 #include "cJSON_os.h"
 
@@ -1349,6 +1349,12 @@ int nrf_cloud_format_cell_pos_req_json(struct lte_lc_cells_info const *const inf
 
 		/* Add an array for neighbor cell data if there are any */
 		if (lte->ncells_count) {
+			if (lte->neighbor_cells == NULL) {
+				LOG_WRN("Neighbor cell count is %u, but buffer is NULL",
+					lte->ncells_count);
+				return 0;
+			}
+
 			nmr_array = cJSON_AddArrayToObjectCS(lte_obj,
 							     NRF_CLOUD_CELL_POS_JSON_KEY_NBORS);
 			if (!nmr_array) {
@@ -1358,6 +1364,10 @@ int nrf_cloud_format_cell_pos_req_json(struct lte_lc_cells_info const *const inf
 
 		for (uint8_t j = 0; nmr_array && (j < lte->ncells_count); ++j) {
 			struct lte_lc_ncell *ncell = lte->neighbor_cells + j;
+
+			if (ncell == NULL) {
+				break;
+			}
 
 			ncell_obj = cJSON_CreateObject();
 
@@ -1512,7 +1522,7 @@ int nrf_cloud_handle_error_message(const char *const buf,
 	root_obj = cJSON_Parse(buf);
 	if (!root_obj) {
 		LOG_DBG("No JSON found");
-		return -ENOMSG;
+		return -ENODATA;
 	}
 
 	ret = get_error_code_value(root_obj, err);

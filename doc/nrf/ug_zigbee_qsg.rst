@@ -99,7 +99,7 @@ Software requirements
 For this quick start guide, we will install the following software:
 
 * Toolchain Manager - An application for installing the full |NCS| toolchain.
-* Visual Studio Code (VS Code) - The recommended IDE for the |NCS|.
+* Microsoft's Visual Studio Code - The recommended IDE for the |NCS|.
 * |VSC| - Extension for VS Code that allows you to develop applications for the |NCS|.
 * nRF Command Line Tools - A set of mandatory tools for working with the |NCS|.
 * SEGGER J-Link - Tool for handling the serial connection.
@@ -127,8 +127,8 @@ To set up the required software, complete the following steps:
 #. Click the :guilabel:`Open VS Code` button.
    The installation wizard checks whether you have the following software installed:
 
-   * VS Code
-   * |VSC| extension
+   * Microsoft's Visual Studio Code
+   * |VSC|
    * nRF Command Line Tools (with SEGGER J-Link)
 
    If any of these items is missing, you are taken to its installation page to complete the setup.
@@ -141,43 +141,12 @@ Program the samples
 
 To program the samples, complete the following steps:
 
-1. In VS Code, open the :guilabel:`nRF Connect` extension by clicking its icon or pressing ``Ctrl`` + ``Alt`` + ``N``.
-#. Add the network coordinator application:
+.. |sample_path_vsc| replace:: :file:`nrf/samples/zigbee/network_coordinator`
 
-   a. In the Welcome panel or on the Welcome page, click :guilabel:`Create a new application from sample`.
+.. |vsc_sample_board_target_line| replace:: see the `Requirements`_ section for the list of available build target names.
+   For the purpose of this quick start guide, leave the default values for other options.
 
-      .. figure:: images/zigbee_qsg_vsc_welcome_section.png
-         :alt: nRF Connect for Visual Studio Code - Welcome panel
-
-   #. Select the :guilabel:`Freestanding` application type, which uses the preinstalled version of the |NCS|.
-   #. Enter a custom application location and name.
-      For example, ``Zigbee_coordinator``.
-   #. Keep the default settings for :guilabel:`nRF Connect SDK` and :guilabel:`nRF Connect Toolchain`.
-   #. In the :guilabel:`Application template`, click :guilabel:`Browse` and search for the Zigbee network coordinator sample.
-      The path for the application template is :file:`nrf/samples/zigbee/network_coordinator`.
-   #. Click :guilabel:`Select` and then click :guilabel:`Create Application`.
-
-      .. figure:: images/zigbee_qsg_vsc_create_application_section.png
-         :alt: nRF Connect for Visual Studio Code - Create Application panel
-
-   #. If needed, click :guilabel:`Yes` when prompted if you trust the authors of the files.
-
-#. Generate the network coordinator application:
-
-   a. In the Applications panel, click the :guilabel:`No build configuration - Click to create one` button.
-   #. In the configuration options on the :guilabel:`Add Build Configuration` screen, select the board onto which you want to program the sample.
-      See the `Requirements`_ section for the list of available build target names.
-      For the purpose of this quick start guide, leave the default values for other options.
-
-      .. figure:: images/zigbee_qsg_vsc_generate_config_section.png
-         :alt: nRF Connect for Visual Studio Code - Generate Configuration panel
-
-   #. Click :guilabel:`Build Configuration`.
-      When the process starts, a Zigbee Coordinator panel appears under the Applications panel.
-      The generation process takes some time and you can observe its progress in the :guilabel:`nRF Connect` terminal.
-
-      .. figure:: images/zigbee_qsg_vsc_generating_config_prompt_full.png
-         :alt: nRF Connect for Visual Studio Code - building process in progress
+.. include:: /includes/vsc_build_and_run.txt
 
 #. Program the application to the board:
 
@@ -192,11 +161,11 @@ To program the samples, complete the following steps:
    When the programming is done, the **LED 3** on the development kit turns on to indicate that the Zigbee network is open.
    After some time, it turns off and the Zigbee network needs to be reopened (see below).
 #. Add the light switch application.
-   Repeat steps 2 to 4 using a custom application location and name, for example ``Zigbee_light_switch``.
-   The path for the application template is :file:`nrf/samples/zigbee/light_switch`.
+   Repeat steps 3 to 9 for the Zigbee light switch sample.
+   The path to the application files is :file:`nrf/samples/zigbee/light_switch`.
 #. Add the light bulb application.
-   Repeat steps 2 to 4 using a custom application location and name, for example ``Zigbee_light_bulb``.
-   The path for the application template is :file:`nrf/samples/zigbee/light_bulb`.
+   Repeat steps 3 to 9 for the Zigbee light bulb sample.
+   The path to the application files is :file:`nrf/samples/zigbee/light_bulb`.
    The **LED 4** turns on when the application is started.
 #. Press **Button 1** on the development kit programmed with the network coordinator sample to reopen the Zigbee network.
    After some time, the devices join the Zigbee network.

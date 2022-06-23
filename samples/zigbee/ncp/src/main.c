@@ -8,20 +8,20 @@
  *  @brief Zigbee Network Co-processor sample
  */
 
-#include <drivers/uart.h>
-#include <drivers/gpio.h>
-#include <usb/usb_device.h>
-#include <logging/log.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/logging/log.h>
 #include <zb_nrf_platform.h>
 #include <zb_osif_ext.h>
-#include <zephyr.h>
-#include <device.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #include <dk_buttons_and_leds.h>
 #include <ncp/ncp_dev_api.h>
 
 
 #if CONFIG_BOOTLOADER_MCUBOOT
-#include <dfu/mcuboot.h>
+#include <zephyr/dfu/mcuboot.h>
 #endif
 
 LOG_MODULE_REGISTER(app, LOG_LEVEL_INF);
@@ -147,8 +147,9 @@ static zb_uint16_t ncp_vendor_specific_req_handler(zb_uint8_t buf)
 
 	resp_args->tsn = tsn;
 	*resp_data = vendor_specific_led_state;
+	ZVUNUSED(zb_ncp_custom_response(resp_buf));
 
-	return zb_ncp_custom_response(resp_buf);
+	return NCP_RET_LATER;
 }
 
 static void ncp_vendor_specific_init(void)
@@ -169,7 +170,8 @@ int main(void)
 	/* Enable USB device. */
 	int ret = usb_enable(NULL);
 
-	if (ret != 0) {
+	if ((ret != 0) && (ret != -EALREADY)) {
+		LOG_ERR("USB initialization failed");
 		return ret;
 	}
 

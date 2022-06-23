@@ -5,8 +5,8 @@
  */
 
 #include <inttypes.h>
-#include <zephyr.h>
-#include <logging/log.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
 #include <bluetooth/gatt_dm.h>
 

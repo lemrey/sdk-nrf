@@ -87,13 +87,13 @@ To program the nRF device with the RCP application, complete the following steps
 
          .. code-block:: console
 
-            west build -p always -b nrf52840dongle_nrf52840 nrf/samples/openthread/coprocessor/ -- -DOVERLAY_CONFIG="overlay-rcp.conf overlay-usb.conf" -DDTC_OVERLAY_FILE="usb.overlay" -DCONFIG_OPENTHREAD_THREAD_VERSION_1_2=y
+            west build -p always -b nrf52840dongle_nrf52840 nrf/samples/openthread/coprocessor/ -- -DOVERLAY_CONFIG="overlay-usb.conf" -DDTC_OVERLAY_FILE="usb.overlay"
 
       .. tab:: nRF52840 Development Kit (UART transport)
 
          .. code-block:: console
 
-            west build -p always -b nrf52840dk_nrf52840 nrf/samples/openthread/coprocessor/ -- -DOVERLAY_CONFIG="overlay-rcp.conf" -DCONFIG_OPENTHREAD_THREAD_VERSION_1_2=y
+            west build -p always -b nrf52840dk_nrf52840 nrf/samples/openthread/coprocessor/
 
 #. Depending on the hardware platform, complete the following steps:
 
@@ -143,7 +143,8 @@ To program the nRF device with the RCP application, complete the following steps
 
                west flash --erase
 
-         #. Disable the Mass Storage feature on the device, so that it does not interfere with the core RCP functionalities:
+         #. Disable the Mass Storage feature on the device, so that it does not interfere with the core RCP functionalities.
+            Also, force Hardware Flow Control to avoid potential race conditions related to the auto-detection:
 
             .. parsed-literal::
                :class: highlight
@@ -151,6 +152,8 @@ To program the nRF device with the RCP application, complete the following steps
                JLinkExe -device NRF52840_XXAA -if SWD -speed 4000 -autoconnect 1 -SelectEmuBySN *SEGGER_ID*
                J-Link>MSDDisable
                Probe configured successfully.
+               J-Link>SetHWFC Force
+               New configuration applies immediately.
                J-Link>exit
 
             Replace *SEGGER_ID* with the SEGGER ID of your nRF52840 Development Kit.
@@ -172,7 +175,7 @@ To set up and configure the OpenThread Border Router, follow the official `OpenT
 
       cd ot-br-posix
       git pull --unshallow
-      git checkout f0bd216
+      git checkout 4b04548
 
 * After the *Build and install OTBR* section, configure RCP device's UART baud rate in *otbr-agent*.
   Modify the :file:`/etc/default/otbr-agent` configuration file with default RCP baud rate:
@@ -188,7 +191,7 @@ Running OTBR using Docker
 
 For development purposes, you can run the OpenThread Border Router on any Linux-based system using a Docker container that already has the Border Router installed.
 This solution can be used when you are only interested in direct communication between your Border Router and the Thread network.
-For example, you can use the Docker container when you want to establish IP communication between an application running on Linux (such as the :ref:`Python Controller for Matter <ug_matter_configuring>`) and an application running on a Thread node.
+For example, you can use the Docker container when you want to establish IP communication between an application running on Linux (such as the :ref:`CHIP Tool Matter controller <ug_matter_configuring>`) and an application running on a Thread node.
 
 To install and configure the OpenThread Border Router using the Docker container on an Ubuntu operating system, complete the following steps:
 
@@ -214,7 +217,7 @@ To install and configure the OpenThread Border Router using the Docker container
 
    .. code-block:: console
 
-      docker pull nrfconnect/otbr:f0bd216
+      docker pull nrfconnect/otbr:4b04548
 
 #. Connect the radio co-processor that you configured in :ref:`ug_thread_tools_tbr_rcp` to the Border Router device.
 #. Start the OpenThread Border Router container using the following commands:
@@ -224,7 +227,7 @@ To install and configure the OpenThread Border Router using the Docker container
       sudo modprobe ip6table_filter
       sudo docker run -it --rm --privileged --name otbr --network otbr -p 8080:80 \
       --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" \
-      --volume /dev/ttyACM0:/dev/radio nrfconnect/otbr:f0bd216 --radio-url spinel+hdlc+uart:///dev/radio?uart-baudrate=1000000
+      --volume /dev/ttyACM0:/dev/radio nrfconnect/otbr:4b04548 --radio-url spinel+hdlc+uart:///dev/radio?uart-baudrate=1000000
 
    Replace ``/dev/ttyACM0`` with the device node name of the OpenThread radio co-processor.
 
@@ -256,6 +259,9 @@ To install and configure the OpenThread Border Router using the Docker container
    .. code-block:: console
 
       sudo docker exec -it otbr sh -c "sudo ot-ctl state"
+
+.. note::
+   OTBR on the Docker has got disabled DNS64 service by default.
 
 .. _ug_thread_tools_ot_apps:
 

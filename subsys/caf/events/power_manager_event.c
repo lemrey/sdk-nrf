@@ -7,8 +7,7 @@
 #include <caf/events/power_manager_event.h>
 
 #include <assert.h>
-#include <sys/util.h>
-#include <stdio.h>
+#include <zephyr/sys/util.h>
 #include <caf/events/module_state_event.h>
 
 
@@ -51,13 +50,13 @@ static void profile_event(struct log_event_buf *buf,
 {
 	const struct power_manager_restrict_event *event = cast_power_manager_restrict_event(aeh);
 
-	profiler_log_encode_uint32(buf, event->module_idx);
-	profiler_log_encode_int8(buf, event->level);
+	nrf_profiler_log_encode_uint32(buf, event->module_idx);
+	nrf_profiler_log_encode_int8(buf, event->level);
 }
 
 
 APP_EVENT_INFO_DEFINE(power_manager_restrict_event,
-		  ENCODE(PROFILER_ARG_U32, PROFILER_ARG_S8),
+		  ENCODE(NRF_PROFILER_ARG_U32, NRF_PROFILER_ARG_S8),
 		  ENCODE("module", "level"),
 		  profile_event
 );

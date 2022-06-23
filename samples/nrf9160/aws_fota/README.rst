@@ -15,16 +15,14 @@ Requirements
 
 The sample supports the following development kit:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :sample-yaml-rows:
+.. table-from-sample-yaml::
 
 The sample requires an `AWS account`_ with access to Simple Storage Service (S3) and the IoT Core service.
 
-.. include:: /includes/spm.txt
+.. include:: /includes/tfm.txt
 
 Overview
-*********
+********
 
 The sample connects to the configured `AWS IoT MQTT`_ broker and subscribes to several topics related to AWS IoT jobs.
 When an update job is created on the AWS IoT service, the sample receives a notification through MQTT.
@@ -40,10 +38,20 @@ The `AWS IoT Developer Guide`_ contains all required information about the Amazo
    A file server instance that hosts the new firmware image is required for this sample.
    You can set up and use your own AWS S3 server bucket to host the firmware described in the `Setting up an AWS S3 bucket`_ section.
 
+Configuration
+*************
+
+|config|
+
+Setup
+=====
+
+Complete the steps in this section to configure the sample for use.
+
 .. _creating_a_thing_in_AWS_IoT:
 
-Creating a thing in AWS IoT
-===========================
+Create a thing in AWS IoT
+-------------------------
 
 Before you can run this sample, you must create a *thing* for your development kit in AWS IoT so that AWS knows about your kit.
 This thing must be connected to a security policy.
@@ -84,8 +92,8 @@ To create a thing for your kit:
 #. Click :guilabel:`Attach a policy` to continue to the next step.
 #. Select the policy that you created in step 3 and click :guilabel:`Register Thing`.
 
-Updating the certificates
-=========================
+Update the certificates
+-----------------------
 
 The certificates that you created or added for your thing in AWS IoT must be stored on your kit so that it can connect to AWS IoT.
 
@@ -107,11 +115,6 @@ Use LTE Link Monitor to write the certificates to the kit:
    #. Before programming the sample, make sure to configure the :ref:`security tag <CONFIG_CERT_SEC_TAG>` to the one that you chose.
 
 .. include:: /includes/aws_s3_bucket.txt
-
-Configuration
-*************
-
-|config|
 
 Configuration options
 =====================
@@ -152,11 +155,9 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/nrf9160/aws_fota`
 
-.. include:: /includes/build_and_run_nrf9160.txt
+.. include:: /includes/build_and_run_ns.txt
 
 .. _configuring:
-
-
 
 Testing
 =======
@@ -261,6 +262,6 @@ It uses the following Zephyr library:
 
 * :ref:`MQTT <zephyr:networking_api>`
 
-In addition, it uses the following sample:
+In addition, it uses the following secure firmware component:
 
-* :ref:`secure_partition_manager`
+* :ref:`Trusted Firmware-M <ug_tfm>`

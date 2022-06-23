@@ -8,7 +8,7 @@ Matter: Light switch
    :local:
    :depth: 2
 
-This light switch sample demonstrates the usage of the :ref:`Matter <ug_matter>` (formerly Project Connected Home over IP, Project CHIP) application layer to build a switch device that binds with lighting devices and changes the state of their LEDs.
+This light switch sample demonstrates the usage of the :ref:`Matter <ug_matter>` application layer to build a switch device that binds with lighting devices and changes the state of their LEDs.
 When configured together with the :ref:`Matter light bulb <matter_light_bulb_sample>` sample (or other lighting sample) and when using a Matter controller, the light switch can control one light bulb directly or a group of light bulbs remotely over a Matter network built on top of a low-power, 802.15.4 Thread network.
 You can use this sample as a reference for creating your own application.
 
@@ -17,9 +17,7 @@ Requirements
 
 The sample supports the following development kits:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf52840dk_nrf52840, nrf5340dk_nrf5340_cpuapp, nrf21540dk_nrf52840
+.. table-from-sample-yaml::
 
 For this sample to work, you also need at least one :ref:`Matter light bulb <matter_light_bulb_sample>` sample programmed to another supported development kit.
 
@@ -93,34 +91,21 @@ Configuration
 Matter light switch build types
 ===============================
 
-The sample uses different configuration files depending on the supported features.
-Configuration files are provided for different build types and they are located in the :file:`configuration/<board_name>` directory.
-
-The :file:`prj.conf` file represents a ``debug`` build type.
-Other build types are covered by dedicated files with the build type added as a suffix to the ``prj`` part, as per the following list.
-For example, the ``release`` build type file name is :file:`prj_release.conf`.
-If a board has other configuration files, for example associated with partition layout or child image configuration, these follow the same pattern.
-
-.. include:: /gs_modifying.rst
-   :start-after: build_types_overview_start
-   :end-before: build_types_overview_end
-
-Before you start testing the application, you can select one of the build types supported by the sample.
-This sample supports the following build types, depending on the selected board:
-
-* ``debug`` -- Debug version of the application - can be used to enable additional features for verifying the application behavior, such as logs or command-line shell.
-* ``release`` -- Release version of the application - can be used to enable only the necessary application functionalities to optimize its performance.
-* ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support - can be used only for the nRF52840 DK and nRF5340 DK, as those platforms have DFU enabled by default.
-
-.. note::
-    `Selecting a build type`_ is optional.
-    The ``debug`` build type is used by default if no build type is explicitly selected.
-
+.. include:: ../lock/README.rst
+    :start-after: matter_door_lock_sample_configuration_file_types_start
+    :end-before: matter_door_lock_sample_configuration_file_types_end
 
 FEM support
 ===========
 
 .. include:: /includes/sample_fem_support.txt
+
+Low-power build
+===============
+
+.. include:: ../lock/README.rst
+    :start-after: matter_door_lock_sample_low_power_build_start
+    :end-before: matter_door_lock_sample_low_power_build_end
 
 .. _matter_light_switch_sample_remote_control_cli:
 
@@ -448,8 +433,7 @@ Commissioning the device
     :end-before: matter_door_lock_sample_commissioning_end
 
 Before starting the commissioning procedure, the device must be made discoverable over Bluetooth LE.
-The device becomes discoverable automatically upon the device startup, but only for a predefined period of time (15 minutes by default).
-If the Bluetooth LE advertising times out, press **Button 4** to re-enable it.
+By default, the device is not discoverable automatically upon startup and **Button 4** must be used to enable the Bluetooth LE advertising.
 
 When you start the commissioning procedure, the controller must get the commissioning information from the Matter accessory device.
 The data payload includes the device discriminator and setup PIN code.

@@ -6,16 +6,16 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
-#include <device.h>
-#include <drivers/uart.h>
-#include <sys/byteorder.h>
-#include <settings/settings.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/sys/byteorder.h>
+#include <zephyr/settings/settings.h>
 
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/conn.h>
-#include <bluetooth/hci.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/conn.h>
+#include <zephyr/bluetooth/hci.h>
 
 #include "sdc_hci_vs.h"
 
@@ -27,7 +27,7 @@
 #include "config_event.h"
 #include "hid_event.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_DESKTOP_BLE_QOS_LOG_LEVEL);
 
 #define INVALID_BLACKLIST 0xFFFF
@@ -310,7 +310,7 @@ static void ble_chn_stats_print(bool update_channel_map)
 			LOG_ERR("Encoding error");
 			return;
 		}
-		send_uart_data(cdc_dev, str, str_len);
+		send_uart_data(cdc_dev, (uint8_t *)str, str_len);
 	}
 
 	/* Channel state information print format: */
@@ -321,7 +321,7 @@ static void ble_chn_stats_print(bool update_channel_map)
 		LOG_ERR("Encoding error");
 		return;
 	}
-	send_uart_data(cdc_dev, str, str_len);
+	send_uart_data(cdc_dev, (uint8_t *)str, str_len);
 
 	str_len = 0;
 	for (uint8_t i = 0; i < CHMAP_BLE_CHANNEL_COUNT; i++) {
@@ -345,7 +345,7 @@ static void ble_chn_stats_print(bool update_channel_map)
 		}
 
 		if (str_len >= ((sizeof(str) * 2) / 3)) {
-			send_uart_data(cdc_dev, str, str_len);
+			send_uart_data(cdc_dev, (uint8_t *)str, str_len);
 			str_len = 0;
 		}
 	}
@@ -355,7 +355,7 @@ static void ble_chn_stats_print(bool update_channel_map)
 		LOG_ERR("Encoding error");
 		return;
 	}
-	send_uart_data(cdc_dev, str, str_len);
+	send_uart_data(cdc_dev, (uint8_t *)str, str_len);
 }
 
 static void hid_pkt_stats_print(uint32_t ble_recv)
@@ -402,7 +402,7 @@ static void hid_pkt_stats_print(uint32_t ble_recv)
 		LOG_ERR("Encoding error");
 		return;
 	}
-	send_uart_data(cdc_dev, str, str_len);
+	send_uart_data(cdc_dev, (uint8_t *)str, str_len);
 }
 
 static bool on_vs_evt(struct net_buf_simple *buf)

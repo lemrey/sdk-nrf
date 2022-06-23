@@ -14,13 +14,11 @@ Requirements
 
 The sample supports the following development kits:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: thingy91_nrf9160_ns, nrf9160dk_nrf9160_ns
+.. table-from-sample-yaml::
 
 The sample also requires an Azure IoT Hub instance, and optionally an `Azure IoT Hub Device Provisioning Service (DPS)`_ instance, if the device is not already registered with the IoT hub.
 
-.. include:: /includes/spm.txt
+.. include:: /includes/tfm.txt
 
 Overview
 ********
@@ -76,7 +74,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/nrf9160/azure_fota`
 
-.. include:: /includes/build_and_run_nrf9160.txt
+.. include:: /includes/build_and_run_ns.txt
 
 
 Testing
@@ -161,6 +159,6 @@ It uses the following Zephyr library:
 
 * :ref:`MQTT <zephyr:networking_api>`
 
-In addition, it uses the following sample:
+In addition, it uses the following secure firmware component:
 
-* :ref:`secure_partition_manager`
+* :ref:`Trusted Firmware-M <ug_tfm>`

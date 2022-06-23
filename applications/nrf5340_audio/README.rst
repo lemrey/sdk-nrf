@@ -1,4 +1,4 @@
-.. _octave:
+.. _nrf53_audio_app:
 
 nRF5340 Audio
 #############
@@ -8,12 +8,12 @@ nRF5340 Audio
    :depth: 2
 
 The nRF5340 Audio application demonstrates audio playback over isochronous channels (ISO) using LC3 or SBC codec compression and decompression, as per `Bluetooth LE Audio specifications`_.
-It is developed for use with the :ref:`octave_dk`.
+It is developed for use with the :ref:`nrf53_audio_app_dk`.
 
 In its default configuration, the application requires access to the non-public external repository containing the LC3 software codec.
 The application also comes with various tools, including the :file:`buildprog.py` Python script that simplifies building and programming the firmware.
 
-.. _octave_overview:
+.. _nrf53_audio_app_overview:
 
 Overview
 ********
@@ -57,7 +57,7 @@ In the `I2S-based firmware for gateway and headsets`_, sending the audio data th
 This proprietary module ensures that the audio is played at the same time with the correct speed.
 For more information, see `Synchronization module overview`_.
 
-.. _octave_overview_modes:
+.. _nrf53_audio_app_overview_modes:
 
 Application modes
 =================
@@ -91,7 +91,7 @@ Broadcast Isochronous Stream (BIS)
 
 The audio quality for both modes does not change, although the processing time for stereo quality can be longer.
 
-.. _octave_overview_architecture:
+.. _nrf53_audio_app_overview_architecture:
 
 Firmware architecture
 =====================
@@ -133,14 +133,14 @@ These modules include the following major ones:
   * LC3 encoder/decoder (default)
   * SBC encoder/decoder
 
-  :ref:`Selecting and configuring the right software codec <octave_requirements_codec>` is required to run the application.
+  :ref:`Selecting and configuring the right software codec <nrf53_audio_app_requirements_codec>` is required to run the application.
 
 Since the application architecture is uniform and the firmware code is shared, the set of audio modules in use depends on the chosen stream mode (BIS or CIS), the chosen audio inputs and outputs (USB or analog jack), and if the gateway or the headset configuration is selected.
 
 .. note::
    In the current version of the application, no bootloader is used, and device firmware update (DFU) is not supported.
 
-.. _octave_overview_architecture_usb:
+.. _nrf53_audio_app_overview_architecture_usb:
 
 USB-based firmware for gateway
 ------------------------------
@@ -155,7 +155,7 @@ The following figure shows an overview of the modules currently included in the 
 In this firmware design, no synchronization module is used after decoding the incoming frames or before encoding the outgoing ones.
 The Bluetooth LE RX FIFO is mainly used to make decoding run in a separate thread.
 
-.. _octave_overview_architecture_i2s:
+.. _nrf53_audio_app_overview_architecture_i2s:
 
 I2S-based firmware for gateway and headsets
 -------------------------------------------
@@ -170,7 +170,7 @@ The following figure shows an overview of the modules currently included in the 
 The Bluetooth LE RX FIFO is mainly used to make :file:`audio_datapath.c` (synchronization module) run in a separate thread.
 After the encoding, the frames are sent by the encoder thread using a function located in :file:`streamctrl.c`.
 
-.. _octave_overview_architecture_sync_module:
+.. _nrf53_audio_app_overview_architecture_sync_module:
 
 Synchronization module overview
 -------------------------------
@@ -201,7 +201,7 @@ See the following figure for an overview of the synchronization module.
    nRF5340 Audio synchronization module overview
 
 Both synchronization methods use the SDU reference timestamps (:c:type:`sdu_ref`) as the reference variable.
-If the device is a gateway that is :ref:`using I2S as audio source <octave_overview_architecture_i2s>` and the stream is unidirectional (gateway to headsets), :c:type:`sdu_ref` is continuously being extracted from the LE Audio Controller Subsystem for nRF53 on the gateway.
+If the device is a gateway that is :ref:`using I2S as audio source <nrf53_audio_app_overview_architecture_i2s>` and the stream is unidirectional (gateway to headsets), :c:type:`sdu_ref` is continuously being extracted from the LE Audio Controller Subsystem for nRF53 on the gateway.
 These :c:type:`sdu_ref` values are then sent to the gateway's synchronization module, and used to do drift compensation.
 This extraction of :c:type:`sdu_ref` happens inside the function in :file:`streamctrl.c` that sends encoded data.
 
@@ -259,13 +259,13 @@ The received audio data in the I2S-based firmware devices follows the following 
    .. note::
       Only the SBC audio codec is open-source.
       To use the proprietary LC3 audio codec, you need to obtain a license.
-      For more information, see `requirements <octave_requirements>`_.
+      For more information, see `requirements <nrf53_audio_app_requirements>`_.
 
 #. The audio decoder decodes the data and sends the uncompressed audio data (PCM) back to the :file:`audio_datapath.c` module.
 #. The :file:`audio_datapath.c` module continuously feeds the uncompressed audio data to the hardware codec.
 #. The hardware codec receives the uncompressed audio data over the inter-IC sound (I2S) interface and performs the digital-to-analog (DAC) conversion to an analog audio signal.
 
-.. _octave_requirements:
+.. _nrf53_audio_app_requirements:
 
 Requirements
 ************
@@ -288,25 +288,25 @@ The nRF5340 Audio application is designed to be used only with the following har
 You need at least two nRF5340 Audio development kits (one with the gateway firmware and one with headset firmware) to test the application.
 For CIS with TWS in mind, three kits are required.
 
-.. _octave_requirements_codec:
+.. _nrf53_audio_app_requirements_codec:
 
 Software codec requirements
 ===========================
 
 The nRF5340 Audio application must use either the LC3 software (developed specifically for use with LE Audio) or the open-source SBC software codec (developed for use with Classic Bluetooth Audio).
-Each codec requires :ref:`adding its own repository before building and running <octave_configuration_repos>`.
+Each codec requires :ref:`adding its own repository before building and running <nrf53_audio_app_configuration_repos>`.
 
 |lc3_codec_access_note|
-See :ref:`octave_configuration_select_codec` for more information.
+See :ref:`nrf53_audio_app_configuration_select_codec` for more information.
 
-.. _octave_dk:
+.. _nrf53_audio_app_dk:
 
 nRF5340 Audio development kit
 =============================
 
 The nRF5340 Audio development kit is a hardware development platform that demonstrates the nRF5340 Audio application.
 
-.. _octave_dk_features:
+.. _nrf53_audio_app_dk_features:
 
 Key features of the nRF5340 Audio DK
 ------------------------------------
@@ -326,7 +326,7 @@ Key features of the nRF5340 Audio DK
 * Embedded battery charge system
 * Rechargeable Li-Po battery with 1500 mAh capacity
 
-.. _octave_dk_drawings:
+.. _nrf53_audio_app_dk_drawings:
 
 Hardware drawings
 -----------------
@@ -352,7 +352,218 @@ The following figure shows the back of the development kit without the case:
 
 For the description of the relevant PCB elements, see the `User interface`_ section.
 
-.. _octave_configuration_files:
+.. _nrf53_audio_app_dk_solder_bridge_overview:
+
+Solder bridge overview
+----------------------
+
+The nRF5340 Audio DK has a range of solder bridges for enabling or disabling selected functionalities.
+Changes to these are not needed for normal use of the DK.
+The following table is a complete overview of the solder bridges on the nRF5340 Audio DK.
+
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|Designator  | Description                                                                         | Default state| Layer  |
++============+=====================================================================================+==============+========+
+|SB1         | Short to connect digital microphone DOUT to P1.06                                   | Open         | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB2         | Cut to disconnect P0.12 from TRACE                                                  | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB3         | Short to connect PMIC MODE to VOUTB, must not be shorted while SB4 is shorted       | Open         | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB4         | Cut to disable PMIC MODE from GND, must not be shorted while SB3 is shorted         | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB5         | Cut to enable VBAT current measurements on P6                                       | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB6         | Cut to enable VBAT current measurements on P6                                       | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB7         | Cut to enable HW CODEC 1.8V current measurements on P8                              | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB8         | Cut to enable VDD_nRF current measurements on P9                                    | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB9         | Cut to disconnect filter from OUTP                                                  | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB10        | Cut to disconnect filter from OUTN                                                  | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB11        | Cut to disconnect the LED for the HW CODEC GPIO                                     | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB12        | Cut to disconnect digital microphone POWER from the HW CODEC                        | Shorted      | Bottom |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB13        | Cut to disconnect digital microphone DATA from the HW CODEC                         | Shorted      | Bottom |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB14        | Cut to disconnect digital microphone CLOCK from the HW CODEC                        | Shorted      | Bottom |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB15        | Short to connect AUX I2S MCLK to HW CODEC MCLK1                                     | Open         | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB16        | Short to connect AUX I2S MCLK to HW CODEC MCLK2                                     | Open         | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB17        | Short to connect P5 pin 6 to GND	                                                   | Open         | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB18        | Cut to disconnect P5 pin 6 from SHIELD DETECT                                       | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB19        | Cut to disconnect RTS and CTS flow control lines on UART1                           | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB20        | Cut to disconnect RTS and CTS flow control lines on UART2                           | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB21        | Cut to disconnect nRF53 RESET from RESET button when debug is disabled              | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB22        | Short to permanently connect RESET button to nRF53 RESET                            | Open         | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB23        | Cut to disconnect RESET button from interface MCU                                   | Shorted      | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+|SB24        | Short to bypass analog switch for MCLK                                              | Open         | Top    |
++------------+-------------------------------------------------------------------------------------+--------------+--------+
+
+
+.. _nrf53_audio_app_dk_testpoint_overview:
+
+Testpoint overview
+------------------
+
+The following table is a complete overview of the test points on the nRF5340 Audio DK.
+
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+| Designator  | Net                        | Description                                      | Size  | Layer  |
++=============+============================+==================================================+=======+========+
+|TP1          | NetTP1-1                   | IN1LP_1 pin of CS47L63                           | 1.5mm | Bottom |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP2          | NetTP2-1                   | IN1LN_1 pin of CS47L63                           | 1.5mm | Bottom |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP3          | NetTP3-1                   | IN1RP pin of CS47L63                             | 1.5mm | Bottom |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP4          | NetTP4-1                   | IN1RN pin of CS47L63                             | 1.5mm | Bottom |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP5          | NetTP5-1                   | IN2LN pin of CS47L63                             | 1.5mm | Bottom |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP6          | NetTP6-1                   | IN2RN pin of CS47L63                             | 1.5mm | Bottom |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP7          | HW_CODEC_AUX_I2C.SCL       | AUX SCL pin of CS47L63                           | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP8          | HW_CODEC_AUX_I2C.SDA       | AUX SDA pin of CS47L63                           | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP9          | P0.07/AIN3                 | RGB LED 1 Red color input pin                    | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP10         | P0.28/AIN7                 | RGB LED 2 Red color input pin                    | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP11         | P1.01                      | LED 3 input pin                                  | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP12         | P0.04/AIN0                 | Button 3                                         | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP13         | VDD_EXT_HW_CODEC.1V2       | External HW CODEC 1.2V supply                    | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP14         | VDD_EXT_HW_CODEC.1V8       | External HW CODEC 1.8V supply                    | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP15         | BAT_NTC                    | Li-poly battery NTC pin                          | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP16         | BATTERY                    | Li-poly battery voltage after power switch       | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP17         | NetC41-1                   | USB voltage after power switch                   | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP18         | NetC43-2                   | USB voltage before power switch                  | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP19         | HEADPHONE.OUTP             | Headphone jack tip                               | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP20         | HEADPHONE.OUTN             | Headphone jack sleeve                            | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP21         | DU_N                       | USB connector D-                                 | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP22         | DU_P                       | USB connector D+                                 | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP23         | SWDIO                      | nRF5340 Serial Wire Debug data                   | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP24         | SWDCLK                     | nRF5340 Serial Wire Debug clock                  | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP25         | R\E\S\E\T\                 | nRF5340 Reset                                    | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP26         | SD_CS                      | SD card slot CS line                             | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP27         | SD_SCK                     | SD card slot SCK line                            | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP28         | VDD_IN_1V                  | 1.2V regulator output                            | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP29         | SUPPLY_1V8                 | nPM1100 1.8V output                              | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP30         | SUPPLY_3V3                 | 3.3V regulator output                            | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP31         | VDD_DBG_3V3                | Debug regulator 3.3V output                      | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP32         | VDD_DBG_1V8                | Debug regulator 1.8V output                      | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP33         | SW_EN                      | Load switch enable signal                        | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP34         | GND                        | Ground                                           | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP35         | GND                        | Ground                                           | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP36         | NetQ9-1                    | Debug enable signal                              | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP37         | IMCU_SWDIO                 | Interface MCU Serial Wire Debug data             | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP38         | IMCU_RESET                 | Interface MCU Reset                              | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP39         | IMCU_SWDCLK                | Interface MCU Serial Wire Debug clock            | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP40         | SHIELD_DETECT              | Detect signal for Arduino compatible shield      | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP41         | HW_CODEC_IF.SPI.MISO       | SPI MISO pin of CS47L63                          | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP42         | HW_CODEC_IF.SPI.MOSI       | SPI MOSI pin of CS47L63                          | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP43         | HW_CODEC_IF.SPI.SCK        | SPI SCK pin of CS47L63                           | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP44         | HW_CODEC_IF.SPI.CS         | SPI SS pin of CS47L63                            | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP45         | HW_CODEC_IF.CTRL.GPIO      | GPIO pin of CS47L63                              | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP46         | HW_CODEC_IF.CTRL.IRQ       | IRQ pin of CS47L63                               | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP47         | HW_CODEC_IF.CTRL.RESET     | RESET pin of CS47L63                             | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP48         | HW_CODEC_IF.I2S.MCLK       | MCLK1 pin of CS47L63                             | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP49         | HW_CODEC_IF.I2S.DOUT       | I2S DOUT pin of CS47L63                          | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP50         | HW_CODEC_IF.I2S.DIN        | I2S DIN pin of CS47L63                           | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP51         | HW_CODEC_IF.I2S.BCLK       | I2S BCLK pin of CS47L63                          | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP52         | HW_CODEC_IF.I2S.FSYNC      | I2S FSYNC pin of CS47L63                         | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP53         | NetSB12-1                  | MICBIASB pin of CS47L63                          | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP54         | NetSB13-1                  | IN1_PDMDATA pin of CS47L63                       | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP55         | NetSB14-1                  | IN1_PDMCLK pin of CS47L6                         | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP56         | PMIC_ERR                   | nPM1100 error indication                         | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP57         | PMIC_CHG                   | nPM1100 charge indication                        | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP58         | P0.29                      | RGB LED 2 Green color input pin                  | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP59         | P0.30                      | RGB LED 2 Blue color input pin                   | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP60         | P1.04                      | UART1 RXD                                        | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP61         | P1.05                      | UART1 TXD                                        | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP62         | P1.06                      | UART1 CTS                                        | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP63         | P1.07                      | UART1 RTS                                        | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP64         | NetJ5-10                   | SD card slot card detect                         | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP65         | P0.11                      | SD card slot level translator enable             | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP66         | P1.15                      | Current shunt monitor alert signal               | 1.0mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP67         | GND                        | Ground                                           | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP68         | LINE_IN.LEFT               | Line-in jack tip                                 | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+|TP69         | LINE_IN.RIGHT              | Line-in jack ring                                | 1.5mm | Top    |
++-------------+----------------------------+--------------------------------------------------+-------+--------+
+
+.. _nrf53_audio_app_configuration_files:
 
 nRF5340 Audio configuration files
 =================================
@@ -406,9 +617,9 @@ You can combine the configuration files as follows to obtain one of four differe
 This means that when you build the application using the ``headset`` device type and the ``release`` application version (third column), the build process includes :file:`prj.conf`,  :file:`overlay-headset.conf`, and :file:`overlay-release.conf` at the time of building the firmware.
 If you are building using the script, the build files are then placed in the :file:`build/headset_release` directory.
 
-See :ref:`octave_building` for detailed information about selecting the desired combination of configuration files for your build.
+See :ref:`nrf53_audio_app_building` for detailed information about selecting the desired combination of configuration files for your build.
 
-.. _octave_ui:
+.. _nrf53_audio_app_ui:
 
 User interface
 **************
@@ -416,7 +627,7 @@ User interface
 The application implements a simple user interface based on the available PCB elements.
 You can control the application using predefined switches and buttons while the LEDs display information.
 
-.. _octave_ui_switches:
+.. _nrf53_audio_app_ui_switches:
 
 Switches
 ========
@@ -432,7 +643,7 @@ The application uses the following switches on the supported development kit:
 |                   | This switch is used for accurate power and current measurements.                    |
 +-------------------+-------------------------------------------------------------------------------------+
 
-.. _octave_ui_buttons:
+.. _nrf53_audio_app_ui_buttons:
 
 Buttons
 =======
@@ -459,7 +670,7 @@ The application uses the following buttons on the supported development kit:
 | **RESET**     | Resets the device.                                             |
 +---------------+----------------------------------------------------------------+
 
-.. _octave_ui_leds:
+.. _nrf53_audio_app_ui_leds:
 
 LEDs
 ====
@@ -539,14 +750,14 @@ To indicate the tasks performed, the application uses the LED behavior described
 |                          | Green - Standard USB hub operation.                                                                 |
 +--------------------------+-----------------------------------------------------------------------------------------------------+
 
-.. _octave_configuration:
+.. _nrf53_audio_app_configuration:
 
 Configuration
 *************
 
 |config|
 
-.. _octave_configuration_repos:
+.. _nrf53_audio_app_configuration_repos:
 
 Setting up the nRF5340 Audio repositories
 =========================================
@@ -575,19 +786,19 @@ If west can fetch the repositories correctly, you can now build the application.
 
 For more information about west, see :ref:`Zephyr's documentation page <zephyr:west>`.
 
-.. _octave_configuration_select_codec:
+.. _nrf53_audio_app_configuration_select_codec:
 
 Selecting the audio software codec
 ==================================
 
 The nRF5340 Audio application must use either the LC3 software (developed specifically for use with LE Audio) or the open-source SBC software codec (developed for use with Classic Bluetooth Audio).
-Each codec requires :ref:`adding its own repository before building and running <octave_configuration_repos>`.
+Each codec requires :ref:`adding its own repository before building and running <nrf53_audio_app_configuration_repos>`.
 
 |lc3_codec_access_note|
 
 If you decide to use the open-source SBC codec, you also need to change the application's Kconfig configuration by adding the ``CONFIG_SW_CODEC_SBC`` Kconfig option set to ``y``  to the main :file:`prj.conf` file.
 
-.. _octave_configuration_select_bis:
+.. _nrf53_audio_app_configuration_select_bis:
 
 Selecting the BIS mode
 ======================
@@ -595,20 +806,20 @@ Selecting the BIS mode
 The CIS mode is the default operating mode for the application.
 You can switch to the BIS mode by adding the ``CONFIG_TRANSPORT_BIS`` Kconfig option set to ``y`` to the main :file:`prj.conf` file.
 
-.. _octave_configuration_select_i2s:
+.. _nrf53_audio_app_configuration_select_i2s:
 
 Selecting the I2S serial
 ========================
 
 In the default configuration, the gateway application uses the USB serial port as the audio source.
-The :ref:`octave_building` and :ref:`octave_testing` steps also refer to using the USB serial connection.
+The :ref:`nrf53_audio_app_building` and :ref:`nrf53_audio_app_testing` steps also refer to using the USB serial connection.
 
 You can switch to using the I2S serial connection by adding the ``CONFIG_AUDIO_SOURCE_I2S`` Kconfig option set to ``y`` to the main :file:`prj.conf` file.
 
 When testing the application, an additional audio jack cable is required to use I2S.
 Use this cable to connect the audio source (PC) to the analog **LINE IN** on the development kit.
 
-.. _octave_building:
+.. _nrf53_audio_app_building:
 
 Building and running
 ********************
@@ -622,19 +833,19 @@ This sample can be found under :file:`applications/nrf5340_audio` in the nRF Con
 
 You can build and program the application in one of the following ways:
 
-* :ref:`octave_building_script`.
+* :ref:`nrf53_audio_app_building_script`.
   This is the suggested method.
   Using this method allows you to build and program multiple development kits at the same time.
-* :ref:`octave_building_standard`.
+* :ref:`nrf53_audio_app_building_standard`.
   Using this method requires building and programming each development kit separately.
 
 Prerequisites
 =============
 
-Before building the application, make sure to meet the following prerequisites described in the :ref:`octave_configuration` section:
+Before building the application, make sure to meet the following prerequisites described in the :ref:`nrf53_audio_app_configuration` section:
 
-* :ref:`octave_configuration_repos`
-* :ref:`octave_configuration_select_codec`
+* :ref:`nrf53_audio_app_configuration_repos`
+* :ref:`nrf53_audio_app_configuration_select_codec`
 
 Testing out of the box
 ======================
@@ -648,13 +859,13 @@ Before building the application, you can verify if the kit is working by complet
 
 You can now program the development kits with either gateway or headset firmware before they can be used.
 
-.. _octave_building_script:
+.. _nrf53_audio_app_building_script:
 
 Building and programming using script
 =====================================
 
 The suggested method for building the application and programming it to the development kit is running the :file:`buildprog.py` Python script from the :file:`applications/nrf5340_audio/tools/buildprog` directory.
-The script automates the process of selecting :ref:`configuration files <octave_configuration_files>` and building different versions of the application.
+The script automates the process of selecting :ref:`configuration files <nrf53_audio_app_configuration_files>` and building different versions of the application.
 This eases the process of building and programming images for multiple development kits.
 
 Preparing the JSON file
@@ -675,7 +886,7 @@ Running the script
 ------------------
 
 After editing the :file:`nrf5340_audio_dk_devices.json` file, run :file:`buildprog.py` from the :file:`applications/nrf5340_audio/tools/buildprog` directory to build the firmware for the development kits.
-The building command for running the script requires providing the following parameters, in line with :ref:`octave_configuration_files`:
+The building command for running the script requires providing the following parameters, in line with :ref:`nrf53_audio_app_configuration_files`:
 
 * Core type (``-c`` parameter): ``app``, ``net``, or ``both``
 * Application version (``-b`` parameter): either ``release`` or ``debug``
@@ -754,7 +965,7 @@ Configuration table overview
    |                       |                                                                                                     | ``Selected done`` - Programming done.         |
    +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
 
-.. _octave_building_standard:
+.. _nrf53_audio_app_building_standard:
 
 Building and programming using command line
 ===========================================
@@ -763,14 +974,14 @@ You can also build the nRF5340 Audio application using the standard |NCS| :ref:`
 
 .. note::
    Using this method requires you to build and progam each development kit one at a time before moving to the next configuration, which can be time-consuming.
-   :ref:`octave_building_script` is recommended.
+   :ref:`nrf53_audio_app_building_script` is recommended.
 
 Building the application
 ------------------------
 
 Complete the following steps to build the application:
 
-1. Choose the combination of the build flags, in line with :ref:`octave_configuration_files`:
+1. Choose the combination of the build flags, in line with :ref:`nrf53_audio_app_configuration_files`:
 
    a. Choose the application version by using one of the following options:
 
@@ -790,7 +1001,7 @@ Complete the following steps to build the application:
 
       west build -b nrf5340_audio_dk_nrf5340_cpuapp --pristine -- -DOVERLAY_CONFIG="overlay-headset.conf overlay-debug.conf"
 
-   Unlike when :ref:`octave_building_script`, this command creates the build files directly in the :file:`build` directory.
+   Unlike when :ref:`nrf53_audio_app_building_script`, this command creates the build files directly in the :file:`build` directory.
    This means that you first need to program the development kit for the headset before you build and program other development kits.
 
 Programming the application
@@ -852,7 +1063,7 @@ After building the files for the development kit you want to program, complete t
 
    Select the correct board when prompted with the popup or add the ``--snr`` parameter followed by the SEGGER serial number of the correct board at the end of the ``nrfjprog`` command.
 
-.. _octave_testing:
+.. _nrf53_audio_app_testing:
 
 Testing
 =======
@@ -861,7 +1072,7 @@ After building and programming the application, you can test it for both the CIS
 The following testing scenarios assume you are using USB as the audio source on the gateway.
 This is the default setting.
 
-.. _octave_testing_steps_cis:
+.. _nrf53_audio_app_testing_steps_cis:
 
 Testing the default CIS mode
 ----------------------------
@@ -904,18 +1115,18 @@ Complete the following steps to test the CIS mode for one gateway and two headse
 
 When you finish testing, power off the nRF5340 Audio development kits by switching the power switch from On to Off.
 
-.. _octave_testing_steps_bis:
+.. _nrf53_audio_app_testing_steps_bis:
 
 Testing the BIS mode
 --------------------
 
 Testing the BIS mode is identical to `Testing the default CIS mode`_, except for the following differences:
 
-* You must :ref:`select the BIS mode manually <octave_configuration_select_bis>` before building the application.
+* You must :ref:`select the BIS mode manually <nrf53_audio_app_configuration_select_bis>` before building the application.
 * You can play the audio stream with different audio settings on the receivers.
   For example, you can decrease or increase the volume separately for each receiver during playback.
 
-.. _octave_porting_guide:
+.. _nrf53_audio_app_porting_guide:
 
 Adapting application for end products
 *************************************
@@ -938,7 +1149,7 @@ You can see the :file:`nrf/boards/arm/nrf5340_audio_dk_nrf5340` directory as an 
 For information about differences between DTS and Kconfig, see :ref:`zephyr:dt_vs_kconfig`.
 For detailed instructions for adding Zephyr support to a custom board, see Zephyr's :ref:`zephyr:board_porting_guide`.
 
-.. _octave_porting_guide_app_configuration:
+.. _nrf53_audio_app_porting_guide_app_configuration:
 
 Application configuration sources
 =================================
@@ -954,7 +1165,7 @@ The following :file:`.conf` files are the default ones in the application:
 
 You need to edit these files if you want to add new functionalities to your application, but editing these files when adding a new board is not required.
 
-.. _octave_porting_guide_adding_board:
+.. _nrf53_audio_app_porting_guide_adding_board:
 
 Adding a new board
 ==================
@@ -1014,13 +1225,13 @@ Application configuration options
 .. options-from-kconfig::
    :show-type:
 
-.. _octave_dk_legal:
+.. _nrf53_audio_app_dk_legal:
 
 Legal notices and disclaimers
 *****************************
 
 Additional Disclaimer for the nRF5340 Audio application
-   This application and the LE Audio Controller Subsystem for nRF53 is marked as experimental.
+   This application and the LE Audio Controller Subsystem for nRF53 are marked as experimental.
    The LE Audio Controller Subsystem for nRF53 associated with this release comes with QDID 181316.
    This LE Audio link controller is tested and works in configurations used by the present reference code (for example, 2 concurrent CIS, or BIS).
    No other configurations than the ones used in the reference application are tested nor documented in this release.
@@ -1036,6 +1247,9 @@ Important - Battery warnings and mandatory requirements for the nRF5340 Audio DK
      * Disposal of a battery into fire or a hot oven, or mechanically crushing or cutting of a battery can result in an explosion.
      * Leaving a battery in an extremely high temperature surrounding environment can result in an explosion or the leakage of flammable liquid or gas.
      * A battery subjected to extremely low air pressure may result in an explosion or the leakage of flammable liquid or gas.
+
+   * The nRF5340 Audio development kit shall not be operated outside the internal battery's discharge temperature range between +10°C and +45°C or stored or transported outside the internal battery's storage temperature.
+   * Power supply adapter must meet PS1 requirements.
 
    .. figure:: /images/nRF5340_audio_dk_battery_warning.png
 
@@ -1056,6 +1270,10 @@ Legal notices for the nRF5340 Audio DK
       Nordic Semiconductor products are not designed for use in life support appliances, devices, or systems where malfunction of these products can reasonably be expected to result in personal injury.
 
       Nordic Semiconductor ASA customers using or selling these products for use in such applications do so at their own risk and agree to fully indemnify Nordic Semiconductor ASA for any damages resulting from such improper use or sale.
+
+   Radio frequency notice
+      The nRF5340 Audio development kit operates in the 2.4 GHz ISM radio frequency band.
+      The maximum radio frequency power transmitted in the frequency band in which the development kit operates equals +3dBm (2 mW).
 
    RoHS and REACH statement
       Complete hazardous substance reports, material composition reports and latest version of Nordic's REACH statement can be found on our website www.nordicsemi.com.

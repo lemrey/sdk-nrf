@@ -6,18 +6,18 @@
 #include <stdio.h>
 
 #include <zephyr/types.h>
-#include <sys/byteorder.h>
-#include <sys/util.h>
+#include <zephyr/sys/byteorder.h>
+#include <zephyr/sys/util.h>
 
-#include <usb/usb_device.h>
-#include <usb/usb_ch9.h>
-#include <usb/class/usb_hid.h>
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/usb/usb_ch9.h>
+#include <zephyr/usb/class/usb_hid.h>
 
 
 #define MODULE usb_state
 #include <caf/events/module_state_event.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_DESKTOP_USB_STATE_LOG_LEVEL);
 
 #include "hid_report_desc.h"
@@ -639,7 +639,12 @@ static int usb_init(void)
 
 	for (size_t i = 0; i < CONFIG_USB_HID_DEVICE_COUNT; i++) {
 		char name[32];
-		snprintf(name, sizeof(name), CONFIG_USB_HID_DEVICE_NAME "_%d", i);
+		int err = snprintf(name, sizeof(name), CONFIG_USB_HID_DEVICE_NAME "_%d", i);
+
+		if ((err < 0) || (err >= sizeof(name))) {
+			LOG_ERR("Cannot initialize HID device name");
+			return err;
+		}
 		usb_hid_device[i].dev = device_get_binding(name);
 		if (usb_hid_device[i].dev == NULL) {
 			return -ENXIO;
@@ -652,7 +657,7 @@ static int usb_init(void)
 		usb_hid_register_device(usb_hid_device[i].dev, hid_report_desc,
 					hid_report_desc_size, &hid_ops);
 
-		int err = usb_hid_init(usb_hid_device[i].dev);
+		err = usb_hid_init(usb_hid_device[i].dev);
 		if (err) {
 			LOG_ERR("Cannot initialize HID class");
 			return err;

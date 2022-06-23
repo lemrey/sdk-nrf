@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <math.h>
-#include <drivers/sensor.h>
-#include <pm/device.h>
+#include <zephyr/drivers/sensor.h>
+#include <zephyr/pm/device.h>
 
 #include <caf/events/sensor_event.h>
 #include <caf/sensor_manager.h>
@@ -19,7 +19,7 @@
 #include <caf/events/power_event.h>
 #include <caf/events/power_manager_event.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_CAF_SENSOR_MANAGER_LOG_LEVEL);
 
 #define SAMPLE_THREAD_STACK_SIZE	CONFIG_CAF_SENSOR_MANAGER_THREAD_STACK_SIZE
@@ -180,8 +180,10 @@ static void sensor_wake_up_post(const struct sm_sensor_config *sc, struct sensor
 
 static void trigger_handler(const struct device *dev, const struct sensor_trigger *trigger)
 {
-	sensor_trigger_set(dev, trigger, NULL);
+	int err = sensor_trigger_set(dev, trigger, NULL);
 
+	ARG_UNUSED(err);
+	__ASSERT_NO_MSG(!err);
 	const struct sm_sensor_config *sc = get_sensor_config(dev);
 	struct sensor_data *sd = get_sensor_data(dev);
 
@@ -490,7 +492,9 @@ static bool handle_wake_up_event(const struct app_event_header *aeh)
 			int ret = 0;
 
 			if (sc->trigger) {
-				sensor_trigger_set(sc->dev, &sc->trigger->cfg, NULL);
+				ret = sensor_trigger_set(sc->dev, &sc->trigger->cfg, NULL);
+				__ASSERT_NO_MSG(!ret);
+				ret = 0;
 			} else if (sc->suspend) {
 				ret = pm_device_action_run(sc->dev, PM_DEVICE_ACTION_RESUME);
 				if (ret) {

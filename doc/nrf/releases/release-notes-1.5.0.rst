@@ -371,7 +371,7 @@ Crypto
     * Added Kconfig options for TLS/DTLS and x509 certificates.
     * Added Kconfig options for ``PK`` and ``PK_WRITE`` (:kconfig:option:`CONFIG_MBEDTLS_PK_C` and :kconfig:option:`CONFIG_MBEDTLS_PK_WRITE_C`).
     * Rewrote the stripping mechanism of the library to not use the ``POST_BUILD`` option in a custom build rule.
-      The library stripping mechanism was non-functional in certain versions of |SES| Nordic Edition.
+      The library stripping mechanism was non-functional in certain versions of SEGGER Embedded Studio Nordic Edition.
 
 SoftDevice Controller
 +++++++++++++++++++++
@@ -969,7 +969,7 @@ In addition to documentation related to the changes listed above, the following 
 * :ref:`ug_nrf5340` - Added and updated information about:
 
   * TF-M, multiprotocol support, and available samples for Thread and Zigbee.
-  * Building and programming using |SES|, multi-image build using west, and disabling readback protection.
+  * Building and programming using SEGGER Embedded Studio, multi-image build using west, and disabling readback protection.
 
 * :ref:`ug_nrf52` - Added sections on Project CHIP, Thread, and Zigbee support.
 * :ref:`ug_bt_mesh` - Added :ref:`ug_bt_mesh_model_config_app`, :ref:`bt_mesh_ug_reserved_ids`, and :ref:`ug_bt_mesh_vendor_model` (plus subpages).
@@ -992,7 +992,7 @@ Applications and samples
 
   * :ref:`serial_lte_modem` - Added documentation for new commands.
     Fixed the syntax and examples of some existing commands.
-  * Added a note about :kconfig:option:`CONFIG_MQTT_KEEPALIVE` option to the :ref:`aws_iot`, :ref:`azure_iot_hub`, and :ref:`cloud_client` samples.
+  * Added a note about :kconfig:option:`CONFIG_MQTT_KEEPALIVE` option to the :ref:`aws_iot`, :ref:`azure_iot_hub`, and cloud client samples.
 * Bluetooth:
 
   * Added a note about child-image overlay to the :ref:`bluetooth_central_hr_coded` and :ref:`peripheral_hr_coded` samples.
@@ -1018,8 +1018,8 @@ Applications and samples
 
   * :ref:`download_sample`
   * :ref:`mqtt_simple_sample`
-  * :ref:`peripheral_alexa_gadgets`
-* :ref:`bootloader` - Added information on bootloader overlays and building the sample from |SES| and command line.
+  * Bluetooth: Peripheral Alexa Gadgets
+* :ref:`bootloader` - Added information on bootloader overlays and building the sample from SEGGER Embedded Studio and command line.
 * Added information about FEM support to the :ref:`radio_test` and :ref:`direct_test_mode` samples.
 
 Libraries and drivers

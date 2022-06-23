@@ -8,44 +8,108 @@
 # This is done to facilitate providing out-of-tree definitions of these
 # symbols. This is typically done to modify what options are exposed, and their
 # values. This repo (sdk-nrf) also includes TF-M as a module, and its
-# module definition takes presedence over that of zephyr. If TFM_MINIMAL
+# module definition takes presedence over that of zephyr. If TFM_PROFILE_TYPE_MINIMAL
 # is not set, we include the top level module Kconfig, which again includes
-# all parts of the TF-M module kconfig. If, however, TFM_MINIMAL is set,
+# all parts of the TF-M module kconfig. If, however, TFM_PROFILE_TYPE_MINIMAL is set,
 # only a subset of these kconfig files will be included.
 
+if BUILD_WITH_TFM
+
 config TFM_IPC
-	default y if TFM_MINIMAL
+	default y if TFM_PROFILE_TYPE_MINIMAL
 
 config TFM_BL2
 	bool
 	default n
 
 config TFM_SECURE_UART1
-	bool "TF-M logging on UART1"
-	default y
+	bool "TF-M configure UART1 as secure peripheral"
+	default y if !TFM_LOG_LEVEL_SILENCE
 	depends on !UART_1_NRF_UARTE
 	depends on !"$(dt_nodelabel_enabled,uart1)"
 	depends on SOC_NRF5340_CPUAPP || SOC_NRF9160
 	help
-	  Reserve the UART1 port for TF-M logging. This makes the UART1
-	  peripheral unavailable to the non-secure application. When this
-	  option is selected the device tree node for UART1 needs to be
-	  disabled for the non-secure application.
+	  Configure the UART1 peripheral as secure for TF-M logging.
+	  This makes the UART1 peripheral unavailable to the non-secure
+	  application. When this option is selected the device tree node for
+	  UART1 needs to be disabled for the non-secure application.
 
-config TFM_MINIMAL
+choice TFM_PROFILE_TYPE
+	default TFM_PROFILE_TYPE_MINIMAL
+
+config TFM_PROFILE_TYPE_MINIMAL
 	bool "Use minimal TF-M build"
 	select PSA_DEFAULT_OFF
-	select TFM_LOG_LEVEL_SILENCE
+	imply TFM_LOG_LEVEL_SILENCE
 	help
 	  Use minimal TF-M build. This will make the TF-M image fit within 32kB.
 	  No configuration of the size of the partition nor the features of the
 	  TF-M image can be done when this option is selected. If your application
 	  needs a different TF-M configuration you have to disable this option
 	  and reproduce the desired configuration through kconfig fragments.
+endchoice
+
+config TFM_EXPERIMENTAL
+	bool
+	select EXPERIMENTAL
+	default y if !TFM_PROFILE_TYPE_MINIMAL
+
+config TFM_CRYPTO_ENGINE_BUF_SIZE
+	int
+	prompt "TFM Crypto engine buffer size" if !TFM_PROFILE_TYPE_MINIMAL
+	default 1 if TFM_PROFILE_TYPE_MINIMAL
+	default 12288 if PSA_CRYPTO_DRIVER_ALG_RSA_OAEP_CC3XX || \
+		PSA_CRYPTO_DRIVER_ALG_RSA_PKCS1V15_CRYPT_CC3XX || \
+		PSA_CRYPTO_DRIVER_ALG_RSA_PKCS1V15_SIGN_CC3XX || \
+		PSA_CRYPTO_DRIVER_ALG_RSA_PSS_CC3XX
+	default 8320
+
+config TFM_ITS_ENCRYPTED
+	bool
+	prompt "PSA Internal Trusted Storage with encryption"
+	select PSA_ITS_ENCRYPTED
+	help
+	  Enables authenticated encryption for PSA Internal Trusted Storage files
+
+config TFM_HW_INIT_RESET_ON_BOOT
+	bool "Initialize internal architecture state at boot"
+	depends on ARCH_SUPPORTS_ARCH_HW_INIT
+	help
+	  This option instructs TF-M to force the initialization
+	  of the internal architectural state (for example ARCH-level
+	  HW registers and system control blocks) during boot to
+	  the reset values as specified by the corresponding
+	  architecture manual. The option is useful when the TF-M
+	  image is chain-loaded, for example, by a debugger
+	  or a bootloader, and we need to guarantee that the internal
+	  states of the architecture core blocks are restored to the
+	  reset values (as specified by the architecture).
+
+config TFM_HALT_ON_CORE_PANIC
+	bool "Halt TF-M on core panic"
+	default y if !RESET_ON_FATAL_ERROR
+	help
+	  On fatal errors in the TF-m secure image, halt instead of rebooting.
+
+config TFM_ALLOW_NON_SECURE_RESET
+	bool "Allow system reset calls from Non-Secure"
+	select TFM_PARTITION_PLATFORM_CUSTOM_REBOOT if TFM_PARTITION_PLATFORM
+	default y
+	help
+	  This will allow the application running in Non-Secure from being able
+	  to issue a system reset of the chip without going through a secure
+	  service.
+
+
+config BOOTLOADER_MCUBOOT
+	bool
+	imply TFM_HW_INIT_RESET_ON_BOOT
+
+endif # BUILD_WITH_TFM
 
 source "$(ZEPHYR_BASE)/modules/trusted-firmware-m/Kconfig.tfm"
 
-if !TFM_MINIMAL
+if !TFM_PROFILE_TYPE_MINIMAL
 rsource "Kconfig.mbedtls.defconfig"
 
 # When enabling full TFM support, then partitions and crypto modules shall be available.
@@ -53,17 +117,17 @@ source "$(ZEPHYR_BASE)/modules/trusted-firmware-m/Kconfig.tfm.partitions"
 source "$(ZEPHYR_BASE)/modules/trusted-firmware-m/Kconfig.tfm.crypto_modules"
 endif
 
-if TFM_MINIMAL
+if TFM_PROFILE_TYPE_MINIMAL
 rsource "Kconfig.mbedtls_minimal.defconfig"
 rsource "Kconfig.tfm_minimal.defconfig"
-endif # TFM_MINIMAL
+endif # TFM_PROFILE_TYPE_MINIMAL
 
 if BUILD_WITH_TFM
 
 config PM_PARTITION_SIZE_TFM_SRAM
 	hex
-	prompt "Memory reserved for TFM_RAM." if !TFM_MINIMAL
-	default 0x10000 if TFM_MINIMAL
+	prompt "Memory reserved for TFM_RAM." if !TFM_PROFILE_TYPE_MINIMAL
+	default 0x10000 if TFM_PROFILE_TYPE_MINIMAL
 	default 0x16000 if SOC_NRF9160
 	default 0x40000 if SOC_NRF5340_CPUAPP
 	help
@@ -78,17 +142,18 @@ config PM_PARTITION_SIZE_BL2
 
 config PM_PARTITION_SIZE_TFM
 	hex
-	prompt  "Memory reserved for TFM" if !TFM_MINIMAL
-	default 0x10000 if TFM_MINIMAL && TFM_CMAKE_BUILD_TYPE_DEBUG
-	default 0x8000 if TFM_MINIMAL
+	prompt  "Memory reserved for TFM" if !TFM_PROFILE_TYPE_MINIMAL
+	default 0x10000 if TFM_PROFILE_TYPE_MINIMAL && TFM_CMAKE_BUILD_TYPE_DEBUG
+	default 0xC000 if TFM_PROFILE_TYPE_MINIMAL && SOC_NRF9160 && BOOTLOADER_MCUBOOT && !SECURE_BOOT
+	default 0x8000 if TFM_PROFILE_TYPE_MINIMAL
 	# NCSDK-13503: Temporarily bump size while regressions are being fixed
 	default 0x60000 if TFM_REGRESSION_S
 	default 0x50000 if TFM_CMAKE_BUILD_TYPE_DEBUG
 	default 0x40000
 	help
 	  Memory set aside for the TFM partition. This size is fixed if
-	  TFM_MINIMAL is set. This is because no modification of the features
-	  supported by TF-M can be performed when TFM_MINIMAL is enabled.
+	  TFM_PROFILE_TYPE_MINIMAL is set. This is because no modification of the features
+	  supported by TF-M can be performed when TFM_PROFILE_TYPE_MINIMAL is enabled.
 
 config PM_PARTITION_SIZE_TFM_PROTECTED_STORAGE
 	hex "Memory reserved for TFM Protected Storage"
@@ -106,9 +171,19 @@ config PM_PARTITION_SIZE_TFM_INTERNAL_TRUSTED_STORAGE
 
 config PM_PARTITION_SIZE_TFM_OTP_NV_COUNTERS
 	hex "Memory reserved for TFM OTP / Non-Volatile Counters"
-	default 0x2000
+	default 0x2000 if !TFM_PROFILE_TYPE_MINIMAL
+	default 0
 	help
 	  Memory set aside for the OTP / Non-Volatile (NV) Counters partition
+
+config TFM_STORAGE
+	bool
+	default y if PM_PARTITION_SIZE_TFM_PROTECTED_STORAGE != 0
+	default y if PM_PARTITION_SIZE_TFM_INTERNAL_TRUSTED_STORAGE != 0
+	default y if PM_PARTITION_SIZE_TFM_OTP_NV_COUNTERS != 0
+
+config TFM_NONSECURE_STORAGE
+	bool
 
 rsource "Kconfig.psa.defconfig"
 

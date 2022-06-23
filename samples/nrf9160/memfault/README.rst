@@ -16,13 +16,11 @@ Requirements
 
 The sample supports the following development kits:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: thingy91_nrf9160_ns, nrf9160dk_nrf9160_ns
+.. table-from-sample-yaml::
 
 Before using the Memfault platform, you must register an account in the `Memfault registration page`_ and `create a new project in Memfault`_.
 
-.. include:: /includes/spm.txt
+.. include:: /includes/tfm_spm_thingy91.txt
 
 To get access to all the benefits, like up to 100 free devices connected, register at the `Memfault registration page`_.
 
@@ -74,7 +72,7 @@ Coredumps
 Coredumps can be triggered either by using the Memfault shell command ``mflt crash``, or by pressing a button:
 
 *  **Button 1** triggers a stack overflow
-*  **Button 2** triggers a NULL pointer dereference
+*  **Button 2** triggers a division by zero
 
 These faults cause crashes that are captured by Memfault.
 After rebooting, the crash data can be sent to the Memfault cloud for further inspection and analysis.
@@ -147,8 +145,8 @@ Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/nrf9160/memfault`
-.. include:: /includes/build_and_run.txt
-.. include:: /includes/spm.txt
+
+.. include:: /includes/thingy91_build_and_run.txt
 
 Testing
 =======
@@ -214,7 +212,7 @@ Before testing, ensure that your device is configured with the project key of yo
           shell
 
 #. Learn about the available Memfault shell commands by issuing the command ``mflt help``.
-#. Press **Button 1** or **Button 2** to trigger a stack overflow or a NULL pointer dereference, respectively.
+#. Press **Button 1** or **Button 2** to trigger a stack overflow or a division by zero, respectively.
 #. Explore the Memfault user interface to look at the errors and metrics that has been sent from your device.
 
 
@@ -232,6 +230,7 @@ It uses the following `sdk-nrfxlib`_ library:
 
 * :ref:`nrfxlib:nrf_modem`
 
-In addition, it uses the following sample:
+In addition, it uses the following secure firmware components:
 
 * :ref:`secure_partition_manager`
+* :ref:`Trusted Firmware-M <ug_tfm>`

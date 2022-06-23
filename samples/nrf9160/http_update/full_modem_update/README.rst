@@ -15,11 +15,9 @@ Requirements
 
 The sample supports the following development kit, version 0.14.0 or higher:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf9160dk_nrf9160_ns
+.. table-from-sample-yaml::
 
-.. include:: /includes/spm.txt
+.. include:: /includes/tfm.txt
 
 On the nRF9160 DK, set the control signal from the nRF52840 board controller MCU (**P0.19**) to *high* to let the nRF9160 communicate with the external flash memory.
 Enable the ``external_flash_pins_routing`` node in devicetree.
@@ -80,7 +78,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/nrf9160/http_update/full_modem_update`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 The sample is built as a non-secure firmware image for the ``nrf9160dk_nrf9160_ns`` build target.
 Because of this, it automatically includes the :ref:`secure_partition_manager`.
@@ -105,7 +103,6 @@ This sample uses the following |NCS| libraries:
 * :ref:`lib_dfu_target`
 * :ref:`lib_dfu_target_full_modem_update`
 * :ref:`lib_fmfu_fdev`
-* :ref:`secure_partition_manager`
 
 It uses the following `sdk-nrfxlib`_ library:
 
@@ -117,3 +114,7 @@ It also uses the following Zephyr libraries:
   * :ref:`zephyr:logging_api`
   * :ref:`zephyr:gpio_api`
   * :ref:`zephyr:shell_api`
+
+In addition, it uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

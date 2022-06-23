@@ -6,16 +6,16 @@
 
 #include "ble_acl_headset.h"
 
-#include <zephyr.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/conn.h>
+#include <zephyr/kernel.h>
+#include <zephyr/bluetooth/hci.h>
+#include <zephyr/bluetooth/conn.h>
 
 #include "macros_common.h"
 #include "board.h"
 #include "ble_acl_common.h"
 #include "channel_assignment.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(ble, CONFIG_LOG_BLE_LEVEL);
 
 #define BT_LE_ADV_FAST_CONN                                                                        \
@@ -61,6 +61,11 @@ void work_adv_start(struct k_work *item)
 	if (ret) {
 		LOG_ERR("Advertising failed to start (ret %d)", ret);
 	}
+}
+
+void ble_acl_headset_conn_peer_get(struct bt_conn **p_conn)
+{
+	*p_conn = headset_conn_peer;
 }
 
 void ble_acl_headset_on_connected(struct bt_conn *conn)

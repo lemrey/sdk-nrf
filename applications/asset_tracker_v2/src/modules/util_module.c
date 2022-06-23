@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
-#include <sys/reboot.h>
-#include <device.h>
-#include <logging/log.h>
-#include <logging/log_ctrl.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/reboot.h>
+#include <zephyr/device.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 
 #define MODULE util_module
 
@@ -160,14 +160,6 @@ void bsd_recoverable_error_handler(uint32_t err)
 	send_reboot_request(REASON_GENERIC);
 }
 
-void k_sys_fatal_error_handler(unsigned int reason, const z_arch_esf_t *esf)
-{
-	ARG_UNUSED(esf);
-
-	LOG_PANIC();
-	send_reboot_request(REASON_GENERIC);
-}
-
 /* Static module functions. */
 static void reboot(void)
 {
@@ -260,7 +252,8 @@ static void on_state_init(struct util_msg_data *msg)
 	    (IS_EVENT(msg, data, DATA_EVT_ERROR))	||
 	    (IS_EVENT(msg, app, APP_EVT_ERROR))		||
 	    (IS_EVENT(msg, ui, UI_EVT_ERROR))		||
-	    (IS_EVENT(msg, modem, MODEM_EVT_CARRIER_REBOOT_REQUEST))) {
+	    (IS_EVENT(msg, modem, MODEM_EVT_CARRIER_REBOOT_REQUEST)) ||
+	    (IS_EVENT(msg, cloud, CLOUD_EVT_REBOOT_REQUEST))) {
 		send_reboot_request(REASON_GENERIC);
 		return;
 	}

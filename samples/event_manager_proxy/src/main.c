@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
-#include <device.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
 
-#include <ipc/ipc_service.h>
+#include <zephyr/ipc/ipc_service.h>
 
 #include <app_event_manager.h>
 #include <event_manager_proxy.h>
 #include <config_event.h>
 #include <control_event.h>
 #include <measurement_event.h>
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 
 #define MODULE main
 
@@ -39,7 +39,7 @@ void main(void)
 	LOG_INF("Event manager initialized");
 
 	ret = event_manager_proxy_add_remote(ipc_instance);
-	if (ret) {
+	if (ret && ret != -EALREADY) {
 		LOG_ERR("Cannot add remote: %d", ret);
 		__ASSERT_NO_MSG(false);
 		return;

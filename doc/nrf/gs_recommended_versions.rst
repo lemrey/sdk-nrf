@@ -10,9 +10,11 @@ Requirements
 The |NCS| supports Microsoft Windows, Linux, and macOS for development.
 However, there are some Zephyr features that are currently only available on Linux, including:
 
-* sanitycheck
+* twister
 * BlueZ integration
 * net-tools integration
+* Native Port (native_posix)
+* BabbleSim
 
 .. note::
 
@@ -38,18 +40,18 @@ It lists the minimum version that is required and the version that is installed 
          * - Tool
            - Minimum version
            - Toolchain Manager version
+         * - Zephyr SDK
+           - |zephyr_sdk_min_ver|
+           - |zephyr_sdk_recommended_ver_win10|
          * - CMake
            - |cmake_min_ver|
            - |cmake_recommended_ver_win10|
          * - dtc
            - |dtc_min_ver|
            - |dtc_recommended_ver_win10|
-         * - git
-           -
+         * - Git
+           - |git_min_ver|
            - |git_recommended_ver_win10|
-         * - GNU Arm Embedded Toolchain
-           - |gnuarmemb_min_ver|
-           - |gnuarmemb_recommended_ver_win10|
          * - gperf
            - |gperf_min_ver|
            - |gperf_recommended_ver_win10|
@@ -59,15 +61,9 @@ It lists the minimum version that is required and the version that is installed 
          * - Python
            - |python_min_ver|
            - |python_recommended_ver_win10|
-         * - SEGGER Embedded Studio (Nordic Edition)
-           - |ses_min_ver|
-           - |ses_recommended_ver_win10|
-         * - west
+         * - West
            - |west_min_ver|
            - |west_recommended_ver_win10|
-         * - GN
-           - |gn_min_ver|
-           - |gn_recommended_ver_win10|
 
    .. group-tab:: Linux
 
@@ -77,24 +73,18 @@ It lists the minimum version that is required and the version that is installed 
          * - Tool
            - Minimum version
            - Tested version
-         * - ccache
-           -
-           - |ccache_recommended_ver_linux|
+         * - Zephyr SDK
+           - |zephyr_sdk_min_ver|
+           - |zephyr_sdk_recommended_ver_linux|
          * - CMake
            - |cmake_min_ver|
            - |cmake_recommended_ver_linux|
-         * - dfu_util
-           -
-           - |dfu_util_recommended_ver_linux|
          * - dtc
            - |dtc_min_ver|
            - |dtc_recommended_ver_linux|
-         * - git
-           -
+         * - Git
+           - |git_min_ver|
            - |git_recommended_ver_linux|
-         * - GNU Arm Embedded Toolchain
-           - |gnuarmemb_min_ver|
-           - |gnuarmemb_recommended_ver_linux|
          * - gperf
            - |gperf_min_ver|
            - |gperf_recommended_ver_linux|
@@ -104,15 +94,9 @@ It lists the minimum version that is required and the version that is installed 
          * - Python
            - |python_min_ver|
            - |python_recommended_ver_linux|
-         * - SEGGER Embedded Studio (Nordic Edition)
-           - |ses_min_ver|
-           - |ses_recommended_ver_linux|
-         * - west
+         * - West
            - |west_min_ver|
            - |west_recommended_ver_linux|
-         * - GN
-           - |gn_min_ver|
-           - |gn_recommended_ver_linux|
 
    .. group-tab:: macOS
 
@@ -122,18 +106,18 @@ It lists the minimum version that is required and the version that is installed 
          * - Tool
            - Minimum version
            - Toolchain Manager version
+         * - Zephyr SDK
+           - |zephyr_sdk_min_ver|
+           - |zephyr_sdk_recommended_ver_darwin|
          * - CMake
            - |cmake_min_ver|
            - |cmake_recommended_ver_darwin|
          * - dtc
            - |dtc_min_ver|
            - |dtc_recommended_ver_darwin|
-         * - git
-           -
+         * - Git
+           - |git_min_ver|
            - |git_recommended_ver_darwin|
-         * - GNU Arm Embedded Toolchain
-           - |gnuarmemb_min_ver|
-           - |gnuarmemb_recommended_ver_darwin|
          * - gperf
            - |gperf_min_ver|
            - |gperf_recommended_ver_darwin|
@@ -143,15 +127,10 @@ It lists the minimum version that is required and the version that is installed 
          * - Python
            - |python_min_ver|
            - |python_recommended_ver_darwin|
-         * - SEGGER Embedded Studio (Nordic Edition)
-           - |ses_min_ver|
-           - |ses_recommended_ver_darwin|
-         * - west
+         * - West
            - |west_min_ver|
            - |west_recommended_ver_darwin|
-         * - GN
-           - |gn_min_ver|
-           - |gn_recommended_ver_darwin|
+
 
 Required Python dependencies
 ****************************

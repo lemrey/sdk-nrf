@@ -3,27 +3,26 @@
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
-#include <pm/pm.h>
-#include <pm/policy.h>
+#include <zephyr/pm/pm.h>
+#include <zephyr/pm/policy.h>
 
-#include <device.h>
-#include <drivers/gpio.h>
+#include <zephyr/device.h>
 #include <hal/nrf_power.h>
 #include <helpers/nrfx_reset_reason.h>
-#include <sys/reboot.h>
+#include <zephyr/sys/reboot.h>
 
 #include <app_event_manager.h>
-#include <profiler.h>
+#include <nrf_profiler.h>
 
 #include <caf/events/power_event.h>
 
 #define MODULE power_manager
 #include <caf/events/module_state_event.h>
 
-#include <logging/log_ctrl.h>
-#include <logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_CAF_POWER_MANAGER_LOG_LEVEL);
 
 #include <caf/events/power_manager_event.h>
@@ -131,7 +130,7 @@ static void system_off(void)
 {
 	if (!IS_ENABLED(CONFIG_CAF_POWER_MANAGER_STAY_ON) &&
 	    check_if_power_state_allowed(POWER_MANAGER_LEVEL_OFF)) {
-		profiler_term();
+		nrf_profiler_term();
 		set_power_state(POWER_STATE_OFF);
 		LOG_WRN("System turned off");
 		LOG_PANIC();

@@ -14,13 +14,11 @@ Requirements
 
 The sample supports the following development kit:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf9160dk_nrf9160_ns
+.. table-from-sample-yaml::
 
 The sample also requires a public CoAP server IP address or URL available on the Internet.
 
-.. include:: /includes/spm.txt
+.. include:: /includes/tfm.txt
 
 Overview
 ********
@@ -70,7 +68,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/nrf9160/coap_client`
 
-.. include:: /includes/build_and_run_nrf9160.txt
+.. include:: /includes/build_and_run_ns.txt
 
 
 Testing
@@ -128,6 +126,6 @@ It uses the following Zephyr library:
 
 * :ref:`CoAP <zephyr:networking_api>`
 
-In addition, it uses the following sample:
+In addition, it uses the following secure firmware component:
 
-* :ref:`secure_partition_manager`
+* :ref:`Trusted Firmware-M <ug_tfm>`

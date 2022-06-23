@@ -4,20 +4,20 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <kernel.h>
-#include <drivers/entropy.h>
-#include <drivers/bluetooth/hci_driver.h>
-#include <bluetooth/controller.h>
-#include <bluetooth/hci_vs.h>
-#include <bluetooth/buf.h>
-#include <init.h>
-#include <irq.h>
-#include <kernel.h>
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/entropy.h>
+#include <zephyr/drivers/bluetooth/hci_driver.h>
+#include <zephyr/bluetooth/controller.h>
+#include <zephyr/bluetooth/hci_vs.h>
+#include <zephyr/bluetooth/buf.h>
+#include <zephyr/init.h>
+#include <zephyr/irq.h>
+#include <zephyr/kernel.h>
 #include <soc.h>
-#include <sys/byteorder.h>
-#include <sys/util.h>
+#include <zephyr/sys/byteorder.h>
+#include <zephyr/sys/util.h>
 #include <stdbool.h>
-#include <sys/__assert.h>
+#include <zephyr/sys/__assert.h>
 
 #include <sdc.h>
 #include <sdc_soc.h>
@@ -516,6 +516,18 @@ static int configure_supported_features(void)
 
 	if (IS_ENABLED(CONFIG_BT_CTLR_PHY_CODED)) {
 		err = sdc_support_le_coded_phy();
+		if (err) {
+			return -ENOTSUP;
+		}
+	}
+
+	if (IS_ENABLED(CONFIG_BT_CTLR_SDC_CX_ADV_TRY_CONTINUE_ON_DENIAL)) {
+		err = sdc_coex_adv_mode_configure(true);
+		if (err) {
+			return -ENOTSUP;
+		}
+	} else if (IS_ENABLED(CONFIG_BT_CTLR_SDC_CX_ADV_CLOSE_ADV_EVT_ON_DENIAL)) {
+		err = sdc_coex_adv_mode_configure(false);
 		if (err) {
 			return -ENOTSUP;
 		}

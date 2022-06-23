@@ -6,14 +6,14 @@
 
 #include "ble_core.h"
 #include "ble_hci_vsc.h"
-#include <zephyr.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
-#include <sys/byteorder.h>
+#include <zephyr/kernel.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/hci.h>
+#include <zephyr/sys/byteorder.h>
 #include <errno.h>
 #include "macros_common.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(ble, CONFIG_LOG_BLE_LEVEL);
 
 #define NET_CORE_RESPONSE_TIMEOUT_MS 500
@@ -38,6 +38,38 @@ K_TIMER_DEFINE(net_core_watchdog_timer, net_core_watchdog_handler, NULL);
 static void net_core_timeout_handler(struct k_timer *timer_id)
 {
 	ERR_CHK_MSG(-EIO, "No response from NET core, check if NET core is programmed");
+}
+
+/* Use unique FICR device ID to set random static address */
+static void ble_core_setup_random_static_addr(void)
+{
+	int ret;
+	static bt_addr_le_t addr;
+
+	if ((NRF_FICR->INFO.DEVICEID[0] != UINT32_MAX) ||
+	    ((NRF_FICR->INFO.DEVICEID[1] & UINT16_MAX) != UINT16_MAX)) {
+		/* Put the device ID from FICR into address */
+		sys_put_le32(NRF_FICR->INFO.DEVICEID[0], &addr.a.val[0]);
+		sys_put_le16(NRF_FICR->INFO.DEVICEID[1], &addr.a.val[4]);
+
+		/* The FICR value is a just a random number, with no knowledge
+		 * of the Bluetooth Specification requirements for random
+		 * static addresses.
+		 */
+		BT_ADDR_SET_STATIC(&addr.a);
+
+		addr.type = BT_ADDR_LE_RANDOM;
+
+		ret = bt_id_create(&addr, NULL);
+		if (ret) {
+			LOG_WRN("Failed to create ID");
+		}
+	} else {
+		LOG_WRN("Unable to read from FICR");
+		/* If no address can be created based on FICR,
+		 * then a random address is created
+		 */
+	}
 }
 
 static void mac_print(void)
@@ -76,6 +108,13 @@ static int controller_leds_mapping(void)
 	ret = ble_hci_vsc_map_led_pin(PAL_LED_ID_CPU_ACTIVE,
 				      DT_GPIO_FLAGS_BY_IDX(DT_NODELABEL(rgb2_green), gpios, 0),
 				      DT_GPIO_PIN_BY_IDX(DT_NODELABEL(rgb2_green), gpios, 0));
+	if (ret) {
+		return ret;
+	}
+
+	ret = ble_hci_vsc_map_led_pin(PAL_LED_ID_ERROR,
+				      DT_GPIO_FLAGS_BY_IDX(DT_NODELABEL(rgb2_red), gpios, 0),
+				      DT_GPIO_PIN_BY_IDX(DT_NODELABEL(rgb2_red), gpios, 0));
 	if (ret) {
 		return ret;
 	}
@@ -139,6 +178,7 @@ int ble_core_init(ble_core_ready_t ready_callback)
 	k_timer_start(&net_core_timeout_alarm_timer, K_MSEC(NET_CORE_RESPONSE_TIMEOUT_MS),
 		      K_NO_WAIT);
 
+	ble_core_setup_random_static_addr();
 	/* Enable Bluetooth, with callback function that
 	 * will be called when Bluetooth is ready
 	 */

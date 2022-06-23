@@ -7,10 +7,8 @@ Installing automatically
    :local:
    :depth: 2
 
-`nRF Connect for Desktop`_, a cross-platform tool available for Windows, Linux, and macOS, provides different apps that simplify installing the |NCS|.
-
-On Windows or macOS, use the :ref:`gs_app_tcm`.
-On Linux, use the `Installing using Visual Studio Code <Installing on Linux_>`_ instructions or follow the steps found on the :ref:`gs_installing` page.
+`nRF Connect for Desktop`_, a cross-platform tool available for Windows, Linux, and macOS, provides different applications that simplify installing the |NCS|.
+Use the :ref:`gs_app_tcm` application to install the |NCS| automatically.
 
 Before you start setting up the toolchain, install available updates for your operating system.
 See :ref:`gs_recommended_versions` for information on the supported operating systems and Zephyr features.
@@ -20,8 +18,8 @@ See :ref:`gs_recommended_versions` for information on the supported operating sy
 Toolchain Manager
 *****************
 
-The Toolchain manager app is available for Windows and macOS.
-It installs the full toolchain that you need to work with the |NCS|, including the |VSC| extension, |SES|, and the |NCS| source code.
+The Toolchain manager application is available for Windows, Linux, and macOS.
+It installs the full toolchain that you need to work with the |NCS|, including the |VSC| extension and the |NCS| source code.
 
 .. _tcm_setup:
 
@@ -52,11 +50,9 @@ Click :guilabel:`Settings` in the navigation bar to specify where you want to in
 Then, in :guilabel:`SDK Environments`, click the :guilabel:`Install` button next to the |NCS| version that you want to install.
 The |NCS| version of your choice is installed on your machine.
 
-There are several ways you can build an application:
+There are two ways you can build an application:
 
 * To build with |VSC|, click on the :guilabel:`Open VS Code` button.
-
-* To build with |SES|, click on the :guilabel:`Open Segger Embedded Studio` button.
 
 * To build on the command line, use the following steps:
 

@@ -6,13 +6,13 @@
 
 #include "streamctrl.h"
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
-#include <drivers/gpio.h>
-#include <device.h>
-#include <debug/stack.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/device.h>
+#include <zephyr/debug/stack.h>
 
 #include "ctrl_events.h"
 #include "led.h"
@@ -28,11 +28,12 @@
 #include "ble_core.h"
 #include "ble_audio_services.h"
 #include "audio_datapath.h"
+#include "audio_sync_timer.h"
 #include "audio_usb.h"
 #include "ble_hci_vsc.h"
 #include "channel_assignment.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(streamctrl, CONFIG_LOG_STREAMCTRL_LEVEL);
 
 struct ble_iso_data {
@@ -40,6 +41,7 @@ struct ble_iso_data {
 	size_t data_size;
 	bool bad_frame;
 	uint32_t sdu_ref;
+	uint32_t recv_frame_ts;
 } __packed;
 
 DATA_FIFO_DEFINE(ble_fifo_rx, CONFIG_BUF_BLE_RX_PACKET_NUM, WB_UP(sizeof(struct ble_iso_data)));
@@ -111,6 +113,9 @@ static void ble_test_pattern_receive(uint8_t const *const p_data, size_t data_si
 static void ble_iso_rx_data_handler(uint8_t const *const p_data, size_t data_size, bool bad_frame,
 				    uint32_t sdu_ref)
 {
+	/* Capture timestamp of when audio frame is received */
+	uint32_t recv_frame_ts = audio_sync_timer_curr_time_get();
+
 	/* Since the audio datapath thread is preemptive, no actions on the
 	 * FIFO can happen whilst in this handler.
 	 */
@@ -162,6 +167,7 @@ static void ble_iso_rx_data_handler(uint8_t const *const p_data, size_t data_siz
 	iso_received->bad_frame = bad_frame;
 	iso_received->data_size = data_size;
 	iso_received->sdu_ref = sdu_ref;
+	iso_received->recv_frame_ts = recv_frame_ts;
 
 	ret = data_fifo_block_lock(&ble_fifo_rx, (void *)&iso_received,
 				   sizeof(struct ble_iso_data));
@@ -188,12 +194,14 @@ static void audio_datapath_thread(void *dummy1, void *dummy2, void *dummy3)
 		ERR_CHK(ret);
 #else
 		audio_datapath_stream_out(iso_received->data, iso_received->data_size,
-					  iso_received->sdu_ref, iso_received->bad_frame);
+					  iso_received->sdu_ref, iso_received->bad_frame,
+					  iso_received->recv_frame_ts);
 #endif /* ((CONFIG_AUDIO_DEV == GATEWAY) && (CONFIG_AUDIO_SOURCE_USB)) */
 #else
 #if (CONFIG_AUDIO_DEV == HEADSET)
 		audio_datapath_stream_out(iso_received->data, iso_received->data_size,
-					  iso_received->sdu_ref, iso_received->bad_frame);
+					  iso_received->sdu_ref, iso_received->bad_frame,
+					  iso_received->recv_frame_ts);
 #endif /* (CONFIG_AUDIO_DEV == HEADSET) */
 #endif /* (CONFIG_STREAM_BIDIRECTIONAL) */
 
@@ -260,8 +268,11 @@ static int m_ble_transport_init(void)
 		return ret;
 	}
 
-	ret = ble_hci_vsc_set_adv_tx_pwr(BLE_HCI_VSC_TX_PWR_Pos3dBm);
-	ERR_CHK(ret);
+	/* Setting TX power for advertising if config is set to anything other than 0 */
+	if (CONFIG_BLE_ADV_TX_POWER_DBM) {
+		ret = ble_hci_vsc_set_adv_tx_pwr(CONFIG_BLE_ADV_TX_POWER_DBM);
+		ERR_CHK(ret);
+	}
 
 #if (CONFIG_TRANSPORT_BIS)
 #if (CONFIG_AUDIO_DEV == GATEWAY)

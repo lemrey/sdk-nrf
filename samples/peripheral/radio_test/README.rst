@@ -19,9 +19,7 @@ Requirements
 
 The sample supports the following development kits:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf5340dk_nrf5340_cpunet, nrf52840dk_nrf52840, nrf52dk_nrf52832, nrf21540dk_nrf52840
+.. table-from-sample-yaml::
 
 You can use any one of the development kits listed above.
 
@@ -106,7 +104,7 @@ User interface
      - Start channel for the sweep or the channel for the constant carrier (in MHz, as difference from 2400 MHz).
    * - start_duty_cycle_modulated_tx
      - <duty_cycle>
-     - Duty cycle in percent (two decimal digits, between 01 and 99).
+     - Duty cycle in percent (two decimal digits, between 01 and 90).
    * - start_rx
      -
      - Start RX.

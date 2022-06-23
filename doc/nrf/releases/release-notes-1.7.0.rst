@@ -86,7 +86,7 @@ nRF9160
   * :ref:`lib_nrf_cloud` library:
 
     * Added function :c:func:`nrf_cloud_uninit`, which can be used to uninitialize the nRF Cloud library.
-      If :ref:`cloud_api_readme` is used, call :c:func:`cloud_uninit`.
+      If cloud API is used, call :c:func:`cloud_uninit`.
     * Added function :c:func:`nrf_cloud_shadow_device_status_update`, which sets the device status in the device's shadow.
     * Added function :c:func:`nrf_cloud_modem_info_json_encode`, which encodes modem information into a cJSON object formatted for use with nRF Cloud.
     * Added function :c:func:`nrf_cloud_service_info_json_encode`, which encodes service information into a cJSON object formatted for use with nRF Cloud.
@@ -140,7 +140,7 @@ nRF9160
   * nRF9160: Asset Tracker has been deprecated in favor of :ref:`asset_tracker_v2`.
   * ``at_notif`` library library has been deprecated in favor of the :ref:`at_monitor_readme` library.
   * ``at_cmd`` library library has been deprecated in favor of Modem library's native AT interface.
-  * :ref:`gps_api` driver has been deprecated in favor of the :ref:`nrfxlib:gnss_interface`.
+  * GPS driver has been deprecated in favor of the :ref:`nrfxlib:gnss_interface`.
 
 nRF5
 ====
@@ -574,7 +574,7 @@ In addition to documentation related to the changes listed above, the following 
 
   * :ref:`libraries` section pages:
 
-    * :ref:`profiler` - Several updates.
+    * :ref:`nrf_profiler` - Several updates.
 
   * :ref:`documentation` section pages:
 

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <stdio.h>
-#include <drivers/sensor.h>
+#include <zephyr/drivers/sensor.h>
 #include <app_event_manager.h>
 
 #if defined(CONFIG_EXTERNAL_SENSORS)
@@ -21,7 +21,7 @@
 #include "events/sensor_module_event.h"
 #include "events/util_module_event.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sensor_module, CONFIG_SENSOR_MODULE_LOG_LEVEL);
 
 struct sensor_msg_data {
@@ -180,8 +180,8 @@ static void environmental_data_get(void)
 	struct sensor_module_event *sensor_module_event;
 #if defined(CONFIG_EXTERNAL_SENSORS)
 	int err;
-	double temperature, humidity, pressure;
-	uint16_t bsec_air_quality;
+	double temperature = 0, humidity = 0, pressure = 0;
+	uint16_t bsec_air_quality = UINT16_MAX;
 
 	/* Request data from external sensors. */
 	err = ext_sensors_temperature_get(&temperature);
@@ -204,7 +204,6 @@ static void environmental_data_get(void)
 		/* Air quality is not available, enable the Bosch BSEC library driver.
 		 * Propagate the air quality value as -1.
 		 */
-		bsec_air_quality = UINT16_MAX;
 	} else if (err) {
 		LOG_ERR("ext_sensors_bsec_air_quality_get, error: %d", err);
 	}

@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +19,7 @@
 #include "json_common.h"
 #include "json_protocol_names.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(cloud_codec, CONFIG_CLOUD_CODEC_LOG_LEVEL);
 
 /* Data types that are supported in batch messages. */
@@ -363,6 +363,15 @@ static int add_batch_data(cJSON *array, enum batch_data_type type, void *buf, si
 		}
 	}
 
+	return 0;
+}
+
+int cloud_codec_init(struct cloud_data_cfg *cfg, cloud_codec_evt_handler_t event_handler)
+{
+	ARG_UNUSED(cfg);
+	ARG_UNUSED(event_handler);
+
+	cJSON_Init();
 	return 0;
 }
 

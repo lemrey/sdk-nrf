@@ -5,9 +5,9 @@
  */
 
 #include <stdlib.h>
-#include <bluetooth/bluetooth.h>
-#include <shell/shell.h>
-#include <settings/settings.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/shell/shell.h>
+#include <zephyr/settings/settings.h>
 
 #define MODULE ble_bond
 #include <caf/events/module_state_event.h>
@@ -17,7 +17,7 @@
 #include "config_event.h"
 #include <caf/events/power_event.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_DESKTOP_BLE_BOND_LOG_LEVEL);
 
 #define CONFIRM_TIMEOUT			K_SECONDS(10)
@@ -817,14 +817,14 @@ static bool ble_peer_event_handler(const struct ble_peer_event *event)
 			state = STATE_IDLE;
 		}
 
-		struct ble_peer_operation_event *event =
+		struct ble_peer_operation_event *new_event =
 			new_ble_peer_operation_event();
 
-		event->op = PEER_OPERATION_ERASED;
-		event->bt_app_id = get_app_id();
-		event->bt_stack_id = get_bt_stack_peer_id(get_app_id());
+		new_event->op = PEER_OPERATION_ERASED;
+		new_event->bt_app_id = get_app_id();
+		new_event->bt_stack_id = get_bt_stack_peer_id(get_app_id());
 
-		APP_EVENT_SUBMIT(event);
+		APP_EVENT_SUBMIT(new_event);
 		/* Cancel cannot fail if executed from another work's context. */
 		(void)k_work_cancel_delayable(&timeout);
 	}
@@ -944,7 +944,7 @@ static void config_set(const uint8_t opt_id, const uint8_t *data, const size_t s
 				state = STATE_DONGLE_ERASE_ADV;
 			}
 
-				k_work_reschedule(&timeout, ERASE_ADV_TIMEOUT);
+			k_work_reschedule(&timeout, ERASE_ADV_TIMEOUT);
 
 		} else if (IS_ENABLED(CONFIG_BT_CENTRAL)) {
 			erase_confirm();

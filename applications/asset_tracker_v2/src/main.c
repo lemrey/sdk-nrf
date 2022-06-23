@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,7 +12,8 @@
 #if defined(CONFIG_NRF_MODEM_LIB)
 #include <modem/nrf_modem_lib.h>
 #endif /* CONFIG_NRF_MODEM_LIB */
-#include <sys/reboot.h>
+#include <zephyr/sys/reboot.h>
+#include <net/lwm2m_client_utils_fota.h>
 
 #if defined(CONFIG_NRF_CLOUD_AGPS) || defined(CONFIG_NRF_CLOUD_PGPS)
 #include <net/nrf_cloud_agps.h>
@@ -32,8 +33,8 @@
 #include "events/modem_module_event.h"
 #include "events/led_state_event.h"
 
-#include <logging/log.h>
-#include <logging/log_ctrl.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 
 LOG_MODULE_REGISTER(MODULE, CONFIG_APPLICATION_MODULE_LOG_LEVEL);
 
@@ -171,7 +172,35 @@ static void sub_state_set(enum sub_state_type new_state)
 	sub_state = new_state;
 }
 
-/* Check the return code from nRF modem library initializaton to ensure that
+#if defined(CONFIG_LWM2M_INTEGRATION)
+static void lwm2m_update_modem_fota_counter(void)
+{
+	int ret;
+	struct update_counter counter = { 0 };
+
+	ret = fota_settings_init();
+	if (ret) {
+		LOG_WRN("Unable to init settings, error: %d", ret);
+		return;
+	}
+
+	ret = fota_update_counter_read(&counter);
+	if (ret) {
+		LOG_ERR("Failed read the update counter, error: %d", ret);
+		return;
+	}
+
+	if (counter.update != -1) {
+		ret = fota_update_counter_update(COUNTER_CURRENT, counter.update);
+		if (ret) {
+			LOG_ERR("Failed to update the update counter, error: %d", ret);
+			return;
+		}
+	}
+}
+#endif /* CONFIG_LWM2M_INTEGRATION */
+
+/* Check the return code from nRF modem library initialization to ensure that
  * the modem is rebooted if a modem firmware update is ready to be applied or
  * an error condition occurred during firmware update or library initialization.
  */
@@ -186,7 +215,10 @@ static void handle_nrf_modem_lib_init_ret(void)
 		/* Initialization successful, no action required. */
 		return;
 	case MODEM_DFU_RESULT_OK:
-		LOG_INF("MODEM UPDATE OK. Will run new firmware after reboot");
+		LOG_WRN("MODEM UPDATE OK. Will run new modem firmware after reboot");
+#if defined(CONFIG_LWM2M_INTEGRATION)
+		lwm2m_update_modem_fota_counter();
+#endif
 		break;
 	case MODEM_DFU_RESULT_UUID_ERROR:
 	case MODEM_DFU_RESULT_AUTH_ERROR:
@@ -301,6 +333,10 @@ static bool request_gnss(void)
 	int agps_wait_threshold_ms = CONFIG_APP_REQUEST_GNSS_WAIT_FOR_AGPS_THRESHOLD_SEC *
 				     MSEC_PER_SEC;
 
+	if (!IS_ENABLED(CONFIG_GNSS_MODULE)) {
+		return false;
+	}
+
 	if (!IS_ENABLED(CONFIG_APP_REQUEST_GNSS_WAIT_FOR_AGPS)) {
 		return true;
 	} else if (agps_wait_threshold_ms < 0) {
@@ -377,9 +413,10 @@ static void data_get(void)
 	size_t count = 0;
 
 	/* Set a low sample timeout. If GNSS is requested, the sample timeout will be increased to
-	 * accommodate the GNSS timeout.
+	 * accommodate the GNSS timeout. Use 2 seconds to accommodate for
+	 * neighbour cell measurements that usually takes a few seconds.
 	 */
-	app_module_event->timeout = 1;
+	app_module_event->timeout = 2;
 
 	/* Specify which data that is to be included in the transmission. */
 	app_module_event->data_list[count++] = APP_DATA_MODEM_DYNAMIC;
@@ -538,7 +575,7 @@ void main(void)
 	int err;
 	struct app_msg_data msg;
 
-	if (!IS_ENABLED(CONFIG_LWM2M_CARRIER) && !IS_ENABLED(CONFIG_NRF_CLOUD_FOTA)) {
+	if (!IS_ENABLED(CONFIG_LWM2M_CARRIER)) {
 		handle_nrf_modem_lib_init_ret();
 	}
 

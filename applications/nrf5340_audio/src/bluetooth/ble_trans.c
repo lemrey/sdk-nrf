@@ -8,11 +8,11 @@
 
 #include <stdlib.h>
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <errno.h>
-#include <bluetooth/iso.h>
-#include <bluetooth/bluetooth.h>
-#include <sys/byteorder.h>
+#include <zephyr/bluetooth/iso.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/sys/byteorder.h>
 #include "host/conn_internal.h"
 #include "macros_common.h"
 #include "ctrl_events.h"
@@ -22,7 +22,7 @@
 #include "ble_acl_gateway.h"
 #include "audio_sync_timer.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(ble, CONFIG_LOG_BLE_LEVEL);
 
 static enum iso_transport iso_trans_type;
@@ -45,12 +45,13 @@ static enum iso_direction iso_dir;
 #define NET_BUF_POOL_ITERATE(i, _)                                                                 \
 	NET_BUF_POOL_FIXED_DEFINE(iso_tx_pool_##i, HCI_ISO_BUF_ALLOC_PER_CHAN,                     \
 				  BT_ISO_SDU_BUF_SIZE(CONFIG_BT_ISO_TX_MTU), 8, NULL);
-#define NET_BUF_POOL_PTR_ITERATE(i, _) IDENTITY(&iso_tx_pool_##i COMMA)
+#define NET_BUF_POOL_PTR_ITERATE(i, ...) IDENTITY(&iso_tx_pool_##i)
 
-UTIL_LISTIFY(CONFIG_BT_ISO_MAX_CHAN, NET_BUF_POOL_ITERATE)
+LISTIFY(CONFIG_BT_ISO_MAX_CHAN, NET_BUF_POOL_ITERATE, (;))
 
-static struct net_buf_pool *iso_tx_pools[] = { UTIL_LISTIFY(CONFIG_BT_ISO_MAX_CHAN,
-							    NET_BUF_POOL_PTR_ITERATE) };
+static struct net_buf_pool *iso_tx_pools[] = { LISTIFY(CONFIG_BT_ISO_MAX_CHAN,
+						       NET_BUF_POOL_PTR_ITERATE,
+						       (,)) };
 static struct bt_iso_chan iso_chan[CONFIG_BT_ISO_MAX_CHAN];
 static struct bt_iso_chan *iso_chan_p[CONFIG_BT_ISO_MAX_CHAN];
 static atomic_t iso_tx_pool_alloc[CONFIG_BT_ISO_MAX_CHAN];
@@ -206,7 +207,7 @@ static uint8_t num_iso_cis_connected(void)
 	uint8_t num_cis_connected = 0;
 
 	for (int i = 0; i < CIS_ISO_CHAN_COUNT; i++) {
-		if (iso_chan_p[i]->state == BT_ISO_CONNECTED) {
+		if (iso_chan_p[i]->state == BT_ISO_STATE_CONNECTED) {
 			num_cis_connected++;
 		}
 	}
@@ -240,7 +241,7 @@ static void iso_rx_cb(struct bt_iso_chan *chan, const struct bt_iso_recv_info *i
 		ERR_CHK_MSG(-EPERM, "The RX callback has not been set");
 	}
 
-	if (info->flags != BT_ISO_FLAGS_VALID) {
+	if (!(info->flags & BT_ISO_FLAGS_VALID)) {
 		bad_frame = true;
 		iso_rx_cb_bad++;
 	}
@@ -798,7 +799,7 @@ static int iso_tx_data_or_pattern(uint8_t const *const data, size_t size, uint8_
 {
 	int ret;
 
-	if (iso_chan_p[iso_chan_idx]->state != BT_ISO_CONNECTED) {
+	if (iso_chan_p[iso_chan_idx]->state != BT_ISO_STATE_CONNECTED) {
 		LOG_DBG("ISO channel %d not connected", iso_chan_idx);
 		return 0;
 	}
@@ -1023,12 +1024,12 @@ int ble_trans_iso_tx_anchor_get(enum ble_trans_chan_type chan_type, uint32_t *ti
 	if (chan_type == BLE_TRANS_CHANNEL_STEREO) {
 		/* Choose the first active connection */
 		for (int i = 0; i < ARRAY_SIZE(iso_chan_p); ++i) {
-			if (iso_chan_p[i]->state == BT_ISO_CONNECTED) {
+			if (iso_chan_p[i]->state == BT_ISO_STATE_CONNECTED) {
 				chan_idx = i;
 				break;
 			}
 		}
-	} else if (iso_chan_p[chan_type]->state == BT_ISO_CONNECTED) {
+	} else if (iso_chan_p[chan_type]->state == BT_ISO_STATE_CONNECTED) {
 		__ASSERT_NO_MSG(chan_type < ARRAY_SIZE(iso_chan_p));
 		chan_idx = chan_type;
 	}

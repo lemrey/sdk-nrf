@@ -3,24 +3,24 @@
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
-#include <logging/log.h>
-#include <logging/log_ctrl.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <stdio.h>
-#include <drivers/uart.h>
-#include <drivers/gpio.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/drivers/gpio.h>
 #include <string.h>
 #include <nrf_modem.h>
 #include <hal/nrf_gpio.h>
 #include <hal/nrf_power.h>
 #include <hal/nrf_regulators.h>
 #include <modem/nrf_modem_lib.h>
-#include <dfu/mcuboot.h>
+#include <zephyr/dfu/mcuboot.h>
 #include <dfu/dfu_target.h>
-#include <sys/reboot.h>
-#include <drivers/clock_control.h>
-#include <drivers/clock_control/nrf_clock_control.h>
+#include <zephyr/sys/reboot.h>
+#include <zephyr/drivers/clock_control.h>
+#include <zephyr/drivers/clock_control/nrf_clock_control.h>
 #include "slm_at_host.h"
 #include "slm_at_fota.h"
 
@@ -53,11 +53,44 @@ static void indicate_wk(struct k_work *work);
 
 BUILD_ASSERT(CONFIG_SLM_WAKEUP_PIN >= 0, "Wake up pin not configured");
 
-/**@brief Recoverable modem library error. */
-void nrf_modem_recoverable_error_handler(uint32_t err)
+#if defined(CONFIG_NRF_MODEM_LIB_ON_FAULT_APPLICATION_SPECIFIC)
+static void on_modem_failure_shutdown(struct k_work *item);
+static void on_modem_failure_reinit(struct k_work *item);
+
+K_WORK_DELAYABLE_DEFINE(modem_failure_shutdown_work, on_modem_failure_shutdown);
+K_WORK_DELAYABLE_DEFINE(modem_failure_reinit_work, on_modem_failure_reinit);
+
+void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {
-	LOG_ERR("Modem library recoverable error: %u", err);
+	char rsp[64];
+
+	sprintf(rsp, "#XMODEM: FAULT,0x%x,0x%x", fault_info->reason, fault_info->program_counter);
+	rsp_send(rsp, strlen(rsp));
+	/* For now we wait 10 ms to give the trace handler time to process trace data. */
+	k_work_reschedule(&modem_failure_shutdown_work, K_MSEC(10));
 }
+
+static void on_modem_failure_shutdown(struct k_work *work)
+{
+	char rsp[32];
+	int ret = nrf_modem_lib_shutdown();
+
+	ARG_UNUSED(work);
+	sprintf(rsp, "#XMODEM: SHUTDOWN,%d", ret);
+	rsp_send(rsp, strlen(rsp));
+	k_work_reschedule(&modem_failure_reinit_work, K_MSEC(10));
+}
+
+static void on_modem_failure_reinit(struct k_work *work)
+{
+	char rsp[32];
+	int ret = nrf_modem_lib_init(NORMAL_MODE);
+
+	ARG_UNUSED(work);
+	sprintf(rsp, "#XMODEM: INIT,%d", ret);
+	rsp_send(rsp, strlen(rsp));
+}
+#endif /* CONFIG_NRF_MODEM_LIB_ON_FAULT_APPLICATION_SPECIFIC */
 
 static int ext_xtal_control(bool xtal_on)
 {
@@ -350,10 +383,7 @@ int main(void)
 
 #if defined(CONFIG_SLM_START_SLEEP)
 	if ((rr & NRF_POWER_RESETREAS_OFF_MASK) ||     /* DETECT signal from GPIO*/
-	    (rr & NRF_POWER_RESETREAS_DIF_MASK) ||     /* Entering debug interface mode */
-	    (rr & NRF_POWER_RESETREAS_LPCOMP_MASK) ||  /* LPCOMP */
-	    (rr & NRF_POWER_RESETREAS_NFC_MASK) ||     /* NFC */
-	    (rr & NRF_POWER_RESETREAS_VBUS_MASK)) {    /* USB VBUS */
+	    (rr & NRF_POWER_RESETREAS_DIF_MASK)) {     /* Entering debug interface mode */
 		return start_execute();
 	}
 	enter_sleep();
