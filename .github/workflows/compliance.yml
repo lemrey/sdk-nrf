@@ -33,7 +33,7 @@ jobs:
 
     - name: West init and update
       env:
-        BASE_REF: ${{ github.base_ref }}
+        BASE_REF: haltium-ncs
       working-directory: ncs/nrf
       run: |
         git config --global user.email "you@example.com"
@@ -60,7 +60,7 @@ jobs:
       continue-on-error: true
       id: compliance
       env:
-        BASE_REF: ${{ github.base_ref }}
+        BASE_REF: haltium-ncs
       working-directory: ncs/nrf
       if: contains(github.event.pull_request.user.login, 'dependabot[bot]') != true
       run: |
