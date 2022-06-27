@@ -121,7 +121,7 @@ manifest:
         name-allowlist:
           - nrf-regtool
     - name: sdk-sysctrl
-      revision: e4fa1b191a3a81213f6e4d1b585f4bf32b94da56
+      revision: 53c8a4a411e675f1c736264f56111ad311a94d03
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
