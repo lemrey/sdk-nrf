@@ -275,13 +275,13 @@ MRAM (non volatile memory)
 ==========================
 
 MRAM_10
-^^^^^^^
+-------
 
 .. image:: images/nrf5420_memory_map_mram10.png
    :width: 300 px
 
 MRAM_11
-^^^^^^^
+-------
 
 .. image:: images/nrf5420_memory_map_mram11.png
    :width: 300 px
@@ -320,13 +320,13 @@ Protocol layers
 ===============
 
 Physical layer
-^^^^^^^^^^^^^^
+--------------
 
 MAC, Network, Transport
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 Application layer
-^^^^^^^^^^^^^^^^^
+-----------------
 
 IPC connections scheme
 ======================
