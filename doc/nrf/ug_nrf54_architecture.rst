@@ -44,16 +44,12 @@ It is possible to use the remaining processing power of this core also for tasks
 
 The Radio Core is located in the Radio Domain.
 
-.. container:: internal
-
 Baseband Processor
 ==================
 
 The Baseband Processor (BBPROC) is designed to run Radio Frequency (RF) algorithms in software, to support RF features not implemented in RADIO peripheral.
 
 It is located in the Radio Domain.
-
-.. container:: internal
 
 Secure Domain
 =============
@@ -69,8 +65,6 @@ The Secure Domain (SECDOM) provides security guarantees for the system with feat
 * Tamper detection
 
 This core is located in the Secure Domain.
-
-.. container:: internal
 
 System Controller
 =================
@@ -161,8 +155,6 @@ Access control
       Code executed by VPRs (like FLPR or PPR) has its secure attribute matching the given VPR security configuration in the SPU
       Local RAM cannot include a Non-Secure Callable section.
 
-.. container:: internal
-
 BBPROC memory
 """""""""""""
 
@@ -185,8 +177,6 @@ Size
 
 Access control
    The access to the BBPROC memory is configured as the access to the local RAM in the Radio Domain.
-
-.. container:: internal
 
 Secure domain
 ^^^^^^^^^^^^^
@@ -261,11 +251,7 @@ Access control
    .. note::
       If TrustZone is disabled for a given core, the only available Processing Environment is Secure.
 
-.. container:: internal
-
 TODO: secure domain usage of RAM0x, full partitioning, table with MPC OVERRIDEs
-
-.. container:: internal
 
 SYSCTRL memory (RAM20)
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -299,8 +285,6 @@ MRAM_11
 
 .. image:: images/nrf5420_memory_map_mram11.png
    :width: 300 px
-
-.. container:: internal
 
 MPC configuration
 =================
@@ -350,12 +334,8 @@ IPC connections scheme
 Radio core
 ----------
 
-.. container:: internal
-
 Secure Domain
 -------------
-
-.. container:: internal
 
 System Controller
 -----------------
