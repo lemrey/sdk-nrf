@@ -27,6 +27,7 @@ Those samples are a good starting point for understanding how to put together yo
    samples/samples_edge.rst
    samples/samples_gazell.rst
    samples/samples_matter.rst
+   samples/samples_multicore.rst
    samples/samples_nfc.rst
    samples/samples_nrf5340.rst
    samples/samples_nrf9160.rst
