@@ -133,3 +133,7 @@
 | :ref:`Thingy:53 <ug_thingy53>` | PCA20053 | :ref:`thingy53_nrf5340 <thingy53_nrf5340>` | ``thingy53_nrf5340_cpuapp``    |
 |                                |          |                                            |                                |
 |                                |          |                                            | ``thingy53_nrf5340_cpuapp_ns`` |
+
+.. nrf54fpga_nrf5420_cpuapp
+
+| nRF54 FPGA | | nrf54fpga_nrf5420_cpuapp | ``nrf54fpga_nrf5420_cpuapp`` |
