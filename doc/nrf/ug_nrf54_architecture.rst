@@ -39,7 +39,7 @@ This core is located in the Global Domain.
 Radio Core
 ==========
 
-The Radio Core is intended to run the radio protocol stacks (like |BLE|, IEEE 802.15.4, ESB, Gazell, or other proprietary ones) using the RADIO peripheral with multiprotocol support.
+The Radio Core is intended to run the radio protocol stacks (like BLE, IEEE 802.15.4, ESB, Gazell, or other proprietary ones) using the RADIO peripheral with multiprotocol support.
 It is possible to use the remaining processing power of this core also for tasks other than the ones required by the radio protocol stacks.
 
 The Radio Core is located in the Radio Domain.
