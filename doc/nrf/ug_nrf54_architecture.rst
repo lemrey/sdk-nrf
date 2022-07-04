@@ -313,6 +313,28 @@ OVERRIDE Id  Owner  Permissions  Regions
 11           Radio  RX           Radio's Non-Secure code
 ===========  =====  ===========  ======================================================
 
+.. TODO: Verify if NS RX access is required for S-NSC region. If it is Ids 7 and 11 must be updated to includ S-NSC and must have set SECUREMASK attribute.
+.. TODO: Diagrams showing memory view from App's SPE, App's NSPE, maybe for other cores as well?
+
+SAU configuration
+=================
+
+Each one of the Cortex-M33 CPUs in the system with the TrustZone feature enabled (specifically, the Application, Radio, and Secure Domain Cores) associates a Security Attribution Unit (SAU) peripheral.
+The Secure Domain configures the SAUs for itself during its initialization before it switches to the Non-Secure Processing Environment (NSPE).
+The Secure Domain configures the SAUs for other cores before it boots them.
+
+SAU configuration provides the rights for the Non-Secure Processing Environment to access resources allocated for it.
+If the NSPE tries to access a memory address not allocated to it, the transaction fails.
+
+=============  ==================  ===================================  ====================================================================================================================================================================================
+SAU region Id  Security attribute  Region                               Comments
+=============  ==================  ===================================  ====================================================================================================================================================================================
+0              NS                  0x0000_0000 - 0x1000_0000            The entire non-secure address space of the MRAM. Proper partitioning is done in MPC.
+1              NS                  Core's S-NSC in MRAM                 S-NSC veneers in the secure address space of MRAM.
+2              NS                  0x2000_0000 - 0x3000_0000            The entire non-secure address space of the RAM. Proper partitioning is done in MPC.
+3              NS                  Core's S-NSC in RAM - 0x1_0000_0000  S-NSC veneers in the secure address space of the global MRAM, all peripherals, external memory, and CPU registers. If no S-NSC is in the RAM, the start address must be 0x4000_0000.
+=============  ==================  ===================================  ====================================================================================================================================================================================
+
 Inter-Processor Communication
 *****************************
 
