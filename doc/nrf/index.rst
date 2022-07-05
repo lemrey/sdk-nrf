@@ -23,6 +23,7 @@ A "99" at the end of the version number of this documentation indicates continuo
    security_chapter
    ug_nrf54
    ug_nrf91
+   ug_nrf71
    ug_nrf53
    ug_nrf52
    ug_nrf_cloud
