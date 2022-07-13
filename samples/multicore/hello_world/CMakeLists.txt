@@ -15,5 +15,5 @@ target_sources(app PRIVATE src/main.c)
 
 if (CONFIG_SOC_SERIES_NRF54X)
   build_secdom()
-  create_app_uicr()
+  build_sysctrl()
 endif()
