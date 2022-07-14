@@ -5,10 +5,12 @@ tests:
   sample.caf_sensor_manager.correctness_test:
     build_only: false
     harness: console
-    platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp qemu_cortex_m3
+    platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf54fpga_nrf5420_cpuapp nrf54fpga_nrf5420soc1_cpuapp qemu_cortex_m3
     integration_platforms:
       - nrf52840dk_nrf52840
       - nrf5340dk_nrf5340_cpuapp
+      - nrf54fpga_nrf5420_cpuapp
+      - nrf54fpga_nrf5420soc1_cpuapp
       - qemu_cortex_m3
     harness_config:
       type: multi_line
@@ -26,9 +28,11 @@ tests:
     extra_args: CONFIG_SERIAL=n CONFIG_CONSOLE=n CONFIG_UART_CONSOLE=n CONFIG_LOG=n
   sample.caf_sensor_manager.multi_core.power_consumption_test:
     build_only: true
-    platform_allow: nrf5340dk_nrf5340_cpuapp
+    platform_allow: nrf5340dk_nrf5340_cpuapp nrf54fpga_nrf5420_cpuapp nrf54fpga_nrf5420soc1_cpuapp
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
+      - nrf54fpga_nrf5420_cpuapp
+      - nrf54fpga_nrf5420soc1_cpuapp
     extra_args: CONFIG_SERIAL=n CONFIG_CONSOLE=n CONFIG_UART_CONSOLE=n CONFIG_LOG=n remote_CONFIG_SERIAL=n remote_CONFIG_CONSOLE=n remote_CONFIG_UART_CONSOLE=n remote_CONFIG_LOG=n
   sample.caf_sensor_manager.nrf5340dk_singlecore.power_consumption_test:
     build_only: true
