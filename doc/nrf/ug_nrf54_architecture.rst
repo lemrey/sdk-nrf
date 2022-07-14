@@ -3,8 +3,8 @@
 Software Architecture for nRF5420
 #################################
 
-nRF5420 is a multi-core System on Chip (SoC) using an asymmetric multiprocessing (AMP) configuration.
-Each core is tasked with specific responsibilities and they cooperate to run the whole system use cases efficiently.
+The nRF5420 is a multi-core System-on-Chip (SoC) that uses an asymmetric multiprocessing (AMP) configuration.
+Each core is tasked with specific responsibilities and they cooperate to run the whole system use-cases efficiently.
 
 The software architecture documentation briefly describes the responsibilities of the cores and their inter-processor interactions.
 
@@ -13,66 +13,48 @@ Cores
 
 TODO: domains diagram (public and internal versions)
 
-Application Core
-================
+The following are the cores available in the nRF5420, divided per domain:
 
-The Application Core is the core with the highest processing power in the system.
-Its purpose is to run the main application.
+* Application Domain:
 
-It is located in the Application Domain.
+   Application Core
+      The Application Core is the core with the highest processing power in the system.
+      Its purpose is to run the main application.
 
-Fast Lightweight Processor
-==========================
+* Global Domain:
 
-The Fast Lightweight Processor (FLPR) is a lightweight processor designed to offload from the application core simple tasks requiring low latencies or high processing power, like the hardware peripheral emulation.
+   System Controller
+      The System Controller (SYSCTRL) is a run-time manager of the SoC configuration.
+      Its main responsibility is power and clock management to meet the clock, frequency, latency, and power requirements of the programs running in other cores.
 
-This core is located in the Global Domain.
+   Fast Lightweight Processor
+      The Fast Lightweight Processor (FLPR) is a lightweight processor designed to offload from the application core simple tasks requiring low latencies or high processing power, like the hardware peripheral emulation.
 
-Peripheral Processor
-====================
+   Peripheral Processor
+      The Peripheral Processor (PPR) is a lightweight processor designed to perform simple ultra-low-power operations.
+      It manages data exchange with external devices using serial data transmission (SPI, UART, TWI) while the Application Core and the FLPR are in power-saving states.
 
-The Peripheral Processor (PPR) is a lightweight processor designed to perform simple ultra-low-power operations.
-It manages data exchange with external devices using serial data transmission (SPI, UART, TWI) while the Application Core and the FLPR are in power-saving states.
+* Radio Domain:
 
-This core is located in the Global Domain.
+   Radio Core
+      The Radio Core is intended to run the radio protocol stacks (like BLE, IEEE 802.15.4, ESB, Gazell, or other proprietary ones) using the RADIO peripheral with multiprotocol support.
+      It is possible to use the remaining processing power of this core also for tasks other than the ones required by the radio protocol stacks.
 
-Radio Core
-==========
+   Baseband Processor
+      The Baseband Processor (BBPROC) is designed to run Radio Frequency (RF) algorithms in software, to support RF features not implemented in RADIO peripheral.
 
-The Radio Core is intended to run the radio protocol stacks (like BLE, IEEE 802.15.4, ESB, Gazell, or other proprietary ones) using the RADIO peripheral with multiprotocol support.
-It is possible to use the remaining processing power of this core also for tasks other than the ones required by the radio protocol stacks.
+* Secure Domain:
 
-The Radio Core is located in the Radio Domain.
+   Secure Domain Core
+      The Secure Domain (SECDOM) provides security guarantees for the system with features like the following:
 
-Baseband Processor
-==================
-
-The Baseband Processor (BBPROC) is designed to run Radio Frequency (RF) algorithms in software, to support RF features not implemented in RADIO peripheral.
-
-It is located in the Radio Domain.
-
-Secure Domain
-=============
-
-The Secure Domain (SECDOM) provides security guarantees for the system with features like the following:
-
-* Root of Trust
-* System access protection configuration
-* Secure storage
-* Cryptographic operations
-* Device firmware upgrade
-* Crash handling
-* Tamper detection
-
-This core is located in the Secure Domain.
-
-System Controller
-=================
-
-The System Controller (SYSCTRL) is a run-time manager of the SoC configuration.
-Its main responsibility is power and clock management to meet the clock, frequency, latency, and power requirements of the programs running in other cores.
-
-This core is located in the Global Domain.
+      * Root of Trust
+      * System access protection configuration
+      * Secure storage
+      * Cryptographic operations
+      * Device firmware upgrade
+      * Crash handling
+      * Tamper detection
 
 Memory Layout
 *************
@@ -259,11 +241,57 @@ SYSCTRL memory (RAM20)
 .. image:: images/nrf5420_memory_map_ram20.png
    :width: 300 px
 
+The SYSCTRL memory is a part of the global RAM tightly coupled with the System Controller.
+Access to this memory block from the System Controller has minimal latency and can be performed without powering up any other parts of the system.
+Access to this memory from the local domains has higher latency than access to the general-purpose shared RAM.
+
+This memory is statically partitioned.
+The layout is not to be adjusted for specific products.
+
+This memory is intended to store the code executed in the System Controller, the System Controller's data, and the shared memory used for Inter-Processor Communication between the System Controller and other cores.
+Because of the static allocation property, this memory stores also the shared memory used for communication between debugger probes connected to cores in the system and the Secure Domain Core.
+
+Address range
+   0x2F880000 - 0x2F890000
+
+Size
+   64 KB
+
+Access control
+   The SYSCTRL memory is split into multiple partitions.
+   The System Controller has access to all of them (System Controller's code and data, and shared memory regions).
+   The shared memory regions are also accessible by the cores using particular region for communication with the System Controller and the debugger.
+   The shared memory regions are configured in the given core's UICR.
+   Cores do not have access to other parts of the SYSCTRL memory.
+
+   If TrustZone is enabled for a core, the shared memory region is accessible from the Non-Secure Processing Environment.
+   If TrustZone is disabled for a core, the shared memory region is accessible from the Secure Processing Environment.
+
 Fast global RAM (RAM21)
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/nrf5420_memory_map_ram21.png
    :width: 300 px
+
+The Fast global RAM is a part of the global RAM tightly coupled with the Fast Lightweight Processor.
+Access to this memory block from the FLPR and fast peripherals' DMA (I3C, CAN, PWM120, UARTE120, SPIS120, SPIM120, SPIM121) has minimal latency and can be performed without powering up any other parts of the system.
+Access to this memory from the local domains has higher latency than access to the general-purpose shared RAM.
+
+This memory is intended to store the code executed in the FLPR, the FLPR's data, the shared memory used for Inter-Processor Communication between the FLPR and the core managing the FLPR, and DMA buffers for the fast peripherals.
+
+Address range
+   0x2F890000 - 0x2F898000
+
+Size
+   32 KB
+
+Access control
+   The FLPR and its owner have access to all partitions assigned to FLPR and its Inter-Processor Communication.
+   Each of the memory partition assigned for DMA of the fast peripherals is accessible from the core owning given set of the peripherals.
+   The FLPR and the fast peripherals are by default owned by the Application Core.
+   This ownership and matching memory access rights can be customized in UICRs.
+
+   The security attribute of memory partitions must follow FLPR and DMA engines security settings.
 
 Slow global RAM (RAM3x)
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -295,7 +323,7 @@ If a core tries to access a memory address not assigned to it, the transaction f
 
 The Secure Domain can access all the memory regions in the system and does not require explicit access rights in MPC.
 
-The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_0`` to provide the needed access rights:
+The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_0`` to provide the access rights needed:
 
 ===========  =====  ===========  ======================================================
 OVERRIDE Id  Owner  Permissions  Regions
@@ -313,7 +341,36 @@ OVERRIDE Id  Owner  Permissions  Regions
 11           Radio  RX           Radio's Non-Secure code
 ===========  =====  ===========  ======================================================
 
-.. TODO: Verify if NS RX access is required for S-NSC region. If it is Ids 7 and 11 must be updated to includ S-NSC and must have set SECUREMASK attribute.
+The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_1`` to provide the access rights needed:
+
+===========  =======  ===========  ================================================================================================================
+OVERRIDE Id  Owner    Permissions  Regions
+===========  =======  ===========  ================================================================================================================
+5            SysCtrl  RW           Radio's non-volatile storage; App's non-volatile storage; DFU storage bank; Secure Domain's non-volatile storage
+===========  =======  ===========  ================================================================================================================
+
+   .. note::
+      During the installation step of the Device Firmware Update procedure, write access is enabled for more MRAM partitions.
+      During this step the only active core is the Secure Domain Core.
+
+The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_2`` to provide the access rights needed:
+
+===========  =====  ===========  ==============================================================================
+OVERRIDE Id  Owner  Permissions  Regions
+===========  =====  ===========  ==============================================================================
+1            App    RW(S)        Application mngMbox; SysCtrl <-> App IPC
+2            App    RWX(S)       FLPR code; FLPR data; FLPR <-> App IPC; DMA buffers for App's fast peripherals
+3            Radio  RW(S)        Radio mngMbox; SysCtrl <-> Radio IPC
+4            Radio  RW(S)        DMA buffers for Radio's fast peripherals (if any)
+===========  =====  ===========  ==============================================================================
+
+The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_0`` to provide the access rights needed:
+
+===========  =====  ===========  ======================================================
+OVERRIDE Id  Owner  Permissions  Regions
+===========  =====  ===========  ======================================================
+===========  =====  ===========  ======================================================
+
 .. TODO: Diagrams showing memory view from App's SPE, App's NSPE, maybe for other cores as well?
 
 SAU configuration
@@ -321,7 +378,7 @@ SAU configuration
 
 Each one of the Cortex-M33 CPUs in the system with the TrustZone feature enabled (specifically, the Application, Radio, and Secure Domain Cores) associates a Security Attribution Unit (SAU) peripheral.
 The Secure Domain configures the SAUs for itself during its initialization before it switches to the Non-Secure Processing Environment (NSPE).
-The Secure Domain configures the SAUs for other cores before it boots them.
+The Secure Domain configures the SAUs for other cores before it boots them (TODO: verify if that's correct or actually each SPE configures its SAU).
 
 SAU configuration provides the rights for the Non-Secure Processing Environment to access resources allocated for it.
 If the NSPE tries to access a memory address not allocated to it, the transaction fails.
