@@ -201,6 +201,7 @@ General-purpose shared RAM (RAM0x)
 
 .. image:: images/nrf5420_memory_map_ram0x.png
    :width: 300 px
+   :align: left
 
 The biggest part of the RAM memory in the system is located in the Global Domain as general-purpose shared RAM.
 Access to this memory is relatively fast from all the local domains (like the Application or the Radio ones).
@@ -242,6 +243,7 @@ SYSCTRL memory (RAM20)
 
 .. image:: images/nrf5420_memory_map_ram20.png
    :width: 300 px
+   :align: left
 
 The SYSCTRL memory is a part of the global RAM tightly coupled with the System Controller.
 Access to this memory block from the System Controller has minimal latency and can be performed without powering up any other parts of the system.
@@ -274,6 +276,7 @@ Fast global RAM (RAM21)
 
 .. image:: images/nrf5420_memory_map_ram21.png
    :width: 300 px
+   :align: left
 
 The Fast global RAM is a part of the global RAM tightly coupled with the Fast Lightweight Processor.
 Access to this memory block from the FLPR and fast peripherals' DMA (I3C, CAN, PWM120, UARTE120, SPIS120, SPIM120, SPIM121) has minimal latency and can be performed without powering up any other parts of the system.
@@ -300,21 +303,113 @@ Slow global RAM (RAM3x)
 
 .. image:: images/nrf5420_memory_map_ram3x.png
    :width: 300 px
+   :align: left
+
+The Slow global RAM is a part of the global RAM tightly coupled with the Peripheral Processor.
+Access to this memory block from the PPR and slow periperals' DMA has minimal latency and can be performed without powering up any other parts of the system.
+Access to this memory from the local domains has higher latency than access to the general-purpose shared RAM.
+
+This memory is intended to store the code executed in the PPR, the PPR's data, the shared memory used for Inter-Processor Communication between the PPR and the core managing the PPR, and DMA buffers for the slow peripherals.
+
+Address range
+   0x2FC00000 - 0x2FC08000
+
+Size
+   32 KB
+
+Access control
+  The PPR and its owner have access to all the partitions assigned to the PPR and its Inter-Processor Communication.
+  Each of the memory partition assigned for DMA of the slow peripherals is accessible from the core owning the given set of peripherals.
+  The PPR and the slow peripherals are by default owned by the Application Core.
+  The ownership and matching memory access rights can be customized in UICRs.
+
+  The security attribute of memory partitions must follow PPR and CMA engines security settings.
 
 MRAM (non volatile memory)
 ==========================
+
+The MRAM is divided in the following parts:
+
+* MRAM_10
+* MRAM_11
 
 MRAM_10
 -------
 
 .. image:: images/nrf5420_memory_map_mram10.png
    :width: 300 px
+   :align: left
+
+The MRAM_10 is a part of the non-volatile memory intended to keep firmware images to execute.
+Access to this memory has minimal latency to avoid CPU stalls on instruction fetches.
+This part of the memory is not writable while the main application is running (it is writable only during the Firmware Upgrade procedure) to avoid any latency caused by write operations.
+Apart from executable code images, this part of the memory stores the Secure Information Configuration Registers (SICR) used by the programs running in the Secure Domain Core.
+If code and data for the Application Core do not fit in MRAM_10, it can be partially or fully placed in MRAM_11.
+
+Address range
+   0x0E000000 - 0x0E100000
+
+Size
+   1024 KB
+
+Access control
+   The Application Core and the Radio Core have read and execute access to memory regions assigned to them.
+   If Trustzone is disabled for any of these cores, then the assigned memory region is a single block containing secure code and data.
+   If Trustzone is enabled for any of these cores, then the assigned memory region is split in three blocks:
+
+   * Secure code and data
+   * Non-secure code and data
+   * Non-secure callable (NSC)
+
+   The code executed in the Secure Processing Environment of a core has access to all three blocks assigned to the core.
+   The code executed in the Non-Secure Processing Environment has access only to the Non-secure code and data block, and can call function veneers located in the NSC block.
+
+   The System Controller's code and data region is accessible only by the Secure Domain Core.
+   The content of this region is copied by the Secure Domain Core to RAM_20 before the System Controller is started.
+   The System Controller accesses its code and data from the copy in RAM_20.
+
+   Secure Domain has access to all parts of the MRAM_10.
+   Other cores can access only the parts assigned to them, according to the security rules described above.
 
 MRAM_11
 -------
 
 .. image:: images/nrf5420_memory_map_mram11.png
    :width: 300 px
+   :align: left
+
+The MRAM_11 is a part of the non-volatile memory intended to keep non-volatile writable data.
+Writing to MRAM_11 can increase access latency for other cores reading from MRAM_11.
+When a core is reading or executing code from MRAM_11, the impact of the additional latency must be taken in consideration.
+Each of the local cores (Application, Radio, Secure Domain) have an allocated partition in MRAM_11 to store their non-volatile data.
+Each of the cores has full control on the data layout and management in the assigned MRAM partition.
+There is also a Device Firmware Upgrade partition used to store firmware images used during the upgrade procedure.
+If code and data for the Application Core do not fit in MRAM_10, it can be partially or fully placed in MRAM_11.
+
+Address range
+   0x0E100000 - 0x0E200000
+
+Size
+   1024 KB
+
+Access control
+   The Application Core and the Radio Core have read and write access to their assigned non-volatile data regions.
+   The non-volatile data region assigned to the core having trustzone disabled is marked as Secure, while the non-volatile data region assigned to the core having trustzone enabled is marked as Non-Secure.
+
+   If code or data for the Application Core is placed in MRAM_11, the Application Core has *read and execute* access to this partition.
+   This access can be configured as follows:
+
+   * Default configuration - all the application code and data is placed in MRAM_10.
+     It is configured with a single MPC configuration entry contained entirely in MRAM_10.
+   * All the app code and data is placed in MRAM_11.
+     It is configured with a single MPC configuration entry contained entirely in MRAM_11.
+   * The app code and data is partially in MRAM_10, partially in MRAM_11.
+     It is configured with a single MPC configuration entry covering partially MRAM_10 and partially MRAM_11.
+     Because of the continuous memory address range it is possible to use a single memory region to describe such data block.
+
+   The Secure Domain has access to all the parts of MRAM_11.
+   The Application Core has read and write access to the DFU partition.
+   The security configuration of this partition follows the Trustzone configuration of the Application Core (Secure if Trustzone is disabled, or Non-Secure if Trustzone is enabled).
 
 MPC configuration
 =================
@@ -325,7 +420,7 @@ If a core tries to access a memory address not assigned to it, the transaction f
 
 The Secure Domain can access all the memory regions in the system and does not require explicit access rights in MPC.
 
-The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_0`` to provide the access rights needed:
+The Secure Domain configures OVERRIDEs in the MPC assigned to ``AXI_0`` to provide the access rights needed:
 
 ===========  =====  ===========  ======================================================
 OVERRIDE Id  Owner  Permissions  Regions
@@ -343,7 +438,7 @@ OVERRIDE Id  Owner  Permissions  Regions
 11           Radio  RX           Radio's Non-Secure code
 ===========  =====  ===========  ======================================================
 
-The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_1`` to provide the access rights needed:
+The Secure Domain configures OVERRIDEs in the MPC assigned to ``AXI_1`` to provide the access rights needed:
 
 ===========  =======  ===========  ================================================================================================================
 OVERRIDE Id  Owner    Permissions  Regions
@@ -355,7 +450,7 @@ OVERRIDE Id  Owner    Permissions  Regions
       During the installation step of the Device Firmware Update procedure, write access is enabled for more MRAM partitions.
       During this step the only active core is the Secure Domain Core.
 
-The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_2`` to provide the access rights needed:
+The Secure Domain configures OVERRIDEs in the MPC assigned to ``AXI_2`` to provide the access rights needed:
 
 ===========  =====  ===========  ==============================================================================
 OVERRIDE Id  Owner  Permissions  Regions
@@ -366,12 +461,14 @@ OVERRIDE Id  Owner  Permissions  Regions
 4            Radio  RW(S)        DMA buffers for Radio's fast peripherals (if any)
 ===========  =====  ===========  ==============================================================================
 
-The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_0`` to provide the access rights needed:
+The Secure Domain configures OVERRIDEs in the MPC assigned to ``AXI_3`` to provide the access rights needed:
 
-===========  =====  ===========  ======================================================
+===========  =====  ===========  ===========================================================================
 OVERRIDE Id  Owner  Permissions  Regions
-===========  =====  ===========  ======================================================
-===========  =====  ===========  ======================================================
+===========  =====  ===========  ===========================================================================
+1            App    RWX(S)       PPR code; PPR data; PPR <-> App IPC; DMA buffers for App's fast peripherals
+3            Radio  RW(S)        DMA buffers for Radio's fast peripherals (if any)
+===========  =====  ===========  ===========================================================================
 
 .. TODO: Diagrams showing memory view from App's SPE, App's NSPE, maybe for other cores as well?
 
