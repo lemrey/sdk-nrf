@@ -14,7 +14,6 @@ if(CONFIG_NRF_MODEM_LIB_TRACE)
   add_subdirectory(trace_backends)
 endif()
 
-zephyr_library_sources(errno_sanity.c)
-zephyr_library_sources(shmem_sanity.c)
+zephyr_library_sources(sanity.c)
 
 zephyr_linker_sources(RODATA nrf_modem_lib.ld)
