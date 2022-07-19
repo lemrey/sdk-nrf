@@ -249,14 +249,6 @@
   comment: "error: nrfx_uarte_config_t has no member named pselrts"
 
 - scenarios:
-    - project.sdfw
-  platforms:
-    - nrf54fpga_nrf5420_cpusec
-    - nrf92emu_nrf9280_cpusec
-    - nrf54emu_nrf5420_cpusec
-  comment: "error: multiple definition of k_sys_fatal_error_handler"
-
-- scenarios:
     - applications.nrf_desktop.zrelease_b0
   platforms:
     - nrf52840gmouse_nrf52840
