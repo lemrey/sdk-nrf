@@ -10,6 +10,10 @@
 #include "led_widget.h"
 #include "thread_util.h"
 
+#if CONFIG_EMULATOR_FPGA
+#include "fpga_shell_commands.h"
+#endif
+
 #include <platform/CHIPDeviceLayer.h>
 
 #include <app-common/zap-generated/attribute-id.h>
@@ -117,12 +121,18 @@ CHIP_ERROR AppTask::Init()
 
 	UpdateStatusLED();
 
+#if CONFIG_EMULATOR_FPGA
+	RegisterFpgaCommands();
+#endif
+
 	/* Initialize buttons */
+#if !(defined(CONFIG_EMULATOR_FPGA))
 	int ret = dk_buttons_init(ButtonEventHandler);
 	if (ret) {
 		LOG_ERR("dk_buttons_init() failed");
 		return chip::System::MapErrorZephyr(ret);
 	}
+#endif
 
 #ifdef CONFIG_MCUMGR_SMP_BT
 	/* Initialize DFU over SMP */

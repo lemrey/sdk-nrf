@@ -12,7 +12,7 @@ get_filename_component(MATTER_MODULE_ROOT $ENV{ZEPHYR_BASE}/../modules/lib/matte
 set(mcuboot_KCONFIG_ROOT ${MATTER_MODULE_ROOT}/config/nrfconnect/chip-module/Kconfig.mcuboot.root)
 set(multiprotocol_rpmsg_KCONFIG_ROOT ${MATTER_MODULE_ROOT}/config/nrfconnect/chip-module/Kconfig.multiprotocol_rpmsg.root)
 
-if(NOT CONF_FILE STREQUAL "prj_no_dfu.conf")
+if(NOT (CONF_FILE STREQUAL "prj_no_dfu.conf" OR CONF_FILE STREQUAL "prj_fpga.conf"))
     set(PM_STATIC_YML_FILE ${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}/pm_static_dfu.yml)
 endif()
 
@@ -33,16 +33,28 @@ target_include_directories(app PRIVATE
     ${ZEPHYR_CONNECTEDHOMEIP_MODULE_DIR}/zzz_generated/app-common
 )
 
-target_sources(app PRIVATE
-    src/app_task.cpp
-    src/bolt_lock_manager.cpp
-    src/main.cpp
-    src/zcl_callbacks.cpp
-    src/zap-generated/IMClusterCommandHandler.cpp
-    src/zap-generated/callback-stub.cpp
-    ${COMMON_ROOT}/src/led_widget.cpp
-    ${COMMON_ROOT}/src/thread_util.cpp
-)
+if (CONF_FILE STREQUAL "prj_fpga.conf")
+    zephyr_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+set(app_sources src/bolt_lock_manager.cpp
+                src/main.cpp
+                src/zcl_callbacks.cpp
+                src/zap-generated/IMClusterCommandHandler.cpp
+                src/zap-generated/callback-stub.cpp
+                ${COMMON_ROOT}/src/thread_util.cpp
+                ${COMMON_ROOT}/src/led_widget.cpp
+                src/app_task.cpp
+                )
+
+if(CONFIG_EMULATOR_FPGA)
+    set(app_sources ${app_sources} 
+                    ${COMMON_ROOT}/src/fpga_shell_commands.cpp
+                    ${COMMON_ROOT}/src/fpga_target.cpp
+                    )
+endif()
+
+target_sources(app PRIVATE ${app_sources})
 
 if(CONFIG_CHIP_OTA_REQUESTOR)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/ota_util.cpp)

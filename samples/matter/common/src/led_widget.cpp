@@ -13,7 +13,9 @@ static LEDWidget::LEDWidgetStateUpdateHandler sStateUpdateCallback;
 
 void LEDWidget::InitGpio()
 {
+#if !(defined(CONFIG_EMULATOR_FPGA))
 	dk_leds_init();
+#endif
 }
 
 void LEDWidget::SetStateUpdateCallback(LEDWidgetStateUpdateHandler stateUpdateCb)
@@ -73,7 +75,9 @@ void LEDWidget::ScheduleStateChange()
 void LEDWidget::DoSet(bool state)
 {
 	mState = state;
+#if !(defined(CONFIG_EMULATOR_FPGA))
 	dk_set_led(mGPIONum, state);
+#endif
 }
 
 void LEDWidget::UpdateState()
