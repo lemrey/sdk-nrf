@@ -30,12 +30,12 @@ static int trace_deinit(void);
 int nrf_modem_lib_trace_processing_done_wait(k_timeout_t timeout)
 {
 	int err;
-	
+
 	err = k_sem_take(&trace_done_sem, timeout);
 	if (err) {
 		return err;
 	}
-	
+
 	k_sem_give(&trace_done_sem);
 
 	return 0;
@@ -53,13 +53,13 @@ static int trace_fragment_write(struct nrf_modem_trace_data *frag)
 			LOG_ERR("trace_backend_write failed with err: %d", ret);
 
 			return ret;
-		} else {
-			if (ret == 0) {
-				LOG_WRN("trace_backend_write wrote 0 bytes.");
-			}
-
-			remaining -= ret;
 		}
+
+		if (ret == 0) {
+			LOG_WRN("trace_backend_write wrote 0 bytes.");
+		}
+
+		remaining -= ret;
 	}
 
 	return 0;
@@ -124,7 +124,7 @@ static int trace_init(void)
 	err = trace_backend_init(nrf_modem_trace_processed);
 	if (err) {
 		LOG_ERR("trace_backend_init failed with err: %d", err);
-		
+
 		return err;
 	}
 
@@ -189,7 +189,7 @@ int nrf_modem_lib_trace_level_set(enum nrf_modem_lib_trace_level trace_level)
 	return 0;
 }
 
-int nrf_modem_lib_trace_resume()
+int nrf_modem_lib_trace_resume(void)
 {
 	int err;
 

@@ -103,9 +103,8 @@ static void wait_trace_deinit(void)
 	k_sem_take(&backend_deinit_sem, K_FOREVER);
 }
 
-static void nrf_modem_at_printf_ExpectTraceLevelAndReturn(const char *fmt,
-							  const enum nrf_modem_lib_trace_level trace_level,
-							  int retval)
+static void nrf_modem_at_printf_ExpectTraceLevelAndReturn(
+	const char *fmt, const enum nrf_modem_lib_trace_level trace_level, int retval)
 {
 	at_printf_fmt_expected = fmt;
 	at_printf_trace_level_expected = trace_level;
@@ -139,21 +138,21 @@ int nrf_modem_at_printf(const char *fmt, ...)
 	return at_printf_return;
 }
 
-int32_t nrf_modem_os_timedwait_stub(uint32_t context, int32_t* timeout, int cmock_num_calls)
+int32_t nrf_modem_os_timedwait_stub(uint32_t context, int32_t *timeout, int cmock_num_calls)
 {
 	trace_backend_write_error = 0;
 
 	return 0;
 }
 
-int nrf_modem_trace_get_stub(struct nrf_modem_trace_data** frags, size_t* n_frags, int cmock_num_calls)
+int nrf_modem_trace_get_stub(struct nrf_modem_trace_data **frags, size_t *n_frags, int cmock_num_calls)
 {
 	/* `cmock_num_calls` is reset to 0 at the beginning of each independent test execution. */
 	int start_index = cmock_num_calls;
 	int num_fragments = 0;
 	struct nrf_modem_trace_data *frag;
 
-	LOG_INF("trace_get_stub %d", cmock_num_calls);
+	LOG_INF("%s %d", __func__, cmock_num_calls);
 
 	/* `cmock_num_calls` starts from 0 */
 	nrf_modem_trace_get_cmock_num_calls = cmock_num_calls + 1;
@@ -180,9 +179,9 @@ int nrf_modem_trace_get_stub(struct nrf_modem_trace_data** frags, size_t* n_frag
 	return 0;
 }
 
-int trace_backend_write_stub(const void* data, size_t len, int cmock_num_calls)
+int trace_backend_write_stub(const void *data, size_t len, int cmock_num_calls)
 {
-	LOG_INF("trace_backend_write_stub %d", cmock_num_calls);
+	LOG_INF("%s %d", __func__, cmock_num_calls);
 
 	/* `cmock_num_calls` starts from 0 */
 	trace_backend_write_cmock_num_calls = cmock_num_calls + 1;
