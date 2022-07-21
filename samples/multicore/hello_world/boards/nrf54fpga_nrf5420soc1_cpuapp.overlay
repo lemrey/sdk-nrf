@@ -4,6 +4,75 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
- &uart136 {
-	 status = "okay";
- };
+ /{
+	allocatable_ram {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Configure PPR code region. Allow to execute from defined
+		 * region by App and cores owned by App.
+		 */
+		ppr_code: memory@1e0a0000 {
+			compatible = "nordic,allocatable-mram";
+			reg = <0x1e0a0000 0xa000>;
+			perm-read;
+			perm-execute;
+		};
+
+		/* Configure PPR memory region. Allow to use defined RAM
+		 * region by App and cores owned by App.
+		 */
+		gram30_app_ppr: memory@2fc00000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc00000 0x4000>;
+			perm-read;
+			perm-write;
+		};
+
+		/* Configure PPR memory region. Allow to use defined RAM
+		 * region by App and cores owned by App.
+		 */
+		gram31_app_ppr: memory@2fc04000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc04000 0x4000>;
+			perm-read;
+			perm-write;
+		};
+	};
+};
+
+/* ram3x_cpuapp buffer is used by App core UART driver. */
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuapp>;
+};
+
+/* Configure PPR UART. */
+&uart135 {
+	status = "okay";
+	tx-pin = <7>;
+	rx-pin = <6>;
+};
+
+&grtc {
+	status = "okay";
+	channel-mask = <0xf0>;
+	/* Channels 4 and 5 are used by the app core itself, channels 6 and 7
+	 * are owned by App but used by PPR.
+	 */
+	owned-channels = <4 5 6 7>;
+};
+
+/* Enable PPR clic so App could start PPR. */
+&clic_cpuppr {
+	status = "okay";
+};
+
+/* Disable systick for App core, GRTC is used as tick source. */
+&systick {
+	status = "disabled";
+};

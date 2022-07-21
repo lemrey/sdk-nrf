@@ -5,8 +5,9 @@ sample:
 tests:
   sample.multicore.hello_world:
     build_only: true
-    platform_allow: nrf5340dk_nrf5340_cpuapp nrf54fpga_nrf5420soc1_cpuapp
+    platform_allow: nrf5340dk_nrf5340_cpuapp nrf54fpga_nrf5420_cpuapp nrf54fpga_nrf5420soc1_cpuapp
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
+      - nrf54fpga_nrf5420_cpuapp
       - nrf54fpga_nrf5420soc1_cpuapp
     tags: ci_build

@@ -1,0 +1,9 @@
+# This TOML configuration adds configurations for UICR that are currently
+# unable to be set through devicetree.
+
+[grtc_cc_secure_0]
+CC_6 = "NonSecure"
+CC_7 = "NonSecure"
+
+[initnsvtor_0]
+INITNSVTOR = 0x0e054000

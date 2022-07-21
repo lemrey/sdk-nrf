@@ -5,22 +5,24 @@
  */
 
  / {
-	reserved-memory {
-		serial_buffer: memory@2fc08000 {
-			compatible = "mmio-sram";
-			reg = <0x2fc07800 DT_SIZE_K(4)>;
+	easydma_buffers {
+		ram3x_cpuppr: memory@2fc03700 {
+			status = "okay";
+			compatible = "zephyr,memory-region", "mmio-sram";
+			zephyr,memory-region = "DMA_RAM3x_PPR";
+			#memory-region-cells = < 0x0 >;
+			reg = <0x2fc03700 0x80>;
 		};
 	};
 
 	chosen {
 		zephyr,console = &uart135;
-		/* Assign unique region to uart buffer. */
-		nrfx,uarte-gram-buffer = &serial_buffer;
 	};
 };
 
 &uart135 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuppr>;
 	tx-pin = <7>;
 	rx-pin = <6>;
-	status = "okay";
 };
