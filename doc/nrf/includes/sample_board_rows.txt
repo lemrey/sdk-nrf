@@ -134,6 +134,10 @@
 |                                |          |                                            |                                |
 |                                |          |                                            | ``thingy53_nrf5340_cpuapp_ns`` |
 
+.. nrf54fpga_nrf5420soc1_cpuapp
+
+| nRF54 FPGA | | nrf54fpga_nrf5420soc1_cpuapp | ``nrf54fpga_nrf5420soc1_cpuapp`` |
+
 .. nrf54fpga_nrf5420_cpuapp
 
 | nRF54 FPGA | | nrf54fpga_nrf5420_cpuapp | ``nrf54fpga_nrf5420_cpuapp`` |
