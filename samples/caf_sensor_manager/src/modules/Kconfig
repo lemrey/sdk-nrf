@@ -39,3 +39,15 @@ module-str = sensor sim controller
 source "subsys/logging/Kconfig.template.log_config"
 
 endif # APP_SENSOR_MANAGER_SENSOR_SIM_CTRL
+
+menuconfig APP_SENSOR_STUB_GEN
+	bool "Implement the generator functions for sensor stub"
+	default y if SENSOR_STUB
+
+if APP_SENSOR_STUB_GEN
+
+module = APP_SENSOR_STUB_GEN
+module-str = sensor stub controller
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # APP_SENSOR_STUB_GEN
