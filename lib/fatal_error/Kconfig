@@ -7,6 +7,7 @@
 menuconfig RESET_ON_FATAL_ERROR
 	bool "Reset on fatal error"
 	default y if !DEBUG && !BOARD_NATIVE_POSIX && !QEMU_TARGET && !ZTEST
+	depends on !SDFW_ERROR_REPORTS_ENABLED
 	select REBOOT
 	help
 	  Enable using the fatal error handler defined for Nordic DKs.
