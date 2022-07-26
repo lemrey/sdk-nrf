@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-# Skip if partition manager is not enabled
-if(NOT CONFIG_PARTITION_MANAGER_ENABLED)
+# Partition manager is not available on Haltium platforms.
+if(CONFIG_SOC_PLATFORM_HALTIUM)
   return()
 endif()
 
