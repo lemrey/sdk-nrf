@@ -65,6 +65,18 @@ Unsolicited notification
 * The ``<heading>`` value represents the heading of the movement of the user in degrees.
 * The ``<datetime>`` value represents the UTC date-time.
 
+::
+
+   #XGPS: <NMEA message>
+
+The ``<NMEA message>`` is the ``$GPGGA`` (Global Positioning System Fix Data) NMEA sentence.
+
+::
+
+   #XGPS: <gnss_service>,<gnss_status>
+
+Refer to the READ command.
+
 Example
 ~~~~~~~
 
@@ -79,7 +91,9 @@ Example
   AT+CFUN=31
 
   OK
-  at#xgps=1,1
+  AT#XGPS=1,1
+
+  #XGPS: 1,1
 
   OK
 
@@ -112,7 +126,12 @@ Response syntax
   When it returns the value of ``1``, it means that GNSS is supported in ``%XSYSTEMMODE`` and activated in ``+CFUN``.
 
 * The ``<gnss_status>`` value is an integer.
-  When it returns the value of ``1``, it means that GNSS is started.
+
+* ``0`` - GNSS is stopped.
+* ``1`` - GNSS is started.
+* ``2`` - GNSS wakes up in periodic mode.
+* ``3`` - GNSS enters sleep because of timeout.
+* ``4`` - GNSS enters sleep because a fix is achieved.
 
 Example
 ~~~~~~~
@@ -184,6 +203,10 @@ It accepts the following integer values:
 * ``1`` - It does signify the location info to nRF Cloud.
 
 When the ``<signify>`` parameter is not specified, it does not signify the location info to nRF Cloud.
+
+.. note::
+   The application signifies the location info to nRF Cloud in a best-effort way.
+   The minimal report interval is 5 seconds.
 
 Unsolicited notification
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -275,7 +298,6 @@ Example
 
   OK
 
-
 Test command
 ------------
 
@@ -361,6 +383,18 @@ Unsolicited notification
 * The ``<heading>`` value represents the heading of the movement of the user in degrees.
 * The ``<datetime>`` value represents the UTC date-time.
 
+::
+
+   #XGPS: <NMEA message>
+
+The ``<NMEA message>`` is the ``$GPGGA`` (Global Positioning System Fix Data) NMEA sentence.
+
+::
+
+   #XAGPS: <gnss_service>,<agps_status>
+
+Refer to the READ command.
+
 Example
 ~~~~~~~
 
@@ -383,6 +417,8 @@ Example
   OK
   #XNRFCLOUD: 1,0
   AT#XAGPS=1,1
+
+  #XAGPS: 1,1
 
   OK
 
@@ -417,7 +453,12 @@ Response syntax
   When it returns the value of ``1``, it means that GNSS is supported in ``%XSYSTEMMODE`` and activated in ``+CFUN``.
 
 * The ``<agps_status>`` value is an integer.
-  When it returns the value of ``1``, it means AGPS is started.
+
+* ``0`` - AGPS is stopped.
+* ``1`` - AGPS is started.
+* ``2`` - GNSS wakes up in periodic mode.
+* ``3`` - GNSS enters sleep because of timeout.
+* ``4`` - GNSS enters sleep because a fix is achieved.
 
 Example
 ~~~~~~~
@@ -513,6 +554,18 @@ Unsolicited notification
 * The ``<heading>`` value represents the heading of the movement of the user in degrees.
 * The ``<datetime>`` value represents the UTC date-time.
 
+::
+
+   #XGPS: <NMEA message>
+
+The ``<NMEA message>`` is the ``$GPGGA`` (Global Positioning System Fix Data) NMEA sentence.
+
+::
+
+   #XPGPS: <gnss_service>,<pgps_status>
+
+Refer to the READ command.
+
 Example
 ~~~~~~~
 
@@ -535,6 +588,8 @@ Example
   OK
   #XNRFCLOUD: 1,0
   AT#XPGPS=1,30
+
+  #XPGPS: 1,1
 
   OK
 
@@ -569,7 +624,12 @@ Response syntax
   When it returns the value of ``1``, it means that GNSS is supported in ``%XSYSTEMMODE`` and is activated in ``+CFUN``.
 
 * The ``<pgps_status>`` value is an integer.
-  When it returns the value of ``1``, it means that PGPS is started.
+
+* ``0`` - PGPS is stopped.
+* ``1`` - PGPS is started.
+* ``2`` - GNSS wakes up in periodic mode.
+* ``3`` - GNSS enters sleep because of timeout.
+* ``4`` - GNSS enters sleep because a fix is achieved.
 
 Test command
 ------------
@@ -591,6 +651,79 @@ Example
   AT#XPGPS=?
 
   #XPGPS: (0,1),<interval>,<timeout>
+
+  OK
+
+Delete GNSS data
+================
+
+The ``#XGPSDEL`` command deletes GNSS data from non-volatile memory.
+This command should be issued when GNSS is activated but not started yet.
+
+Set command
+-----------
+
+The set command allows you to delete old GNSS data.
+
+Syntax
+~~~~~~
+
+::
+
+   #XGPSDEL=<mask>
+
+The ``<mask>`` parameter accepts an integer that is the ``OR`` value of the following bitmasks :
+
+* ``0x001`` - Ephemerides
+* ``0x002`` - Almanacs (excluding leap second and ionospheric correction)
+* ``0x004`` - Ionospheric correction parameters
+* ``0x008`` - Last good fix (the last position)
+* ``0x010`` - GPS time-of-week (TOW)
+* ``0x020`` - GPS week number
+* ``0x040`` - Leap second (UTC parameters)
+* ``0x080`` - Local clock (TCXO) frequency offset
+* ``0x100`` - Precision estimate of GPS time-of-week (TOW)
+* ``511`` - All of the above
+
+Example
+~~~~~~~
+
+::
+
+  AT%XSYSTEMMODE=0,0,1,0
+  OK
+  AT+CFUN=31
+  OK
+  AT#XGPSDEL=511
+  OK
+  AT+CFUN=0
+  OK
+
+Read command
+------------
+
+The read command is not supported.
+
+Test command
+------------
+
+The test command tests the existence of the command and provides information about the type of its subparameters.
+
+Syntax
+~~~~~~
+
+::
+
+   #XGPSDEL=?
+
+Example
+~~~~~~~
+
+::
+
+  AT#XGPSDEL=?
+
+  #XGPSDEL: <mask>
 
   OK
 

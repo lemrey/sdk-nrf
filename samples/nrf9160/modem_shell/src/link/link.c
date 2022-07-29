@@ -42,13 +42,16 @@
 
 extern bool uart_disable_during_sleep_requested;
 extern struct k_work_q mosh_common_work_q;
+extern char at_resp_buf[MOSH_AT_CMD_RESPONSE_MAX_LEN];
+extern struct k_mutex at_resp_buf_mutex;
 
+#define PDN_CONTEXTS_MAX 11
 struct pdn_activation_status_info {
 	bool activated;
 	uint8_t cid;
 };
 
-#define REGISTERED_STATUS_LED          DK_LED1
+#define REGISTERED_STATUS_LED          DK_LED3
 
 static bool link_subscribe_for_rsrp;
 
@@ -133,13 +136,13 @@ static void link_api_get_pdn_activation_status(
 {
 	char buf[16] = { 0 };
 	const char *p;
-	char at_response_str[256];
 	int ret;
 
-	ret = nrf_modem_at_cmd(at_response_str, sizeof(at_response_str), "AT+CGACT?");
+	k_mutex_lock(&at_resp_buf_mutex, K_FOREVER);
+	ret = nrf_modem_at_cmd(at_resp_buf, sizeof(at_resp_buf), "AT+CGACT?");
 	if (ret) {
 		mosh_error("Cannot get PDP contexts activation states, err: %d", ret);
-		return;
+		goto exit;
 	}
 
 	/* For each contexts, fill the activation status into given array: */
@@ -147,31 +150,33 @@ static void link_api_get_pdn_activation_status(
 		/* Search for a string +CGACT: <cid>,<state> */
 		snprintf(buf, sizeof(buf), "+CGACT: %d,1", i);
 		pdn_act_status_arr[i].cid = i;
-		p = strstr(at_response_str, buf);
+		p = strstr(at_resp_buf, buf);
 		if (p) {
 			pdn_act_status_arr[i].activated = true;
 		}
 	}
+exit:
+	k_mutex_unlock(&at_resp_buf_mutex);
 }
 
 /* ****************************************************************************/
 
 static void link_registered_work(struct k_work *unused)
 {
-	struct pdn_activation_status_info pdn_act_status_arr[CONFIG_PDN_CONTEXTS_MAX];
+	struct pdn_activation_status_info pdn_act_status_arr[PDN_CONTEXTS_MAX];
 
 	ARG_UNUSED(unused);
 
 	dk_set_led_on(REGISTERED_STATUS_LED);
 
 	memset(pdn_act_status_arr, 0,
-	       CONFIG_PDN_CONTEXTS_MAX * sizeof(struct pdn_activation_status_info));
+	       PDN_CONTEXTS_MAX * sizeof(struct pdn_activation_status_info));
 
 	/* Get PDN activation status for each */
-	link_api_get_pdn_activation_status(pdn_act_status_arr, CONFIG_PDN_CONTEXTS_MAX);
+	link_api_get_pdn_activation_status(pdn_act_status_arr, PDN_CONTEXTS_MAX);
 
 	/* Activate the deactive ones that have been connected by us */
-	link_api_activate_mosh_contexts(pdn_act_status_arr, CONFIG_PDN_CONTEXTS_MAX);
+	link_api_activate_mosh_contexts(pdn_act_status_arr, PDN_CONTEXTS_MAX);
 
 	/* Seems that 1st info read fails without this. Thus, let modem have some time */
 	k_sleep(K_MSEC(1500));
@@ -470,17 +475,17 @@ static int link_enable_disable_rel14_features(bool enable)
 static int link_normal_mode_at_cmds_run(void)
 {
 	char *normal_mode_at_cmd;
-	char response[MOSH_AT_CMD_RESPONSE_MAX_LEN + 1];
 	int mem_slot_index = LINK_SETT_NMODEAT_MEM_SLOT_INDEX_START;
 	int len;
 
+	k_mutex_lock(&at_resp_buf_mutex, K_FOREVER);
 	for (; mem_slot_index <= LINK_SETT_NMODEAT_MEM_SLOT_INDEX_END;
 	     mem_slot_index++) {
 		normal_mode_at_cmd =
 			link_sett_normal_mode_at_cmd_str_get(mem_slot_index);
 		len = strlen(normal_mode_at_cmd);
 		if (len) {
-			if (nrf_modem_at_cmd(response, sizeof(response), "%s",
+			if (nrf_modem_at_cmd(at_resp_buf, sizeof(at_resp_buf), "%s",
 					     normal_mode_at_cmd) != 0) {
 				mosh_error(
 					"Normal mode AT-command from memory slot %d \"%s\" returned: ERROR",
@@ -489,10 +494,11 @@ static int link_normal_mode_at_cmds_run(void)
 				mosh_print(
 					"Normal mode AT-command from memory slot %d \"%s\" returned:\n\r %s",
 					mem_slot_index, normal_mode_at_cmd,
-					response);
+					at_resp_buf);
 			}
 		}
 	}
+	k_mutex_unlock(&at_resp_buf_mutex);
 
 	return 0;
 }

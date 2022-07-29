@@ -7,16 +7,10 @@
 menuconfig PDN
 	bool "Packet Domain Network library"
 	depends on NRF_MODEM_LIB && AT_MONITOR
+	# library uses heap
+	depends on HEAP_MEM_POOL_SIZE > 0
 
 if PDN
-
-config PDN_CONTEXTS_MAX
-	int "Number of PDP contexts"
-	range 0 11
-	default 1
-	help
-	  Maximum number of PDP context handled by the library.
-	  This number does not include the default PDP context 0.
 
 config PDN_LEGACY_PCO
 	bool "Use legacy PCO mode"
@@ -29,21 +23,14 @@ config PDN_ESM_TIMEOUT
 	help
 	  Timeout for waiting for an ESM notification when activating a PDN, in milliseconds.
 
-config PDN_SYS_INIT
-	bool "Initialize during SYS_INIT"
-	depends on NRF_MODEM_LIB_SYS_INIT
-	default y if NRF_MODEM_LIB_SYS_INIT
-
-if PDN_SYS_INIT
-
 config PDN_INIT_PRIORITY
 	int "Initialization priority"
 	default APPLICATION_INIT_PRIORITY
 
-endif # PDN_SYS_INIT
-
 config PDN_DEFAULTS_OVERRIDE
 	bool "Override defaults for PDP context 0"
+	help
+	  The defaults are overridden automatically as soon as the modem has been initialized.
 
 if PDN_DEFAULTS_OVERRIDE
 
@@ -99,6 +86,13 @@ config PDN_DEFAULT_PASSWORD
 	depends on !PDN_DEFAULT_AUTH_NONE
 
 endif # PDN_DEFAULTS_OVERRIDE
+
+config PDN_ESM_STRERROR
+	bool "Compile ESM error table"
+	help
+	  Compile a table with a textual description of ESM error reasons.
+	  The description can be retrieved with pdn_esm_strerror().
+	  The table and function take about 2 KB of FLASH.
 
 module=PDN
 module-dep=LOG

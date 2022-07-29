@@ -201,7 +201,7 @@ The command string can include its own arguments like a typical terminal command
 
    my_command *[options]* *<args ...>* *<build_system_args ..>*
 
-See the description of :kconfig:option:`CONFIG_SB_SIGNING_COMMAND` for which arguments can be be sent to the build system in this way.
+See the description of :kconfig:option:`CONFIG_SB_SIGNING_COMMAND` for which arguments can be sent to the build system in this way.
 
 .. note::
 
@@ -255,7 +255,7 @@ We recommend you also set the associated configuration for a key type to ensure 
 
 .. code-block:: console
 
-   west build -b nrf52dk_nrf52840 zephyr/samples/hello_world -- \
+   west build -b nrf52840dk_nrf52840 zephyr/samples/hello_world -- \
    -DCONFIG_BOOTLOADER_MCUBOOT=y \
    -Dmcuboot_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"../../priv-ecdsa256.pem\" \
    -Dmcuboot_CONFIG_BOOT_SIGNATURE_TYPE_ECDSA_P256=y
@@ -338,3 +338,9 @@ Enable the :kconfig:option:`CONFIG_BUILD_S1_VARIANT` option when building the up
    -DCONFIG_BUILD_S1_VARIANT=y
 
 This is a necessary step for creating application update images for use with :ref:`ug_fw_update`.
+
+The S1 variant is built as a separate child image called ``s1_image``.
+For this reason, any modifications to the configuration of the S1 variant must be done to the ``s1_image`` child image.
+By default, this child image is an exact duplicate of the original image, with the exception of its placement in memory.
+The only configuration option that must be modified is the version set in ``CONFIG_FW_INFO_FIRMWARE_VERSION``.
+To make ``s1_image`` bootable with |NSIB|, the value of ``CONFIG_FW_INFO_FIRMWARE_VERSION`` for ``s1_image`` must be bigger than the one for original image.

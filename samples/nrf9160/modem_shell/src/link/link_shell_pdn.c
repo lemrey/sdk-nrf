@@ -14,7 +14,9 @@
 #if defined(CONFIG_MOSH_PPP)
 #include "ppp_ctrl.h"
 #endif
-
+#if defined(CONFIG_MOSH_STARTUP_CMDS)
+#include "startup_cmd_ctrl.h"
+#endif
 #include "link_shell_print.h"
 #include "link_shell_pdn.h"
 #include "mosh_print.h"
@@ -31,79 +33,6 @@ struct link_shell_pdn_info {
 	uint8_t cid;
 };
 
-/* From the specification:
- * 3GPP TS 24.301 version 8.7.0
- * EMM cause, 9.9.3.9
- */
-
-static const struct {
-	int reason;
-	const char *str;
-} esm_table[] = {
-	{ 0x08, "Operator Determined Barring" },
-	{ 0x1a, "Insufficient resources" },
-	{ 0x1b, "Missing or unknown APN" },
-	{ 0x1c, "Unknown PDN type" },
-	{ 0x1d, "User authentication failed" },
-	{ 0x1e, "Request rejected by Serving GW or PDN GW" },
-	{ 0x1f, "Request rejected, unspecified" },
-	{ 0x20, "Service option not supported" },
-	{ 0x21, "Requested service option not subscribed" },
-	{ 0x22, "Service option temporarily out of order" },
-	{ 0x23, "PTI already in use" },
-	{ 0x24, "Regular deactivation" },
-	{ 0x25, "EPS QoS not accepted" },
-	{ 0x26, "Network failure" },
-	{ 0x27, "Reactivation requested" },
-	{ 0x29, "Semantic error in the TFT operation" },
-	{ 0x2a, "Syntactical error in the TFT operation" },
-	{ 0x2b, "Invalid EPS bearer identity" },
-	{ 0x2c, "Semantic errors in packet filter(s)" },
-	{ 0x2d, "Syntactical errors in packet filter(s)" },
-	{ 0x2e, "Unused" },
-	{ 0x2f, "PTI mismatch" },
-	{ 0x31, "Last PDN disconnection not allowed" },
-	{ 0x32, "PDN type IPv4 only allowed" },
-	{ 0x33, "PDN type IPv6 only allowed" },
-	{ 0x34, "Single address bearers only allowed" },
-	{ 0x35, "ESM information not received" },
-	{ 0x36, "PDN connection does not exist" },
-	{ 0x37, "Multiple PDN connections for a given APN not allowed" },
-	{ 0x38, "Collision with network initiated request" },
-	{ 0x39, "PDN type IPv4v6 only allowed" },
-	{ 0x3a, "PDN type non IP only allowed" },
-	{ 0x3b, "Unsupported QCI value" },
-	{ 0x3c, "Bearer handling not supported" },
-	{ 0x3d, "PDN type Ethernet only allowed" },
-	{ 0x41, "Maximum number of EPS bearers reached" },
-	{ 0x42,
-	  "Requested APN not supported in current RAT and PLMN combination" },
-	{ 0x51, "Invalid PTI value" },
-	{ 0x5f, "Semantically incorrect message" },
-	{ 0x60, "Invalid mandatory information" },
-	{ 0x61, "Message type non-existent or not implemented" },
-	{ 0x62, "Message type not compatible with the protocol state" },
-	{ 0x63, "Information element non-existent or not implemented" },
-	{ 0x64, "Conditional IE error" },
-	{ 0x65, "Message not compatible with the protocol state" },
-	{ 0x6f, "Protocol error, unspecified" },
-	{ 0x70,
-	  "APN restriction value incompatible with active EPS bearer context" },
-	{ 0x71, "Multiple accesses to a PDN connection not allowed" },
-};
-
-static const char *esm_strerr(int reason)
-{
-	for (size_t i = 0; i < ARRAY_SIZE(esm_table); i++) {
-		if ((esm_table[i].reason == reason) &&
-		    (esm_table[i].str != NULL)) {
-			return esm_table[i].str;
-		}
-	}
-
-	return "<unknown>";
-}
-
 static const char *const event_str[] = {
 	[PDN_EVENT_CNEC_ESM] = "ESM",
 	[PDN_EVENT_ACTIVATED] = "activated",
@@ -116,20 +45,25 @@ void link_pdn_event_handler(uint8_t cid, enum pdn_event event, int reason)
 {
 	switch (event) {
 	case PDN_EVENT_CNEC_ESM:
-		mosh_print("PDN event: PDP context %d, %s", cid, esm_strerr(reason));
+		mosh_print("PDN event: PDP context %d, %s", cid, pdn_esm_strerror(reason));
 		break;
 	default:
 		mosh_print("PDN event: PDP context %d %s", cid, event_str[event]);
-#if defined(CONFIG_MOSH_PPP)
 		if (cid == 0) {
+#if defined(CONFIG_MOSH_STARTUP_CMDS)
+			if (event == PDN_EVENT_ACTIVATED) {
+				startup_cmd_ctrl_default_pdn_active();
+			}
+#endif
+#if defined(CONFIG_MOSH_PPP)
 			/* Notify PPP side about the default PDN activation status */
 			if (event == PDN_EVENT_ACTIVATED) {
 				ppp_ctrl_default_pdn_active(true);
 			} else if (event == PDN_EVENT_DEACTIVATED) {
 				ppp_ctrl_default_pdn_active(false);
 			}
-		}
 #endif
+		}
 		break;
 	}
 
@@ -340,28 +274,14 @@ int link_shell_pdn_activate(int pdn_cid)
 	if (ret) {
 		mosh_error(
 			"pdn_activate() failed, err %d esm %d %s\n",
-			ret, esm, esm_strerr(esm));
+			ret, esm, pdn_esm_strerror(esm));
 	}
 	return ret;
 }
 
 void link_shell_pdn_events_subscribe(void)
 {
-	int err;
-
-	/* Register to the necessary packet domain AT notifications */
-	err = nrf_modem_at_printf("AT+CNEC=16");
-	if (err) {
-		mosh_error("AT+CNEC=16 failed, err %d\n", err);
-		return;
-	}
-
-	err = nrf_modem_at_printf("AT+CGEREP=1");
-	if (err) {
-		mosh_error("AT+CGEREP=1 failed, err %d\n", err);
-		return;
-	}
-	pdn_default_callback_set(link_pdn_event_handler);
+	pdn_default_ctx_cb_reg(link_pdn_event_handler);
 }
 
 int link_shell_pdn_event_forward_cb_set(pdn_event_handler_t cb)
@@ -377,8 +297,6 @@ int link_shell_pdn_event_forward_cb_set(pdn_event_handler_t cb)
 
 void link_shell_pdn_init(void)
 {
-
-	pdn_init();
 	link_shell_pdn_events_subscribe();
 	sys_dlist_init(&pdn_info_list);
 }

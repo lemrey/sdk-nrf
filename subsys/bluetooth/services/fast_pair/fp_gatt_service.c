@@ -22,7 +22,7 @@ LOG_MODULE_REGISTER(fast_pair, CONFIG_BT_FAST_PAIR_LOG_LEVEL);
 #include "fp_auth.h"
 
 /* Fast Pair GATT Service UUIDs defined by the Fast Pair specification. */
-#define BT_UUID_FAST_PAIR		BT_UUID_DECLARE_16(BT_FAST_PAIR_SERVICE_UUID)
+#define BT_UUID_FAST_PAIR		BT_UUID_DECLARE_16(FP_SERVICE_UUID)
 #define BT_UUID_FAST_PAIR_MODEL_ID \
 	BT_UUID_DECLARE_128(BT_UUID_128_ENCODE(0xFE2C1233, 0x8366, 0x4814, 0x8EB0, 0x01DE32100BEA))
 #define BT_UUID_FAST_PAIR_KEY_BASED_PAIRING \
@@ -128,7 +128,7 @@ static ssize_t read_model_id(struct bt_conn *conn,
 	return res;
 }
 
-static int parse_key_based_pairing_req(struct bt_conn *conn,
+static int parse_key_based_pairing_req(const struct bt_conn *conn,
 				       struct msg_key_based_pairing_req *parsed_req,
 				       struct net_buf_simple *req)
 {
@@ -218,7 +218,8 @@ static int handle_key_based_pairing_req(struct bt_conn *conn,
 	return 0;
 }
 
-static int validate_key_based_pairing_req(struct bt_conn *conn, const uint8_t *req, void *context)
+static int validate_key_based_pairing_req(const struct bt_conn *conn, const uint8_t *req,
+					  void *context)
 {
 	struct msg_key_based_pairing_req *parsed_req = context;
 	struct net_buf_simple req_net_buf;
@@ -392,7 +393,7 @@ static ssize_t write_account_key(struct bt_conn *conn,
 				 const void *buf,
 				 uint16_t len, uint16_t offset, uint8_t flags)
 {
-	uint8_t account_key[FP_CRYPTO_ACCOUNT_KEY_LEN];
+	struct fp_account_key account_key;
 	int err = 0;
 	ssize_t res = len;
 
@@ -402,20 +403,20 @@ static ssize_t write_account_key(struct bt_conn *conn,
 		goto finish;
 	}
 
-	if (len != FP_CRYPTO_ACCOUNT_KEY_LEN) {
+	if (len != FP_ACCOUNT_KEY_LEN) {
 		LOG_WRN("Invalid length: len=%" PRIu16 " (Account Key)", len);
 		res = BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
 		goto finish;
 	}
 
-	err = fp_keys_decrypt(conn, account_key, buf);
+	err = fp_keys_decrypt(conn, account_key.key, buf);
 	if (err) {
 		LOG_WRN("Decrypt failed: err=%d (Account Key)", err);
 		res = BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
 		goto finish;
 	}
 
-	err = fp_keys_store_account_key(conn, account_key);
+	err = fp_keys_store_account_key(conn, &account_key);
 	if (err) {
 		LOG_WRN("Account Key store failed: err=%d (Account Key)", err);
 		res = BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);

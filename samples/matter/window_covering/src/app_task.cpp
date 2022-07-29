@@ -9,6 +9,7 @@
 #include "app_event.h"
 #include "led_widget.h"
 #include "window_covering.h"
+#include "thread_util.h"
 
 #include <app/server/OnboardingCodesUtil.h>
 #include <app/server/Server.h>
@@ -90,10 +91,10 @@ CHIP_ERROR AppTask::Init()
 		return err;
 	}
 
-#ifdef CONFIG_OPENTHREAD_MTD_SED
-	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_SleepyEndDevice);
-#elif CONFIG_CHIP_THREAD_SSED
+#if CONFIG_CHIP_THREAD_SSED
 	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_SynchronizedSleepyEndDevice);
+#elif CONFIG_OPENTHREAD_MTD_SED
+	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_SleepyEndDevice);
 #else
 	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_MinimalEndDevice);
 #endif
@@ -101,6 +102,14 @@ CHIP_ERROR AppTask::Init()
 		LOG_ERR("ConnectivityMgr().SetThreadDeviceType() failed");
 		return err;
 	}
+
+#ifdef CONFIG_OPENTHREAD_DEFAULT_TX_POWER
+	err = SetDefaultThreadOutputPower();
+	if (err != CHIP_NO_ERROR) {
+		LOG_ERR("Cannot set default Thread output power");
+		return err;
+	}
+#endif
 
 	/* Initialize LEDs */
 	LEDWidget::InitGpio();

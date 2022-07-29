@@ -54,9 +54,24 @@ Check and configure the following library option that is used by the sample:
 User interface
 **************
 
-Two buttons and two switches are used to enter a pairing pattern to associate a specific development kit with an nRF Cloud user account.
+When the connection is established, set switch 2 to **N.C.** to send GNSS data to nRF Cloud, if available.
 
-When the connection is established, set switch 2 to **N.C.** to send simulated GNSS data to nRF Cloud once every 2 seconds.
+On the nRF9160 DK, the LEDs display the following information regarding the application state:
+
+LED 3 and LED 4:
+    * LED 3 blinking: The device is connecting to the LTE network.
+    * LED 3 ON: The device is connected to the LTE network.
+    * LED 4 blinking: The device is connecting to nRF Cloud.
+    * LED 3 and LED 4 blinking: The MQTT connection has been established and the user association procedure with nRF Cloud has been initiated.
+    * LED 4 ON: The device is connected and ready for sensor data transfer.
+
+    .. figure:: /images/nrf_cloud_led_states.svg
+       :alt: Application state indicated by LEDs
+
+All LEDs (1-4):
+    * Blinking in groups of two (LED 1 and 3, LED 2 and 4): Modem fault.
+    * Blinking in a cross pattern (LED 1 and 4, LED 2 and 3): Communication error with nRF Cloud.
+    * Blinking in groups of two (LED 1 and 2, LED 3 and 4): Other error.
 
 
 Building and running
@@ -85,13 +100,13 @@ Program the board controller as follows:
    Use a terminal emulator, like PuTTY, to connect to the second serial port and check the output.
    See :ref:`putty` for the required settings.
 
-After programming the board controller, you must program the main controller with the LTE Sensor Gateway sample, which also includes the :ref:`secure_partition_manager` sample.
+After programming the board controller, you must program the main controller with the LTE Sensor Gateway sample.
 Program the main controller as follows:
 
 1. Set the **SW10** switch, marked as *debug/prog*, in the **NRF91** position.
    On nRF9160 DK board version 0.9.0 and earlier versions, the switch was called **SW5**.
 #. Build the LTE Sensor Gateway sample (this sample) for the nrf9160dk_nrf9160_ns build target and program the main controller with it.
-#. Verify that the program was successful.
+#. Verify that the programming was successful.
    To do so, use a terminal emulator, like PuTTY, to connect to the first serial port and check the output.
    See :ref:`putty` for the required settings.
 
@@ -103,37 +118,29 @@ After programming the main controller with the sample, test it by performing the
 1. Power on your Thingy:52 and observe that it starts blinking blue.
 #. Open a web browser and navigate to https://nrfcloud.com/.
    Follow the instructions to set up your account and to add an LTE device.
-   A pattern of switch and button actions is displayed on the webpage.
-#. Power on or reset the kit.
-#. Observe in the terminal window connected to the first serial port that the kit starts up in Trusted Firmware-M.
-   This is indicated by an output similar to the following lines:
+   See :ref:`creating_cloud_account` for more information.
+#. Power on or reset the DK.
+#. Observe in the terminal window connected to the first serial port that the DK starts up.
+   This is indicated by an output similar to the following line:
 
    .. code-block:: console
 
-      SPM: prepare to jump to Non-Secure image
-      ***** Booting Zephyr OS v1.13.99 *****
+      ***** Booting Zephyr OS build v3.0.99-ncs1-9-g8ffc2ab25eaa *****
 
-#. Observe that the message ``LTE Sensor Gateway sample started`` is shown in the terminal window, to ensure that the application started.
+#. Observe that the message ``LTE Sensor Gateway sample started`` is shown in the terminal window, to ensure that the application has started.
 #. The nRF9160 DK now connects to the network. This might take several minutes.
 #. Observe that LED 3 starts blinking as the connection to nRF Cloud is established.
-#. The first time you start the sample, pair the device to your account:
-
-   a. Observe that both LED 3 and 4 start blinking, indicating that the pairing procedure has been initiated.
-   #. Follow the instructions on `nRF Cloud`_ and enter the displayed pattern.
-      In the terminal window, you can see the pattern that you have entered.
-   #. If the pattern is entered correctly, the kit and your nRF Cloud account are paired and the device reboots.
-      If the LEDs start blinking in pairs, check in the terminal window which error occurred.
-      The device must be power-cycled to restart the pairing procedure.
-   #. After reboot, the kit connects to nRF Cloud, and the pattern disappears from the web page.
-#. Observe that LED 4 is turned on to indicate that the connection is established.
-#. Observe that the device count on your nRF Cloud dashboard is incremented by one.
-#. Set switch 2 in the position marked as **N.C.** and observe that GNSS data is sent to nRF Cloud.
+#. The first time you start the sample the device will be paired to your account.
+#. Observe that LED 4 is turned on to indicate that the connection to nRF Cloud is established.
+#. Select :guilabel:`Device Management` in the left pane and select :guilabel:`Devices` in the nRF Cloud portal.
+#. Observe that the device is shown as connected in the Devices screen.
+#. Set switch 2 in the position marked as **N.C.**.
+   If a GNSS position fix is acquired, GNSS data is now added to the sensor data.
 #. Make sure that the Thingy:52 has established a connection to the application.
    This is indicated by its led blinking green.
+#. Select the device from your device list in the nRF Cloud portal.
 #. Flip the Thingy:52, with the USB port pointing upward, to trigger the sending of the sensor data to nRF Cloud.
-#. Select the device from your device list on nRF Cloud, and observe that the sensor data is received from the kit.
-#. Observe that the data is updated in nRF Cloud.
-
+#. Observe that the sensor data is received from the DK to the nRF Cloud.
 
 Dependencies
 ************
@@ -141,7 +148,6 @@ Dependencies
 This sample uses the following |NCS| libraries:
 
 * :ref:`lib_nrf_cloud`
-* ``drivers/sensor/sensor_sim``
 * :ref:`dk_buttons_and_leds_readme`
 * :ref:`lte_lc_readme`
 * :ref:`uart_nrf_sw_lpuart`

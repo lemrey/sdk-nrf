@@ -909,7 +909,7 @@ static void on_state_disconnected(struct modem_msg_data *msg)
 
 	if ((IS_EVENT(msg, app, APP_EVT_LTE_DISCONNECT)) ||
 	    (IS_EVENT(msg, modem, MODEM_EVT_CARRIER_EVENT_LTE_LINK_UP_REQUEST)) ||
-	    (IS_EVENT(msg, cloud, CLOUD_EVT_LTE_DISCONNECT))) {
+	    (IS_EVENT(msg, cloud, CLOUD_EVT_LTE_CONNECT))) {
 		int err;
 
 		err = lte_connect();
@@ -1078,7 +1078,7 @@ static void on_all_states(struct modem_msg_data *msg)
 static void module_thread_fn(void)
 {
 	int err;
-	struct modem_msg_data msg;
+	struct modem_msg_data msg = { 0 };
 
 	self.thread_id = k_current_get();
 

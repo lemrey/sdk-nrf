@@ -4,20 +4,26 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-/**@file nrf_modem_lib_trace.h
- *
- * @defgroup nrf_modem_lib_trace nRF91 Modem trace module
- * @{
- */
 #ifndef NRF_MODEM_LIB_TRACE_H__
 #define NRF_MODEM_LIB_TRACE_H__
 
 #include <zephyr/kernel.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @file nrf_modem_lib_trace.h
+ *
+ * @defgroup nrf_modem_lib_trace nRF91 Modem trace module
+ * @{
+ */
+
 /** @brief Initialize the modem trace module.
  *
- * Initializes the module and the trace transport medium.
+ * Initializes the module and the trace backend.
  *
  * @param trace_heap Heap to use for modem traces
  *
@@ -50,9 +56,7 @@ int nrf_modem_lib_trace_start(enum nrf_modem_lib_trace_mode trace_mode);
  *
  * This function should only be called to process a trace received from the modem by the
  * nrf_modem_os_trace_put() function. This function forwards the trace to the selected
- * (during compile time) trace transport medium. When the maximum number of trace bytes
- * (configured via the @ref nrf_modem_lib_trace_start) is received, this function stops the trace
- * session.
+ * (during compile time) trace backend.
  *
  * @param data Memory buffer containing the modem trace data.
  * @param len  Memory buffer length.
@@ -74,5 +78,10 @@ int nrf_modem_lib_trace_stop(void);
  */
 void nrf_modem_lib_trace_deinit(void);
 
-#endif /* NRF_MODEM_LIB_TRACE_H__ */
 /**@} */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* NRF_MODEM_LIB_TRACE_H__ */

@@ -226,7 +226,7 @@ static void init_rest_client_request(struct nrf_cloud_rest_context const *const 
 	req->port		= HTTPS_PORT;
 	req->host		= CONFIG_NRF_CLOUD_REST_HOST_NAME;
 	req->tls_peer_verify	= TLS_PEER_VERIFY_REQUIRED;
-	req->timeout_ms		= SYS_FOREVER_MS;
+	req->timeout_ms		= rest_ctx->timeout_ms;
 
 	req->http_method	= meth;
 
@@ -259,6 +259,11 @@ static int do_rest_client_request(struct nrf_cloud_rest_context *const rest_ctx,
 	if ((ret == 0) && (rest_ctx->status >= NRF_CLOUD_HTTP_STATUS__ERROR_BEGIN) &&
 	    rest_ctx->response && rest_ctx->response_len) {
 		(void)nrf_cloud_parse_rest_error(rest_ctx->response, &rest_ctx->nrf_err);
+
+		if ((rest_ctx->nrf_err != NRF_CLOUD_ERROR_NONE) &&
+		    (rest_ctx->nrf_err != NRF_CLOUD_ERROR_NOT_FOUND_NO_ERROR)) {
+			LOG_ERR("nRF Cloud REST error code: %d", rest_ctx->nrf_err);
+		}
 	}
 
 	if (ret) {
@@ -1244,7 +1249,7 @@ int nrf_cloud_rest_jitp(const sec_tag_t nrf_cloud_sec_tag)
 	req.header_fields	= (const char **)headers;
 	req.url			= JITP_URL;
 	req.host		= JITP_HOSTNAME_TLS;
-	req.timeout_ms		= SYS_FOREVER_MS;
+	req.timeout_ms		= JITP_HTTP_TIMEOUT_MS;
 	req.http_method		= HTTP_POST;
 	req.resp_buff		= rx_buf;
 	req.resp_buff_len	= sizeof(rx_buf);

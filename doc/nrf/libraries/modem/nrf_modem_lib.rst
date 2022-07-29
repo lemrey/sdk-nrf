@@ -25,10 +25,15 @@ For more information, see :ref:`partition_mgr_integration`.
 
 The library wrapper also provides callbacks for the initialization and shutdown operations.
 The application can set up a callback for :c:func:`nrf_modem_lib_init` function using the :c:macro:`NRF_MODEM_LIB_ON_INIT` macro, and a callback for :c:func:`nrf_modem_lib_shutdown` function using the :c:macro:`NRF_MODEM_LIB_ON_SHUTDOWN` macro.
-These compile-time callbacks allow any part of the application to perform any set up steps that require the modem to be in a certain state.
-Further, the callbacks ensure that said steps are repeated any time another part of the application turns the modem on or off.
-The callbacks defined using :c:macro:`NRF_MODEM_LIB_ON_INIT` are executed after the library is initialized, and report the result of the initialization.
-The callbacks defined using :c:macro:`NRF_MODEM_LIB_ON_SHUTDOWN` are executed before the library is shut down.
+These compile-time callbacks allow any part of the application to perform any setup steps that require the modem to be in a certain state.
+Furthermore, the callbacks ensure that the setup steps are repeated whenever another part of the application turns the modem on or off.
+The callbacks registered using :c:macro:`NRF_MODEM_LIB_ON_INIT` are executed after the library is initialized.
+The result of the initialization and the callback context are provided to these callbacks.
+Callbacks for the macro :c:macro:`NRF_MODEM_LIB_ON_INIT` must have the signature ``void callback_name(int ret, void *ctx)``, where ``ret`` is the result of the initialization and ``ctx`` is the context passed to the macro.
+The callbacks registered using :c:macro:`NRF_MODEM_LIB_ON_SHUTDOWN` are executed before the library is shut down.
+The callback context is provided to these callbacks.
+Callbacks for the macro :c:macro:`NRF_MODEM_LIB_ON_SHUTDOWN` must have the signature ``void callback_name(void *ctx)``, where ``ctx`` is the context passed to the macro.
+See the :ref:`modem_callbacks_sample` sample for more information.
 
 The library wrapper can also initialize the Modem library during system initialization using :c:macro:`SYS_INIT`.
 The :kconfig:option:`CONFIG_NRF_MODEM_LIB_SYS_INIT` Kconfig option can be used to control the initialization.
@@ -40,7 +45,7 @@ This is done by the :c:func:`nrf_modem_lib_shutdown` function call, by waking th
 
 When :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_ENABLED` Kconfig option is enabled, the modem traces are enabled in the modem and are forwarded to the `Modem trace module`_.
 
-When using the Modem library in |NCS|, the library should be initialized and shutdown using the :c:func:`nrf_modem_lib_init` and :c:func:`nrf_modem_lib_shutdown` function calls, respectively.
+When using the Modem library in |NCS|, the library must be initialized and shutdown using the :c:func:`nrf_modem_lib_init` and :c:func:`nrf_modem_lib_shutdown` function calls, respectively.
 
 :kconfig:option:`CONFIG_NRF_MODEM_LIB_LOG_FW_VERSION_UUID` can be enabled for printing logs of both FW version and UUID at the end of the library initialization step.
 
@@ -78,10 +83,10 @@ Modem trace module
 The modem trace module is implemented in :file:`nrf/lib/nrf_modem_lib/nrf_modem_lib_trace_sync.c`.
 If the experimental :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_THREAD_PROCESSING` Kconfig option is enabled, the :file:`nrf/lib/nrf_modem_lib/nrf_modem_lib_trace.c` file is used.
 
-The module provides the functionality for starting, stopping, and forwarding of modem traces to a transport medium that can be set by enabling any one of the following Kconfig options:
+The module provides the functionality for starting, stopping, and forwarding of modem traces to a backend that can be set by enabling any one of the following Kconfig options:
 
-* :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_MEDIUM_UART` to send modem traces over UARTE1
-* :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_MEDIUM_RTT` to send modem traces over SEGGER RTT
+* :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_UART` to send modem traces over UARTE1
+* :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_RTT` to send modem traces over SEGGER RTT
 
 If the application wants the trace data, :c:func:`nrf_modem_lib_trace_init` must be called before :c:func:`nrf_modem_lib_init`.
 This is done automatically when using the OS abstraction layer.
@@ -95,11 +100,97 @@ Thread-based processing
 For better load distribution on the application, enable the experimental thread-based trace processing through the :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_THREAD_PROCESSING` Kconfig option.
 Trace processing is done in ``trace_handler_thread``.
 When the modem trace module receives trace data, it places it in a FIFO queue.
-The thread reads from the FIFO queue and forwards the trace data to the configured trace transport medium.
+The thread reads from the FIFO queue and forwards the trace data to the configured trace backend.
 The FIFO queue used by the modem trace module uses dedicated heap memory.
-If the modem trace medium is unable to keep up with the modem traces, the heap size can be increased by enabling :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE_OVERRIDE` and configuring :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE`.
-Increasing the heap size allows more traces in the FIFO queue, but the trace heap will still be depleted if the modem continues to send traces at a rate faster than the rate at which the medium can handle over time.
-If increasing the trace heap size does not help, either optimize the medium speed or use a faster trace transport medium.
+If the modem trace backend is unable to keep up with the modem traces, the heap size can be increased by enabling :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE_OVERRIDE` and configuring :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_HEAP_SIZE`.
+Increasing the heap size allows more traces in the FIFO queue.
+However, if the modem continues to send traces at a faster rate than the backend can handle, the trace heap will be exhausted over time.
+If increasing the trace heap size does not help, either optimize the backend throughput or use a faster trace backend.
+
+.. _adding_custom_modem_trace_backends:
+
+Adding custom trace backends
+============================
+
+You can add custom trace backends if the existing trace backends are not sufficient.
+At any time, only one trace backend can be compiled with the application.
+The value of the :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_BACKEND` Kconfig option determines which trace backend is compiled.
+The :ref:`modem_trace_backend_sample` sample demonstrates how a custom trace backend can be added to an application.
+
+Complete the following steps to add a custom trace backend:
+
+1. Place the files that have the custom trace backend implementation in a library or an application you create.
+   For example, the implementation of the UART trace backend (default) can be found in the :file:`nrf/lib/nrf_modem_lib/trace_backends/uart/uart.c` file.
+
+#. Add a C file implementing the interface in :file:`nrf/include/modem/trace_backend.h` header file.
+
+   .. code-block:: c
+
+      /* my_trace_medium.c */
+
+      #include <modem/trace_medium.h>
+
+      int trace_medium_init(void)
+      {
+           /* initialize transport medium here */
+           return 0;
+      }
+
+      int trace_medium_deinit(void)
+      {
+           /* optional deinitialization code here */
+           return 0;
+      }
+
+      int trace_medium_write(const void *data, size_t len)
+      {
+           /* forward data over custom transport here */
+           /* return number of bytes written or negative error code on failure */
+           return 0;
+      }
+
+#. Create or modify a :file:`Kconfig` file to extend the choice :kconfig:option:`NRF_MODEM_LIB_TRACE_BACKEND` with another option.
+
+   .. code-block:: Kconfig
+
+      if NRF_MODEM_LIB_TRACE_ENABLED
+
+      # Extends the choice with another backend
+      choice NRF_MODEM_LIB_TRACE_BACKEND
+
+      config NRF_MODEM_LIB_TRACE_BACKEND_MY_TRACE_BACKEND
+              bool "My trace backend"
+              help
+                Optional description of my
+                trace backend.
+
+      endchoice
+
+      endif
+
+#. Create or modify a :file:`CMakeLists.txt` file, adding the custom trace backend sources only if the custom trace backend option has been chosen.
+
+   .. code-block:: cmake
+
+      if(CONFIG_NRF_MODEM_LIB_TRACE_ENABLED)
+
+      zephyr_library()
+
+      # Only add 'custom' backend to compilation when selected.
+      zephyr_library_sources_ifdef(
+        CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_MY_TRACE_BACKEND
+        path/to/my_trace_backend.c
+      )
+
+      endif()
+
+#. Include the :file:`Kconfig` file and the :file:`CMakeLists.txt` file to the build.
+#. Add the following Kconfig options to your application's :file:`prj.conf` file to use the custom modem trace backend:
+
+   .. code-block:: none
+
+      CONFIG_NRF_MODEM_LIB_TRACE_ENABLED=y
+      CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_MY_TRACE_BACKEND=y
 
 Modem fault handling
 ********************
@@ -121,7 +212,7 @@ If you want to implement a custom fault handler, consider the following points:
 
 * The fault handler is called in an interrupt context and must be as short as possible.
 * Reinitialization of the Modem library must be done outside of the fault handler.
-* If the modem trace is enabled, the modem sends a coredump through the trace medium on modem failure.
+* If the modem trace is enabled, the modem sends a coredump through the trace backend on modem failure.
   To ensure correct trace output, the modem must not be reinitialized before all trace data is handled.
 
 .. _partition_mgr_integration:

@@ -47,7 +47,7 @@ If you are using a mobile device, one of the following operating systems:
 Installing the required software
 ********************************
 
-When using a computer to work with with the Nordic Thingy:53 firmware, install `nRF Connect for Desktop`_.
+When using a computer to work with the Nordic Thingy:53 firmware, install `nRF Connect for Desktop`_.
 After installing and starting the application, install the Programmer app.
 
 When using a mobile device to work with the Nordic Thingy:53, install the `nRF Programmer`_ mobile application from the corresponding application store.
@@ -161,7 +161,9 @@ Complete the following steps to update the firmware:
 
    A file explorer window appears.
 #. Navigate to the folder where you extracted the application firmware.
-#. Select the :file:`dfu_application.zip` and click :guilabel:`Open`.
+#. Open the :file:`Peripheral_LBS` folder, select the update file and click :guilabel:`Open`.
+
+   The update file is titled :file:`peripheral_lbs_<version-number>_thingy53_nrf5340.zip`.
 #. Click the :guilabel:`Write` button in the :guilabel:`Device` section.
 
    The :guilabel:`MCUboot DFU` window appears.
@@ -207,7 +209,7 @@ Do no unplug or power off the devices during this process.
 #. Open nRF Connect for Desktop and launch the Programmer app.
 #. Prepare the hardware:
 
-   #. Open the connector cover on the side of the Nordic Thingy:53.
+   a. Open the connector cover on the side of the Nordic Thingy:53.
    #. Use a JTAG cable to connect the Nordic Thingy:53 to the debug out port on a 10-pin external debug probe.
 
       .. figure:: images/thingy53_nrf5340_dk.svg
@@ -237,9 +239,9 @@ Do no unplug or power off the devices during this process.
 #. Click :guilabel:`Add file` in the :guilabel:`File` section, and select :guilabel:`Browse`.
 
    A file explorer window appears.
-#. Navigate to the folder where you extracted application firmware.
-#. Open the :file:`img_app_bl` folder that contains the HEX files used with the debug probe.
-#. Select the HEX file for the application that you want to transfer to the Nordic Thingy:53 and click :guilabel:`Open`.
+#. Navigate to the folder where you extracted the application firmware.
+#. Open the folder for the application that you want to transfer to the Nordic Thingy:53.
+#. Select the corresponding HEX file to be used with the debug probe and click :guilabel:`Open`.
 
    The HEX file appears in the :guilabel:`File memory layout` section.
 #. Click :guilabel:`Erase & write` in the :guilabel:`Device` section of the side panel.
@@ -262,7 +264,7 @@ Complete the following steps to get started with Edge Impulse:
 
 1. Go to the `Edge Impulse`_ website.
 #. Create a free Edge Impulse account.
-#. Follow the instructions in the `Nordic Semi nRF5340 DK page`_.
+#. Follow the instructions in the `Nordic Semi Thingy:53 page`_.
 
 Next steps
 **********

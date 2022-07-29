@@ -18,8 +18,8 @@ For example, see :ref:`ug_nrf5340_building` in the :ref:`ug_nrf5340` user guide 
 
 .. _gs_programming_vsc:
 
-Building with the VS Code extension
-***********************************
+Building with |VSC|
+*******************
 
 |vsc_extension_instructions|
 
@@ -29,6 +29,8 @@ If you want to build and program with custom options, read about the advanced `C
 .. include:: gs_installing.rst
    :start-after: vsc_mig_note_start
    :end-before: vsc_mig_note_end
+
+|output_files_note|
 
 .. _gs_programming_cmd:
 
@@ -51,7 +53,7 @@ After completing the :ref:`manual <build_environment_cli>` or :ref:`automatic <g
 
       .. code-block:: console
 
-         cd nrf/samples/nRF9160/at_client
+         cd nrf/samples/nrf9160/at_client
 
 
 #.    Build the application using the west command.
@@ -86,7 +88,8 @@ After completing the :ref:`manual <build_environment_cli>` or :ref:`automatic <g
       See :ref:`configure_application` for additional information about configuring an application.
 
       After running the ``west build`` command, the build files can be found in :file:`build/zephyr`.
-      For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents`.
+      |output_files_note|
+      For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
 
       .. important::
          If you are working with an nRF9160 DK, make sure to select the correct controller before you program the application to your development kit.
@@ -122,3 +125,5 @@ After completing the :ref:`manual <build_environment_cli>` or :ref:`automatic <g
       The ``west flash`` command automatically resets the kit and starts the application.
 
 For more information on building and programming using the command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.
+
+.. |output_files_note| replace:: For more information about files generated as output of the build process, see :ref:`app_build_output_files`.

@@ -19,8 +19,13 @@ The library uses several AT commands, and it relies on the following two types o
 * Packet domain events notifications (``+CGEV``) - Subscribed by using the `AT+CGEREP set command`_ (``AT+CGEREP=1``)
 * Notifications for unsolicited reporting of error codes sent by the network (``+CNEC``) - Subscribed by using the `AT+CNEC set command`_ (``AT+CNEC=16``)
 
+If the application uses the :ref:`lte_lc_readme` library to change the modem's functional mode, the PDN library automatically subscribes to the necessary AT notifications.
+This includes automatically resubscribing to the notifications upon functional mode changes.
+If the application does not use the :ref:`lte_lc_readme` library to change the modem's functional mode, the application must subscribe to the necessary AT notifications manually.
+
 .. note::
-   The application must subscribe to the AT notifications for packet domain events and unsolicited reporting of error codes manually.
+   The subscription to AT notifications is lost upon changing the modem functional mode to ``+CFUN=0``.
+   If the application subscribes to these notifications manually, it must also take care of resubscription.
 
 Following are the AT commands that are used by the library:
 
@@ -33,6 +38,9 @@ Following are the AT commands that are used by the library:
 For more information about these commands, see `Packet Domain AT commands`_.
 
 The application can create PDP contexts by using the :c:func:`pdn_ctx_create` function, and a callback can be assigned to receive the events pertaining to the state and connectivity of the PDP contexts.
+The application can use the :c:func:`pdn_default_ctx_cb_reg` function to register an event handler for events pertaining the default PDP context, and the :c:func:`pdn_default_ctx_cb_dereg` to deregister it.
+The library stores 12 bytes of memory on the system heap for each PDP context created using :c:func:`pdn_ctx_create` and for each event handler for the default PDP context.
+The maximum number of PDP contexts that can be created is limited by the maximum number of PDP context supported by the nRF9160 Modem firmware, and the amount of system heap memory available.
 The :c:func:`pdn_ctx_configure` function is used to configure a PDP Context, which can be configured with a family, access point name, and optional authentication parameters.
 The :c:func:`pdn_activate` function activates a PDN connection for a PDP context.
 A PDN connection is identified by an ID as reported by ``AT%XGETPDNID``, and it is distinct from the PDP context ID (CID).
@@ -42,7 +50,7 @@ Multiple PDP contexts might share the same PDN connection if they are configured
 Configuration
 *************
 
-The PDN library overrides the default PDP context configuration during initialization (:c:func:`pdn_init`) if you have set the :kconfig:option:`CONFIG_PDN_DEFAULTS_OVERRIDE` Kconfig option.
+The PDN library overrides the default PDP context configuration automatically after the :ref:`nrfxlib:nrf_modem` is initialized, if the :kconfig:option:`CONFIG_PDN_DEFAULTS_OVERRIDE` Kconfig option is set.
 The default PDP context configuration consists of the following parameters, each controlled with a Kconfig setting:
 
 * Access point name, :kconfig:option:`CONFIG_PDN_DEFAULT_APN`

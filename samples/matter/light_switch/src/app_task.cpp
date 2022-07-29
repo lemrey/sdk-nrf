@@ -98,15 +98,21 @@ CHIP_ERROR AppTask::Init()
 
 #ifdef CONFIG_OPENTHREAD_MTD_SED
 	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_SleepyEndDevice);
-#elif CONFIG_OPENTHREAD_MTD
-	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_MinimalEndDevice);
 #else
-	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_Router);
+	err = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_MinimalEndDevice);
 #endif
 	if (err != CHIP_NO_ERROR) {
 		LOG_ERR("ConnectivityMgr().SetThreadDeviceType() failed: %s", ErrorStr(err));
 		return err;
 	}
+
+#ifdef CONFIG_OPENTHREAD_DEFAULT_TX_POWER
+	err = SetDefaultThreadOutputPower();
+	if (err != CHIP_NO_ERROR) {
+		LOG_ERR("Cannot set default Thread output power");
+		return err;
+	}
+#endif
 
 	LightSwitch::GetInstance().Init(kLightSwitchEndpointId);
 
@@ -298,7 +304,6 @@ void AppTask::IdentifyStopHandler(Identify *)
 
 void AppTask::StartBLEAdvertisingHandler(AppEvent *aEvent)
 {
-	/* Don't allow on starting Matter service BLE advertising after Thread provisioning. */
 	if (Server::GetInstance().GetFabricTable().FabricCount() != 0) {
 		LOG_INF("Matter service BLE advertising not started - device is already commissioned");
 		return;

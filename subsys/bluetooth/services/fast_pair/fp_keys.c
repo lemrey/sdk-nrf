@@ -35,7 +35,12 @@ struct fp_procedure {
 	enum fp_state state;
 	uint8_t key_gen_failure_cnt;
 	bool pairing_mode;
-	uint8_t aes_key[FP_CRYPTO_ACCOUNT_KEY_LEN];
+	uint8_t aes_key[FP_ACCOUNT_KEY_LEN];
+};
+
+struct fp_key_gen_account_key_check_context {
+	const struct bt_conn *conn;
+	struct fp_keys_keygen_params *keygen_params;
 };
 
 static bool user_pairing_mode = true;
@@ -78,7 +83,7 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 	.disconnected = disconnected,
 };
 
-int fp_keys_encrypt(struct bt_conn *conn, uint8_t *out, const uint8_t *in)
+int fp_keys_encrypt(const struct bt_conn *conn, uint8_t *out, const uint8_t *in)
 {
 	struct fp_procedure *proc = &fp_procedures[bt_conn_index(conn)];
 	int err = 0;
@@ -101,7 +106,7 @@ int fp_keys_encrypt(struct bt_conn *conn, uint8_t *out, const uint8_t *in)
 	return err;
 }
 
-int fp_keys_decrypt(struct bt_conn *conn, uint8_t *out, const uint8_t *in)
+int fp_keys_decrypt(const struct bt_conn *conn, uint8_t *out, const uint8_t *in)
 {
 	struct fp_procedure *proc = &fp_procedures[bt_conn_index(conn)];
 	int err = 0;
@@ -124,7 +129,8 @@ int fp_keys_decrypt(struct bt_conn *conn, uint8_t *out, const uint8_t *in)
 	return err;
 }
 
-static int key_gen_public_key(struct bt_conn *conn, struct fp_keys_keygen_params *keygen_params)
+static int key_gen_public_key(const struct bt_conn *conn,
+			      struct fp_keys_keygen_params *keygen_params)
 {
 	int err;
 	struct fp_procedure *proc = &fp_procedures[bt_conn_index(conn)];
@@ -155,38 +161,45 @@ static int key_gen_public_key(struct bt_conn *conn, struct fp_keys_keygen_params
 	return err;
 }
 
-static int key_gen_account_key(struct bt_conn *conn, struct fp_keys_keygen_params *keygen_params)
+static bool key_gen_account_key_check(const struct fp_account_key *account_key, void *context)
 {
 	int err;
+	uint8_t req[FP_CRYPTO_AES128_BLOCK_LEN];
+	struct fp_key_gen_account_key_check_context *ak_check_context = context;
+	const struct bt_conn *conn = ak_check_context->conn;
+	struct fp_keys_keygen_params *keygen_params = ak_check_context->keygen_params;
 	struct fp_procedure *proc = &fp_procedures[bt_conn_index(conn)];
 
-	uint8_t req[FP_CRYPTO_AES128_BLOCK_LEN];
-	uint8_t ak[CONFIG_BT_FAST_PAIR_STORAGE_ACCOUNT_KEY_MAX][FP_CRYPTO_ACCOUNT_KEY_LEN];
-	size_t ak_cnt = CONFIG_BT_FAST_PAIR_STORAGE_ACCOUNT_KEY_MAX;
+	memcpy(proc->aes_key, account_key->key, FP_ACCOUNT_KEY_LEN);
 
-	err = fp_storage_account_keys_get(ak, &ak_cnt);
+	err = fp_keys_decrypt(conn, req, keygen_params->req_enc);
 	if (err) {
-		return err;
+		return false;
 	}
 
-	for (size_t i = 0; i < ak_cnt; i++) {
-		memcpy(proc->aes_key, ak[i], FP_CRYPTO_ACCOUNT_KEY_LEN);
-
-		err = fp_keys_decrypt(conn, req, keygen_params->req_enc);
-		if (!err) {
-			err = keygen_params->req_validate_cb(conn, req, keygen_params->context);
-		}
-
-		if (!err) {
-			/* Key was found. */
-			break;
-		}
+	err = keygen_params->req_validate_cb(conn, req, keygen_params->context);
+	if (err) {
+		return false;
 	}
 
-	return err;
+	return true;
 }
 
-int fp_keys_generate_key(struct bt_conn *conn, struct fp_keys_keygen_params *keygen_params)
+static int key_gen_account_key(const struct bt_conn *conn,
+			       struct fp_keys_keygen_params *keygen_params)
+{
+	struct fp_key_gen_account_key_check_context context = {
+		.conn = conn,
+		.keygen_params = keygen_params,
+	};
+
+	/* This function call assigns the Account Key internally to the Fast Pair Keys
+	 * module. The assignment happens in the provided callback method.
+	 */
+	return fp_storage_account_key_find(NULL, key_gen_account_key_check, &context);
+}
+
+int fp_keys_generate_key(const struct bt_conn *conn, struct fp_keys_keygen_params *keygen_params)
 {
 	struct fp_procedure *proc = &fp_procedures[bt_conn_index(conn)];
 	int err = 0;
@@ -230,7 +243,7 @@ int fp_keys_generate_key(struct bt_conn *conn, struct fp_keys_keygen_params *key
 	return err;
 }
 
-int fp_keys_store_account_key(struct bt_conn *conn, const uint8_t *account_key)
+int fp_keys_store_account_key(const struct bt_conn *conn, const struct fp_account_key *account_key)
 {
 	struct fp_procedure *proc = &fp_procedures[bt_conn_index(conn)];
 	int err = 0;
@@ -243,7 +256,7 @@ int fp_keys_store_account_key(struct bt_conn *conn, const uint8_t *account_key)
 	/* Invalidate Key to ensure that requests will be rejected until procedure is restarted. */
 	invalidate_key(proc);
 
-	if (account_key[0] != FP_ACCOUNT_KEY_PREFIX) {
+	if (account_key->key[0] != FP_ACCOUNT_KEY_PREFIX) {
 		LOG_WRN("Received invalid Account Key");
 		return -EINVAL;
 	}
@@ -257,7 +270,7 @@ int fp_keys_store_account_key(struct bt_conn *conn, const uint8_t *account_key)
 	return err;
 }
 
-void fp_keys_bt_auth_progress(struct bt_conn *conn, bool authenticated)
+void fp_keys_bt_auth_progress(const struct bt_conn *conn, bool authenticated)
 {
 	struct fp_procedure *proc = &fp_procedures[bt_conn_index(conn)];
 
@@ -269,7 +282,7 @@ void fp_keys_bt_auth_progress(struct bt_conn *conn, bool authenticated)
 	}
 }
 
-void fp_keys_drop_key(struct bt_conn *conn)
+void fp_keys_drop_key(const struct bt_conn *conn)
 {
 	invalidate_key(&fp_procedures[bt_conn_index(conn)]);
 }

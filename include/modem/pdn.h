@@ -4,13 +4,6 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-/**
- * @file pdn.h
- * @brief Public APIs for the PDN library.
- * @defgroup pdn PDN library
- * @{
- */
-
 #ifndef PDN_H_
 #define PDN_H_
 
@@ -21,6 +14,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @file pdn.h
+ * @brief Public APIs for the PDN library.
+ * @defgroup pdn PDN library
+ * @{
+ */
 
 /** @brief PDN family */
 enum pdn_fam {
@@ -83,15 +83,7 @@ enum pdn_auth {
  * @param event The event.
  * @param reason The ESM error reason, if available.
  */
-typedef void (*pdn_event_handler_t)(uint8_t cid, enum pdn_event event,
-				    int reason);
-
-/**
- * @brief Initialize the PDN library.
- *
- * @return int Zero on success or a negative errno otherwise.
- */
-int pdn_init(void);
+typedef void (*pdn_event_handler_t)(uint8_t cid, enum pdn_event event, int reason);
 
 /**
  * @brief Create a Packet Data Protocol (PDP) context.
@@ -184,11 +176,32 @@ int pdn_id_get(uint8_t cid);
 int pdn_default_apn_get(char *buf, size_t len);
 
 /**
- * @brief Set a callback for events pertaining to the default PDP context (zero).
+ * @brief Register a callback for events pertaining to the default PDP context (zero).
  *
  * @param cb The PDN event handler.
  */
-int pdn_default_callback_set(pdn_event_handler_t cb);
+int pdn_default_ctx_cb_reg(pdn_event_handler_t cb);
+
+/**
+ * @brief Deregister a callback for events pertaining to the default PDP context (zero).
+ *
+ * @param cb The PDN event handler.
+ */
+int pdn_default_ctx_cb_dereg(pdn_event_handler_t cb);
+
+#if CONFIG_PDN_ESM_STRERROR
+
+/**
+ * @brief Retrieve a statically allocated textual description for a given ESM error reason.
+ *
+ * @param reason ESM error reason.
+ * @return const char* ESM error reason description.
+ *		       If no textual description for the given error is found,
+ *		       a placeholder string is returned instead.
+ */
+const char *pdn_esm_strerror(int reason);
+
+#endif
 
 /** @} */
 

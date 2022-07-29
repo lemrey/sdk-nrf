@@ -78,7 +78,6 @@ constexpr uint32_t kDeviceAverageCurrentConsumptionUa = CONFIG_AVERAGE_CURRENT_C
 /* Fully charged battery operation time in seconds */
 constexpr uint32_t kFullBatteryOperationTime =
 	kBatteryCapacityUaH / kDeviceAverageCurrentConsumptionUa * 3600;
-constexpr uint8_t kIdentifyEndpointId = 0;
 /* It is recommended to toggle the signalled state with 0.5 s interval. */
 constexpr size_t kIdentifyTimerIntervalMs = 500;
 
@@ -99,10 +98,15 @@ bool sHaveBLEConnections;
 
 LedState sLedState = LedState::kAlive;
 
-Identify sIdentify = { chip::EndpointId{ kIdentifyEndpointId }, AppTask::OnIdentifyStart,
-		       AppTask::OnIdentifyStop, EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_AUDIBLE_BEEP };
+/* Add identify for all endpoints */
+Identify sIdentifyTemperature = { chip::EndpointId{ kTemperatureMeasurementEndpointId }, AppTask::OnIdentifyStart, AppTask::OnIdentifyStop,
+			EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_AUDIBLE_BEEP };
+Identify sIdentifyHumidity = { chip::EndpointId{ kHumidityMeasurementEndpointId }, AppTask::OnIdentifyStart, AppTask::OnIdentifyStop,
+			EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_AUDIBLE_BEEP };
+Identify sIdentifyPressure = { chip::EndpointId{ kPressureMeasurementEndpointId }, AppTask::OnIdentifyStart, AppTask::OnIdentifyStop,
+			EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_AUDIBLE_BEEP };
 
-const device *sBme688SensorDev = device_get_binding(DT_LABEL(DT_INST(0, bosch_bme680)));
+const device *sBme688SensorDev = DEVICE_DT_GET_ONE(bosch_bme680);
 } /* namespace */
 
 AppTask AppTask::sAppTask;
@@ -159,8 +163,8 @@ CHIP_ERROR AppTask::Init()
 		return chip::System::MapErrorZephyr(ret);
 	}
 
-	if (!sBme688SensorDev) {
-		LOG_ERR("BME688 sensor init failed");
+	if (!device_is_ready(sBme688SensorDev)) {
+		LOG_ERR("BME688 sensor device not ready");
 		return chip::System::MapErrorZephyr(-ENODEV);
 	}
 
@@ -245,9 +249,8 @@ CHIP_ERROR AppTask::Init()
 
 void AppTask::OpenPairingWindow()
 {
-	/* Don't allow on starting Matter service BLE advertising after Thread provisioning. */
-	if (ConnectivityMgr().IsThreadProvisioned()) {
-		LOG_INF("NFC Tag emulation and Matter service BLE advertising not started - device is commissioned to a Thread network.");
+	if (Server::GetInstance().GetFabricTable().FabricCount() != 0) {
+		LOG_INF("Matter service BLE advertising not started - device is already commissioned");
 		return;
 	}
 

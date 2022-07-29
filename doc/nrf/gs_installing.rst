@@ -51,6 +51,7 @@ The installation process is different depending on your operating system.
          :dedent: 6
          :start-after: .. _install_dependencies_windows:
          :end-before: #. Close the window and open a new
+
       Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
 
    .. group-tab:: Linux
@@ -205,6 +206,8 @@ To install west, reopen the command prompt window to ensure that Python is initi
          :class: highlight
 
          pip3 install --user west
+         echo 'export PATH=~/.local/bin:"$PATH"' >> ~/.bashrc
+         source ~/.bashrc
 
    .. group-tab:: macOS
 
@@ -365,18 +368,28 @@ Install a Toolchain
 
 A toolchain provides a compiler, assembler, linker, and other programs required to build Zephyr applications.
 
+The Zephyr Software Development Kit (SDK) contains toolchains for each of Zephyr's supported architectures.
+It also includes additional host tools, such as custom QEMU and OpenOCD builds.
+
+.. note::
+
+   Set the following environment variables to ensure the Zephyr SDK is detected correctly:
+
+   * :envvar:`ZEPHYR_TOOLCHAIN_VARIANT` to ``zephyr``
+   * :envvar:`ZEPHYR_SDK_INSTALL_DIR` to the path of the Zephyr SDK
+
 .. ncs-include:: develop/getting_started/index.rst
    :docset: zephyr
    :dedent: 0
-   :start-after: to build Zephyr applications.
+   :start-after: and OpenOCD builds.
    :end-before: .. _getting_started_run_sample:
 
 .. rst-class:: numbered-step
 
-Install |VSC|
-*************
+Install |nRFVSC|
+****************
 
-You can install the |VSC| to open and compile projects in the |NCS|.
+You can install the |nRFVSC| to open and compile projects in the |NCS|.
 
 .. _installing_vsc:
 

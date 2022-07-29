@@ -40,10 +40,10 @@ To set up your system to be able to build a compatible firmware image, follow th
 
 .. _thingy53_build_pgm_targets:
 
-Build Targets
+Build targets
 =============
 
-The build targets of interest for Thingy:53 in the |NCS| are listed on the table below.
+The build targets of interest for Thingy:53 in the |NCS| are listed in the following table:
 
 +--------------------------------+----------------------------------------------------------+
 |Component                       |  Build target                                            |
@@ -73,19 +73,7 @@ The build process generates firmware in two formats:
   For convenience, the binary files are bundled in :file:`dfu_application.zip`, together with a manifest that describes them.
   You can use the binary files or the combined zip archive to update application firmware for both cores, with either MCUboot serial recovery or OTA DFU using Bluetooth LE.
 
-The following table shows the relevant types of build files that are generated and the different scenarios in which they are used.
-
-+---------------------------------+-------------------------------------------------+---------------------------------------------------------------------+
-| File                            | File format                                     | Programming scenario                                                |
-+=================================+=================================================+=====================================================================+
-| :file:`merged_domain.hex`       | Full image for both cores                       | Using an external debug probe and nRF Connect Programmer            |
-+---------------------------------+-------------------------------------------------+---------------------------------------------------------------------+
-| :file:`app_update.bin`          | MCUboot compatible application core update      | Using the built-in bootloader and nRF Connect Programmer            |
-+---------------------------------+-------------------------------------------------+---------------------------------------------------------------------+
-| :file:`net_core_app_update.bin` | MCUboot compatible network core update          | Using the built-in bootloader and nRF Connect Programmer            |
-+---------------------------------+-------------------------------------------------+---------------------------------------------------------------------+
-| :file:`dfu_application.zip`     | MCUboot compatible update images for both cores | Using nRF Programmer for Android and iOS, or nRF Connect Programmer |
-+---------------------------------+-------------------------------------------------+---------------------------------------------------------------------+
+For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
 
 See the following sections for details regarding building and programming the firmware for Thingy:53 in various environments.
 If your Thingy:53 is already programmed with a Thingy:53-compatible sample or application, you can also use the MCUboot bootloader to update the firmware after you finish building.
@@ -93,12 +81,12 @@ See :ref:`thingy53_app_update` for more detailed information about updating firm
 
 .. _thingy53_build_pgm_vscode:
 
-Building and programming using Visual Studio Code
-=================================================
+Building and programming using |VSC|
+====================================
 
 |vsc_extension_instructions|
 
-Complete the following steps after installing |VSC|:
+Complete the following steps after installing the |nRFVSC|:
 
 .. |sample_path_vsc| replace:: :file:`nrf/samples/bluetooth/peripheral_lbs`
 
@@ -112,6 +100,8 @@ Complete the following steps after installing |VSC|:
    #. Connect the external debug probe to the PC using a USB cable.
    #. Make sure that the Thingy:53 and the external debug probe are powered on.
    #. Click :guilabel:`Flash` in the :guilabel:`Actions` panel.
+
+.. _thingy53_build_pgm_command_line:
 
 Building and programming on the command line
 ============================================
@@ -155,7 +145,7 @@ To build and program the source code from the command line, complete the followi
 Updating firmware image
 =======================
 
-You can program the firmware on the Nordic Thingy:53 using an external debug probe and 10-pin JTAG cable, as described in :ref:`thingy53_building_pgming`, using either :ref:`Visual Studio Code <thingy53_build_pgm_vscode>` or :ref:` command line <thingy53_build_pgm_command_line>`.
+You can program the firmware on the Nordic Thingy:53 using an external debug probe and 10-pin JTAG cable, as described in :ref:`thingy53_building_pgming`, using either :ref:`Visual Studio Code <thingy53_build_pgm_vscode>` or :ref:`command line <thingy53_build_pgm_command_line>`.
 You can also update applications running on both the network and application core using the built-in MCUboot bootloader and `nRF Connect Programmer`_ or the `nRF Programmer`_ app for Android and iOS.
 You can also update the prebuilt application images that way.
 

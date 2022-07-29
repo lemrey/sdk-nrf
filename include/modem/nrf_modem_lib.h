@@ -4,6 +4,16 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+#ifndef NRF_MODEM_LIB_H_
+#define NRF_MODEM_LIB_H_
+
+#include <zephyr/kernel.h>
+#include <nrf_modem.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file nrf_modem_lib.h
  *
@@ -13,13 +23,6 @@
  *
  * @brief API of the SMS nRF Modem library wrapper module.
  */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <zephyr/kernel.h>
-#include <nrf_modem.h>
 
 /**
  * @brief Initialize the Modem library.
@@ -156,3 +159,5 @@ void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* NRF_MODEM_LIB_H_ */

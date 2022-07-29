@@ -31,7 +31,8 @@ During the commissioning process, the devices involved are assigned one of the f
 * *Joiner Router* - Role for a router device that is one hop away from the Joiner device in the Thread network and is the sole device connected with the Joiner.
   Responds to the Discovery Request of the Joiner.
   Moreover, when chosen by the Joiner, it passes subsequent communication in a secure manner.
-* *Border Router* - Role for a device that forwards data between a Thread network and a non-Thread network. For this purpose, it is equipped with at least two interfaces, for example Wi-Fi, Ethernet, LTE, or other interface in addition to Thread.
+* *Border Router* - Role for a device that forwards data between a Thread network and a non-Thread network.
+  For this purpose, it is equipped with at least two interfaces, for example Wi-Fi, Ethernet, LTE, or other interface in addition to Thread.
   The Border Router can also be an interface for the Commissioner.
 
 
@@ -68,12 +69,35 @@ Minimal Thread Device (MTD)
   There are two important subtypes:
 
   Minimal End Device (MED)
-    A MED keeps its transceiver always on.
+   A MED keeps its transceiver always on.
 
   Sleepy End Device (SED)
    A SED is usually off and wakes occasionally to receive messages from its parent.
 
+  Synchronized Sleepy End Device (SSED)
+   A SSED is an enhanced SED.
+   It transmits less data than SED and relies on receiving messages from its parent only in specified time intervals.
+
 For more information, see `Device Types on OpenThread portal`_.
+
+SED vs SSED activity
+--------------------
+
+.. thread_ssed_description_start
+
+A Thread Synchronized Sleepy End Device (SSED) is synchronized with its parent router and uses the radio only at scheduled intervals, by using the Coordinated Sampled Listening (CSL) feature introduced as one of `Thread 1.2 Base Features`_.
+During those intervals, the device waits for the router to send it any data related to the desired device activity.
+The SSED does require sending packets occasionally to keep synchronization with the router.
+However, unlike a regular SED, an SSED does not actively communicate with the router by polling and goes into the idle mode in-between the scheduled activity periods.
+If there is no application-related traffic for a longer period of time, the SSED sends a data poll request packet to synchronize with the parent.
+Overall, the SSED features further reduce energy consumption of the device and generate less data traffic compared to a standard Thread SED.
+
+.. figure:: /images/thread_sed_ssed_comparison.svg
+   :alt: Comparison of Thread SED and Thread SSED radio activity
+
+   Comparison of Thread SED and Thread SSED radio activity
+
+.. thread_ssed_description_end
 
 .. _thread_ot_commissioning_types:
 

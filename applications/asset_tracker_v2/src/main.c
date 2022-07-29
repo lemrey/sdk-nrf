@@ -14,6 +14,7 @@
 #endif /* CONFIG_NRF_MODEM_LIB */
 #include <zephyr/sys/reboot.h>
 #include <net/lwm2m_client_utils_fota.h>
+#include <net/nrf_cloud.h>
 
 #if defined(CONFIG_NRF_CLOUD_AGPS) || defined(CONFIG_NRF_CLOUD_PGPS)
 #include <net/nrf_cloud_agps.h>
@@ -77,6 +78,12 @@ static enum sub_state_type {
 
 /* Internal copy of the device configuration. */
 static struct cloud_data_cfg app_cfg;
+
+/* Variable that keeps track whether modem static data has been successfully sampled by the
+ * modem module. Modem static data does not change and only needs to be sampled and sent to cloud
+ * once.
+ */
+static bool modem_static_sampled;
 
 /* Timer callback used to signal when timeout has occurred both in active
  * and passive mode.
@@ -235,6 +242,11 @@ static void handle_nrf_modem_lib_init_ret(void)
 		LOG_ERR("nRF modem lib initialization failed, error: %d", ret);
 		break;
 	}
+
+#if defined(CONFIG_NRF_CLOUD_FOTA)
+	/* Ignore return value, rebooting below */
+	(void)nrf_cloud_fota_pending_job_validate(NULL);
+#endif
 
 	LOG_WRN("Rebooting...");
 	LOG_PANIC();
@@ -408,7 +420,6 @@ static void active_mode_timers_start_all(void)
 
 static void data_get(void)
 {
-	static bool first = true;
 	struct app_module_event *app_module_event = new_app_module_event();
 	size_t count = 0;
 
@@ -423,7 +434,11 @@ static void data_get(void)
 	app_module_event->data_list[count++] = APP_DATA_BATTERY;
 	app_module_event->data_list[count++] = APP_DATA_ENVIRONMENTAL;
 
-	if (IS_ENABLED(CONFIG_APP_REQUEST_NEIGHBOR_CELLS_DATA) && !app_cfg.no_data.neighbor_cell) {
+	if (!modem_static_sampled) {
+		app_module_event->data_list[count++] = APP_DATA_MODEM_STATIC;
+	}
+
+	if (!app_cfg.no_data.neighbor_cell) {
 		app_module_event->data_list[count++] = APP_DATA_NEIGHBOR_CELLS;
 	}
 
@@ -450,20 +465,9 @@ static void data_get(void)
 	 * to let the GNSS module finish ongoing searches before data is sent to cloud.
 	 */
 
-	if (first) {
-		if (IS_ENABLED(CONFIG_APP_REQUEST_GNSS_ON_INITIAL_SAMPLING) && request_gnss() &&
-		    !app_cfg.no_data.gnss) {
-			app_module_event->data_list[count++] = APP_DATA_GNSS;
-			app_module_event->timeout = MAX(app_cfg.gnss_timeout + 15, 75);
-		}
-
-		app_module_event->data_list[count++] = APP_DATA_MODEM_STATIC;
-		first = false;
-	} else {
-		if (request_gnss() && !app_cfg.no_data.gnss) {
-			app_module_event->data_list[count++] = APP_DATA_GNSS;
-			app_module_event->timeout = MAX(app_cfg.gnss_timeout + 15, 75);
-		}
+	if (request_gnss() && !app_cfg.no_data.gnss) {
+		app_module_event->data_list[count++] = APP_DATA_GNSS;
+		app_module_event->timeout = MAX(app_cfg.gnss_timeout + 15, 75);
 	}
 
 	/* Set list count to number of data types passed in app_module_event. */
@@ -568,12 +572,16 @@ static void on_all_events(struct app_msg_data *msg)
 		SEND_SHUTDOWN_ACK(app, APP_EVT_SHUTDOWN_READY, self.id);
 		state_set(STATE_SHUTDOWN);
 	}
+
+	if (IS_EVENT(msg, modem, MODEM_EVT_MODEM_STATIC_DATA_READY)) {
+		modem_static_sampled = true;
+	}
 }
 
 void main(void)
 {
 	int err;
-	struct app_msg_data msg;
+	struct app_msg_data msg = { 0 };
 
 	if (!IS_ENABLED(CONFIG_LWM2M_CARRIER)) {
 		handle_nrf_modem_lib_init_ret();

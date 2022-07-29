@@ -7,40 +7,43 @@ Working with RF front-end modules
    :local:
    :depth: 4
 
-An RF front-end module (FEM) is a device that amplifies the RF signal, and therefore, increases the range distance and the strength of a link's connection.
-In addition to extending the range, an RF FEM also increases the robustness of the link connection.
-A more robust link leads to less packet loss, meaning less retransmissions.
-The probability of successfully receiving the first packet also increases, resulting in low link latency.
+An RF front-end module (FEM) is a device that amplifies the RF signal, to increase the range distance, the strength, and the robustness of a link connection.
+A more robust link reduces packet loss, causing fewer retransmissions and increasing the probability of successfully receiving the first packet, resulting in a lower link latency.
 
 FEMs provide a power amplifier (PA) that increases the TX power and a low-noise amplifier (LNA) that increases the RX sensitivity.
-Some FEMs, like the nRF21540, provide a power down (PDN) control that powers down the FEM internal circuits, to reduce energy consumption.
+Some FEMs, like the nRF21540, also provide a power down (PDN) control that powers down the FEM internal circuits, to reduce energy consumption.
 
-For testing purposes, a FEM is usually integrated in either a development kit or a shield that you connect to a development kit.
+For testing purposes, a FEM is usually integrated in either a development kit or a shield that you can connect to a development kit.
 
 This guide describes how to add support for 2 different front-end module (FEM) implementations to your application in |NCS|.
 
 Software support
 ****************
 
-If your application uses radio protocols and requires FEM, you can enable :ref:`nrfxlib:mpsl_fem` in the :ref:`nrfxlib:mpsl` (MPSL) library.
-The test samples in |NCS|: :ref:`radio_test` and :ref:`direct_test_mode` also support FEM control.
+To use radio protocols and a FEM with your application, enable :ref:`nrfxlib:mpsl_fem` in the :ref:`nrfxlib:mpsl` (MPSL) library.
+
+The following test samples support FEM control:
+
+* :ref:`radio_test`
+* :ref:`direct_test_mode`
+
 You can also use your own FEM driver when required.
 
 Using MPSL
 ==========
 
-The MPSL library provides an implementation for the 3-pin GPIO interface of the nRF21540 and a simplified version for FEMs with a 2-pin interface.
-To use this implementation, your application must use a protocol driver that enables the FEM feature.
+The MPSL library provides the following GPIO interface implementations:
+
+* :ref:`ug_radio_fem_nrf21540_gpio` - For the nRF21540 GPIO implementation that uses a 3-pin interface with the nRF21540.
+* :ref:`ug_radio_fem_skyworks` - For the Simple GPIO implementation that uses a 2-pin interface with the SKY66112-11 device.
+
+To use these implementations, your application must use a protocol driver that enables the FEM feature.
+
 The library provides multiprotocol support, but you can also use it in applications that require only one protocol.
-To avoid conflicts, check the protocol documentation to see if the protocol uses FEM support provided by MPSL.
-
-The implementations supported by the MPSL library are the following:
-
-* :ref:`ug_radio_fem_nrf21540_gpio` - For the nRF21540 GPIO implementation that uses nRF21540.
-* :ref:`ug_radio_fem_skyworks` - For the Simple GPIO implementation that uses the SKY66112-11 device.
+To avoid conflicts, check the protocol documentation to see if the protocol uses the FEM support provided by MPSL.
 
 .. note::
-   Currently, the following protocols use FEM support provided by MPSL:
+   Currently, the following protocols use the FEM support provided by MPSL:
 
    * :ref:`ug_thread`
    * :ref:`ug_zigbee`
@@ -174,7 +177,7 @@ To use nRF21540 in SPI or mixed mode, complete the following steps:
                spi-if = <&nrf_radio_fem_spi>
          };
       };
-#. Optionally replace the SPI bus device name ``nrf_radio_fem_spi``.
+#. Optionally replace the device name ``name_of_fem_node``.
 #. Replace the pin numbers provided for each of the required properties:
 
    * ``tx-en-gpios`` - GPIO characteristic of the device that controls the ``TX_EN`` signal of nRF21540.
@@ -230,7 +233,6 @@ To use nRF21540 in SPI or mixed mode, complete the following steps:
 
    In this example, the nRF21540 is controlled by the ``spi3`` bus.
    Replace the SPI bus according to your hardware design.
-   Replace the SPI bus device name ``nrf_radio_fem_spi`` with the name from the previous step.
 
 #. Create alternative pinctrl entries for SPI3 and replace the ``pinctrl-N`` and ``pinctrl-names`` properties.
 
@@ -360,7 +362,7 @@ Use case of incomplete physical connections to the FEM module
 =============================================================
 
 The method of configuring FEM using the devicetree file allows you to opt out of using some pins.
-For example if power consumption is not critical, the nRF21540 module PDN pin can be connected to a fixed logic level.
+For example, if power consumption is not critical, the nRF21540 module PDN pin can be connected to a fixed logic level.
 Then there is no need to define a GPIO to control the PDN signal. The line ``pdn-gpios = < .. >;`` can then be removed from the devicetree file.
 
 Generally, if pin ``X`` is not used, the ``X-gpios = < .. >;`` property can be removed.
@@ -376,7 +378,7 @@ Two nRF21540 boards are available, showcasing the possibilities of the nRF21540 
 * :ref:`nRF21540 DK <nrf21540dk_nrf52840>`
 * :ref:`ug_radio_fem_nrf21540_ek`
 
-Also various Skyworks front-end modules are supported.
+Also, various Skyworks front-end modules are supported.
 For example, SKY66112-11EK has a 2-pin PA/LNA interface.
 
 The front-end module feature is supported on the nRF52 and nRF53 Series devices.
@@ -460,7 +462,7 @@ Alternatively, add the shield in the project's :file:`CMakeLists.txt` file:
 
 	set(SHIELD nrf21540_ek)
 
-To build with |VSC|, in the :guilabel:`Extra Cmake arguments`, specify ``-DSHIELD=nrf21540_ek``.
+To build with the |nRFVSC|, specify ``-DSHIELD=nrf21540_ek`` in the :guilabel:`Extra Cmake arguments` field.
 See :ref:`cmake_options`.
 
 When building for a board with an additional network core, for example nRF5340, add an additional ``-DSHIELD`` variable with the *childImageName_* parameter between ``-D`` and ``SHIELD`` to build for the network core as well.

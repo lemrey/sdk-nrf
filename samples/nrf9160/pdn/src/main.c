@@ -11,8 +11,6 @@
 #include <modem/lte_lc.h>
 #include <nrf_modem_at.h>
 
-extern const char *esm_strerr(int reason);
-
 static const char * const fam_str[] = {
 	[PDN_FAM_IPV4V6] = "IPV4V6",
 	[PDN_FAM_IPV6] = "IPV6",
@@ -31,7 +29,7 @@ void pdn_event_handler(uint8_t cid, enum pdn_event event, int reason)
 {
 	switch (event) {
 	case PDN_EVENT_CNEC_ESM:
-		printk("Event: PDP context %d, %s\n", cid, esm_strerr(reason));
+		printk("Event: PDP context %d, %s\n", cid, pdn_esm_strerror(reason));
 		break;
 	default:
 		printk("Event: PDP context %d %s\n", cid, event_str[event]);
@@ -48,31 +46,13 @@ void main(void)
 
 	printk("PDN sample started\n");
 
-	/* Register to the necessary packet domain AT notifications */
-	err = nrf_modem_at_printf("AT+CNEC=16");
-	if (err) {
-		printk("AT+CNEC=16 failed, err %d\n", err);
-		return;
-	}
-
-	err = nrf_modem_at_printf("AT+CGEREP=1");
-	if (err) {
-		printk("AT+CGEREP=1 failed, err %d\n", err);
-		return;
-	}
-
-	err = pdn_init();
-	if (err) {
-		return;
-	}
-
 	/* Setup a callback for the default PDP context (zero).
 	 * Do this before switching to function mode 1 (CFUN=1)
 	 * to receive the first activation event.
 	 */
-	err = pdn_default_callback_set(pdn_event_handler);
+	err = pdn_default_ctx_cb_reg(pdn_event_handler);
 	if (err) {
-		printk("pdn_default_callback_set() failed, err %d\n", err);
+		printk("pdn_default_ctx_cb_reg() failed, err %d\n", err);
 		return;
 	}
 
@@ -112,7 +92,7 @@ void main(void)
 	err = pdn_activate(cid, &esm, NULL);
 	if (err) {
 		printk("pdn_activate() failed, err %d esm %d %s\n",
-			err, esm, esm_strerr(esm));
+			err, esm, pdn_esm_strerror(err));
 		return;
 	}
 

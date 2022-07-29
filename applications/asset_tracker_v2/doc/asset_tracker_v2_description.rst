@@ -65,21 +65,21 @@ The application supports the following data types:
 
 .. _app_data_types:
 
-+----------------+----------------------------+-----------------------------------------------+
-| Data type      | Description                | Identifiers                                   |
-+================+============================+===============================================+
-| Location       | GNSS coordinates           | APP_DATA_GNSS                                 |
-+----------------+----------------------------+-----------------------------------------------+
-| Environmental  | Temperature, humidity      | APP_DATA_ENVIRONMENTAL                        |
-+----------------+----------------------------+-----------------------------------------------+
-| Movement       | Acceleration               | APP_DATA_MOVEMENT                             |
-+----------------+----------------------------+-----------------------------------------------+
-| Modem          | LTE link data, device data | APP_DATA_MODEM_DYNAMIC, APP_DATA_MODEM_STATIC |
-+----------------+----------------------------+-----------------------------------------------+
-| Battery        | Voltage                    | APP_DATA_BATTERY                              |
-+----------------+----------------------------+-----------------------------------------------+
-| Neighbor cells | Neighbor cell measurements | APP_DATA_NEIGHBOR_CELLS                       |
-+----------------+----------------------------+-----------------------------------------------+
++----------------+----------------------------+-----------------------------------------------+--------------------------------+
+| Data type      | Description                | Identifiers                                   | String identifier for NOD list |
++================+============================+===============================================+================================+
+| Location       | GNSS coordinates           | APP_DATA_GNSS                                 |``gnss``                        |
++----------------+----------------------------+-----------------------------------------------+--------------------------------+
+| Environmental  | Temperature, humidity      | APP_DATA_ENVIRONMENTAL                        | NA                             |
++----------------+----------------------------+-----------------------------------------------+--------------------------------+
+| Movement       | Acceleration               | APP_DATA_MOVEMENT                             | NA                             |
++----------------+----------------------------+-----------------------------------------------+--------------------------------+
+| Modem          | LTE link data, device data | APP_DATA_MODEM_DYNAMIC, APP_DATA_MODEM_STATIC | NA                             |
++----------------+----------------------------+-----------------------------------------------+--------------------------------+
+| Battery        | Voltage                    | APP_DATA_BATTERY                              | NA                             |
++----------------+----------------------------+-----------------------------------------------+--------------------------------+
+| Neighbor cells | Neighbor cell measurements | APP_DATA_NEIGHBOR_CELLS                       | ``ncell``                      |
++----------------+----------------------------+-----------------------------------------------+--------------------------------+
 
 Sensor data published to the cloud service contain relative `timestamps <Timestamping_>`_ that originate from the time of sampling.
 
@@ -106,12 +106,15 @@ The real-time configurations supported by the application are listed in the foll
 |          +---------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
 |          | Movement timeout    | Number of seconds between each sampling/publication in passive mode, whether the device is moving or not.                            | 3600 seconds   |
 +----------+---------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
-| GNSS timeout                   | Timeout for acquiring a GNSS fix during data sampling.                                                                               | 60 seconds     |
+| GNSS timeout                   | Timeout for acquiring a GNSS fix during data sampling.                                                                               | 30 seconds     |
 +--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
 | Accelerometer threshold        | Accelerometer threshold in m/s². Minimal absolute value in m/s² for accelerometer readings to be considered valid movement.          | 10 m/s²        |
 +--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
-| No Data List (NOD)             | A list containing :ref:`data types <app_data_types>` that are not sampled by the application. Used to disable sampling from          | No entries     |
-|                                | sensor sources. Currently, the application supports APP_DATA_GNSS and APP_DATA_NEIGHBOR_CELLS in the NOD list.                       | (Request all)  |
+| No Data List (NOD)             | A list of strings that references :ref:`data types <app_data_types>`, which will not be sampled by the application.                  | No entries     |
+|                                | Used to disable sampling from sensor sources.                                                                                        | (Request all)  |
+|                                | For instance, when GNSS should be disabled in favor of location based on neighbor cell measurements,                                 |                |
+|                                | the string identifier ``GNSS`` must be added to this list.                                                                           |                |
+|                                | The supported string identifiers for each data type can be found in the :ref:`data types <app_data_types>` table.                    |                |
 +--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
 
 You can alter the default values of the real-time configurations at compile time by setting the options listed in :ref:`Default device configuration options <default_config_values>`.
@@ -297,7 +300,7 @@ See :ref:`Building with overlays <building_with_overlays>` for information on ho
 .. note::
 
    This application supports the :ref:`ug_bootloader` (also called immutable bootloader), which has been enabled by default since the |NCS| v2.0.0 release.
-   Devices that do not already have the immutable bootloader can not be firmware upgraded over the air to use the immutable bootloader.
+   Devices that do not already have the immutable bootloader cannot be firmware upgraded over the air to use the immutable bootloader.
    To disable the :ref:`ug_bootloader`, set both :kconfig:option:`CONFIG_SECURE_BOOT` and :kconfig:option:`CONFIG_BUILD_S1_VARIANT` Kconfig options to ``n``.
 
 

@@ -52,6 +52,10 @@
 #include "location_shell.h"
 #endif
 
+#if defined(CONFIG_MOSH_STARTUP_CMDS)
+#include "startup_cmd_ctrl.h"
+#endif
+
 #if defined(CONFIG_MOSH_AT_CMD_MODE)
 #include "at_cmd_mode.h"
 #include "at_cmd_mode_sett.h"
@@ -66,6 +70,9 @@ struct k_work_q mosh_common_work_q;
 /* Global variables */
 struct modem_param_info modem_param;
 struct k_poll_signal mosh_signal;
+
+char at_resp_buf[MOSH_AT_CMD_RESPONSE_MAX_LEN];
+K_MUTEX_DEFINE(at_resp_buf_mutex);
 
 K_SEM_DEFINE(nrf_carrier_lib_initialized, 0, 1);
 
@@ -217,6 +224,10 @@ void main(void)
 	shell_execute_cmd(shell, "resize");
 	/* Run empty command because otherwise "resize" would be set to the command line. */
 	shell_execute_cmd(shell, "");
+
+#if defined(CONFIG_MOSH_STARTUP_CMDS)
+	startup_cmd_ctrl_init();
+#endif
 
 #if defined(CONFIG_MOSH_AT_CMD_MODE)
 	at_cmd_mode_sett_init();

@@ -1,5 +1,3 @@
-:orphan:
-
 .. _known_issues:
 
 Known issues
@@ -131,6 +129,20 @@ NCSDK-14235: Timestamps that are sent in cloud messages drift over time
 
 CIA-604: ATv2 cannot be built for the ``thingy91_nrf9160_ns`` build target with ``SECURE_BOOT`` enabled
   Due to the use of static partitions with the Thingy:91, there is insufficient room in the flash memory to enable both the primary and secondary bootloaders.
+
+.. rst-class:: v2-0-0
+
+CIA-661: Asset Tracker v2 application configured for LwM2M cannot be built for the ``nrf9160dk_nrf9160_ns`` build target with modem traces or memfault enabled
+  The :ref:`asset_tracker_v2` application configured for LwM2M cannot be built for the ``nrf9160dk_nrf9160_ns`` build target with :kconfig:option:`CONFIG_NRF_MODEM_LIB_TRACE_ENABLED` for modem traces or ``overlay-memfault.conf`` for memfault due to memory constraints.
+
+  **Workaround**
+
+  Use one of the following workarounds for modem traces:
+
+  * Use :ref:`secure_partition_manager` instead of TF-M by setting :kconfig:option:`CONFIG_SPM` to ``y`` and :kconfig:option:`CONFIG_BUILD_WITH_TFM` to ``n``.
+  * Reduce the value of :kconfig:option:`CONFIG_NRF_MODEM_LIB_SHMEM_TRACE_SIZE` to 8 Kb, however, this might lead to loss of modem traces.
+
+  For memfault, use :ref:`secure_partition_manager` instead of TF-M by setting :kconfig:option:`CONFIG_SPM` to ``y`` and :kconfig:option:`CONFIG_BUILD_WITH_TFM` to ``n``.
 
 Serial LTE Modem
 ================
@@ -1110,11 +1122,45 @@ NCSDK-13058: Directed advertising does not work
 
   **Workaround:** Manually cherry-pick and apply commit with fix from main (commit hash: ``c61c677872943bcf7905ddeec8b24b07ae50752e``).
 
+.. rst-class:: v2-0-0
+
+NCSDK-15675: Possible advertising start failure and module state error in :ref:`caf_ble_adv`
+  If a new peer is selected twice in a quick succession, the second peer selection may cause an advertising start failure and a module state error reported by the :ref:`caf_ble_adv`.
+  See the commit with fix mentioned in the workaround for details.
+
+  **Workaround:** Manually cherry-pick and apply commit with fix from main (commit hash: ``934a25ac23125758e350b64bca23885486682109``).
+
+.. rst-class:: v2-0-0
+
+NCSDK-15707: Visual glitches when updating an RGB LED's color in :ref:`caf_leds`
+  Due to changes in the default DTS of the boards, the default PWM period has been increased.
+  The first LED channel is updated one PWM period before other channels.
+  This causes visual glitches for LEDs with more than one color channel when the LED color is being updated.
+  A shorter LED PWM period mitigates the observed issue.
+  See :ref:`caf_leds` for more information.
+
+  **Workaround:** Make sure your application includes the devicetree overlay file in which PWM period is decreased.
+  For example, include the following commit to solve the issue for the :ref:`nrf_machine_learning_app` application for Nordic Thingy:53: ``fa2b57cddbaacf393c77def5d0302e1a45138d21``.
+
 Subsystems
 **********
 
 Bluetooth® LE
 =============
+
+.. rst-class:: v2-0-0
+
+NCSDK-16060: :ref:`peripheral_lbs` sample build fails when the :kconfig:option:`CONFIG_BT_LBS_SECURITY_ENABLED` option is disabled
+  Build failure is caused by the undefined ``conn_auth_info_callbacks`` structure.
+
+  **Workaround:** Manually cherry-pick and apply commit with fix from ``main`` (commit hash: ``32c827b20f3c5ab85a359e572d366da310fe2767``).
+
+.. rst-class:: v2-0-0
+
+NCSDK-15724: Bluetooth's Peripheral UART sample fails to start on Thingy:53
+  Enabling USB by the :ref:`Peripheral UART's <peripheral_uart>` main function ends with error because the USB was already enabled by the Thingy:53-specific code.
+
+  **Workaround:** Manually cherry-pick and apply commit with fix from ``main`` (commit hash: ``b834ff8860f3a30fe19c99dbf4c0c99b0b017245``).
 
 .. rst-class:: v1-8-0 v1-7-1 v1-7-0 v1-6-1 v1-6-0 v1-5-2 v1-5-1 v1-5-0 v1-4-2 v1-4-1 v1-4-0 v1-3-2 v1-3-1 v1-3-0 v1-2-1 v1-2-0 v1-1-0 v1-0-0
 
@@ -1649,7 +1695,7 @@ Closing sockets
 Multiprotocol Service Layer (MPSL)
 ==================================
 
-.. rst-class:: v2-0-0 v1-9-1 v1-9-0 v1-8-0 v1-7-1 v1-7-0 v1-6-1 v1-6-0 v1-5-2 v1-5-1 v1-5-0 v1-4-2 v1-4-1 v1-4-0
+.. rst-class:: v1-9-1 v1-9-0 v1-8-0 v1-7-1 v1-7-0 v1-6-1 v1-6-0 v1-5-2 v1-5-1 v1-5-0 v1-4-2 v1-4-1 v1-4-0
 
 DRGN-16642: If radio notifications on ACTIVE are used, MPSL might assert
   When radio notifications are used with :c:enumerator:`MPSL_RADIO_NOTIFICATION_TYPE_INT_ON_ACTIVE` or :c:enumerator:`MPSL_RADIO_NOTIFICATION_TYPE_INT_ON_BOTH`, MPSL might assert.
@@ -2159,8 +2205,27 @@ nrfx_uart driver
 tx_buffer_length set incorrectly
   The nrfx_uart driver might incorrectly set the internal tx_buffer_length variable when high optimization level is set during compilation.
 
+.. _known_issue_tfm:
+
 Trusted Firmware-M (TF-M)
 *************************
+
+.. rst-class:: v2-0-0
+
+NCSDK-15909: TF-M may fail to build due to flash overflow with Zephyr SDK 0.14.2
+  when TFM_PROFILE_TYPE_NOT_SET=y.
+
+  **Workaround:** Use one of the following workarounds:
+
+  * Increase the TF-M partition :kconfig:option:`CONFIG_PM_PARTITION_SIZE_TFM`.
+  * Use Zephyr SDK version 0.14.1.
+
+.. rst-class:: v2-0-0
+
+TF-M is not supported for Thingy:91 v1.5.0 and lower versions
+  TF-M does not support Thingy:91 v1.5.0 and lower versions when using the factory-programmed bootloader to upgrade the firmware.
+  TF-M is compatible with all versions of the Thingy:91 if you first upgrade the bootloader using an external debug probe.
+  Additionally, TF-M functions while using the bootloader to upgrade the firmware if you upgrade the bootloader to |NCS| v2.0.0.
 
 .. rst-class:: v2-0-0
 

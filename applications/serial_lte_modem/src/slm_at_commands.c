@@ -87,6 +87,15 @@ extern int slm_setting_uart_save(void);
 
 static void modem_power_off(void)
 {
+	int rc;
+	int cfun;
+
+	/*
+	 * First check if the modem has already been put in Flight
+	 * or OFF mode by the MCU
+	 */
+	rc = nrf_modem_at_scanf("AT+CFUN?", "+CFUN: %d", &cfun);
+	if (rc != 1 || (cfun != 0 && cfun != 4)) {
 	/*
 	 * The LTE modem also needs to be stopped by issuing AT command
 	 * through the modem API, before entering System OFF mode.
@@ -96,8 +105,9 @@ static void modem_power_off(void)
 	 * Refer to https://infocenter.nordicsemi.com/topic/ps_nrf9160/
 	 * pmu.html?cp=2_0_0_4_0_0_1#system_off_mode
 	 */
-	(void)nrf_modem_at_printf("AT+CFUN=0");
-	k_sleep(K_SECONDS(1));
+		(void)nrf_modem_at_printf("AT+CFUN=0");
+		k_sleep(K_SECONDS(1));
+	}
 }
 
 /**@brief handle AT#XSLMVER commands
@@ -402,6 +412,7 @@ int handle_at_gps(enum at_cmd_type cmd_type);
 int handle_at_nrf_cloud(enum at_cmd_type cmd_type);
 int handle_at_agps(enum at_cmd_type cmd_type);
 int handle_at_pgps(enum at_cmd_type cmd_type);
+int handle_at_gps_delete(enum at_cmd_type cmd_type);
 int handle_at_cellpos(enum at_cmd_type cmd_type);
 #endif
 
@@ -503,6 +514,7 @@ static struct slm_at_cmd {
 #if defined(CONFIG_SLM_PGPS)
 	{"AT#XPGPS", handle_at_pgps},
 #endif
+	{"AT#XGPSDEL", handle_at_gps_delete},
 #if defined(CONFIG_SLM_CELL_POS)
 	{"AT#XCELLPOS", handle_at_cellpos},
 #endif
