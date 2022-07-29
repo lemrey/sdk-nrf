@@ -65,7 +65,7 @@ function(build_sysctrl)
 
     ExternalProject_Add(
       sysctrl
-      SOURCE_DIR ${NRF_DIR}/../core_fw/sysctrl/sysctrl
+      SOURCE_DIR ${NRF_DIR}/../core_fw/sysctrl/sysctrl/src
       INSTALL_COMMAND ""
       CMAKE_CACHE_ARGS
         -DBOARD:STRING=${BOARD_REMOTE}
