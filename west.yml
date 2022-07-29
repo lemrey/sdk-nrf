@@ -49,8 +49,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/introduction/index.html
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
-      repo-path: sdk-zephyr-next
-      revision: c6d74535774e13b7c73f76638c7fc0d16d3ee55b
+      repo-path: sdk-zephyr
+      revision: 85a0034809612b332fbdf478357e8a4109c493fd
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -72,6 +72,7 @@ manifest:
           - edtt
           - fatfs
           - fff
+          - hal_nordic
           - hal_st
           - liblc3codec
           - libmetal
@@ -87,7 +88,6 @@ manifest:
           - open-amp
           - openthread
           - psa-arch-tests
-          - sdk-hal_nordic-next
           - segger
           - tinycbor
           - tinycrypt
@@ -105,31 +105,15 @@ manifest:
     - name: mbedtls-nrf
       path: mbedtls
       repo-path: sdk-mbedtls
-      revision: v3.0.0-ncs2
+      revision: 0add9081ba3ab67123ffe2590a1acc6a846a2646
     - name: nrfxlib
-      repo-path: sdk-nrfxlib-next
+      repo-path: sdk-nrfxlib
       path: nrfxlib
-      revision: a1d66443bbce54c23035bcef0b7d05afab69cb07
-    - name: ic-next
-      repo-path: sdk-ic-next
-      path: modules/ic-next
-      revision: b8b2ff0d4a26fbaf0e127fbf7a7fb0b0aa286b9c
-    - name: sdk-secdom
-      revision: 78df297f8098ceadd996acf1306d43f05e1384b8
-      path: core_fw/secdom
-    - name: nrf-regtool
-      revision: v2.0.1
-      path: modules/lib/nrf-regtool
-    - name: nrfs
-      path: modules/lib/nrfs
-      revision: v1.0.0-alpha-2
-    - name: sdk-sysctrl
-      revision: v1.0.0
-      path: core_fw/sysctrl
+      revision: 766cc270caca3975fa6d924ada43177089040fcc
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
-      revision: v1.5.0-ncs2
+      revision: 37ffd937eb33a648fb2f058387bdbe972696346a
     - name: tfm-mcuboot # This is used by the trusted-firmware-m module.
       repo-path: sdk-mcuboot
       path: modules/tee/tfm-mcuboot
@@ -137,7 +121,7 @@ manifest:
     - name: matter
       repo-path: sdk-connectedhomeip
       path: modules/lib/matter
-      revision: v2.0.0
+      revision: 0b457ece3f0c37f5c92b21fe56cacd319874364f
       submodules:
         - name: nlio
           path: third_party/nlio/repo
@@ -148,7 +132,7 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: v2.0.0
+      revision: e658759beb67c8060664ecca9d2f79ac5ff8e8f7
       groups:
       - nrf-802154
     - name: cjson
@@ -157,12 +141,12 @@ manifest:
       revision: c6af068b7f05207b28d68880740e4b9ec1e4b50a
     - name: homekit
       repo-path: sdk-homekit
-      revision: v2.0.0
+      revision: c17beca7538a7425a143df88123ba8e57e15d73d
       groups:
       - homekit
     - name: find-my
       repo-path: sdk-find-my
-      revision: v2.0.0
+      revision: f1f1de83d582e204d620669223d0ea42642f9b7f
       groups:
       - find-my
     - name: sdk-lc3
@@ -181,7 +165,7 @@ manifest:
       remote: throwtheswitch
     - name: zcbor
       remote: nordicsemi
-      revision: 3d36ae19cb05d28cea23b4c870ae965c44215e9c
+      revision: a0d6981f14d4001d6f0d608d1a427f9bc6bb6d02
       path: modules/lib/zcbor
     - name: memfault-firmware-sdk
       path: modules/lib/memfault-firmware-sdk
