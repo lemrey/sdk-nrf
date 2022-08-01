@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) 2021 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		/delete-property/ nordic,bellboard-cpuapp;
+		/delete-property/ nordic,bellboard-cpunet;
+	};
+
+	ipc0: ipc_remote {
+		compatible = "zephyr,ipc-openamp-static-vrings";
+		memory-region = <&gram30>;
+		mboxes = <&bellboard_cpuapp 29>,
+			 <&bellboard_cpunet 29>;
+		mbox-names = "tx", "rx";
+		role = "remote";
+		status = "okay";
+	};
+};
+
+&global_peripherals {
+	/*
+	 * The default bellboard definitions use the IPC driver that is only compatible
+	 * with the legacy IPC service. The bellboard definitions must be replaced with
+	 * definitions compatible with the new MBOX driver used by the new IPC service
+	 */
+	/delete-node/ bellboard@9a000;
+	/delete-node/ bellboard@9b000;
+
+	bellboard_cpunet: bellboard@9b000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x9b000 0x1000>;
+		interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
+		instance = <0>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+
+	bellboard_cpuapp: bellboard0@9a000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x9a000 0x1000>;
+		domain = <0>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+};
+
+&dppic130 {
+	owned-channels = <0 1>;
+	source-channels = <0>;
+	sink-channels = <1>;
+	status = "okay";
+};
+
+&dppic132 {
+	owned-channels = <0 1>;
+	owned-channel-groups = <0 1>;
+	source-channels = <1>;
+	sink-channels = <0>;
+	status = "okay";
+};
+
+&cpunet_ipct {
+	source-channel-map = <0 13 0>;
+	sink-channel-map = <1 13 1>;
+};
+
+&ipct130 {
+	status = "okay";
+	owned-channels = <0 1>;
+	source-channel-map = <1 3 1>;
+	sink-channel-map = <0 3 0>;
+};
+
+&grtc {
+	status = "okay";
+};
