@@ -26,3 +26,8 @@ target_sources(app PRIVATE
 zephyr_include_directories(
   configuration/common
   configuration/${BOARD})
+
+if (CONFIG_SOC_SERIES_NRF54X)
+  build_secdom()
+  build_sysctrl()
+endif()
