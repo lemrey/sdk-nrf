@@ -11,5 +11,5 @@ project(lwm2m-carrier)
 
 # NORDIC SDK APP START
 target_sources(app PRIVATE src/main.c)
-target_sources(app PRIVATE src/carrier_certs.c)
+target_sources(app PRIVATE src/carrier_security.c)
 # NORDIC SDK APP END

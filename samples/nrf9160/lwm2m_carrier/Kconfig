@@ -1,0 +1,19 @@
+#
+# Copyright (c) 2022 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Custom PSK"
+config CARRIER_APP_PSK
+	string "LwM2M pre-shared key for communication"
+	default ""
+	help
+	  Pre Shared Key must be identical to the PSK registered with the device on the LwM2M server.
+	  Use the hexadecimal representation.
+
+endmenu
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu

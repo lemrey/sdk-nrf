@@ -15,4 +15,6 @@
  */
 int carrier_cert_provision(void);
 
+int carrier_psk_provision(void);
+
 #endif /* CARRIER_CERTS_H__ */
