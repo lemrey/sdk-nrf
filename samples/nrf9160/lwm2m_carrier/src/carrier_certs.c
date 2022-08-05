@@ -89,4 +89,28 @@ int carrier_cert_provision(void)
 	return 0;
 }
 
+int carrier_psk_provision(void)
+{
+	if (CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG ) {
+		char *p_psk = CONFIG_CARRIER_APP_PSK;
+		if(strlen(p_psk) <= 0) {
+			return 0;
+		}
+		uint8_t psk_len = strlen(p_psk);
+		int err = 0;
+
+		if (psk_len > 0) {
+			err = modem_key_mgmt_write(CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG,
+			MODEM_KEY_MGMT_CRED_TYPE_PSK, p_psk, psk_len);
+			printk("PSK provisioned, tag %d\n", CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG);
+		}
+		if (err) {
+			printk("Unable to provision PSK, tag %d\n", CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 #endif /* CONFIG_LWM2M_CARRIER */
