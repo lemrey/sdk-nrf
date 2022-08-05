@@ -40,33 +40,20 @@ menuconfig LWM2M_CARRIER
 
 if LWM2M_CARRIER
 
-config LWM2M_CARRIER_CERTIFICATION_MODE
-	bool "Connect to certification servers"
-	select LWM2M_CARRIER_IS_SERVER_BOOTSTRAP if LWM2M_CARRIER_USE_CUSTOM_URI
-	help
-	  Connect to certification servers instead of production servers.
-
-config LWM2M_CARRIER_USE_CUSTOM_URI
-	bool "Use custom server URI"
-	help
-	  Use a custom server URI.
-
-if LWM2M_CARRIER_USE_CUSTOM_URI
-
 config LWM2M_CARRIER_CUSTOM_URI
 	string "LwM2M carrier custom URI"
 	default ""
 	help
 	  URI of the custom server.
 
-config LWM2M_CARRIER_IS_SERVER_BOOTSTRAP
+config LWM2M_CARRIER_IS_BOOTSTRAP_SERVER
 	bool "Bootstrap-Server"
 	default y
 	help
 	  Configure whether the custom server is a LwM2M Bootstrap-Server
 	  or a standard LwM2M Server.
 
-if !LWM2M_CARRIER_IS_SERVER_BOOTSTRAP
+if !LWM2M_CARRIER_IS_BOOTSTRAP_SERVER
 
 config LWM2M_CARRIER_SERVER_LIFETIME
 	int "Server lifetime"
@@ -74,16 +61,14 @@ config LWM2M_CARRIER_SERVER_LIFETIME
 	help
 	  Default server lifetime (seconds).
 
-endif # !LWM2M_CARRIER_IS_SERVER_BOOTSTRAP
+endif # !LWM2M_CARRIER_IS_BOOTSTRAP_SERVER
 
-endif # LWM2M_CARRIER_USE_CUSTOM_URI
-
-config LWM2M_CARRIER_CUSTOM_PSK
-	string "LwM2M carrier custom bootstrap PSK"
-	default ""
+config LWM2M_CARRIER_SERVER_SEC_TAG
+	int "LwM2M carrier custom server security tag"
+	default 0
 	help
-	  Set a custom PSK for the Bootstrap-Server.
-	  If left blank, a default PSK will be generated based on the carrier.
+	  Custom server security tag. Stores the PSK of the LwM2M
+	  Bootstrap-Server.
 
 config LWM2M_CARRIER_CUSTOM_APN
 	string "LwM2M carrier custom APN"
@@ -156,6 +141,18 @@ config LWM2M_CARRIER_SESSION_IDLE_TIMEOUT
 	  Number of seconds, for which a DTLS session used by this library can be idle
 	  before it is closed. Setting this to 0 will use the default value (60 seconds).
 
+config LWM2M_CARRIER_WORKQ_STACK_SIZE
+	int "LwM2M carrier work queue stack size"
+	default 4096
+	help
+	  Stack size for the LwM2M work queue thread.
+
+config LWM2M_CARRIER_THREAD_STACK_SIZE
+	int "LwM2M carrier thread stack size"
+	default 600
+	help
+	  Stack size for the LwM2M carrier process thread.
+
 config LWM2M_CARRIER_STORAGE_AREA_SIZE
 	hex "Size of the lwm2m_carrier partition"
 	default 0x3000
@@ -168,6 +165,20 @@ config LWM2M_CARRIER_STORAGE_SECTOR_SIZE
 	hex
 	default $(dt_node_int_prop_hex,$(dt_chosen_path,$(DT_ZEPHYR_FLASH)),erase-block-size)
 
+config LWM2M_CARRIER_SETTINGS
+	bool "LwM2M carrier settings"
+	depends on SETTINGS
+	default n
+	help
+	  Include LwM2M carrier settings
+
+config LWM2M_CARRIER_SHELL
+	bool "LwM2M carrier shell"
+	depends on SHELL
+	depends on LWM2M_CARRIER_SETTINGS
+	default n
+	help
+	  Include LwM2M carrier shell
 
 module=LWM2M_CARRIER
 module-dep=LOG
