@@ -76,7 +76,7 @@ Changes
 
 * Removed :c:macro:`psk` from the configuration :c:macro:`lwm2m_carrier_config_t`.
 * Removed the ``LWM2M_CARRIER_CUSTOM_PSK`` Kconfig.
-* Added :c:macro:`server_sec:tag` to the configuration :c:macro:`lwm2m_carrier_config_t`.
+* Added :c:macro:`server_sec_tag` to the configuration :c:macro:`lwm2m_carrier_config_t`.
 * Added the :kconfig:option:`LWM2M_CARRIER_SERVER_SEC_TAG` Kconfig.
 
   * The LwM2M carrier library no longer uses PSK as a configuration parameter. Instead a sec_tag (containing a PSK) can be provided.

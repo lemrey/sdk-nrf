@@ -20,6 +20,14 @@ To use the :ref:`lwm2m_client` sample in production, you must prepare the sample
 
 The following sections provide the guidelines on setting up the sample for production using AVSystem's `Coiote Device Management`_ server.
 
+
+.. figure:: /images/lwm2m_client_production.svg
+   :alt: LwM2M client production diagram
+
+   Preparing the sample for production
+
+The following sections provide the guidelines on setting up the sample for production using AVSystem's `Coiote Device Management`_ server.
+
 Programming the AT Client sample
 ********************************
 

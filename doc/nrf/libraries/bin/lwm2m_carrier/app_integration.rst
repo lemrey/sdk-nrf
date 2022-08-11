@@ -47,6 +47,9 @@ It provides an abstraction of the following modules:
 
 The OS abstraction layer is fully implemented for the |NCS|, and it needs to be ported if used with other RTOS or on other systems.
 
+After calling the :c:func:`lwm2m_carrier_init` function, your application can call the non-returning function :c:func:`lwm2m_carrier_run` in its own thread.
+Both these functions are called in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`, which is included into the project when you enable the LwM2M carrier library.
+
 .. _lwm2m_configuration:
 
 Configuration
@@ -57,29 +60,23 @@ Enable the library by setting the :kconfig:option:`CONFIG_LWM2M_CARRIER` Kconfig
 
 The :ref:`lwm2m_carrier` sample project configuration (:file:`nrf/samples/nrf9160/lwm2m_carrier/prj.conf`) contains all the configurations that are needed by the LwM2M carrier library.
 
-You can provide the initialization parameter :c:type:`lwm2m_carrier_config_t` to overwrite the carrier default settings with the following Kconfig options:
+To overwrite the carrier default settings, you can provide the initialization parameter :c:type:`lwm2m_carrier_config_t` with the Kconfig options specified in the following sections.
+Alternatively, you can enable the LWM2M carrier shell to overwrite the carrier default settings through the command line.
+In the :ref:`lwm2m_carrier` sample, you can enable the LWM2M carrier shell by :ref:`building with the overlay file <lwm2m_carrier_shell_overlay>` :file:`overlay-shell.conf`.
+See :ref:`lwm2m_shell` for more information on the shell.
 
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_CERTIFICATION_MODE`:
+.. _general_options_lwm2m:
 
-  * This configuration specifies if the LwM2M carrier library will connect to the carrier's certification servers or production servers.
-  * Expected to be set during self-testing part of the certification process.
-  * This configuration is ignored if :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_URI` is set.
+General options
+===============
 
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_URI`:
+Following are some of the general Kconfig options that you can configure:
 
-  * This configuration, together with :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_URI` lets the LwM2M carrier library connect to a custom server other than the normal carrier server, thereby enabling the generic mode.
-  * Expected to be set during self-testing, or if the end product is not to be certified with the applicable carriers. See :ref:`lwm2m_certification`.
-  * If this configuration is set, :kconfig:option:`CONFIG_LWM2M_CARRIER_CERTIFICATION_MODE` is ignored.
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_BOOTSTRAP_SMARTCARD`:
 
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP`:
-
-  * This configuration specifies if the custom LwM2M server is a LwM2m Bootstrap-Server.
-  * This setting is ignored if :kconfig:option:`CONFIG_LWM2M_CARRIER_CERTIFICATION_MODE` is set, since the LwM2M library will instead connect to the servers specified by the applicable carriers.
-
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_LIFETIME`:
-
-  * This configuration specifies the lifetime of the custom LwM2M server.
-  * This configuration is ignored if :kconfig:option:`CONFIG_LWM2M_CARRIER_CERTIFICATION_MODE` or :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP` is set.
+  * This configuration allows the LwM2M carrier library to use a URI stored on the SIM card.
+    The configuration in the SIM will take precedence over any other configuration.
+    For example, if a bootstrap server URI is fetched from the SIM, the configuration set by the :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP` Kconfig option is ignored.
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT`:
 
@@ -87,56 +84,81 @@ You can provide the initialization parameter :c:type:`lwm2m_carrier_config_t` to
   * The timeout closes the DTLS session. A new DTLS session will be created on the next activity (for example, lifetime trigger).
   * Leaving this configuration empty (0) sets it to a default of 60 seconds.
 
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_PSK`:
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN`:
 
-  * This configuration can be set to use a non-default `Pre-Shared Key (PSK)`_. If the string is empty, it is ignored.
-  * If connecting to the normal carrier device management servers (normal operation), this configuration must not be set unless your carrier explicitly states to use a custom PSK, for example during self-testing.
-  * If the :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_URI` option is set and the server requires a secure connection, a PSK is required.
-
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_APN`:
-
-  * This configuration, together with :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` produce different results depending on normal or generic mode of operation.
-  * If :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_URI` is not set (normal), this configuration supplies a fallback APN. This might be required in your application, depending on the requirements from the carrier.
-  * If :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_URI` is set (generic), :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` is used instead of the default APN, (and there is no fallback APN).
-
- * :kconfig:option:`CONFIG_LWM2M_CARRIER_BOOTSTRAP_SMARTCARD`:
-
-  * This configuration allows the LwM2M carrier library to use a URI stored in the SIM card. The configuration in the SIM will take precedence over any other configuration.
-    For example, if a bootstrap server URI is fetched from the SIM, the :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP` configuration is ignored.
-    If a production server URI is fetched from the SIM, the :kconfig:option:`CONFIG_LWM2M_CARRIER_CERTIFICATION_MODE` configuration is ignored.
-
-Note that these settings can put the LwM2M carrier library either in the normal mode where it connects to the applicable carriers, or in the generic mode where it can connect to any bootstrap server.
-
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_MANUFACTURER`, :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_MODEL_NUMBER`, :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_TYPE`, :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_HARDWARE_VERSION`, :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_SOFTWARE_VERSION`:
-
-  * These values are reported in the Device Object. They are not expected to change during run time.
-  * If these values are not set by the application, the LwM2M carrier library sets the default values based on the modem and operator network.
+  * This configuration produces different results depending on normal or generic mode of operation.
+  * If :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is not set (normal), this configuration provides a fallback APN.
+    This might be required in your application, depending on the requirements from the carrier.
+  * If :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is set (generic), :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` is used instead of the default APN and fallback APN is not provided.
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS`, :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE`:
 
-  * This configuration sets the LG U+ service code, which is needed to identify your device in the LG U+ device management.
-  * Note that application DFU is needed to enable LG U+ functionality.
+  * The :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE` Kconfig option sets the LG U+ service code, which is needed to identify your device in the LG U+ device management.
 
-.. note::
-   A change of the bootstrap server URI between builds does not trigger a new bootstrap.
-   The bootstrap process is intended to happen only once unless it is initiated from the server.
-   To redo the bootstrap process, you must erase the flash and then load your application again.
+  .. note::
+     Application DFU is needed to enable LG U+ functionality.
 
-After calling the :c:func:`lwm2m_carrier_init` function, your application can call the non-returning function :c:func:`lwm2m_carrier_run` in its own thread.
-Both these functions are called in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`, which is included into the project when you enable the LwM2M carrier library.
+Server options
+==============
 
-The :c:func:`lwm2m_carrier_event_handler` function must be implemented by your application.
-This is shown in the :ref:`lwm2m_carrier` sample.
-A weak implementation is included in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`.
+Following are some of the server Kconfig options that you can configure:
 
-See :file:`nrf/lib/bin/lwm2m_carrier/include/lwm2m_carrier.h` for all the events and API.
+The server settings can put the LwM2M carrier library either in the normal mode where it connects to the applicable carriers, or in the generic mode where it can connect to any bootstrap server.
+
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP`:
+
+  * This configuration specifies if the custom LwM2M server is an LwM2M Bootstrap Server.
+
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI`:
+
+  * This configuration lets the LwM2M carrier library connect to a custom server other than the normal carrier server, thereby enabling the generic mode.
+  * You must set this option during self-testing, or if the end product is not to be certified with the applicable carriers.
+    For more information, see :ref:`lwm2m_certification`.
+
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG`:
+
+  * If the :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` option is configured, and the server requires a secure connection, a security tag for a PSK is required.
+    If the configuration is empty (0), it is ignored.
+  * The :ref:`modem_key_mgmt` section describes how to store credentials for the security tag specified in :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` into the nRF9160 modem.
+
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_LIFETIME`:
+
+  * This configuration specifies the lifetime of the custom LwM2M server.
+  * This configuration is ignored if :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP` is set.
+
+  .. note::
+
+     A change of the bootstrap server URI between builds does not trigger a new bootstrap.
+     The bootstrap process is intended to happen only once unless it is initiated from the server.
+     To redo the bootstrap process, you must erase the flash and then load your application again.
+
+Device options
+==============
+
+These values are reported in the Device Object.
+They are not expected to change during run time.
+If these values are not set by the application, the LwM2M carrier library sets the default values based on the modem and operator network.
+
+Following are the device Kconfig options:
+
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_MANUFACTURER`
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_MODEL_NUMBER`
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_TYPE`
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_HARDWARE_VERSION`
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_DEVICE_SOFTWARE_VERSION`
 
 .. _lwm2m_events:
 
 LwM2M carrier library events
 ****************************
 
-Following are the various LwM2M carrier library events:
+The :c:func:`lwm2m_carrier_event_handler` function must be implemented by your application.
+This is shown in the :ref:`lwm2m_carrier` sample.
+A weak implementation is included in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`.
+
+Following are the various LwM2M carrier library events which are also listed in :file:`nrf/lib/bin/lwm2m_carrier/include/lwm2m_carrier.h`.
+
+
 
 * :c:macro:`LWM2M_CARRIER_EVENT_INIT`:
 
@@ -238,22 +260,130 @@ Following are the various LwM2M carrier library events:
 
     * :c:macro:`LWM2M_CARRIER_ERROR_INTERNAL` - This error indicates an irrecoverable error between the modem and carrier library. The LwM2M carrier library recovers only upon reboot.
 
-Device objects
-**************
+.. _lwm2m_shell:
+
+LwM2M carrier shell configuration
+*********************************
+
+To enable and configure the LwM2M carrier shell, set the :kconfig:option:`CONFIG_LWM2M_CARRIER_SHELL` Kconfig option to ``y``.
+The :kconfig:option:`CONFIG_LWM2M_CARRIER_SHELL` Kconfig option has the following dependencies:
+
+* :kconfig:option:`CONFIG_FLASH_MAP`
+* :kconfig:option:`CONFIG_SHELL`
+* :kconfig:option:`CONFIG_SETTINGS`
+
+In the :ref:`lwm2m_carrier` sample, the LWM2M carrier shell can be enabled by using the configuration overlay file :file:`overlay-shell.conf`.
+
+.. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_os_abstraction_shell.svg
+    :alt: LwM2M carrier shell
+
+    LwM2M carrier shell
+
+carrier_init
+============
+
+The initialization parameter :c:type:`lwm2m_carrier_config_t` can be overwritten with custom settings through the LwM2M carrier shell command group ``carrier_init``.
+Use the ``print`` command to display the configurations that are written with ``carrier_init``:
+
+.. code-block::
+
+    > carrier_init print
+    Custom carrier server settings
+      Enable custom settings         No
+      Bootstrap from smartcard       No
+      Session idle timeout           0
+      APN
+      Service code
+
+    Custom carrier server settings
+      Enable custom server settings  Yes
+      Is bootstrap server            Yes  (Not used without server URI)
+      Server URI
+      PSK security tag               0
+      Server lifetime                0  (Not used when bootstrap server)
+
+    Custom carrier device settings
+      Enable custom device settings  No
+      Manufacturer
+      Model number
+      Device type
+      Hardware version
+      Software version
+
+These settings are applied by the function :c:func:`lwm2m_carrier_custom_init`.
+This function is implemented in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_settings.c` that is included in the project when you enable the LwM2M carrier shell.
+The weak implementation of :c:func:`lwm2m_carrier_event_handler` calls :c:func:`lwm2m_carrier_custom_init` on receiving the :c:macro:`LWM2M_CARRIER_EVENT_INIT` event.
+
+carrier_api
+===========
+
+The LwM2M carrier shell command group ``carrier_api`` allows you to access the public LwM2M API as shown in :file:`nrf/lib/bin/lwm2m_carrier/include/lwm2m_carrier.h`.
+
+For example, to indicate the battery level of the device to the carrier, the function :c:func:`lwm2m_carrier_battery_level_set` is used.
+However, this can also be done through the ``carrier_api`` command:
+
+.. code-block::
+
+   > carrier_api device battery_level 20
+   Battery level updated successfully
+
+
+help
+====
+
+To display help for all available shell commands, pass the following command to shell:
+
+.. parsed-literal::
+   :class: highlight
+
+   > [*group*] help
+
+If the optional argument is not provided, the command displays help for all command groups.
+
+If the optional argument is provided, it displays help for subcommands of the specified command group.
+For example, ``carrier_init help`` displays help for all ``carrier_init`` commands.
+
+Objects
+*******
+
+The objects enabled depend on the carrier network.
+When connecting to a generic LwM2M server, the following objects are enabled:
+
+* Security
+* Server
+* Access Control
+* Device
+* Connectivity Monitoring
+* Firmware Update
+* Location
+* Connectivity Statistics
+* Cellular Connectivity
+* APN Connection Profile
+
+Resources
+=========
 
 The following values that reflect the state of the device must be kept up to date by the application:
 
-* Available Power Sources
-* Power Source Voltage
-* Power Source Current
-* Battery Level
-* Battery Status
-* Memory Total
-* Error Code
-* Device Type (Defaults to ``Smart Device`` if not set)
-* Software Version (Defaults to ``LwM2M <libversion>``. For example, ``LwM2M 0.21.0`` for release 0.21.0.)
-* Hardware Version (Defaults to ``1.0`` if not set)
-* Location
+* Available Power Sources - Defaults to ``0`` if not set (DC Power).
+* Power Source Voltage - Defaults to ``0`` if not set.
+* Power Source Current - Defaults to ``0`` if not set.
+* Battery Level - Defaults to ``0`` if not set.
+* Battery Status - Defaults to ``5`` if not set (Not Installed).
+* Memory Total - Defaults to ``0`` if not set.
+* Error Code - Defaults to ``0`` if not set (No Error).
+* Device Type - Defaults to ``Smart Device`` if not set.
+* Software Version - Defaults to ``LwM2M <libversion>``. For example, ``LwM2M 0.30.2`` for release 0.30.2.
+* Hardware Version - Defaults to ``1.0`` if not set.
+* Location - Defaults to 0 if not set.
+
+The following values are read from the modem by default but can be overwritten:
+
+* Manufacturer
+* Model Number
+* UTC Offset
+* Time zone
+* Current Time
 
 For example, the carrier device management platform can observe the battery level of your device.
 The application uses the :c:func:`lwm2m_carrier_battery_level_set` function to indicate the current battery level of the device to the carrier.
