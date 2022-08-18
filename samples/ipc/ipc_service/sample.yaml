@@ -64,3 +64,118 @@ tests:
       DTC_OVERLAY_FILE=icmsg.overlay
       remote_CONF_FILE=prj_icmsg.conf
 
+  sample.ipc.ipc_service.nrf54_app_rad_icmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
+      remote_CONF_FILE=prj_icmsg.conf
+      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+  sample.ipc.ipc_service.nrf54_app_rad_rpmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ipc
+    extra_args:
+      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad.overlay
+      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf54_app_ppr_icmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.conf
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.overlay
+      remote_CONF_FILE=prj_icmsg.conf
+      remote_CONFIG_EMULATOR_FPGA=y
+      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.conf
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.overlay
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf54_app_sys_icmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys_icmsg.overlay
+      remote_CONF_FILE=prj_icmsg.conf
+      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys_icmsg.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+  sample.ipc.ipc_service.nrf54_app_sys_rpmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ipc
+    extra_args:
+      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys.overlay
+      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=30
+      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf54_rad_sys_icmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpurad@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpurad@soc1
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys_icmsg.overlay
+      remote_CONF_FILE=prj_icmsg.conf
+      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys_icmsg.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+  sample.ipc.ipc_service.nrf54_rad_sys_rpmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpurad@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpurad@soc1
+    tags: ipc
+    extra_args:
+      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys.overlay
+      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y

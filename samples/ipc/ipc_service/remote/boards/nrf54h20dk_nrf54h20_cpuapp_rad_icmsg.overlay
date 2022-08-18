@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
+#include "../../boards/shared/nrf54_ipc_shm_ram0.dtsi"
+#include "../../boards/shared/nrf54_uart_pinout.dtsi"
+
+/delete-node/ &ipc_cpuapp;
+
+/ {
+	chosen {
+		/delete-property/ nordic,bellboard-cpuapp;
+		/delete-property/ nordic,bellboard-cpurad;
+		zephyr,console = &uart135;
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-icmsg";
+		tx-region = <&ipc_shm_local>;
+		rx-region = <&ipc_shm_remote>;
+		mboxes = <&mbox_remote 18>,
+			 <&mbox_local 12>;
+		mbox-names = "tx", "rx";
+		status = "okay";
+	};
+};
+
+&ram3x_cpurad {
+	status = "okay";
+};
+
+&uart136 {
+	status = "disabled";
+};
+
+&uart135 {
+	status = "okay";
+	memory-regions = <&ram3x_cpurad>;
+};
+
+&global_peripherals {
+	/delete-node/ bellboard@9a000;
+	/delete-node/ bellboard@9b000;
+	/delete-node/ vevif@8c8000;
+	/delete-node/ vevif@8d4000;
+	/delete-node/ vevif@908000;
+
+	mbox_local: bellboard@9b000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x9b000 0x1000>;
+		interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
+		instance = <0>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+
+	mbox_remote: bellboard0@9a000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x9a000 0x1000>;
+		domain = <NRF_IDS_DOMAIN_APP>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+};

@@ -1,0 +1,14 @@
+#
+# Copyright (c) 2022 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+# This TOML configuration adds configurations for UICR that are currently
+# unable to be set through devicetree.
+
+[grtc_cc_secure_0]
+CC_0 = "NonSecure"
+CC_1 = "NonSecure"
+CC_2 = "NonSecure"
+CC_3 = "NonSecure"

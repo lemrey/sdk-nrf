@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
+#include "shared/nrf54_ipc_shm_ram0.dtsi"
+#include "shared/nrf54_uart_pinout.dtsi"
+
+/delete-node/ &ipc_cpurad;
+
+/{
+	chosen {
+		/delete-property/ nordic,bellboard-cpuapp;
+		/delete-property/ nordic,bellboard-cpurad;
+		zephyr,console = &uart136;
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-openamp-static-vrings";
+		memory-region = <&ipc_shm_ram>;
+		mboxes = <&mbox_remote 12>,
+			 <&mbox_local 6>;
+		mbox-names = "tx", "rx";
+		role = "host";
+		status = "okay";
+	};
+};
+
+&global_peripherals {
+	/delete-node/ bellboard@9a000;
+	/delete-node/ vevif@8c8000;
+	/delete-node/ vevif@8d4000;
+	/delete-node/ vevif@908000;
+
+	mbox_local: bellboard0@9a000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x9a000 0x1000>;
+		interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
+		instance = <0>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+
+	mbox_remote: vevif@8c8000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x8c8000 0x1000>;
+		domain = <NRF_IDS_DOMAIN_SYSCTRL>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+};
+
+/* ram3x_cpuapp buffer is used by App core UART driver. */
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuapp>;
+};

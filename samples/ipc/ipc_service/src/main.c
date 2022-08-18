@@ -12,6 +12,10 @@
 
 #include <zephyr/ipc/ipc_service.h>
 
+#if DT_NODE_EXISTS(DT_NODELABEL(ppr_code))
+#define PPR_START_ADDR DT_REG_ADDR(DT_NODELABEL(ppr_code))
+#include <hal/nrf_vpr.h>
+#endif
 
 #define STACKSIZE	(1024 + CONFIG_TEST_EXTRA_STACK_SIZE)
 
@@ -84,6 +88,13 @@ int main(void)
 	struct ipc_ept ep;
 	int ret;
 	printk("IPC-service %s demo started\n", CONFIG_BOARD);
+
+#if DT_NODE_EXISTS(DT_NODELABEL(ppr_code))
+	/* Enable PPr core */
+	printk("Enabling PPR core\n");
+	nrf_vpr_initpc_set(NRF_VPR130, PPR_START_ADDR);
+	nrf_vpr_cpurun_set(NRF_VPR130, true);
+#endif
 
 	memset(p_payload->data, 0xA5, CONFIG_APP_IPC_SERVICE_MESSAGE_LEN - sizeof(struct payload));
 

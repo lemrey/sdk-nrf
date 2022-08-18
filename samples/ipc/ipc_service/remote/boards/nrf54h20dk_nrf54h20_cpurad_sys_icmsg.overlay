@@ -1,0 +1,95 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
+#include "../../boards/shared/nrf54_ipc_shm_ram0.dtsi"
+#include "../../boards/shared/nrf54_uart_pinout.dtsi"
+
+/ {
+	chosen {
+		/delete-property/ nordic,bellboard-cpuapp;
+		 zephyr,console = &uart135;
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-icmsg";
+		tx-region = <&ipc_shm_local>;
+		rx-region = <&ipc_shm_remote>;
+		mboxes = <&mbox_remote 6>,
+			 <&mbox_local 18>;
+		mbox-names = "tx", "rx";
+		status = "okay";
+	};
+};
+
+&ram3x_cpusys {
+	status = "okay";
+};
+
+&uart136 {
+	status = "disabled";
+};
+
+&uart135 {
+	status = "okay";
+	memory-regions = <&ram3x_cpusys>;
+};
+
+&global_peripherals {
+	/delete-node/ bellboard@9a000;
+	/delete-node/ vevif@8c8000;
+	/delete-node/ vevif@8d4000;
+	/delete-node/ vevif@908000;
+
+	mbox_local: vevif@8c8000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x8c8000 0x1000>;
+		interrupts = <0 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <1 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <2 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <3 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <4 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <5 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <6 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <7 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <8 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <9 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <10 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <11 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <12 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <13 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <14 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <15 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <16 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <17 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <18 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <19 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <20 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <21 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <22 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <23 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <24 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <25 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <26 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <27 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <28 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <29 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <30 NRF_DEFAULT_IRQ_PRIORITY>,
+			     <31 NRF_DEFAULT_IRQ_PRIORITY>;
+		interrupt-parent = <&clic>;
+		instance = <0>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+
+	mbox_remote: bellboard0@9b000 {
+		compatible = "nordic,mbox-nrf-ids";
+		reg = <0x9b000 0x1000>;
+		domain = <NRF_IDS_DOMAIN_NET>;
+		status = "okay";
+		#mbox-cells = <1>;
+	};
+};
