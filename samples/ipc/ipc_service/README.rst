@@ -54,40 +54,44 @@ Building and running
 
 .. include:: /includes/build_and_run.txt
 
-A set of overlays are available for the sample to verify the throughput that only one core is sending the data.
-You could use different overlay build commands for different testing scenarios, which are as follows:
+You can use a set of configurations to get different test scenarios.
 
-* To test the application where only the application core is sending data through the IPC service, specify ``-DOVERLAY_CONFIG=overlay-cpuapp-sending.conf`` overlay parameter with the build command:
+To verify the throughput for only one direction of data transmission, configure the asymmetric sending intervals between cores in the following way:
 
-  .. code-block:: console
+* ``-DCONFIG_APP_IPC_SERVICE_SEND_INTERVAL=20000000`` and ``-Dremote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1`` to get the remote sending performance.
+* ``-DCONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1`` and ``-Dremote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=20000000`` to get the application sending performance.
 
-     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DOVERLAY_CONFIG=overlay-cpuapp-sending.conf
+You can use different overlay and configurations build commands for different testing scenarios, which are as follows:
 
-  The :file:`CMakeLists.txt` of the application ensures adding a matching config overlay for the child image.
-
-* To test the application for a scenario where only the network core is sending data through the IPC service, specify the ``-DOVERLAY_CONFIG=overlay-cpunet-sending.conf`` overlay parameter with the build command:
+* To test the application where only the application core is sending data through the IPC service, use the following command:
 
   .. code-block:: console
 
-     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DOVERLAY_CONFIG=overlay-cpunet-sending.conf
+     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1 -Dremote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=20000000
 
-  The :file:`CMakeLists.txt` of the application ensures adding a matching config overlay for the child image.
-
-* To test the application with the ICMSG backend, specify the ``-DCONF_FILE=prj_icmsg.conf`` parameter along with the build command:
+* To test the application for a scenario where only the network core is sending data through the IPC service, use the following command:
 
   .. code-block:: console
 
-     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONF_FILE=prj_icmsg.conf
+     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONFIG_APP_IPC_SERVICE_SEND_INTERVAL=20000000 -Dremote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1
 
-  The :file:`CMakeLists.txt` of the application ensures adding a matching ``config`` and ``DT`` overlay for the child image.
+* To test the application with the ICMSG backend, specify the ``-DCONF_FILE=prj_icmsg.conf`` and ``-DDTC_OVERLAY_FILE=icmsg.overlay`` parameters along with the build command:
+
+  .. code-block:: console
+
+     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONF_FILE=prj_icmsg.conf -DDTC_OVERLAY_FILE=icmsg.overlay -Dremote_CONF_FILE=prj_icmsg.conf -DDTC_OVERLAY_FILE=icmsg.overlay
+
+  The local and remote applications must use the same backend.
 
 * Combine the above options and test maximal core to core throughput with the ICMSG backend.
   To do so, build the application with the following commands:
 
   .. code-block:: console
 
-     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONF_FILE=prj_icmsg.conf -DOVERLAY_CONFIG=overlay-cpuapp-sending.conf
-     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONF_FILE=prj_icmsg.conf -DOVERLAY_CONFIG=overlay-cpunet-sending.conf
+     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1 -Dremote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=20000000 \
+         -DCONF_FILE=prj_icmsg.conf -DDTC_OVERLAY_FILE=icmsg.overlay -Dremote_CONF_FILE=prj_icmsg.conf -DDTC_OVERLAY_FILE=icmsg.overlay
+     west build -p -b nrf5340dk_nrf5340_cpuapp -- -DCONFIG_APP_IPC_SERVICE_SEND_INTERVAL=20000000 -Dremote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1 \
+         -DCONF_FILE=prj_icmsg.conf -DDTC_OVERLAY_FILE=icmsg.overlay -Dremote_CONF_FILE=prj_icmsg.conf -DDTC_OVERLAY_FILE=icmsg.overlay
 
 Testing
 =======

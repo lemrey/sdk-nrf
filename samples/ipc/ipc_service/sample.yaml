@@ -16,6 +16,7 @@ tests:
     tags: ipc
     extra_args:
       OVERLAY_CONFIG=overlay-cpuapp-sending.conf
+      remote_OVERLAY_CONFIG=overlay-cpuapp-sending.conf
   sample.ipc.ipc_service.rpmsg_cpunet_sending:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -24,6 +25,7 @@ tests:
     tags: ipc
     extra_args:
       OVERLAY_CONFIG=overlay-cpunet-sending.conf
+      remote_OVERLAY_CONFIG=overlay-cpunet-sending.conf
   sample.ipc.ipc_service.icmsg_default:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -32,6 +34,9 @@ tests:
     tags: ipc
     extra_args:
       CONF_FILE=prj_icmsg.conf
+      remote_DTC_OVERLAY_FILE=icmsg.overlay
+      DTC_OVERLAY_FILE=icmsg.overlay
+      remote_CONF_FILE=prj_icmsg.conf
   sample.ipc.ipc_service.icmsg_cpuapp_sending:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -41,6 +46,10 @@ tests:
     extra_args:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=overlay-cpuapp-sending.conf
+      remote_OVERLAY_CONFIG=overlay-cpuapp-sending.conf
+      remote_DTC_OVERLAY_FILE=icmsg.overlay
+      DTC_OVERLAY_FILE=icmsg.overlay
+      remote_CONF_FILE=prj_icmsg.conf
   sample.ipc.ipc_service.icmsg_cpunet_sending:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -50,3 +59,8 @@ tests:
     extra_args:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=overlay-cpunet-sending.conf
+      remote_OVERLAY_CONFIG=overlay-cpunet-sending.conf
+      remote_DTC_OVERLAY_FILE=icmsg.overlay
+      DTC_OVERLAY_FILE=icmsg.overlay
+      remote_CONF_FILE=prj_icmsg.conf
+
