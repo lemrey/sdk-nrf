@@ -11,6 +11,7 @@
 /LICENSE                                  @carlescufi
 /README.rst                               @carlescufi
 /Jenkinsfile                              @thst-nordic
+/Jenkinsfile.doc			  @ns-tolu 
 /west.yml                                 @carlescufi @tejlmand
 /west-test.yml                            @thst-nordic
 
