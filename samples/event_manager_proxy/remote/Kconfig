@@ -12,3 +12,7 @@ menu "Event manager proxy sample application settings"
 rsource "../common_events/Kconfig"
 rsource "../modules/Kconfig"
 endmenu
+
+# Changing default log level
+config LOG_DEFAULT_LEVEL
+	default 2 if LOG
