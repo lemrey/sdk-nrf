@@ -9,7 +9,7 @@
 
 #if defined(CONFIG_BOARD_NRF54FPGA_NRF5420_CPUAPP) || \
     defined(CONFIG_BOARD_NRF54FPGA_NRF5420_SOC1_CPUAPP)
-#define PPR_START_ADDR 0x1E0A0000
+#define PPR_START_ADDR 0x1E09A000
 #include <hal/nrf_vpr.h>
 #endif
 
