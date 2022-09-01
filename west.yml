@@ -110,7 +110,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 38dcb78065d0e71ffc33e9a0e5c197044f83300e
+      revision: 38b3e36f386af9940d7705aaeecde57452acfc68
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
