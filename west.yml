@@ -136,9 +136,9 @@ manifest:
       path: modules/tee/tfm-mcuboot
       revision: v1.7.2-ncs1
     - name: matter
-      repo-path: sdk-connectedhomeip
+      repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: 0b457ece3f0c37f5c92b21fe56cacd319874364f
+      revision: 58f3cae391262ff72e7e7ea62069fb04d2ab428c
       submodules:
         - name: nlio
           path: third_party/nlio/repo
