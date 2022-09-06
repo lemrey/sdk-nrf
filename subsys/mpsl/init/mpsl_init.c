@@ -137,6 +137,7 @@ static void m_assert_handler(const char *const file, const uint32_t line)
 }
 #endif /* IS_ENABLED(CONFIG_MPSL_ASSERT_HANDLER) */
 
+#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
 static uint8_t m_config_clock_source_get(void)
 {
 #ifdef CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC
@@ -156,6 +157,7 @@ static uint8_t m_config_clock_source_get(void)
 	return 0;
 #endif
 }
+#endif /* !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) */
 
 static int mpsl_lib_init(const struct device *dev)
 {
