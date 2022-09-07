@@ -8,15 +8,6 @@ menu "Zephyr Kernel"
 source "Kconfig.zephyr"
 endmenu
 
-config FPGA_TIMING_COMPATIBILITY
-	bool "NRF54 FPGA timing compatibility"
-	depends on SOC_SERIES_NRF52X
-	help
-	  Enable relaxed timings in the radio driver. This configuration
-	  should only be used for testing against NRF54 FPGA board as it can't
-	  meet the timing requirements on FPGA.
-
-
 config NRF_802154_AIFS_TIME
 	int "AIFS time"
 	default 1300

@@ -87,6 +87,14 @@ config NORDIC_QSPI_NOR_FLASH_LAYOUT_PAGE_SIZE
 	  chosen Zephyr flash devicetree node to ensure that swapping can be
 	  performed.
 
+config FPGA_TIMING_COMPATIBILITY
+	bool "NRF54 FPGA timing compatibility"
+	depends on SOC_SERIES_NRF52X
+	help
+	  Enable relaxed timings in the radio driver. This configuration
+	  should only be used for testing against NRF54 FPGA board as it can't
+	  meet the timing requirements on FPGA.
+
 rsource "samples/Kconfig"
 rsource "subsys/Kconfig"
 rsource "modules/Kconfig"
