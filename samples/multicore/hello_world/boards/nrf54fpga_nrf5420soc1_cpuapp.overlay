@@ -60,7 +60,6 @@
 
 &grtc {
 	status = "okay";
-	channel-mask = <0xf0>;
 	/* Channels 4 and 5 are used by the app core itself, channels 6 and 7
 	 * are owned by App but used by PPR.
 	 */
