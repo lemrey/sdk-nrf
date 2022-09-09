@@ -31,6 +31,7 @@ config NRF_MODEM_LIB_TRACE_ENABLED
 	  Trace data is output on the chosen trace backend.
 
 config NRF_MODEM_LIB_TRACE
+	select FPU
 	bool "Enable proprietary traces" if !NRF_MODEM_LIB_TRACE_ENABLED
 	default y if NRF_MODEM_LIB_TRACE_ENABLED
 	help
@@ -76,6 +77,19 @@ config NRF_MODEM_LIB_TRACE_THREAD_PRIO
 	int "Priority of the trace processing thread"
 	depends on NRF_MODEM_LIB_TRACE_THREAD_PRIO_OVERRIDE
 	default 0
+
+config NRF_MODEM_LIB_TRACE_LOG_BITRATE
+	depends on LOG
+	bool "Log trace backend bitrate"
+	select NEWLIB_LIBC_FLOAT_PRINTF
+
+if NRF_MODEM_LIB_TRACE_LOG_BITRATE
+
+config NRF_MODEM_LIB_TRACE_LOG_BITRATE_PERIOD_MSEC
+	int "Bitrate log interval (millisec)"
+	default 5000
+
+endif # NRF_MODEM_LIB_TRACE_LOG_BITRATE
 
 # Add trace backends
 rsource "trace_backends/Kconfig"

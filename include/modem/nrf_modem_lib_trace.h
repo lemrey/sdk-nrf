@@ -51,6 +51,16 @@ int nrf_modem_lib_trace_processing_done_wait(k_timeout_t timeout);
  */
 int nrf_modem_lib_trace_level_set(enum nrf_modem_lib_trace_level trace_level);
 
+/** @brief Get min, max and avg bitrate values of trace backend.
+ *
+ * @param[out] min_val Minimum bitrate
+ * @param[out] max_val Maximum bitrate
+ * @param[out] avg_val Average bitrate
+ *
+ * @return Zero on success, non-zero otherwise.
+ */
+int nrf_modem_lib_trace_backend_bitrate_get(double *min_val, double *max_val, double *avg_val);
+
 /** @} */
 
 #ifdef __cplusplus

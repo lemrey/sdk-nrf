@@ -36,6 +36,54 @@ K_SEM_DEFINE(trace_done_sem, 1, 1);
 static int trace_init(void);
 static int trace_deinit(void);
 
+static double min_bps = DOUBLE_MAX;
+static double max_bps;
+static double tot_bps;
+static int num_bps;
+
+#if CONFIG_NRF_MODEM_LIB_TRACE_LOG_BITRATE
+#define LOG_PERIOD_MSEC K_MSEC(CONFIG_NRF_MODEM_LIB_TRACE_LOG_BITRATE_PERIOD_MSEC)
+
+static void log_bitrate_stats(struct k_work *item);
+
+K_WORK_DELAYABLE_DEFINE(log_bitrate_stats_work, log_bitrate_stats);
+
+static void log_bitrate_stats(struct k_work *item)
+{
+	LOG_INF("Trace avg bitrate (bps): %10.2lf", tot_bps / num_bps);
+
+	k_work_schedule(&log_bitrate_stats_work,
+			LOG_PERIOD_MSEC);
+}
+#endif
+
+static void update_bps(double bps)
+{
+	if (bps < min_bps) {
+		min_bps = bps;
+	}
+
+	if (bps > max_bps) {
+		max_bps = bps;
+	}
+
+	tot_bps += bps;
+	num_bps++;
+}
+
+int nrf_modem_lib_trace_backend_bitrate_get(double *min_val, double *max_val, double *avg_val)
+{
+	if (min_val == NULL || max_val == NULL || avg_val == NULL) {
+		return -EINVAL;
+	}
+
+	*min_val = min_bps;
+	*max_val = max_bps;
+	*avg_val = tot_bps / num_bps;
+
+	return 0;
+}
+
 int nrf_modem_lib_trace_processing_done_wait(k_timeout_t timeout)
 {
 	int err;
@@ -54,10 +102,18 @@ static int trace_fragment_write(struct nrf_modem_trace_data *frag)
 {
 	int ret;
 	size_t remaining = frag->len;
+	uint32_t start;
+	uint32_t end;
+	double bps;
 
 	while (remaining) {
+		start = k_uptime_get_32();
+
 		ret = trace_backend_write((void *)((uint8_t *)frag->data + frag->len - remaining),
 					  remaining);
+
+		end = k_uptime_get_32();
+
 		if (ret < 0) {
 			LOG_ERR("trace_backend_write failed with err: %d", ret);
 
@@ -66,6 +122,13 @@ static int trace_fragment_write(struct nrf_modem_trace_data *frag)
 
 		if (ret == 0) {
 			LOG_WRN("trace_backend_write wrote 0 bytes.");
+		}
+
+		/* Prevent division by zero (sometimes `end` == `start`) */
+		if (end != start) {
+			bps = ret / (end - start) * 1000 * 8;
+
+			update_bps(bps);
 		}
 
 		remaining -= ret;
@@ -129,6 +192,12 @@ static int trace_init(void)
 
 	LOG_INF("Trace tread ready");
 	k_sem_give(&trace_sem);
+
+
+#if CONFIG_NRF_MODEM_LIB_TRACE_LOG_BITRATE
+	k_work_schedule(&log_bitrate_stats_work,
+			LOG_PERIOD_MSEC);
+#endif
 
 	return 0;
 }
