@@ -1,0 +1,134 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/ {
+	arng: arng {
+		status = "okay";
+		compatible = "zephyr,native-posix-rng";
+		label = "ENTROPY_0";
+	};
+
+	chosen {
+		/delete-property/ nordic,bellboard-cpuapp;
+		/delete-property/ nordic,vevif-cpuppr;
+		zephyr,entropy = &arng;
+	};
+
+	allocatable_ram {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Configure PPR code region. Allow to execute from defined
+		 * region by App and cores owned by App.
+		 */
+		ppr_code: memory@1e09a000 {
+			compatible = "nordic,allocatable-mram";
+			reg = <0x1e09a000 0x10000>;
+			perm-read;
+			perm-execute;
+		};
+
+		/* Configure PPR memory region. Allow to use defined RAM
+		 * region by App and cores owned by App.
+		 */
+		gram30_app_ppr: memory@2fc00000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc00000 0x4000>;
+			perm-read;
+			perm-write;
+		};
+
+		/* Configure PPR memory region. Allow to use defined RAM
+		 * region by App and cores owned by App.
+		 */
+		gram31_app_ppr: memory@2fc04000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc04000 0x4000>;
+			perm-read;
+			perm-write;
+		};
+	};
+
+	reserved-memory {
+		gram30_shared_tx: memory@2fc07000 {
+			reg = <0x2fc07000 0x0800>;
+		};
+
+		gram30_shared_rx: memory@2fc07800 {
+			reg = <0x2fc07800 0x0800>;
+		};
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-icmsg";
+		tx-region = <&gram30_shared_tx>;
+		rx-region = <&gram30_shared_rx>;
+		mboxes = <&mbox_remote 12>,
+			 <&mbox_local  12>;
+		mbox-names = "tx", "rx";
+		status = "okay";
+	};
+};
+
+&global_peripherals {
+	/* Delete and redefine nodes with custom compatible. */
+	/delete-node/ bellboard@9a000;
+	/delete-node/ vevif@8c8000; /* SYSCtrl */
+	/delete-node/ vevif@8d4000; /* FLPR */
+	/delete-node/ vevif@908000; /* PPR */
+
+	mbox_local: bellboard@9a000 {
+		compatible = "nordic,mbox-nrf-ids";
+		status = "okay";
+		reg = <0x9a000 0x1000>;
+		interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
+		instance = <0>;
+		#mbox-cells = <1>;
+	};
+
+	mbox_remote: vevif@908000 {
+		compatible = "nordic,mbox-nrf-ids";
+		status = "okay";
+		reg = <0x908000 0x1000>;
+		domain = <NRF_IDS_DOMAIN_PPR>; /* Remote vevif belong to CPU PPR */
+		#mbox-cells = <1>;
+	};
+};
+
+/* ram3x_cpuapp buffer is used by App core UART driver. */
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuapp>;
+};
+
+&uart135 {
+	status = "okay";
+	tx-pin = <7>;
+	rx-pin = <6>;
+};
+
+&grtc {
+	status = "okay";
+	/* Channels 4 and 5 are used by the app core itself, channels 6 and 7
+	 * are owned by App but used by PPR.
+	 */
+	owned-channels = <4 5 6 7>;
+	child-owned-channels = <6 7>;
+};
+
+/* Enable PPR clic so App could start PPR. */
+&clic_cpuppr {
+	status = "okay";
+};
+
+/* Disable systick for App core, GRTC is used as tick source. */
+&systick {
+	status = "disabled";
+};
