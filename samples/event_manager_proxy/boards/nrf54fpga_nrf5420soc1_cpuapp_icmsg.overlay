@@ -86,7 +86,7 @@
 		compatible = "nordic,mbox-nrf-ids";
 		status = "okay";
 		reg = <0x908000 0x1000>;
-		domain = <5>; /* Remote vevif belong to CPU PPR */
+		domain = <NRF_IDS_DOMAIN_PPR>; /* Remote vevif belong to CPU PPR */
 		#mbox-cells = <1>;
 	};
 };

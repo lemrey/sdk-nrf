@@ -94,7 +94,7 @@
 		compatible = "nordic,mbox-nrf-ids";
 		status = "okay";
 		reg = <0x9a000 0x1000>;
-		domain = <0>; /* Remote bellboard belong to CPU App */
+		domain = <NRF_IDS_DOMAIN_APP>; /* Remote bellboard belong to CPU App */
 		#mbox-cells = <1>;
 	};
 };
