@@ -38,13 +38,18 @@ static struct data_big_content data_big_response;
 static void test_data_response(void)
 {
 	struct data_event *event = new_data_event();
+	static uint8_t buffer[6];
 
-	event->val1 = (int8_t)sys_rand32_get();
-	event->val2 = (int8_t)sys_rand32_get();
-	event->val3 = (int8_t)sys_rand32_get();
-	event->val1u = (uint8_t)sys_rand32_get();
-	event->val2u = (uint8_t)sys_rand32_get();
-	event->val3u = (uint8_t)sys_rand32_get();
+	for (size_t i = 0; i < sizeof(buffer); i++) {
+		buffer[i] = (uint8_t)sys_rand32_get();
+	}
+
+	event->val1 = (int8_t)buffer[0];
+	event->val2 = (int8_t)buffer[1];
+	event->val3 = (int8_t)buffer[2];
+	event->val1u = (uint8_t)buffer[3];
+	event->val2u = (uint8_t)buffer[4];
+	event->val3u = (uint8_t)buffer[5];
 
 	memset(&data_response, 0, sizeof(data_response));
 	k_sem_reset(&waiting_response_sem);
@@ -55,12 +60,12 @@ static void test_data_response(void)
 	int err = k_sem_take(&waiting_response_sem, K_SECONDS(1));
 	zassert_ok(err, "No data response event received");
 
-	zassert_equal(event->val1, data_response.val1, "Unexpected value in response");
-	zassert_equal(event->val2, data_response.val2, "Unexpected value in response");
-	zassert_equal(event->val3, data_response.val3, "Unexpected value in response");
-	zassert_equal(event->val1u, data_response.val1u, "Unexpected value in response");
-	zassert_equal(event->val2u, data_response.val2u, "Unexpected value in response");
-	zassert_equal(event->val3u, data_response.val3u, "Unexpected value in response");
+	zassert_equal((int8_t)buffer[0], data_response.val1, "Unexpected value in response");
+	zassert_equal((int8_t)buffer[1], data_response.val2, "Unexpected value in response");
+	zassert_equal((int8_t)buffer[2], data_response.val3, "Unexpected value in response");
+	zassert_equal(buffer[3], data_response.val1u, "Unexpected value in response");
+	zassert_equal(buffer[4], data_response.val2u, "Unexpected value in response");
+	zassert_equal(buffer[5], data_response.val3u, "Unexpected value in response");
 
 	test_end(TEST_DATA_RESPONSE);
 }
@@ -68,9 +73,11 @@ static void test_data_response(void)
 static void test_data_big_response(void)
 {
 	struct data_big_event *event = new_data_big_event();
+	static uint32_t buffer[ARRAY_SIZE(event->block)];
 
-	for (size_t n = 0; n < DATA_BIG_EVENT_BLOCK_SIZE; ++n) {
-		event->block[n] = sys_rand32_get();
+	for (size_t i = 0; i < ARRAY_SIZE(buffer); i++) {
+		buffer[i] = sys_rand32_get();
+		event->block[i] = buffer[i];
 	}
 
 	memset(&data_big_response, 0, sizeof(data_big_response));
@@ -82,7 +89,7 @@ static void test_data_big_response(void)
 	int err = k_sem_take(&waiting_response_sem, K_SECONDS(1));
 	zassert_ok(err, "No data response event received");
 
-	zassert_mem_equal(&data_big_response.block, &event->block, sizeof(event->block),
+	zassert_mem_equal(buffer, &data_big_response.block, sizeof(buffer),
 			  "Unexpected block in response");
 
 	test_end(TEST_DATA_RESPONSE);
