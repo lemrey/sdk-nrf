@@ -14,6 +14,16 @@
 
 #define MODULE common_utils
 
+
+static void inter_event_delay(void)
+{
+	if (IS_ENABLED(CONFIG_BOARD_NRF54FPGA_NRF5420_CPUPPR) ||
+	    IS_ENABLED(CONFIG_BOARD_NRF54FPGA_NRF5420_SOC1_CPUPPR)) {
+		/* Give FPGA more time in this direction. */
+		k_busy_wait(250);
+	}
+}
+
 void proxy_direct_submit_event(struct app_event_header *eh)
 {
 	BUILD_ASSERT(IS_ENABLED(CONFIG_APP_EVENT_MANAGER_POSTPROCESS_HOOKS));
@@ -60,6 +70,7 @@ int proxy_burst_data_events(void)
 		event->val3u = (uint32_t)cnt;
 
 		proxy_direct_submit_event(&event->header);
+		inter_event_delay();
 	}
 
 	app_event_manager_free(event);
@@ -80,6 +91,7 @@ int proxy_burst_data_response_events(void)
 		event->val3u = (uint32_t)cnt;
 
 		proxy_direct_submit_event(&event->header);
+		inter_event_delay();
 	}
 
 	app_event_manager_free(event);
@@ -97,6 +109,7 @@ int proxy_burst_data_big_events(void)
 		}
 
 		proxy_direct_submit_event(&event->header);
+		inter_event_delay();
 	}
 
 	app_event_manager_free(event);
@@ -114,6 +127,7 @@ int proxy_burst_data_big_response_events(void)
 		}
 
 		proxy_direct_submit_event(&event->header);
+		inter_event_delay();
 	}
 
 	app_event_manager_free(event);
