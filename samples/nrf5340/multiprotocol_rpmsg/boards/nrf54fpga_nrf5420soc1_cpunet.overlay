@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <zephyr/dt-bindings/mbox/nrf-ids.h>
+
 / {
 	chosen {
 		/delete-property/ nordic,bellboard-cpuapp;
@@ -42,7 +44,7 @@
 	bellboard_cpuapp: bellboard0@9a000 {
 		compatible = "nordic,mbox-nrf-ids";
 		reg = <0x9a000 0x1000>;
-		domain = <0>;
+		domain = <NRF_IDS_DOMAIN_APP>;
 		status = "okay";
 		#mbox-cells = <1>;
 	};
