@@ -35,7 +35,8 @@ tests:
     platform_allow: nrf5340dk_nrf5340_cpuapp
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
-    extra_args: OVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_nrf5340_singlecore.conf CONFIG_SERIAL=n CONFIG_CONSOLE=n CONFIG_UART_CONSOLE=n CONFIG_LOG=n
+    extra_args: OVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_singlecore.conf CONFIG_SERIAL=n CONFIG_CONSOLE=n CONFIG_UART_CONSOLE=n CONFIG_LOG=n
+                DTC_OVERLAY_FILE=boards/nrf5340dk_nrf5340_cpuapp_singlecore.overlay
   sample.caf_sensor_manager.nrf54fpga_singlecore.correctness_test:
     build_only: false
     platform_allow: nrf54fpga_nrf5420_cpuapp

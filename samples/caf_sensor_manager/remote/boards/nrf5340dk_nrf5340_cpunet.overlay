@@ -28,6 +28,7 @@
 		compatible = "nordic,sensor-sim";
 		label = "SENSOR_SIM";
 		acc-signal = "wave";
+		status = "okay";
 	};
 
 	agg0: agg0 {

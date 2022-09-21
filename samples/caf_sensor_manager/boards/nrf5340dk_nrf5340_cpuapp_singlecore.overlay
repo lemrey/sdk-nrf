@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
- / {
+ /{
 	agg0: agg0 {
 		compatible = "caf,aggregator";
 		sensor_descr = "accel_sim_xyz";
@@ -18,6 +18,13 @@
 		sensor_descr = "void_test_sensor";
 		buf_data_length = <80>;
 		sensor_data_size = <8>;
+		status = "okay";
+	};
+
+	sensor_sim: sensor_sim {
+		compatible = "nordic,sensor-sim";
+		label = "SENSOR_SIM";
+		acc-signal = "wave";
 		status = "okay";
 	};
 };

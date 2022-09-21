@@ -9,14 +9,14 @@
 		compatible = "nordic,sensor-sim";
 		label = "SENSOR_SIM";
 		acc-signal = "wave";
+		status = "okay";
 	};
 
 	agg0: agg0 {
 		compatible = "caf,aggregator";
 		sensor_descr = "accel_sim_xyz";
-		buf_data_length = <120>;
+		buf_data_length = <240>;
 		sensor_data_size = <24>;
-		memory-region = <&gram30_agg_buf>;
 		status = "okay";
 	};
 
@@ -26,19 +26,6 @@
 		buf_data_length = <80>;
 		sensor_data_size = <8>;
 		status = "okay";
-	};
-
-	reserved-memory {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		/* Configure memory region access. */
-
-		gram30_agg_buf: memory@2fc00000 {
-			compatible = "nordic,allocatable-mram";
-			reg = <0x2fc00000 0x4000>;
-			perm-read;
-			perm-write;
-		};
 	};
 };
 
@@ -58,5 +45,5 @@
 
 /* Disable systick for App core, GRTC is used as tick source. */
 &systick {
-		status = "disabled";
+	status = "disabled";
 };
