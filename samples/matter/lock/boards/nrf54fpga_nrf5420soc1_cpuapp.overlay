@@ -5,6 +5,7 @@
  */
 
 #include <zephyr/dt-bindings/ipc_service/static_vrings.h>
+#include <zephyr/dt-bindings/mbox/nrf-ids.h>
 
 
 /*
@@ -63,7 +64,7 @@
     bellboard_cpunet: bellboard@9b000 {
         compatible = "nordic,mbox-nrf-ids";
         reg = <0x9b000 0x1000>;
-        domain = <1>;
+        domain = <NRF_IDS_DOMAIN_NET>;
         status = "okay";
         #mbox-cells = <1>;
     };
