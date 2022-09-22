@@ -8,60 +8,66 @@
 	chosen {
 		/delete-property/ nordic,bellboard-cpuapp;
 		/delete-property/ nordic,vevif-cpuppr;
+		zephyr,console = &uart136;
 	};
 
 	allocatable_ram {
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		/* Configure PPR code region. Allow to execute from defined
-		 * region by App and cores owned by App.
+		/* Configure PPR code region.
+		 * This is done to ensure correct UICR generation.
 		 */
 		ppr_code: memory@1e09a000 {
-			compatible = "nordic,allocatable-mram";
-			reg = <0x1e09a000 0x10000>;
+			compatible = "nordic,allocatable-ram";
+			reg = <0x1e09a000 DT_SIZE_K(64)>;
 			perm-read;
 			perm-execute;
 		};
 
-		/* Configure PPR memory region. Allow to use defined RAM
-		 * region by App and cores owned by App.
+		/* Configure RAM3x region.
+		 * This is done to ensure correct UICR generation.
 		 */
-		ram30_app_ppr: memory@2fc00000 {
+		ram3x_app_ppr: memory@2fc00000 {
 			compatible = "nordic,allocatable-ram";
-			reg = <0x2fc00000 0x4000>;
-			perm-read;
-			perm-write;
-		};
-
-		/* Configure PPR memory region. Allow to use defined RAM
-		 * region by App and cores owned by App.
-		 */
-		ram31_app_ppr: memory@2fc04000 {
-			compatible = "nordic,allocatable-ram";
-			reg = <0x2fc04000 0x4000>;
+			reg = <0x2fc00000 DT_SIZE_K(32)>;
 			perm-read;
 			perm-write;
 		};
 	};
 
 	reserved-memory {
-		ram30_shared_tx: memory@2fc07000 {
+		ram31_shared_tx: memory@2fc07000 {
 			reg = <0x2fc07000 0x0800>;
 		};
 
-		ram30_shared_rx: memory@2fc07800 {
+		ram31_shared_rx: memory@2fc07800 {
 			reg = <0x2fc07800 0x0800>;
 		};
 	};
 
 	ipc0: ipc0 {
 		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&ram30_shared_tx>;
-		rx-region = <&ram30_shared_rx>;
+		tx-region = <&ram31_shared_tx>;
+		rx-region = <&ram31_shared_rx>;
 		mboxes = <&mbox_remote 12>,
 			 <&mbox_local  12>;
 		mbox-names = "tx", "rx";
+		status = "okay";
+	};
+
+	sensor_stub: sensor_stub {
+		compatible = "nordic,sensor-stub";
+		label = "SENSOR_STUB";
+		generator = "sensor_stub_gen";
+		status = "okay";
+	};
+
+	agg0: agg0 {
+		compatible = "caf,aggregator";
+		sensor_descr = "accel_sim_xyz";
+		buf_data_length = <240>;
+		sensor_data_size = <24>;
 		status = "okay";
 	};
 };
@@ -69,9 +75,9 @@
 &global_peripherals {
 	/* Delete and redefine nodes with custom compatible. */
 	/delete-node/ bellboard@9a000;
-	/delete-node/ vevif@8c8000; /* SYSCtrl */
-	/delete-node/ vevif@8d4000; /* FLPR */
-	/delete-node/ vevif@908000; /* PPR */
+	/delete-node/ vevif@8c8000; // SYSCtrl
+	/delete-node/ vevif@8d4000; // FLPR
+	/delete-node/ vevif@908000; // PPR
 
 	mbox_local: bellboard@9a000 {
 		compatible = "nordic,mbox-nrf-ids";
@@ -91,13 +97,14 @@
 	};
 };
 
-/* ram3x_cpuapp buffer is used by App core UART driver. */
 &ram3x_cpuapp {
 	status = "okay";
 };
 
 &uart136 {
 	status = "okay";
+	tx-pin = < 0x5 >;
+	rx-pin = < 0x4 >;
 	memory-regions = <&ram3x_cpuapp>;
 };
 
@@ -109,19 +116,17 @@
 
 &grtc {
 	status = "okay";
-	/* Channels 4 and 5 are used by the app core itself, channels 6 and 7
-	 * are owned by App but used by PPR.
+	/* Channel 6 and 7 are owned by App and used by PPR.
+	 * This is done to ensure correct UICR generation.
 	 */
 	owned-channels = <4 5 6 7>;
 	child-owned-channels = <6 7>;
 };
 
-/* Enable PPR clic so App could start PPR. */
 &clic_cpuppr {
 	status = "okay";
 };
 
-/* Disable systick for App core, GRTC is used as tick source. */
 &systick {
 	status = "disabled";
 };

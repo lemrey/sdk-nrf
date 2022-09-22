@@ -1,9 +1,9 @@
-.. _ug_nrf54_architecture:
+.. _ug_nrf54h20_architecture:
 
-Software Architecture for nRF5420
-#################################
+Software Architecture for nRF54H20
+##################################
 
-The nRF5420 is a multi-core System-on-Chip (SoC) that uses an asymmetric multiprocessing (AMP) configuration.
+The nRF54H20 is a multi-core System-on-Chip (SoC) that uses an asymmetric multiprocessing (AMP) configuration.
 Each core is tasked with specific responsibilities and they cooperate to run the whole system use-cases efficiently.
 
 The software architecture documentation briefly describes the responsibilities of the cores and their inter-processor interactions.
@@ -13,7 +13,7 @@ Cores
 
 TODO: domains diagram (public and internal versions)
 
-The following are the cores available in the nRF5420, divided per domain:
+The following are the cores available in the nRF54H20, divided per domain:
 
 * Application Domain:
 
@@ -59,7 +59,7 @@ The following are the cores available in the nRF5420, divided per domain:
 Memory Layout
 *************
 
-The nRF5420 contains the following:
+The nRF54H20 contains the following:
 
 * Static RAM (SRAM, RAM)
 * Magnetic RAM (MRAM) with non volatile memory properties
@@ -81,7 +81,7 @@ Local RAM is present in each of local domains
 Application domain
 ^^^^^^^^^^^^^^^^^^
 
-.. image:: images/nrf5420_memory_map_app.png
+.. image:: images/nrf54h20_memory_map_app.png
    :width: 300 px
    :align: left
 
@@ -110,7 +110,7 @@ Access control
 Radio domain
 ^^^^^^^^^^^^
 
-.. image:: images/nrf5420_memory_map_radio.png
+.. image:: images/nrf54h20_memory_map_radio.png
    :width: 300 px
    :align: left
 
@@ -163,7 +163,7 @@ Access control
 Secure domain
 ^^^^^^^^^^^^^
 
-.. image:: images/nrf5420_memory_map_secure.png
+.. image:: images/nrf54h20_memory_map_secure.png
    :width: 300 px
    :align: left
 
@@ -194,12 +194,12 @@ Each of the instances has other properties and other purposes.
 
 TODO: access control
 
-.. _ug_nrf54_architecture_gp_shared_ram:
+.. _ug_nrf54h20_architecture_gp_shared_ram:
 
 General-purpose shared RAM (RAM0x)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/nrf5420_memory_map_ram0x.png
+.. image:: images/nrf54h20_memory_map_ram0x.png
    :width: 300 px
    :align: left
 
@@ -241,7 +241,7 @@ TODO: secure domain usage of RAM0x, full partitioning, table with MPC OVERRIDEs
 SYSCTRL memory (RAM20)
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/nrf5420_memory_map_ram20.png
+.. image:: images/nrf54h20_memory_map_ram20.png
    :width: 300 px
    :align: left
 
@@ -274,7 +274,7 @@ Access control
 Fast global RAM (RAM21)
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/nrf5420_memory_map_ram21.png
+.. image:: images/nrf54h20_memory_map_ram21.png
    :width: 300 px
    :align: left
 
@@ -301,7 +301,7 @@ Access control
 Slow global RAM (RAM3x)
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: images/nrf5420_memory_map_ram3x.png
+.. image:: images/nrf54h20_memory_map_ram3x.png
    :width: 300 px
    :align: left
 
@@ -336,7 +336,7 @@ The MRAM is divided in the following parts:
 MRAM_10
 -------
 
-.. image:: images/nrf5420_memory_map_mram10.png
+.. image:: images/nrf54h20_memory_map_mram10.png
    :width: 300 px
    :align: left
 
@@ -374,7 +374,7 @@ Access control
 MRAM_11
 -------
 
-.. image:: images/nrf5420_memory_map_mram11.png
+.. image:: images/nrf54h20_memory_map_mram11.png
    :width: 300 px
    :align: left
 
@@ -496,13 +496,13 @@ Inter-Processor Communication
 
 Inter-Processor Communication is required in Asymmetric Multiprocessing environments to share services' requests, responses, and data between processors.
 
-The following sections describe the communication protocol used for IPC in |NCS| for the nRF54 SoC.
+The following sections describe the communication protocol used for IPC in |NCS| for the nRF54H20 SoC.
 They also include an overview of the connection scheme between the cores available in the system.
 
 Technical solution
 ==================
 
-A single Inter-Processor Communication instance used in the nRF54 SoC allows full-duplex communication between two cores.
+A single Inter-Processor Communication instance used in the nRF54H20 SoC allows full-duplex communication between two cores.
 It support only unicast messages.
 
 To communicate with multiple peers, a core requires multiple IPC instances, at least as many as the number of peers.
@@ -514,14 +514,14 @@ The Inter-Processor Communication can be described using the OSI model.
 Physical layer
 --------------
 
-The physical layer used by IPC in the nRF54 SoC consists of shared RAM and signaling peripherals.
+The physical layer used by IPC in the nRF54H20 SoC consists of shared RAM and signaling peripherals.
 
 Shared RAM must be accessible (read and write) by both cores using this RAM region for communication.
-See :ref:`General-purpose shared RAM (RAM0x)<ug_nrf54_architecture_gp_shared_ram>` for a description of shared RAM and its placement in the memory map.
+See :ref:`General-purpose shared RAM (RAM0x)<ug_nrf54h20_architecture_gp_shared_ram>` for a description of shared RAM and its placement in the memory map.
 
 Signaling peripherals are the hardware peripherals which can be used by one core to trigger an IRQ in another core.
-Each ARM Cortex-M33 core in nRF54 has an associated BELLBOARD signaling peripheral.
-Each VPR core in nRF54 has an associated VEVIF signaling peripheral:
+Each ARM Cortex-M33 core in nRF54H20 has an associated BELLBOARD signaling peripheral.
+Each VPR core in nRF54H20 has an associated VEVIF signaling peripheral:
 
 * When a core signals an IRQ to its ARM Cortex-M33 peer, it uses the BELLBOARD associated with the peer.
 * When a core signals an IRQ to a VPR peer, it uses the VEVIF associated with the peer.
@@ -577,13 +577,13 @@ The following tablex show signals received only by specified cores.
       =================  ==========
 
 Some of the channels in BELLBOARDs and VEVIFs are reserved for functions different from IPC.
-See :ref:`Post-mortem debugging capabilities<ug_nrf54_architecture_post_mortem_debugging_capabilities>` for information on the assignment of IPC channels for other functions.
+See :ref:`Post-mortem debugging capabilities<ug_nrf54h20_architecture_post_mortem_debugging_capabilities>` for information on the assignment of IPC channels for other functions.
 
 MAC, Network, Transport
 -----------------------
 
 The layers responsible for maintaining a stable full-duplex stream of data between two cores (MAC, Network, Transport) are implemented in an IPC transport library.
-The default IPC transport library for nRF54 is *icmsg* (TODO: link to repo).
+The default IPC transport library for nRF54H20 is *icmsg* (TODO: link to repo).
 This lightweight library maintains the connection between a pair of cores for each IPC instance with minimal memory overhead.
 Each IPC instance requires an instance of the icmsg library.
 Each icmsg library instance requires the following:
@@ -605,12 +605,12 @@ However, you must use as data plane memory allocation mechanisms optimized for b
 Session
 -------
 
-The IPC session establishment in the nRF5420 SoC is performed by the *ipc_service* library (TODO: link to Zephyr repo or docs).
+The IPC session establishment in the nRF54H20 SoC is performed by the *ipc_service* library (TODO: link to Zephyr repo or docs).
 This library provides an unified API for IPC transports and it integrates specific transports as its backends.
 icmsg is integrated as one of the available ipc_service backends.
 The library is responsible for creating IPC instances based on the system configuration described in the devicetree.
 
-It is recommended to use the ipc_service API to perform inter-processor communication in the nRF5420 SoC.
+It is recommended to use the ipc_service API to perform inter-processor communication in the nRF54H20 SoC.
 
 Presentation and Application layers
 -----------------------------------
@@ -730,7 +730,7 @@ Global
 Local
 -----
 
-.. _ug_nrf54_architecture_post_mortem_debugging_capabilities:
+.. _ug_nrf54h20_architecture_post_mortem_debugging_capabilities:
 
 Post-mortem debugging capabilities
 ==================================

@@ -9,9 +9,11 @@ tests:
       - nrf5340dk_nrf5340_cpunet
     platform_allow: nrf5340dk_nrf5340_cpunet
     tags: ci_build
-  sample.nrf5420.multiprotocol_rpmsg.fpga:
+  sample.nrf54h20.multiprotocol_rpmsg.fpga:
     build_only: true
     integration_platforms:
-      - nrf54fpga_nrf5420soc1_cpurad
-    platform_allow: nrf54fpga_nrf5420soc1_cpurad
+      - nrf54h20dk_nrf54h20_cpurad@soc1
+    platform_allow: nrf54h20dk_nrf54h20_cpurad@soc1
     tags: ci_build
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y

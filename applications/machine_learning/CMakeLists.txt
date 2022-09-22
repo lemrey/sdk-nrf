@@ -6,13 +6,6 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-string(FIND "${BOARD}" "@" REVISION_SEPARATOR_INDEX)
-if(NOT (REVISION_SEPARATOR_INDEX EQUAL -1))
-  math(EXPR BOARD_REVISION_INDEX "${REVISION_SEPARATOR_INDEX} + 1")
-  string(SUBSTRING ${BOARD} ${BOARD_REVISION_INDEX} -1 BOARD_REVISION)
-  string(SUBSTRING ${BOARD} 0 ${REVISION_SEPARATOR_INDEX} BOARD)
-endif()
-
 if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}")
   message(FATAL_ERROR
           "Board ${BOARD} is not supported.\n"
@@ -23,7 +16,9 @@ endif()
 ################################################################################
 
 # The application uses the configuration/<board> scheme for configuration files.
+# Configuring here to ensure BOARD contains BOARD_REVISION
 set(APPLICATION_CONFIG_DIR "configuration/\${BOARD}")
+string(CONFIGURE ${APPLICATION_CONFIG_DIR} APPLICATION_CONFIG_DIR)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project("Machine learning"
@@ -45,7 +40,7 @@ target_include_directories(app PRIVATE
 
 zephyr_include_directories(
   configuration/common
-  configuration/${BOARD}
+  ${APPLICATION_CONFIG_DIR}
 )
 
 # Application sources
@@ -57,7 +52,7 @@ if(CONFIG_BT_RPMSG)
   assert_exists(hci_rpmsg_CONF_FILE)
 endif()
 
-if (CONFIG_SOC_SERIES_NRF54X)
+if (CONFIG_SOC_SERIES_NRF54HX)
   build_secdom()
   build_sysctrl()
 endif()

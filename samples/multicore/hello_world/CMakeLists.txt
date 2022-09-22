@@ -13,7 +13,7 @@ project(app)
 
 target_sources(app PRIVATE src/main.c)
 
-if (CONFIG_SOC_SERIES_NRF54X)
+if (CONFIG_SOC_SERIES_NRF54HX)
   if (CONFIG_APP_STM_LOGGING_FSC_FRONTEND)
     build_secdom_stm_logging_frontend()
   else()

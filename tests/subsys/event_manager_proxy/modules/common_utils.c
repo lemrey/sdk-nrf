@@ -17,8 +17,7 @@
 
 static void inter_event_delay(void)
 {
-	if (IS_ENABLED(CONFIG_BOARD_NRF54FPGA_NRF5420_CPUPPR) ||
-	    IS_ENABLED(CONFIG_BOARD_NRF54FPGA_NRF5420_SOC1_CPUPPR)) {
+	if (IS_ENABLED(CONFIG_BOARD_NRF54H20DK_NRF54H20_CPUPPR)) {
 		/* Give FPGA more time in this direction. */
 		k_busy_wait(250);
 	}

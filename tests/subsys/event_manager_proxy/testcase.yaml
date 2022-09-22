@@ -6,8 +6,16 @@ tests:
     tags: event_manager_proxy
   event_manager_proxy.icmsg:
     extra_args: CONF_FILE=prj_icmsg.conf
-    platform_allow: nrf5340dk_nrf5340_cpuapp nrf54fpga_nrf5420soc1_cpuapp
+    platform_allow: nrf5340dk_nrf5340_cpuapp
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
-      - nrf54fpga_nrf5420soc1_cpuapp
     tags: event_manager_proxy
+  event_manager_proxy.icmsg.nrf54h20.fpga:
+    extra_args: CONF_FILE=prj_icmsg.conf
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: event_manager_proxy
+    extra_args: CONF_FILE=prj_icmsg.conf remote_CONFIG_EMULATOR_FPGA=y
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y

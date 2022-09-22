@@ -5,14 +5,18 @@
  */
 
  /{
+	chosen {
+		zephyr,console = &uart136;
+	};
+
 	allocatable_ram {
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		/* Configure GRAM region.
+		/* Configure RAM3x region.
 		 * This is done to ensure correct UICR generation.
 		 */
-		ram30_app: memory@2fc00000 {
+		ram3x_app: memory@2fc00000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc00000 DT_SIZE_K(16)>;
 			perm-read;
@@ -43,6 +47,8 @@
 
 &uart136 {
 	status = "okay";
+	tx-pin = < 0x5 >;
+	rx-pin = < 0x4 >;
 	memory-regions = <&ram3x_cpuapp>;
 };
 
