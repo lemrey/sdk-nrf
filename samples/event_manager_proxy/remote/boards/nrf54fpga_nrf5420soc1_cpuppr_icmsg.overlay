@@ -22,19 +22,19 @@
 	};
 
 	reserved-memory {
-		gram30_shared_rx: memory@2fc07000 {
+		ram30_shared_rx: memory@2fc07000 {
 			reg = <0x2fc07000 0x0800>;
 		};
 
-		gram30_shared_tx: memory@2fc07800 {
+		ram30_shared_tx: memory@2fc07800 {
 			reg = <0x2fc07800 0x0800>;
 		};
 	};
 
 	ipc0: ipc0 {
 		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&gram30_shared_tx>;
-		rx-region = <&gram30_shared_rx>;
+		tx-region = <&ram30_shared_tx>;
+		rx-region = <&ram30_shared_rx>;
 		mboxes = <&mbox_remote 12>,
 			 <&mbox_local  12>;
 		mbox-names = "tx", "rx";

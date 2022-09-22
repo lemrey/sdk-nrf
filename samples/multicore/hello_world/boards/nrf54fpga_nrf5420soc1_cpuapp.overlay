@@ -22,7 +22,7 @@
 		/* Configure PPR memory region. Allow to use defined RAM
 		 * region by App and cores owned by App.
 		 */
-		gram30_app_ppr: memory@2fc00000 {
+		ram30_app_ppr: memory@2fc00000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc00000 0x4000>;
 			perm-read;
@@ -32,7 +32,7 @@
 		/* Configure PPR memory region. Allow to use defined RAM
 		 * region by App and cores owned by App.
 		 */
-		gram31_app_ppr: memory@2fc04000 {
+		ram31_app_ppr: memory@2fc04000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc04000 0x4000>;
 			perm-read;

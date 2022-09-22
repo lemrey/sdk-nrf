@@ -16,7 +16,7 @@
 		#size-cells = <1>;
 
 		/* Configuration required by nrf-regtool v2. */
-		gram30_app: memory@2fc00000 {
+		ram30_app: memory@2fc00000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc00000 0x4000>;
 			perm-read;
@@ -24,7 +24,7 @@
 		};
 
 		/* Configuration required by nrf-regtool v2. */
-		gram31_app: memory@2fc04000 {
+		ram31_app: memory@2fc04000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc04000 0x4000>;
 			perm-read;
