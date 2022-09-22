@@ -74,3 +74,5 @@ if(NOT NO_BOILERPLATE)
 
   include(${NRF_DIR}/cmake/boilerplate.cmake NO_POLICY_SCOPE)
 endif()
+
+include(${NRF_DIR}/cmake/hcs.cmake)
