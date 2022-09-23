@@ -52,30 +52,20 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 	.connected        = connected,
 };
 
-static bool pairing_mode(enum bt_fast_pair_adv_mode fp_adv_mode)
+static void bond_count_helper(const struct bt_bond_info *info, void *user_data)
 {
-	return (fp_adv_mode == BT_FAST_PAIR_ADV_MODE_DISCOVERABLE);
+	ARG_UNUSED(info);
+	size_t *cnt = user_data;
+
+	(*cnt)++;
 }
 
-static void configure_fp_adv_prov(enum bt_fast_pair_adv_mode fp_adv_mode)
+static bool pairing_mode(void)
 {
-	switch (fp_adv_mode) {
-	case BT_FAST_PAIR_ADV_MODE_DISCOVERABLE:
-		break;
+	size_t res = 0;
 
-	case BT_FAST_PAIR_ADV_MODE_NOT_DISCOVERABLE_SHOW_UI_IND:
-		bt_le_adv_prov_fast_pair_show_ui_pairing(true);
-		break;
-
-	case BT_FAST_PAIR_ADV_MODE_NOT_DISCOVERABLE_HIDE_UI_IND:
-		bt_le_adv_prov_fast_pair_show_ui_pairing(false);
-		break;
-
-	default:
-		/* Should not happen. */
-		__ASSERT_NO_MSG(false);
-		break;
-	};
+	bt_foreach_bond(BT_ID_DEFAULT, bond_count_helper, &res);
+	return (res < CONFIG_BT_MAX_PAIRED);
 }
 
 static int adv_start_internal(enum bt_fast_pair_adv_mode fp_adv_mode)
@@ -88,7 +78,8 @@ static int adv_start_internal(enum bt_fast_pair_adv_mode fp_adv_mode)
 		return err;
 	}
 
-	configure_fp_adv_prov(fp_adv_mode);
+	/* Set advertising mode of Fast Pair advertising data provider. */
+	bt_adv_prov_fast_pair_mode_set(fp_adv_mode);
 
 	size_t ad_len = bt_le_adv_prov_get_ad_prov_cnt();
 	size_t sd_len = bt_le_adv_prov_get_sd_prov_cnt();
@@ -98,7 +89,7 @@ static int adv_start_internal(enum bt_fast_pair_adv_mode fp_adv_mode)
 	struct bt_le_adv_prov_adv_state state;
 	struct bt_le_adv_prov_feedback fb;
 
-	state.pairing_mode = pairing_mode(fp_adv_mode);
+	state.pairing_mode = pairing_mode();
 	state.in_grace_period = false;
 
 	err = bt_le_adv_prov_get_ad(ad, &ad_len, &state, &fb);
@@ -169,7 +160,7 @@ int bt_adv_helper_adv_start(enum bt_fast_pair_adv_mode fp_adv_mode)
 	ARG_UNUSED(ret);
 
 	adv_helper_fp_adv_mode = fp_adv_mode;
-	LOG_INF("Looking for a new peer: %s", pairing_mode(adv_helper_fp_adv_mode) ? "yes" : "no");
+	LOG_INF("Looking for a new peer: %s", pairing_mode() ? "yes" : "no");
 
 	return adv_start_internal(fp_adv_mode);
 }
