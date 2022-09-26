@@ -13,11 +13,28 @@ if (CONFIG_NRF_802154_RADIO_DRIVER OR CONFIG_NRF_802154_SERIALIZATION)
     )
   endif ()
 
+  if (CONFIG_SOC_NRF5420_CPUNET OR CONFIG_SOC_NRF5420_SOC1_CPUNET)
+    target_sources(nrf-802154-platform
+      PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/sl/platform/nrf_802154_platform_sl_lptimer_grtc_zephyr.c
+      )
+  endif ()
+
   if (CONFIG_MPSL)
     target_compile_definitions(nrf-802154-platform PUBLIC NRF_802154_VERIFY_PERIPHS_ALLOC_AGAINST_MPSL=1)
   endif()
 
-  set(NRF53_SERIES  ${CONFIG_SOC_SERIES_NRF53X})
+  if (CONFIG_SOC_SERIES_NRF54X)
+    target_compile_definitions(zephyr-802154-interface
+      INTERFACE
+        NRF_802154_TOTAL_TIMES_MEASUREMENT_ENABLED=0
+      )
+  endif ()
+
+  if (CONFIG_SOC_SERIES_NRF54X OR CONFIG_SOC_SERIES_NRF53X)
+    set(NRF53_SERIES 1)
+  endif ()
+
   set(SER_HOST      ${CONFIG_NRF_802154_SER_HOST})
   set(SL_OPENSOURCE ${CONFIG_NRF_802154_SL_OPENSOURCE})
 
