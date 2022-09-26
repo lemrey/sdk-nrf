@@ -33,11 +33,11 @@ static const struct sm_sampled_channel accel_chan[] = {
 
 static const struct sm_sensor_config sensor_configs[] = {
 	{
-		.dev = DEVICE_DT_GET(DT_NODELABEL(sensor_sim)),
+		.dev = DEVICE_DT_GET(DT_NODELABEL(sensor_stub)),
 		.event_descr = DT_PROP(DT_NODELABEL(agg0), sensor_descr),
 		.chans = accel_chan,
 		.chan_cnt = ARRAY_SIZE(accel_chan),
-		.sampling_period_ms = 20,
+		.sampling_period_ms = 200,
 		.active_events_limit = 3,
 	},
 };

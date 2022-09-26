@@ -50,7 +50,6 @@ tests:
       ordered: true
       regex:
         - "main state:READY"
-        - "sensor_sim_ctrl state:READY"
         - "Send sensor buffer desc address:"
         - "sensor_data_aggregator_release_buffer_event"
   sample.caf_sensor_manager.nrf54fpgasoc1_singlecore.correctness_test:
@@ -66,6 +65,5 @@ tests:
       ordered: true
       regex:
         - "main state:READY"
-        - "sensor_sim_ctrl state:READY"
         - "Send sensor buffer desc address:"
         - "sensor_data_aggregator_release_buffer_event"

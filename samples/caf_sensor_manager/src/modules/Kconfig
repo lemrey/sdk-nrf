@@ -28,18 +28,6 @@ config APP_WORKLOAD_TIME_PER_SAMPLE
 
 endif # APP_WORKLOAD_SIM
 
-menuconfig APP_SENSOR_MANAGER_SENSOR_SIM_CTRL
-	bool "Simulated sensor controller"
-	default y if SENSOR_SIM
-
-if APP_SENSOR_MANAGER_SENSOR_SIM_CTRL
-
-module = APP_SENSOR_MANAGER_SENSOR_SIM_CTRL
-module-str = sensor sim controller
-source "subsys/logging/Kconfig.template.log_config"
-
-endif # APP_SENSOR_MANAGER_SENSOR_SIM_CTRL
-
 menuconfig APP_SENSOR_STUB_GEN
 	bool "Implement the generator functions for sensor stub"
 	default y if SENSOR_STUB
