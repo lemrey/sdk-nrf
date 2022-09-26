@@ -39,14 +39,4 @@
 		memory-region = <&sram0_aggregator_area0>;
 		status = "okay";
 	};
-
-	agg1: agg1 {
-		compatible = "caf,aggregator";
-		sensor_descr = "void_test_sensor";
-		buf_data_length = <80>;
-		sensor_data_size = <8>;
-		memory-region = <&sram0_aggregator_area1>;
-		status = "okay";
-	};
-
 };
