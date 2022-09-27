@@ -6,7 +6,18 @@
 
 mainmenu "Matter Lock sample application"
 
-if !(EMULATOR_FPGA)
+config LOCK_NUM_USERS
+	int "Maximum number of users supported by lock"
+	default 10
+
+config LOCK_NUM_CREDENTIALS
+	int "Maximum number of credentials supported by lock"
+	default 20
+
+config LOCK_NUM_CREDENTIALS_PER_USER
+	int "Maximum number of credentials per user supported by lock"
+	default 3
+
 config STATE_LEDS
 	bool "Use LEDs to indicate the device state"
 	default y
@@ -14,6 +25,23 @@ config STATE_LEDS
 	  Use LEDs to render the current state of the device such as the progress of commissioning of
 	  the device into a network or the factory reset initiation. Note that setting this option to
 	  'n' does not disable the LED indicating the state of the simulated bolt.
+
+# Sample configuration used for Thread networking
+if NET_L2_OPENTHREAD
+
+choice OPENTHREAD_NORDIC_LIBRARY_CONFIGURATION
+	default OPENTHREAD_NORDIC_LIBRARY_MTD
+endchoice
+
+choice OPENTHREAD_DEVICE_TYPE
+	default OPENTHREAD_MTD
+endchoice
+
+config CHIP_ENABLE_SLEEPY_END_DEVICE_SUPPORT
+	bool
+	default y
+
+endif # NET_L2_OPENTHREAD
 
 if MPSL_FEM
 
@@ -34,16 +62,7 @@ config MPSL_FEM_NRF21540_TX_GAIN_DB
 
 endif # MPSL_FEM
 
+
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
-
-endif # !(EMULATOR_FPGA)
-
-if EMULATOR_FPGA
-
-source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.fpga"
-source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
-
-endif
-
 source "Kconfig.zephyr"

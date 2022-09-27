@@ -16,7 +16,8 @@ tests:
       - nrf52840dk_nrf52840
       - nrf5340dk_nrf5340_cpuapp
       - nrf21540dk_nrf52840
-    platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf21540dk_nrf52840
+      - nrf7002dk_nrf5340_cpuapp
+    platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf21540dk_nrf52840 nrf7002dk_nrf5340_cpuapp
     tags: ci_build
   sample.matter.lock.release:
     build_only: true
@@ -34,10 +35,10 @@ tests:
       - nrf5340dk_nrf5340_cpuapp
     platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp
     tags: ci_build
-  sample.matter.lock.fpga:
+  sample.matter.lock.no_dfu.nrf7002_ek:
     build_only: true
-    extra_args: CONF_FILE=prj_fpga.conf
+    extra_args: SHIELD=nrf7002_ek CONF_FILE=prj_no_dfu.conf
     integration_platforms:
-      - nrf54fpga_nrf5420soc1_cpuapp
-    platform_allow: nrf54fpga_nrf5420soc1_cpuapp
+      - nrf5340dk_nrf5340_cpuapp
+    platform_allow: nrf5340dk_nrf5340_cpuapp
     tags: ci_build
