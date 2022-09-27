@@ -41,6 +41,21 @@ tests:
       - nrf5340dk_nrf5340_cpuapp
     extra_args: OVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_singlecore.conf CONFIG_SERIAL=n CONFIG_CONSOLE=n CONFIG_UART_CONSOLE=n CONFIG_LOG=n
                 DTC_OVERLAY_FILE=boards/nrf5340dk_nrf5340_cpuapp_singlecore.overlay
+  sample.caf_sensor_manager.nrf5340dk_singlecore.correctness_test:
+    build_only: false
+    platform_allow: nrf5340dk_nrf5340_cpuapp
+    integration_platforms:
+      - nrf5340dk_nrf5340_cpuapp
+    extra_args: OVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_singlecore.conf
+                DTC_OVERLAY_FILE=boards/nrf5340dk_nrf5340_cpuapp_singlecore.overlay
+    harness_config:
+      type: multi_line
+      ordered: true
+      regex:
+        - "main: Event manager initialized"
+        - "main state:READY"
+        - "Send sensor buffer desc address:"
+        - "sensor_data_aggregator_release_buffer_event"
   sample.caf_sensor_manager.nrf54fpga_singlecore.correctness_test:
     build_only: false
     platform_allow: nrf54fpga_nrf5420_cpuapp
