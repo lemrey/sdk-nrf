@@ -5,6 +5,21 @@
  */
 
  /{
+	allocatable_ram {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Configure GRAM region.
+		 * This is done to ensure correct UICR generation.
+		 */
+		ram30_app: memory@2fc00000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc00000 DT_SIZE_K(16)>;
+			perm-read;
+			perm-write;
+		};
+	};
+
 	sensor_stub: sensor_stub {
 		compatible = "nordic,sensor-stub";
 		label = "SENSOR_STUB";
