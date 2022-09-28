@@ -27,7 +27,7 @@
 		/* Configure GRAM region.
 		 * This is done to ensure correct UICR generation.
 		 */
-		gram30_app_ppr: memory@2fc00000 {
+		ram30_app_ppr: memory@2fc00000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc00000 DT_SIZE_K(16)>;
 			perm-read;
@@ -37,7 +37,7 @@
 		/* Configure GRAM region.
 		 * This is done to ensure correct UICR generation.
 		 */
-		gram31_app_ppr: memory@2fc04000 {
+		ram31_app_ppr: memory@2fc04000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc04000 DT_SIZE_K(16)>;
 			perm-read;
@@ -46,19 +46,19 @@
 	};
 
 	reserved-memory {
-		gram30_shared_tx: memory@2fc07000 {
+		ram31_shared_tx: memory@2fc07000 {
 			reg = <0x2fc07000 0x0800>;
 		};
 
-		gram30_shared_rx: memory@2fc07800 {
+		ram31_shared_rx: memory@2fc07800 {
 			reg = <0x2fc07800 0x0800>;
 		};
 	};
 
 	ipc0: ipc0 {
 		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&gram30_shared_tx>;
-		rx-region = <&gram30_shared_rx>;
+		tx-region = <&ram31_shared_tx>;
+		rx-region = <&ram31_shared_rx>;
 		mboxes = <&mbox_remote 12>,
 			 <&mbox_local  12>;
 		mbox-names = "tx", "rx";

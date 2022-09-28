@@ -22,27 +22,23 @@
 	};
 
 	reserved-memory {
-		gram31_agg_area0: memory@2fc06400 {
-			reg = <0x2fc06400 0x600>;
-		};
-
-		gram31_agg_area1: memory@2fc06a00 {
+		ram31_agg_area0: memory@2fc06a00 {
 			reg = <0x2fc06a00 0x600>;
 		};
 
-		gram30_shared_rx: memory@2fc07000 {
+		ram31_shared_rx: memory@2fc07000 {
 			reg = <0x2fc07000 0x0800>;
 		};
 
-		gram30_shared_tx: memory@2fc07800 {
+		ram31_shared_tx: memory@2fc07800 {
 			reg = <0x2fc07800 0x0800>;
 		};
 	};
 
 	ipc0: ipc0 {
 		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&gram30_shared_tx>;
-		rx-region = <&gram30_shared_rx>;
+		tx-region = <&ram31_shared_tx>;
+		rx-region = <&ram31_shared_rx>;
 		mboxes = <&mbox_remote 12>,
 			 <&mbox_local  12>;
 		mbox-names = "tx", "rx";
@@ -59,18 +55,9 @@
 	agg0: agg0 {
 		compatible = "caf,aggregator";
 		sensor_descr = "accel_sim_xyz";
-		buf_data_length = <120>;
+		buf_data_length = <240>;
 		sensor_data_size = <24>;
-		memory-region = <&gram31_agg_area0>;
-		status = "okay";
-	};
-
-	agg1: agg1 {
-		compatible = "caf,aggregator";
-		sensor_descr = "void_test_sensor";
-		buf_data_length = <80>;
-		sensor_data_size = <8>;
-		memory-region = <&gram31_agg_area1>;
+		memory-region = <&ram31_agg_area0>;
 		status = "okay";
 	};
 };
