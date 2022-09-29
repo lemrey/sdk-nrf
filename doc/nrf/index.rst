@@ -21,10 +21,11 @@ A "99" at the end of the version number of this documentation indicates continuo
    ug_dev_model
    ug_app_dev
    security_chapter
-   ug_nrf54
+   ug_nrf92
    ug_nrf91
    ug_nrf70
    ug_nrf71
+   ug_nrf54
    ug_nrf53
    ug_nrf52
    ug_nrf_cloud
