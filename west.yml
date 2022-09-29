@@ -116,7 +116,7 @@ manifest:
       path: modules/ic-next
       revision: 58456aa41af6069e9f975ed5466870a3792ee535
     - name: sdk-secdom
-      revision: 5d054b027e721154411c3011bb9fc52b33318094
+      revision: 04461d3a676df97b8073fbd33bcd34b24d3d7841
       path: core_fw/secdom
     - name: nrf-regtool
       revision: v2.0.1
