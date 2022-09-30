@@ -8,8 +8,10 @@
 #define _BSD_SOURCE
 #include "string.h"
 #include <zephyr/kernel.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/conn.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/conn.h>
+#include <zephyr/settings/settings.h>
+
 #include "button_assignments.h"
 #include "ble_core.h"
 #include "button_handler.h"

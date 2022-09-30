@@ -10,7 +10,7 @@
 #include <sys/atomic.h>
 #include <zephyr/kernel.h>
 
-#include "drivers/timer/nrf_rtc_timer.h"
+#include <zephyr/drivers/timer/nrf_rtc_timer.h>
 #include <helpers/nrfx_gppi.h>
 
 #include "platform/nrf_802154_clock.h"

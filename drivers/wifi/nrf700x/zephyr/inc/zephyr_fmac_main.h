@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/ethernet.h>
 
