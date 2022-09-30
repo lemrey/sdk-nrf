@@ -12,9 +12,8 @@
 
 #include <zephyr/ipc/ipc_service.h>
 
-#define STACKSIZE	(1024 + CONFIG_TEST_EXTRA_STACK_SIZE)
 
-K_THREAD_STACK_DEFINE(ipc0_stack, STACKSIZE);
+#define STACKSIZE	(1024 + CONFIG_TEST_EXTRA_STACK_SIZE)
 
 LOG_MODULE_REGISTER(host, LOG_LEVEL_INF);
 
@@ -24,9 +23,12 @@ struct payload {
 	uint8_t data[];
 };
 
-struct payload *p_payload;
-
 static K_SEM_DEFINE(bound_sem, 0, 1);
+K_THREAD_STACK_DEFINE(check_task_stack, STACKSIZE);
+struct k_thread check_task_data;
+
+static uint32_t payload_data[(CONFIG_APP_IPC_SERVICE_MESSAGE_LEN + 3)/4];
+static struct payload *p_payload = (struct payload *) payload_data;
 
 static void ep_bound(void *priv)
 {
@@ -37,7 +39,6 @@ static void ep_recv(const void *data, size_t len, void *priv)
 {
 	uint8_t received_val = *((uint8_t *)data);
 	static uint8_t expected_val;
-
 
 	if ((received_val != expected_val) || (len != CONFIG_APP_IPC_SERVICE_MESSAGE_LEN)) {
 		printk("Unexpected message received_val: %d , expected_val: %d\n",
@@ -55,68 +56,6 @@ static struct ipc_ept_cfg ep_cfg = {
 		.received = ep_recv,
 	},
 };
-
-int main(void)
-{
-	const struct device *ipc0_instance;
-	struct ipc_ept ep;
-	int ret;
-
-	p_payload = (struct payload *) k_malloc(CONFIG_APP_IPC_SERVICE_MESSAGE_LEN);
-	if (!p_payload) {
-		printk("k_malloc() failure\n");
-		return -ENOMEM;
-	}
-
-	memset(p_payload->data, 0xA5, CONFIG_APP_IPC_SERVICE_MESSAGE_LEN - sizeof(struct payload));
-
-	p_payload->size = CONFIG_APP_IPC_SERVICE_MESSAGE_LEN;
-	p_payload->cnt = 0;
-
-	printk("IPC-service %s demo started\n", CONFIG_BOARD);
-
-	ipc0_instance = DEVICE_DT_GET(DT_NODELABEL(ipc0));
-
-	ret = ipc_service_open_instance(ipc0_instance);
-	if ((ret < 0) && (ret != -EALREADY)) {
-		LOG_INF("ipc_service_open_instance() failure");
-		return ret;
-	}
-
-	ret = ipc_service_register_endpoint(ipc0_instance, &ep, &ep_cfg);
-	if (ret < 0) {
-		printf("ipc_service_register_endpoint() failure");
-		return ret;
-	}
-
-	k_sem_take(&bound_sem, K_FOREVER);
-
-	while (true) {
-		ret = ipc_service_send(&ep, p_payload, CONFIG_APP_IPC_SERVICE_MESSAGE_LEN);
-		if (ret == -ENOMEM) {
-			/* No space in the buffer. Retry. */
-			continue;
-		} else if (ret < 0) {
-			printk("send_message(%ld) failed with ret %d\n", p_payload->cnt, ret);
-			break;
-		}
-
-		p_payload->cnt++;
-
-
-		/* Quasi minimal busy wait time which allows to continuosly send
-		 * data without -ENOMEM error code. The purpose is to test max
-		 * throughput. Determined experimentally.
-		 */
-		if (CONFIG_APP_IPC_SERVICE_SEND_INTERVAL < 1000) {
-			k_busy_wait(CONFIG_APP_IPC_SERVICE_SEND_INTERVAL);
-		} else {
-			k_msleep(CONFIG_APP_IPC_SERVICE_SEND_INTERVAL/1000);
-		}
-	}
-
-	return 0;
-}
 
 static void check_task(void *arg1, void *arg2, void *arg3)
 {
@@ -138,5 +77,60 @@ static void check_task(void *arg1, void *arg2, void *arg3)
 		last_cnt = p_payload->cnt;
 	}
 }
-K_THREAD_DEFINE(thread_check_id, STACKSIZE, check_task, NULL, NULL, NULL,
-		K_PRIO_COOP(1), 0, 100);
+
+int main(void)
+{
+	const struct device *ipc0_instance;
+	struct ipc_ept ep;
+	int ret;
+	printk("IPC-service %s demo started\n", CONFIG_BOARD);
+
+	memset(p_payload->data, 0xA5, CONFIG_APP_IPC_SERVICE_MESSAGE_LEN - sizeof(struct payload));
+
+	p_payload->size = CONFIG_APP_IPC_SERVICE_MESSAGE_LEN;
+	p_payload->cnt = 0;
+
+	ipc0_instance = DEVICE_DT_GET(DT_NODELABEL(ipc0));
+
+	ret = ipc_service_open_instance(ipc0_instance);
+	if ((ret < 0) && (ret != -EALREADY)) {
+		LOG_INF("ipc_service_open_instance() failure: %d", ret);
+		return ret;
+	}
+
+	ret = ipc_service_register_endpoint(ipc0_instance, &ep, &ep_cfg);
+	if (ret < 0) {
+		printf("ipc_service_register_endpoint() failure");
+		return ret;
+	}
+
+	k_sem_take(&bound_sem, K_FOREVER);
+
+	(void)k_thread_create(
+		&check_task_data, check_task_stack,
+		K_THREAD_STACK_SIZEOF(check_task_stack),
+		check_task,
+		NULL, NULL, NULL,
+		-1, 0, K_NO_WAIT);
+
+	while (true) {
+		ret = ipc_service_send(&ep, p_payload, CONFIG_APP_IPC_SERVICE_MESSAGE_LEN);
+		if (ret == -ENOMEM) {
+			/* No space in the buffer. Retry. */
+			LOG_DBG("send_message(%ld) failed with ret -ENOMEM\n", p_payload->cnt);
+		} else if (ret < 0) {
+			LOG_ERR("send_message(%ld) failed with ret %d\n", p_payload->cnt, ret);
+			break;
+		} else {
+			p_payload->cnt++;
+		}
+
+		if (CONFIG_APP_IPC_SERVICE_SEND_INTERVAL < (USEC_PER_SEC / CONFIG_SYS_CLOCK_TICKS_PER_SEC)) {
+			k_busy_wait(CONFIG_APP_IPC_SERVICE_SEND_INTERVAL);
+		} else {
+			k_usleep(CONFIG_APP_IPC_SERVICE_SEND_INTERVAL);
+		}
+	}
+
+	return 0;
+}
