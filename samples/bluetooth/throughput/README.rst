@@ -60,7 +60,7 @@ By default, the following connection parameter values are used:
    * - Parameter
      - Value
    * - ATT_MTU size
-     - 247 bytes
+     - 498 bytes
    * - Data length
      - 251 bytes
    * - Connection interval
@@ -93,10 +93,10 @@ User interface
 **************
 
 Button 1:
-   Set the board into a master (tester) role.
+   Set the board into a central (tester) role.
 
 Button 2:
-   Set the board into a slave (peer) role.
+   Set the board into a peripheral (peer) role.
 
 Building and running
 ********************
@@ -111,8 +111,8 @@ After programming the sample to both kits, complete following steps to test it:
 
 1. |connect_terminal_both_ANSI|
 #. Reset both kits.
-#. Press **Button 1** on the kit to set the kit into master (tester) role.
-#. Press **Button 2** on the other kit to set the kit into slave (peer) mode.
+#. Press **Button 1** on the kit to set the kit into central (tester) role.
+#. Press **Button 2** on the other kit to set the kit into peripheral (peer) mode.
 #. Observe that the kits establish a connection.
    The tester outputs the following information::
 
@@ -150,14 +150,14 @@ For the tester::
    I: LMP: version 5.2 (0x0b) subver 0x1154
    Bluetooth initialized
 
-   Press button 1 on the master board.
-   Press button 2 on the slave board.
+   Press button 1 on the central board.
+   Press button 2 on the peripheral board.
 
 
    uart:~$
-   Master role. Starting scanning
+   Central. Starting scanning
    Filters matched. Address: D2:71:97:84:DE:B2 (random) connectable: 1
-   Connected as master
+   Connected as central
    Conn. interval is 320 units
    Service discovery completed
    MTU exchange pending
@@ -206,8 +206,8 @@ For the tester::
                          ^.:.^                             ^^.^^
 
    Done
-   [local] sent 612684 bytes (598 KB) in 3890 ms at 1260 kbps
-   [peer] received 612684 bytes (598 KB) in 2511 GATT writes at 1395626 bps
+   [local] sent 1242945 bytes (1213 KB) in 7292 ms at 1363 kbps
+   [peer] received 1242945 bytes (1213 KB) in 2511 GATT writes at 1415583 bps
 
    Type 'config' to change the configuration parameters.
    You can use the Tab key to autocomplete your input.
@@ -230,13 +230,13 @@ For the peer::
    I: LMP: version 5.2 (0x0b) subver 0x1154
    Bluetooth initialized
 
-   Press button 1 on the master board.
-   Press button 2 on the slave board.
+   Press button 1 on the central board.
+   Press button 2 on the peripheral board.
 
 
    uart:~$
-   Slave role. Starting advertising
-   Connected as slave
+   Peripheral. Starting advertising
+   Connected as peripheral
    Conn. interval is 320 units
    LE PHY updated: TX PHY LE 2M, RX PHY LE 2M
 
@@ -249,7 +249,7 @@ For the peer::
    =============================================================================
    =============================================================================
    ===========================================================
-   [local] received 612684 bytes (598 KB) in 2511 GATT writes at 1261557 bps
+   [local] received 1242945 bytes (1213 KB) in 2511 GATT writes at 1415583 bps
 
 
 Dependencies

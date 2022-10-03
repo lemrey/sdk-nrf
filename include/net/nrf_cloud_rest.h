@@ -67,7 +67,9 @@ struct nrf_cloud_rest_context {
 	/** Timeout value, in milliseconds, for REST request. The timeout is set individually
 	 * for socket connection creation and data transfer meaning REST request can take
 	 * longer than this given timeout.
-	 * For no timeout, set to NRF_CLOUD_REST_TIMEOUT_NONE.
+	 * For no timeout (wait forever) set to less than or equal to zero,
+	 * or NRF_CLOUD_REST_TIMEOUT_NONE.
+	 * Using a timeout value that is too short can result in failed REST requests.
 	 */
 	int32_t timeout_ms;
 	/** Authentication string: JWT @ref modem_jwt.
@@ -368,20 +370,18 @@ int nrf_cloud_rest_send_device_message(struct nrf_cloud_rest_context *const rest
 	const char *const topic);
 
 /**
- * @brief Send a supported NMEA sentence to nRF Cloud as a device message.
+ * @brief Send GNSS data to nRF Cloud as a device message.
  *
  * @param[in,out] rest_ctx Context for communicating with nRF Cloud's REST API.
  * @param[in]     device_id Null-terminated, unique device ID registered with nRF Cloud.
- * @param[in]     nmea_sentence Null-terminated NMEA sentence.
- * @param[in]     ts_ms UNIX epoch timestamp (in milliseconds) to include with the location data.
- *                      A negative value will exclude the timestamp.
+ * @param[in]     gnss GNSS location data.
  *
  * @retval 0 If successful.
  *          Otherwise, a (negative) error code is returned.
  *          See @verbatim embed:rst:inline :ref:`nrf_cloud_rest_failure` @endverbatim for details.
  */
 int nrf_cloud_rest_send_location(struct nrf_cloud_rest_context *const rest_ctx,
-	const char *const device_id, const char *const nmea_sentence, const int64_t ts_ms);
+	const char *const device_id, const struct nrf_cloud_gnss_data * const gnss);
 
 /** @} */
 

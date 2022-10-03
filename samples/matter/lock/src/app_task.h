@@ -12,6 +12,10 @@
 
 #include <platform/CHIPDeviceLayer.h>
 
+#if CONFIG_CHIP_FACTORY_DATA
+#include <platform/nrfconnect/FactoryDataProvider.h>
+#endif
+
 #ifdef CONFIG_MCUMGR_SMP_BT
 #include "dfu_over_smp.h"
 #endif
@@ -32,10 +36,9 @@ private:
 	void StartFunctionTimer(uint32_t timeoutInMs);
 
 	void DispatchEvent(const AppEvent &event);
-	void FunctionPressHandler();
-	void FunctionReleaseHandler();
+	void FunctionPressHandler(uint8_t buttonNumber);
+	void FunctionReleaseHandler(uint8_t buttonNumber);
 	void FunctionTimerEventHandler();
-	void StartThreadHandler();
 	void StartBLEAdvertisingHandler();
 
 	static void LockStateChanged(BoltLockManager::State state, BoltLockManager::OperationSource source);
@@ -50,12 +53,23 @@ private:
 
 	friend AppTask &GetAppTask();
 
-	enum class TimerFunction { NoneSelected = 0, SoftwareUpdate, FactoryReset };
+	enum class TimerFunction {
+		NoneSelected = 0,
+		SoftwareUpdate,
+		FactoryReset,
+#if CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP
+		AdvertisingStart,
+#endif
+	};
 
 	TimerFunction mFunction = TimerFunction::NoneSelected;
 
-	static AppTask sAppTask;
 	bool mFunctionTimerActive = false;
+	static AppTask sAppTask;
+
+#if CONFIG_CHIP_FACTORY_DATA
+	chip::DeviceLayer::FactoryDataProvider<chip::DeviceLayer::InternalFlashFactoryData> mFactoryDataProvider;
+#endif
 };
 
 inline AppTask &GetAppTask()

@@ -202,7 +202,7 @@ static void link_cell_change_work(struct k_work *work_item)
 		"LTE cell changed: ID: %d (0x%s), PCI %d, Tracking area: %d (0x%s), Band: %d, RSRP: %d (%ddBm), SNR: %d (%ddB)",
 		xmonitor_resp.cell_id, xmonitor_resp.cell_id_str, xmonitor_resp.pci,
 		xmonitor_resp.tac, xmonitor_resp.tac_str, xmonitor_resp.band,
-		xmonitor_resp.rsrp, (xmonitor_resp.rsrp - MODEM_INFO_RSRP_OFFSET_VAL),
+		xmonitor_resp.rsrp, RSRP_IDX_TO_DBM(xmonitor_resp.rsrp),
 		xmonitor_resp.snr, (xmonitor_resp.snr - LINK_SNR_OFFSET_VALUE));
 }
 
@@ -210,7 +210,7 @@ static void link_cell_change_work(struct k_work *work_item)
 
 static void link_rsrp_signal_handler(char rsrp_value)
 {
-	modem_rsrp = (int8_t)rsrp_value - MODEM_INFO_RSRP_OFFSET_VAL;
+	modem_rsrp = (int8_t)RSRP_IDX_TO_DBM(rsrp_value);
 	k_work_submit_to_queue(&mosh_common_work_q, &modem_info_signal_work);
 }
 
@@ -251,6 +251,7 @@ void link_init(void)
 	link_shell_pdn_init();
 
 	lte_lc_register_handler(link_ind_handler);
+	(void)lte_lc_modem_events_enable();
 
 	if (link_sett_is_dnsaddr_enabled()) {
 		(void)link_setdnsaddr(link_sett_dnsaddr_ip_get());
@@ -299,7 +300,7 @@ void link_ind_handler(const struct lte_lc_evt *const evt)
 				"    TA %s, TA meas time %lld",
 				cur_cell.id, cur_cell.phys_cell_id,
 				cur_cell.mcc, cur_cell.mnc, cur_cell.rsrp,
-				cur_cell.rsrp - MODEM_INFO_RSRP_OFFSET_VAL,
+				RSRP_IDX_TO_DBM(cur_cell.rsrp),
 				cur_cell.rsrq, cur_cell.tac, cur_cell.earfcn,
 				cur_cell.measurement_time,
 				tmp_ta_str,
@@ -319,8 +320,7 @@ void link_ind_handler(const struct lte_lc_evt *const evt)
 				"    phy ID %d, RSRP %d : %ddBm, RSRQ %d, earfcn %d, timediff %d",
 				cells.neighbor_cells[i].phys_cell_id,
 				cells.neighbor_cells[i].rsrp,
-				cells.neighbor_cells[i].rsrp -
-				MODEM_INFO_RSRP_OFFSET_VAL,
+				RSRP_IDX_TO_DBM(cells.neighbor_cells[i].rsrp),
 				cells.neighbor_cells[i].rsrq,
 				cells.neighbor_cells[i].earfcn,
 				cells.neighbor_cells[i].time_diff);
@@ -410,6 +410,9 @@ void link_ind_handler(const struct lte_lc_evt *const evt)
 		}
 		break;
 	}
+	case LTE_LC_EVT_MODEM_EVENT:
+		link_shell_print_modem_domain_event(evt->modem_evt);
+		break;
 	default:
 		break;
 	}
@@ -615,9 +618,6 @@ int link_func_mode_set(enum lte_lc_func_mode fun, bool rel14_used)
 	case LTE_LC_FUNC_MODE_NORMAL:
 		/* Enable/disable Rel14 features before going to normal mode */
 		link_enable_disable_rel14_features(rel14_used);
-
-		/* (Re)register for PDN lib notifications */
-		link_shell_pdn_events_subscribe();
 
 		/* (Re)register for rsrp notifications: */
 		modem_info_rsrp_register(link_rsrp_signal_handler);

@@ -10,3 +10,4 @@ azure-storage-blob
 sphinx_markdown_tables
 breathe>=4.34
 sphinx-togglebutton
+sphinx-notfound-page

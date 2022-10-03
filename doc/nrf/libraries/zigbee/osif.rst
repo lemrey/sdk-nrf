@@ -102,10 +102,18 @@ Zigbee async serial configuration options
 To configure this set of functions, use the following options:
 
 * :kconfig:option:`CONFIG_ZIGBEE_HAVE_ASYNC_SERIAL` - This option enables Zigbee async serial.
-* :kconfig:option:`CONFIG_ZIGBEE_UART_DEVICE_NAME` - This option specifies serial device to use.
 * :kconfig:option:`CONFIG_ZIGBEE_UART_SUPPORTS_FLOW_CONTROL` - This option should be set if serial device supports flow control.
 * :kconfig:option:`CONFIG_ZIGBEE_UART_RX_BUF_LEN` - This option enables and configures the size of internal RX and TX buffer.
 * :kconfig:option:`CONFIG_ZBOSS_TRACE_BINARY_NCP_TRANSPORT_LOGGING` - This option enables logging ZBOSS traces in binary format with Zigbee async serial.
+
+The Zigbee ZBOSS OSIF layer serial device needs to be provided in Devicetree
+like this:
+
+.. code-block:: devicetree
+
+   chosen {
+       ncs,zigbee-uart = &uart0;
+   };
 
 Zigbee serial logger
 ====================
@@ -126,8 +134,15 @@ Use the following options to configure the Zigbee serial logger:
    .. note::
       See :ref:`zephyr:usb_device_cdc_acm` for more information about how to configure USB CDC ACM instance for logging ZBOSS trace messages.
 
-* :kconfig:option:`CONFIG_ZBOSS_TRACE_LOGGER_DEVICE_NAME` - This option specifies the serial device to use.
 * :kconfig:option:`CONFIG_ZBOSS_TRACE_LOGGER_BUFFER_SIZE` - This option specifies the size of the internal ring buffer.
+
+The ZBOSS tracing serial device needs to be provided in Devicetree like this:
+
+.. code-block:: devicetree
+
+   chosen {
+       ncs,zboss-trace-uart = &uart1;
+   };
 
 Zigbee logger
 =============

@@ -12,6 +12,10 @@
 
 #include <platform/CHIPDeviceLayer.h>
 
+#if CONFIG_CHIP_FACTORY_DATA
+#include <platform/nrfconnect/FactoryDataProvider.h>
+#endif
+
 #ifdef CONFIG_MCUMGR_SMP_BT
 #include "dfu_over_smp.h"
 #endif
@@ -37,7 +41,6 @@ private:
 	void FunctionPressHandler();
 	void FunctionReleaseHandler();
 	void FunctionTimerEventHandler();
-	void StartThreadHandler();
 	void StartBLEAdvertisingHandler();
 
 	static void ActionInitiated(LightingManager::Action aAction);
@@ -58,6 +61,10 @@ private:
 	TimerFunction mFunction = TimerFunction::NoneSelected;
 
 	static AppTask sAppTask;
+
+#if CONFIG_CHIP_FACTORY_DATA
+	chip::DeviceLayer::FactoryDataProvider<chip::DeviceLayer::InternalFlashFactoryData> mFactoryDataProvider;
+#endif
 };
 
 inline AppTask &GetAppTask()

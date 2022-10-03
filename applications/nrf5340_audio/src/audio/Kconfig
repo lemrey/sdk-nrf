@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+rsource "Kconfig.defaults"
+
 menu "Audio"
 
 choice AUDIO_FRAME_DURATION
@@ -138,11 +140,7 @@ config SW_CODEC_LC3
 	help
 		LC3 is the mandatory codec for LE Audio
 
-config SW_CODEC_SBC
-	bool "SBC"
-	select SBC
-	help
-		Subband Codec
+# Leave room for other codecs
 endchoice
 
 config SW_CODEC_PLC_DISABLED
@@ -152,57 +150,21 @@ config SW_CODEC_PLC_DISABLED
 menu "LC3"
 visible if SW_CODEC_LC3
 
-config LC3_MONO_BITRATE
+config LC3_BITRATE
 	int "Bitrate for LC3"
 	default 96000
+
+config LC3_BITRATE_MAX
+	int "Max bitrate for LC3"
+	default 124000
+
+config LC3_BITRATE_MIN
+	int "Min bitrate for LC3"
+	default 32000
 
 osource "../modules/lib/lc3/Kconfig"
 
 endmenu # LC3
-
-#----------------------------------------------------------------------------#
-menu "SBC"
-visible if SW_CODEC_SBC
-
-config SBC_NUM_FRAMES_PER_BLE_PACKET
-	int "Number of packets be transmitted in one connection interval"
-	range 5 5
-	help
-		For the current SBC codec default setting, it is possible to send
-		5 SBC encoded frames in a 10 ms connection interval since a
-		SBC frame is 2 ms internally.
-
-	default 5
-
-config SBC_NO_OF_BLOCKS
-	int "Number of blocks (4, 8, 12, 16)"
-	default 12
-
-config SBC_NO_OF_SUBBANDS
-	int "Number of subbands (4, 8)"
-	default 8
-
-config SBC_BITPOOL
-	int "Bitpool value"
-	range 2 53
-	default 18
-	help
-		Bitpool determines the size of each encoded frame.
-		Size of frame = 4 + (blocks * bitpool + 4 * subbands) / 8
-		Frame rate = Sampling rate / (blocks * subbands)
-		Bitrate = size of frame * frame rate
-
-config SBC_BIT_ALLOC_METHOD
-	int "Bit allocation Method (0 -> Loudness, 1 -> SNR)"
-	default 0
-
-config SBC_CHANNEL_MODE_MONO
-	int "Channel Mode Mono (0->Mono)"
-	default 0
-	help
-		Only mono is supported at the moment
-
-endmenu # SBC
 endmenu # SW Codec
 
 #----------------------------------------------------------------------------#
@@ -232,8 +194,8 @@ endmenu # Stream
 #----------------------------------------------------------------------------#
 menu "Log levels"
 
-config LOG_AUDIO_CODEC_LEVEL
-	int "Log level for streamctrl"
+config LOG_AUDIO_SYSTEM_LEVEL
+	int "Log level for audio system"
 	default 3
 
 config LOG_STREAMCTRL_LEVEL

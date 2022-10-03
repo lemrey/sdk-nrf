@@ -9,23 +9,27 @@
 #include <zephyr/device.h>
 #include <string.h>
 
+#include <bluetooth/bluetooth.h>
+#include <settings/settings.h>
+
 #include "macros_common.h"
 #include "fw_info_app.h"
 #include "led.h"
 #include "button_handler.h"
 #include "button_assignments.h"
 #include "nrfx_clock.h"
-#include "streamctrl.h"
 #include "ble_core.h"
 #include "pmic.h"
 #include "power_module.h"
 #include "sd_card.h"
 #include "board_version.h"
-#include "audio_datapath.h"
-#include "audio_i2s.h"
+#include "audio_system.h"
 #include "channel_assignment.h"
-#include "hw_codec.h"
-#include "audio_usb.h"
+#include "streamctrl.h"
+
+#if defined(CONFIG_AUDIO_DFU_ENABLE)
+#include "dfu_entry.h"
+#endif
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(main, CONFIG_LOG_MAIN_LEVEL);
@@ -76,7 +80,7 @@ static int leds_set(void)
 		channel = AUDIO_CHANNEL_DEFAULT;
 	}
 
-	if (channel == AUDIO_CHANNEL_LEFT) {
+	if (channel == AUDIO_CH_L) {
 		ret = led_on(LED_APP_RGB, LED_COLOR_BLUE);
 	} else {
 		ret = led_on(LED_APP_RGB, LED_COLOR_MAGENTA);
@@ -95,10 +99,29 @@ static int leds_set(void)
 	return 0;
 }
 
+static int bonding_clear_check(void)
+{
+	int ret;
+	bool pressed;
+
+	ret = button_pressed(BUTTON_MUTE, &pressed);
+	if (ret) {
+		return ret;
+	}
+
+	if (pressed) {
+		if (IS_ENABLED(CONFIG_SETTINGS)) {
+			LOG_INF("Clearing all bonds");
+			bt_unpair(BT_ID_DEFAULT, NULL);
+		}
+	}
+	return 0;
+}
+
 static int channel_assign_check(void)
 {
 #if (CONFIG_AUDIO_DEV == HEADSET) && CONFIG_AUDIO_HEADSET_CHANNEL_RUNTIME
-	if (!channel_assignment_get(&(enum audio_channel){ AUDIO_CHANNEL_LEFT })) {
+	if (!channel_assignment_get(&(enum audio_channel){ AUDIO_CH_L })) {
 		/* Channel already assigned */
 		return 0;
 	}
@@ -112,7 +135,7 @@ static int channel_assign_check(void)
 	}
 
 	if (pressed) {
-		return channel_assignment_set(AUDIO_CHANNEL_LEFT);
+		return channel_assignment_set(AUDIO_CH_L);
 	}
 
 	ret = button_pressed(BUTTON_VOLUME_UP, &pressed);
@@ -121,7 +144,7 @@ static int channel_assign_check(void)
 	}
 
 	if (pressed) {
-		return channel_assignment_set(AUDIO_CHANNEL_RIGHT);
+		return channel_assignment_set(AUDIO_CH_R);
 	}
 #endif
 
@@ -131,7 +154,16 @@ static int channel_assign_check(void)
 /* Callback from ble_core when the ble subsystem is ready */
 void on_ble_core_ready(void)
 {
+	int ret;
+
 	(void)atomic_set(&ble_core_is_ready, (atomic_t) true);
+
+	if (IS_ENABLED(CONFIG_SETTINGS)) {
+		settings_load();
+
+		ret = bonding_clear_check();
+		ERR_CHK(ret);
+	}
 }
 
 void main(void)
@@ -179,15 +211,9 @@ void main(void)
 	ret = power_module_init();
 	ERR_CHK(ret);
 
-#if ((CONFIG_AUDIO_DEV == GATEWAY) && (CONFIG_AUDIO_SOURCE_USB))
-	ret = audio_usb_init();
-	ERR_CHK(ret);
-#else
-	ret = audio_datapath_init();
-	ERR_CHK(ret);
-	audio_i2s_init();
-	ret = hw_codec_init();
-	ERR_CHK(ret);
+#if defined(CONFIG_AUDIO_DFU_ENABLE)
+	/* Check DFU BTN before Initialize BLE */
+	dfu_entry_check();
 #endif
 
 	/* Initialize BLE, with callback for when BLE is ready */
@@ -202,10 +228,9 @@ void main(void)
 	ret = leds_set();
 	ERR_CHK(ret);
 
-	ret = streamctrl_start();
-	ERR_CHK(ret);
+	audio_system_init();
 
-	ret = audio_datapath_tone_play(440, 500, 0.2);
+	ret = streamctrl_start();
 	ERR_CHK(ret);
 
 	while (1) {

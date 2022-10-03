@@ -148,9 +148,16 @@ CHIP_ERROR AppTask::Init()
 	LightingMgr().SetCallbacks(ActionInitiated, ActionCompleted);
 
 	/* Initialize CHIP server */
+#if CONFIG_CHIP_FACTORY_DATA
+	ReturnErrorOnFailure(mFactoryDataProvider.Init());
+	SetDeviceInstanceInfoProvider(&mFactoryDataProvider);
+	SetDeviceAttestationCredentialsProvider(&mFactoryDataProvider);
+	SetCommissionableDataProvider(&mFactoryDataProvider);
+#else
 	SetDeviceAttestationCredentialsProvider(Examples::GetExampleDACProvider());
+#endif
 
-	static chip::CommonCaseDeviceServerInitParams initParams;
+	static CommonCaseDeviceServerInitParams initParams;
 	(void)initParams.InitializeStaticResourcesBeforeServerInit();
 
 	ReturnErrorOnFailure(chip::Server::GetInstance().Init(initParams));
@@ -159,8 +166,8 @@ CHIP_ERROR AppTask::Init()
 
 	/*
 	 * Add CHIP event handler and start CHIP thread.
-	 * Note that all the initialization code should happen prior to this point
-	 * to avoid data races between the main and the CHIP threads.
+	 * Note that all the initialization code should happen prior to this point to avoid data races
+	 * between the main and the CHIP threads.
 	 */
 	PlatformMgr().AddEventHandler(ChipEventHandler, 0);
 
@@ -248,9 +255,6 @@ void AppTask::DispatchEvent(const AppEvent &aEvent)
 		break;
 	case AppEvent::FunctionTimer:
 		FunctionTimerEventHandler();
-		break;
-	case AppEvent::StartThread:
-		StartThreadHandler();
 		break;
 	case AppEvent::StartBleAdvertising:
 		StartBLEAdvertisingHandler();
@@ -348,16 +352,6 @@ void AppTask::FunctionTimerEventHandler()
 	}
 }
 
-void AppTask::StartThreadHandler()
-{
-	if (!ConnectivityMgr().IsThreadProvisioned()) {
-		StartDefaultThreadNetwork();
-		LOG_INF("Device is not commissioned to a Thread network. Starting with the default configuration.");
-	} else {
-		LOG_INF("Device is commissioned to a Thread network.");
-	}
-}
-
 void AppTask::StartBLEAdvertisingHandler()
 {
 	if (Server::GetInstance().GetFabricTable().FabricCount() != 0) {
@@ -446,10 +440,6 @@ void AppTask::ButtonEventHandler(uint32_t buttonState, uint32_t hasChanged)
 
 	if (DK_BTN2_MSK & buttonState & hasChanged) {
 		GetAppTask().PostEvent(AppEvent{ AppEvent::Toggle, 0, false });
-	}
-
-	if (DK_BTN3_MSK & buttonState & hasChanged) {
-		GetAppTask().PostEvent(AppEvent{ AppEvent::StartThread });
 	}
 
 	if (DK_BTN4_MSK & buttonState & hasChanged) {

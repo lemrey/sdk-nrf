@@ -13,6 +13,12 @@ menuconfig BT_FAST_PAIR
 
 if BT_FAST_PAIR
 
+config BT_FAST_PAIR_EXT_PN
+	bool "Personalized Name extension"
+	select BT_FAST_PAIR_STORAGE_EXT_PN
+	help
+	  Enable Fast Pair Personalized Name extension.
+
 rsource "fp_crypto/Kconfig.fp_crypto"
 rsource "fp_storage/Kconfig.fp_storage"
 
@@ -41,6 +47,7 @@ config BT_DIS_FW_REV_STR
 config BT_FAST_PAIR_KEYS
 	bool
 	default y
+	depends on SYSTEM_WORKQUEUE_PRIORITY < 0
 	help
 	  Add Fast Pair key handling source files.
 

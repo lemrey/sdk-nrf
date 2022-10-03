@@ -26,7 +26,6 @@ from nrf5340_audio_dk_devices import (
     SelectFlags,
     Core,
 )
-from typing import List
 from program import program_threads_run
 from pathlib import Path
 
@@ -46,17 +45,7 @@ TARGET_DEV_GATEWAY_FOLDER = NRF5340_AUDIO_FOLDER / "build/dev_gateway"
 TARGET_RELEASE_FOLDER = "build_release"
 TARGET_DEBUG_FOLDER = "build_debug"
 
-COMP_FLAG_DEV_HEADSET = NRF5340_AUDIO_FOLDER / "overlay-headset.conf"
-COMP_FLAG_DEV_GATEWAY = NRF5340_AUDIO_FOLDER / "overlay-gateway.conf"
-COMP_FLAG_RELEASE = NRF5340_AUDIO_FOLDER / "overlay-release.conf"
-COMP_FLAG_DEBUG = NRF5340_AUDIO_FOLDER / "overlay-debug.conf"
-
 PRISTINE_FLAG = " --pristine"
-
-
-def generate_overlay_argument(files: List[Path]):
-    flattened_paths = " ".join(str(of) for of in files)
-    return f'-DOVERLAY_CONFIG="{flattened_paths}"'
 
 
 def __print_add_color(status):
@@ -92,45 +81,56 @@ def __print_dev_conf(device_list):
     print(table)
 
 
-def __build_cmd_get(core: Core, device: AudioDevice, build: BuildType, pristine):
+def __build_cmd_get(core: Core, device: AudioDevice, build: BuildType, pristine, options):
     if core == Core.app:
         build_cmd = f"west build {TARGET_CORE_APP_FOLDER} -b {TARGET_BOARD_NRF5340_AUDIO_DK_APP_NAME}"
-        overlay_files = []
         if device == AudioDevice.headset:
-            overlay_files.append(COMP_FLAG_DEV_HEADSET)
+            device_flag = "-DCONFIG_AUDIO_DEV=1"
             dest_folder = TARGET_DEV_HEADSET_FOLDER
         elif device == AudioDevice.gateway:
-            overlay_files.append(COMP_FLAG_DEV_GATEWAY)
+            device_flag = "-DCONFIG_AUDIO_DEV=2"
             dest_folder = TARGET_DEV_GATEWAY_FOLDER
         else:
             raise Exception("Invalid device!")
         if build == BuildType.debug:
-            overlay_files.append(COMP_FLAG_DEBUG)
+            release_flag = ""
             dest_folder /= TARGET_DEBUG_FOLDER
         elif build == BuildType.release:
-            overlay_files.append(COMP_FLAG_RELEASE)
+            release_flag = " -DCONF_FILE=prj_release.conf"
             dest_folder /= TARGET_RELEASE_FOLDER
         else:
             raise Exception("Invalid build type!")
-        compiler_flags = generate_overlay_argument(overlay_files)
+
+        if options.mcuboot == 'internal':
+            device_flag += " -DCONFIG_AUDIO_DFU=1"
+        elif options.mcuboot == 'external':
+            device_flag += " -DCONFIG_AUDIO_DFU=2"
+        if options.min_b0n:
+            device_flag += " -DCONFIG_B0N_MINIMAL=y"
+
+        if os.name == 'nt':
+            release_flag = release_flag.replace('\\', '/')
+
         if pristine:
-            build_cmd += " -p "
+            build_cmd += " -p"
 
     elif core == Core.net:
         # The net core is precompiled
         dest_folder = TARGET_CORE_NET_FOLDER
         build_cmd = ""
-        compiler_flags = ""
+        device_flag = ""
+        release_flag = ""
 
-    return build_cmd, dest_folder, compiler_flags
+    return build_cmd, dest_folder, device_flag, release_flag
 
 
-def __build_module(build_config):
-    build_cmd, dest_folder, compiler_flags = __build_cmd_get(
+def __build_module(build_config, options):
+    build_cmd, dest_folder, device_flag, release_flag = __build_cmd_get(
         build_config.core,
         build_config.device,
         build_config.build,
         build_config.pristine,
+        options,
     )
     west_str = f"{build_cmd} -d {dest_folder} "
 
@@ -139,7 +139,7 @@ def __build_module(build_config):
 
     # Only add compiler flags if folder doesn't exist already
     if not dest_folder.exists():
-        west_str += compiler_flags
+        west_str = west_str + device_flag + release_flag
 
     print("Run: " + west_str)
 
@@ -148,12 +148,24 @@ def __build_module(build_config):
     if ret_val:
         raise Exception("cmake error: " + str(ret_val))
 
+    if options.mcuboot != '':
+        if options.min_b0n:
+            pcft_sign_cmd = f"python {BUILDPROG_FOLDER}/pcft_sign.py -i\
+            {TARGET_CORE_APP_FOLDER}/dfu/bin/ble5-ctr-rpmsg_shifted_min.hex -b {dest_folder}"
+        else:
+            pcft_sign_cmd = f"python {BUILDPROG_FOLDER}/pcft_sign.py -i\
+            {TARGET_CORE_APP_FOLDER}/dfu/bin/ble5-ctr-rpmsg_shifted.hex -b {dest_folder}"
+        ret_val = os.system(pcft_sign_cmd)
+        if ret_val:
+            raise Exception("generate pcft+b0n error: " + str(ret_val))
+
 
 def __find_snr():
     """Rebooting or programming requires connected programmer/debugger"""
 
     # Use nrfjprog executable for WSL compatibility
-    stdout = subprocess.check_output("nrfjprog --ids", shell=True).decode("utf-8")
+    stdout = subprocess.check_output(
+        "nrfjprog --ids", shell=True).decode("utf-8")
     snrs = re.findall(r"([\d]+)", stdout)
 
     if not snrs:
@@ -164,6 +176,18 @@ def __find_snr():
 
 def __populate_hex_paths(dev, options):
     """Poplulate hex paths where relevant"""
+
+    _, temp_dest_folder, _, _ = __build_cmd_get(
+        Core.app, dev.nrf5340_audio_dk_dev, options.build, options.pristine, options
+    )
+
+    if dev.core_app_programmed == SelectFlags.TBD:
+        dest_folder = temp_dest_folder
+        if options.mcuboot != '':
+            dev.hex_path_app = dest_folder / "zephyr/merged.hex"
+        else:
+            dev.hex_path_app = dest_folder / "zephyr/zephyr.hex"
+
     if dev.core_net_programmed == SelectFlags.TBD:
         dest_folder = TARGET_CORE_NET_FOLDER
 
@@ -171,19 +195,24 @@ def __populate_hex_paths(dev, options):
             file for file in dest_folder.iterdir() if file.suffix == ".hex"
         ]
 
-        if len(hex_files_found) == 0:
-            raise Exception(f"Found no net core hex file in folder: {dest_folder}")
-        elif len(hex_files_found) > 1:
-            raise Exception(f"Found more than one hex file in folder: {dest_folder}")
+        if options.mcuboot != '':
+            temp_dest_folder = str(temp_dest_folder)
+            indices = [i for i, c in enumerate(temp_dest_folder) if c == '/']
+            final_file_prefix = temp_dest_folder[indices[-2]+1:].replace('/', '_')+'_'
+            dev.hex_path_net = dest_folder / f"{final_file_prefix}pcft_CPUNET.hex"
         else:
-            dev.hex_path_net = dest_folder / hex_files_found[0]
-            print(f"Using NET hex: {dev.hex_path_net} for {dev}")
-
-    if dev.core_app_programmed == SelectFlags.TBD:
-        _, dest_folder, _ = __build_cmd_get(
-            Core.app, dev.nrf5340_audio_dk_dev, options.build, options.pristine
-        )
-        dev.hex_path_app = dest_folder / "zephyr/zephyr.hex"
+            for hex_file in reversed(hex_files_found):
+                if "pcft_CPUNET" in hex_file.name:
+                    hex_files_found.remove(hex_file)
+            if len(hex_files_found) == 0:
+                raise Exception(
+                    f"Found no net core hex file in folder: {dest_folder}")
+            elif len(hex_files_found) > 1:
+                raise Exception(
+                    f"Found more than one hex file in folder: {dest_folder}")
+            else:
+                dev.hex_path_net = dest_folder / hex_files_found[0]
+        print(f"Using NET hex: {dev.hex_path_net} for {dev}")
 
 
 def __finish(device_list):
@@ -264,6 +293,22 @@ def __main():
         default=False,
         help="Recover device if programming fails",
     )
+    # DFU relative option
+    parser.add_argument(
+        "-M",
+        "--min_b0n",
+        dest="min_b0n",
+        action='store_true',
+        default=False,
+        help="net core bootloader use minimal size build",
+    )
+    parser.add_argument(
+        "-m",
+        "--mcuboot",
+        required=("-M" in sys.argv or "--min_b0n" in sys.argv),
+        choices=["external", "internal"],
+        default='',
+        help="MCUBOOT with external, internal flash",)
     options = parser.parse_args(args=sys.argv[1:])
 
     # Post processing for Enums
@@ -299,7 +344,8 @@ def __main():
         DeviceConf(
             nrf5340_audio_dk_snr=dev["nrf5340_audio_dk_snr"],
             channel=Channel[dev["channel"]],
-            snr_connected=(dev["nrf5340_audio_dk_snr"] in boards_snr_connected),
+            snr_connected=(dev["nrf5340_audio_dk_snr"]
+                           in boards_snr_connected),
             recover_on_fail=options.recover_on_fail,
             nrf5340_audio_dk_dev=AudioDevice[dev["nrf5340_audio_dk_dev"]],
             cores=cores,
@@ -347,7 +393,7 @@ def __main():
             print("Net core uses precompiled hex")
 
         for build_cfg in build_configs:
-            __build_module(build_cfg)
+            __build_module(build_cfg, options)
 
     # Build step finished
     # Program step start
