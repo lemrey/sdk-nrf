@@ -1,7 +1,7 @@
 .. _ncs_release_notes_changelog:
 
-Changelog for |NCS| v2.0.99
-###########################
+Changelog for |NCS| v2.0.99 + HCS
+#################################
 
 .. contents::
    :local:
@@ -395,6 +395,9 @@ NFC samples
 -----------
 
 * Added a note to the documentation of each NFC sample about debug message configuration with the NFCT driver from the `nrfx`_ repository.
+* Updated:
+
+  * Moved ``nRF5340: Multicore application`` sample to :ref:`multicore_hello_world`.
 
 nRF5340 samples
 ---------------

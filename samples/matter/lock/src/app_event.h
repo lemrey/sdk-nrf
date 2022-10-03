@@ -8,6 +8,8 @@
 
 #include <cstdint>
 
+#include <lib/support/ThreadOperationalDataset.h>
+
 #include "bolt_lock_manager.h"
 #include "led_widget.h"
 
@@ -18,8 +20,11 @@ struct AppEvent {
 
 	enum UpdateLedStateEventType : uint8_t { UpdateLedState = FunctionTimer + 1 };
 
+	enum StartCustomThreadEventType : uint8_t {StartCustomThread =  UpdateLedState + 1 };
+
 	enum OtherEventType : uint8_t {
-		StartBleAdvertising = UpdateLedState + 1,
+		StartThread = StartCustomThread + 1,
+		StartBleAdvertising,
 #ifdef CONFIG_MCUMGR_SMP_BT
 		StartSMPAdvertising
 #endif
@@ -27,6 +32,7 @@ struct AppEvent {
 
 	AppEvent() = default;
 	AppEvent(LockEventType type, BoltLockManager::OperationSource source) : Type(type), LockEvent{ source } {}
+	AppEvent(StartCustomThreadEventType type, chip::Thread::OperationalDataset dataset) : Type(type), StartCustomThreadType{dataset} {}
 	AppEvent(FunctionEventType type, uint8_t buttonNumber) : Type(type), FunctionEvent{ buttonNumber } {}
 	AppEvent(UpdateLedStateEventType type, LEDWidget *ledWidget) : Type(type), UpdateLedStateEvent{ ledWidget } {}
 	explicit AppEvent(OtherEventType type) : Type(type) {}
@@ -43,5 +49,8 @@ struct AppEvent {
 		struct {
 			uint8_t ButtonNumber;
 		} FunctionEvent;
+		struct {
+			chip::Thread::OperationalDataset ThreadOperationalDataset;
+		} StartCustomThreadType;
 	};
 };

@@ -145,3 +145,15 @@
 .. nrf7002dk_nrf5340_cpunet
 
 | :ref:`nRF7002 DK <nrf7002dk_nrf5340>` | PCA10143 | :ref:`nrf7002dk_nrf5340 <nrf7002dk_nrf5340>` | ``nrf7002dk_nrf5340_cpunet`` |
+
+.. nrf54fpga_nrf5420soc1_cpuapp
+
+| nRF54 FPGA | | nrf54fpga_nrf5420soc1_cpuapp | ``nrf54fpga_nrf5420soc1_cpuapp`` |
+
+.. nrf54fpga_nrf5420soc1_cpurad
+
+| nRF54 FPGA | | nrf54fpga_nrf5420soc1_cpurad | ``nrf54fpga_nrf5420soc1_cpurad`` |
+
+.. nrf54fpga_nrf5420_cpuapp
+
+| nRF54 FPGA | | nrf54fpga_nrf5420_cpuapp | ``nrf54fpga_nrf5420_cpuapp`` |

@@ -49,8 +49,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/introduction/index.html
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
-      repo-path: sdk-zephyr
-      revision: 482dcc7865f7d3a458f061a1d8276c5801eed1e4
+      repo-path: sdk-zephyr-next
+      revision: aa9f1e7407a0bc8b559dc2e8ffe8c34be806feb3
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -72,7 +72,6 @@ manifest:
           - edtt
           - fatfs
           - fff
-          - hal_nordic
           - hal_st
           - liblc3codec
           - libmetal
@@ -88,6 +87,7 @@ manifest:
           - open-amp
           - picolibc
           - psa-arch-tests
+          - sdk-hal_nordic-next
           - segger
           - tinycbor
           - tinycrypt
@@ -110,9 +110,25 @@ manifest:
       repo-path: sdk-mbedtls
       revision: 30c4a6c658799086cd19db4a6c2fa6c7ef026dbb
     - name: nrfxlib
-      repo-path: sdk-nrfxlib
+      repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 044f2fa8a59ac408984116840f3341e2511f9ce0
+      revision: e6bc508cf1eaafc29df46af163ae330f73f8e490
+    - name: ic-next
+      repo-path: sdk-ic-next
+      path: modules/ic-next
+      revision: e60ca62d2de41932c4a54425e40232de897e3c5d
+    - name: sdk-secdom
+      revision: 82ed6b87987a7d174642b777192b132f4e29ee26
+      path: core_fw/secdom
+    - name: nrf-regtool
+      revision: v2.0.1
+      path: modules/lib/nrf-regtool
+    - name: nrfs
+      path: modules/lib/nrfs
+      revision: 9a7eb07f6fe98d3ae4492b55fa7cfe78c39edd69
+    - name: sdk-sysctrl
+      revision: 7a0fb08cd763d66fae8c7c88a6e6eec754131efa
+      path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
@@ -122,9 +138,9 @@ manifest:
       path: modules/tee/tfm-mcuboot
       revision: v1.7.2-ncs1
     - name: matter
-      repo-path: sdk-connectedhomeip
+      repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: bb3c75702852ed7efaf6058a38b5a86a71581fa4
+      revision: 15a08b71e9277ff0e541daaac717f16dda4e2bd6
       submodules:
         - name: nlio
           path: third_party/nlio/repo

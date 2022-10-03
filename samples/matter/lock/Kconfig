@@ -6,6 +6,8 @@
 
 mainmenu "Matter Lock sample application"
 
+if !(EMULATOR_FPGA)
+
 config LOCK_NUM_USERS
 	int "Maximum number of users supported by lock"
 	default 10
@@ -62,7 +64,16 @@ config MPSL_FEM_NRF21540_TX_GAIN_DB
 
 endif # MPSL_FEM
 
-
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
+
+endif # !(EMULATOR_FPGA)
+
+if EMULATOR_FPGA
+
+source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.fpga"
+source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
+
+endif
+
 source "Kconfig.zephyr"
