@@ -241,6 +241,10 @@ Bluetooth libraries and services
 
 See `Bluetooth mesh samples`_ for the list of changes for the Bluetooth mesh samples.
 
+* :ref:`bt_fast_pair_readme` service:
+
+  * Disabled automatic security re-establishment request as a peripheral (:kconfig:option:`CONFIG_BT_GATT_AUTO_SEC_REQ`) to allow the Fast Pair Seeker to control the security re-establishment.
+
 Bootloader libraries
 --------------------
 
