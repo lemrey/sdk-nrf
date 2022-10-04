@@ -8,10 +8,6 @@ cmake_minimum_required(VERSION 3.20.0)
 
 set(OT_NCP_VENDOR_HOOK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (CONFIG_FPGA_TIMING_COMPATIBILITY)
-    set(OVERLAY_CONFIG "overlay-fpga.conf")
-endif()
-
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(openthread_coprocessor)
