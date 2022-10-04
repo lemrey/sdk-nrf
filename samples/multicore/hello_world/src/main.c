@@ -6,6 +6,8 @@
 
 #include <zephyr.h>
 #include <sys/printk.h>
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(app);
 
 #if defined(CONFIG_BOARD_NRF54FPGA_NRF5420_CPUAPP) || \
     defined(CONFIG_BOARD_NRF54FPGA_NRF5420_SOC1_CPUAPP)
@@ -15,6 +17,8 @@
 
 int main(void)
 {
+	int cnt = 0;
+
 #if defined(CONFIG_BOARD_NRF54FPGA_NRF5420_CPUAPP) || \
     defined(CONFIG_BOARD_NRF54FPGA_NRF5420_SOC1_CPUAPP)
 	/* Enable PPr core */
@@ -23,6 +27,7 @@ int main(void)
 #endif
 
 	while (1) {
+		LOG_INF("test %d", cnt++);
 		printk("Hello world from %s\n", CONFIG_BOARD);
 		k_msleep(1000);
 	}

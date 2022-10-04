@@ -11,3 +11,35 @@ tests:
       - nrf54fpga_nrf5420_cpuapp
       - nrf54fpga_nrf5420soc1_cpuapp
     tags: ci_build
+  sample.multicore.hello_world.nrf5420.stm_logging_fsc_frontend:
+    build_only: true
+    platform_allow: nrf54fpga_nrf5420_cpuapp
+    integration_platforms:
+      - nrf54fpga_nrf5420_cpuapp
+    tags: ci_build
+    extra_args: OVERLAY_CONFIG="stm_logging.conf"
+      DTC_OVERLAY_FILE="boards/nrf54fpga_nrf5420_cpuapp_stm_logging.overlay"
+      remote_DTC_OVERLAY_FILE="boards/nrf54fpga_nrf5420_cpuppr_stm.overlay"
+      remote_CONFIG_LOG=y remote_CONFIG_LOG_PRINTK=y remote_CONFIG_LOG_FRONTEND_CORESIGHT_STM=y
+      remote_CONFIG_LOG_FRONTEND_CORESIGHT_STM_FSC=y remote_CONFIG_LOG_FRONTEND=y
+      remote_CONFIG_LOG_FRONTEND_ONLY=y remote_CONFIG_LOG_BACKEND_UART=n
+      remote_CONFIG_UART_CONSOLE=n remote_CONFIG_CONSOLE=n
+    extra_configs:
+      - CONFIG_APP_STM_LOGGING=y
+      - CONFIG_APP_STM_LOGGING_FSC_FRONTEND=y
+  sample.multicore.hello_world.nrf5420soc1.stm_logging_fsc_frontend:
+    build_only: true
+    platform_allow: nrf54fpga_nrf5420soc1_cpuapp
+    integration_platforms:
+      - nrf54fpga_nrf5420soc1_cpuapp
+    tags: ci_build
+    extra_args: OVERLAY_CONFIG="stm_logging.conf"
+      DTC_OVERLAY_FILE="boards/nrf54fpga_nrf5420soc1_cpuapp_stm_logging.overlay"
+      remote_DTC_OVERLAY_FILE="boards/nrf54fpga_nrf5420soc1_cpuppr_stm.overlay"
+      remote_CONFIG_LOG=y remote_CONFIG_LOG_PRINTK=y remote_CONFIG_LOG_FRONTEND_CORESIGHT_STM=y
+      remote_CONFIG_LOG_FRONTEND_CORESIGHT_STM_FSC=y remote_CONFIG_LOG_FRONTEND=y
+      remote_CONFIG_LOG_FRONTEND_ONLY=y remote_CONFIG_LOG_BACKEND_UART=n
+      remote_CONFIG_UART_CONSOLE=n remote_CONFIG_CONSOLE=n
+    extra_configs:
+      - CONFIG_APP_STM_LOGGING=y
+      - CONFIG_APP_STM_LOGGING_FSC_FRONTEND=y

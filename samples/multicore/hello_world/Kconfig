@@ -20,3 +20,23 @@ config APP_REMOTE_BOARD
 	default DOMAIN_CPUNET_BOARD if (BOARD_NRF5340DK_NRF5340_CPUAPP || BOARD_NRF5340DK_NRF5340_CPUAPP_NS)
 	default "nrf54fpga_nrf5420soc1_cpuppr" if BOARD_NRF54FPGA_NRF5420_SOC1_CPUAPP
 	default "nrf54fpga_nrf5420_cpuppr" if BOARD_NRF54FPGA_NRF5420_CPUAPP
+
+menuconfig APP_STM_LOGGING
+	bool "Application STM logging support"
+
+choice APP_STM_LOGGING_TYPE
+	prompt "STM Logging"
+	default APP_STM_LOGGING_OFF
+
+config APP_STM_LOGGING_OFF
+	bool "Logging disabled"
+	help
+	  Logging is disabled.
+
+config APP_STM_LOGGING_FSC_FRONTEND
+	bool "Human-readable"
+	help
+	  Logging to STM frontend is enabled on secure domain, application core
+	  and PPR. Human readable logs are printed on UART owned by the secure domain.
+
+endchoice

@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+ /{
+	allocatable_ram {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Configure PPR code region. Allow to execute from defined
+		 * region by App and cores owned by App.
+		 */
+		ppr_code: memory@1e09a000 {
+			compatible = "nordic,allocatable-mram";
+			reg = <0x1e09a000 DT_SIZE_K(64)>;
+			perm-read;
+			perm-execute;
+		};
+
+		/* Configure PPR memory region. Allow to use defined RAM
+		 * region by App and cores owned by App.
+		 */
+		ram30_app_ppr: memory@2fc00000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc00000 DT_SIZE_K(16)>;
+			perm-read;
+			perm-write;
+		};
+
+		/* Configure PPR memory region. Allow to use defined RAM
+		 * region by App and cores owned by App.
+		 */
+		ram31_app_ppr: memory@2fc04000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc04000 DT_SIZE_K(16)>;
+			perm-read;
+			perm-write;
+		};
+
+		ppr_stmesp: memory@ae000000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0xae000000 DT_SIZE_K(16384)>;
+			perm-read;
+			perm-write;
+		};
+	};
+};
+
+&grtc {
+	status = "okay";
+	/* Channels 4 and 5 are used by the app core itself, channels 6 and 7
+	 * are owned by App but used by PPR.
+	 */
+	owned-channels = <4 5 6 7>;
+	child-owned-channels = <6 7>;
+};
+
+/* Enable PPR clic so App could start PPR. */
+&clic_cpuppr {
+	status = "okay";
+};
+
+/* Disable systick for App core, GRTC is used as tick source. */
+&systick {
+	status = "disabled";
+};
