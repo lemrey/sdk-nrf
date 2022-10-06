@@ -28,7 +28,7 @@
     ipc0: ipc_host {
         compatible = "zephyr,ipc-openamp-static-vrings";
         memory-region = <&ram30>;
-        mboxes = <&bellboard_cpunet 29>,
+        mboxes = <&bellboard_cpurad 29>,
              <&bellboard_cpuapp 29>;
         mbox-names = "tx", "rx";
         role = "host";
@@ -61,7 +61,7 @@
 &global_peripherals {
     /delete-node/ bellboard@9a000;
     /delete-node/ bellboard@9b000;
-    bellboard_cpunet: bellboard@9b000 {
+    bellboard_cpurad: bellboard@9b000 {
         compatible = "nordic,mbox-nrf-ids";
         reg = <0x9b000 0x1000>;
         domain = <NRF_IDS_DOMAIN_NET>;

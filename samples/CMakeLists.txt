@@ -130,6 +130,14 @@ if (CONFIG_NCS_INCLUDE_RPMSG_CHILD_IMAGE)
   # Prevents e.g. menuconfig from becoming inaccessible, among others.
   if(CHILD_IMAGE_NAME AND CHILD_IMAGE_PATH)
 
+    if (CONFIG_SOC_NRF5340_CPUAPP)
+      set(DOMAIN_NAME "CPUNET")
+      set(BOARD_NAME ${CONFIG_DOMAIN_CPUNET_BOARD})
+    else()
+      set(DOMAIN_NAME "CPURAD")
+      set(BOARD_NAME ${CONFIG_DOMAIN_CPURAD_BOARD})
+    endif()
+
     if (CONFIG_NRF53_UPGRADE_NETWORK_CORE)
       # Inject this configuration from parent image to enable
       # secure bootloader on the network core. This enables firmware update
@@ -151,8 +159,8 @@ if (CONFIG_NCS_INCLUDE_RPMSG_CHILD_IMAGE)
     add_child_image(
       NAME ${CHILD_IMAGE_NAME}
       SOURCE_DIR ${CHILD_IMAGE_PATH}
-      DOMAIN "CPUNET"
-      BOARD ${CONFIG_DOMAIN_CPUNET_BOARD}
+      DOMAIN ${DOMAIN_NAME}
+      BOARD ${BOARD_NAME}
       )
   endif()
 

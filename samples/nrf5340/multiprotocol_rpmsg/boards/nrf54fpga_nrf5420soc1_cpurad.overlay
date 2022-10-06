@@ -9,14 +9,14 @@
 / {
 	chosen {
 		/delete-property/ nordic,bellboard-cpuapp;
-		/delete-property/ nordic,bellboard-cpunet;
+		/delete-property/ nordic,bellboard-cpurad;
 	};
 
 	ipc0: ipc_remote {
 		compatible = "zephyr,ipc-openamp-static-vrings";
 		memory-region = <&ram30>;
 		mboxes = <&bellboard_cpuapp 29>,
-			 <&bellboard_cpunet 29>;
+			 <&bellboard_cpurad 29>;
 		mbox-names = "tx", "rx";
 		role = "remote";
 		status = "okay";
@@ -32,7 +32,7 @@
 	/delete-node/ bellboard@9a000;
 	/delete-node/ bellboard@9b000;
 
-	bellboard_cpunet: bellboard@9b000 {
+	bellboard_cpurad: bellboard@9b000 {
 		compatible = "nordic,mbox-nrf-ids";
 		reg = <0x9b000 0x1000>;
 		interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
@@ -65,7 +65,7 @@
 	status = "okay";
 };
 
-&cpunet_ipct {
+&cpurad_ipct {
 	source-channel-map = <0 13 0>;
 	sink-channel-map = <1 13 1>;
 };

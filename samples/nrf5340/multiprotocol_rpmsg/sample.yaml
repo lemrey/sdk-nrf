@@ -12,6 +12,6 @@ tests:
   sample.nrf5420.multiprotocol_rpmsg.fpga:
     build_only: true
     integration_platforms:
-      - nrf54fpga_nrf5420soc1_cpunet
-    platform_allow: nrf54fpga_nrf5420soc1_cpunet
+      - nrf54fpga_nrf5420soc1_cpurad
+    platform_allow: nrf54fpga_nrf5420soc1_cpurad
     tags: ci_build
