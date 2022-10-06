@@ -7,7 +7,7 @@ nRF9160: LwM2M carrier
    :local:
    :depth: 2
 
-The LwM2M carrier sample demonstrates how to run the :ref:`liblwm2m_carrier_readme` library in an application in order to connect to the operator LwM2M network.
+The LwM2M carrier sample demonstrates how to run the :ref:`liblwm2m_carrier_readme` library in an application in order to connect to the mobile network operator's (or other) device management.
 
 See the subpages for detailed documentation on the sample and its features.
 

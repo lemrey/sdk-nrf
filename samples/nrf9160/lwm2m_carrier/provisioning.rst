@@ -25,7 +25,7 @@ Hence it might become necessary to program the required certificates.
 Pre-programming the certificates
 ================================
 
-The certificates are typically stored in the modem and read by the application.
+The certificates are typically stored in the modem.
 The LwM2M carrier sample writes the certificates to the modem if they are not already present.
 Alternatively, you can also write the certificates beforehand using the :ref:`at_client_sample` sample.
 
@@ -39,17 +39,10 @@ Other samples and applications like :ref:`asset_tracker_v2` and :ref:`modem_shel
 Pre-shared Key (PSK)
 ********************
 
-The PSK must only be provided using a security tag using the :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` Kconfig option.
+In live (production) environment, the correct PSK is generated and stored in the modem depending on which operator network the device is in.
+The application should not provide a custom security tag using :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` in this case.
 
-The sample allows you to set a PSK that is written to a modem security tag using the  :kconfig:option:`CONFIG_CARRIER_APP_PSK` and :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` Kconfig options.
-This is convenient for developing and debugging but must be avoided in the final product.
-
-To set a PSK, complete the following steps:
-
-1. Build and flash the sample once with provided values for :kconfig:option:`CONFIG_CARRIER_APP_PSK` and :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG`.
-#. Build the sample again, by providing value for only :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` and not for :kconfig:option:`CONFIG_CARRIER_APP_PSK`.
-
-Alternatively, you can also set the PSK beforehand using the :ref:`at_client_sample` sample before flashing your application.
+If the device is operating outside the supported operator network, then the custom security tag will be applied.
 
 Carrier configuration and testing
 *********************************
@@ -62,6 +55,20 @@ Carrier configuration and testing
 
 * The settings required to test and certify your product with the carrier will be different from the settings needed for mass deployment.
 
-  * When :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is not set (when :c:func:`config_init` is empty), the URI is predetermined to connect to the live (production) device management server of the currently connected operator network. 
-  * During certification process, the :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` and :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_PSK` Kconfig options must be set accordingly to connect to the carrier's certification servers instead of the live (production) servers.
+  * When :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is not set (when :c:func:`config_init` is empty), the URI is predetermined to connect to the live device management server of the currently connected operator network. 
+  * During certification process, the :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` and :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` Kconfig options must be set accordingly to connect to the carrier's test (certification) servers instead of the live (production) servers.
     See :ref:`lwm2m_app_int` for more information on the required configurations.
+
+LG U+ operator requirements
+===========================
+
+Following are the changes required for using the library with LG U+ operator network:
+
+* :kconfig:option:`CONFIG_DFU_TARGET_MCUBOOT` is required to perform application FOTA.
+  This in turn enables the Kconfig option :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS`.
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE` must be set.
+  This service code is reflected in the Model Number resource of the Device object.
+  Contact the carrier to obtain the correct service code.
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS_SERIAL` can be changed depending on your product.
+  Contact the carrier for more information.
+* :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` is not used when the subscriber ID is ``LG U+``.

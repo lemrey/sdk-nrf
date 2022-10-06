@@ -1,4 +1,4 @@
-.. _lwm2m_app_int:
+﻿.. _lwm2m_app_int:
 
 Application integration
 #######################
@@ -33,7 +33,6 @@ It provides an abstraction of the following modules:
   * :ref:`at_monitor_readme`
   * :ref:`lte_lc_readme`
   * :ref:`lib_download_client`
-  * :ref:`modem_key_mgmt`
   * :ref:`sms_readme`
   * :ref:`pdn_readme`
   * :ref:`lib_dfu_target`
@@ -47,8 +46,8 @@ It provides an abstraction of the following modules:
 
 The OS abstraction layer is fully implemented for the |NCS|, and it needs to be ported if used with other RTOS or on other systems.
 
-After calling the :c:func:`lwm2m_carrier_init` function, your application can call the non-returning function :c:func:`lwm2m_carrier_run` in its own thread.
-Both these functions are called in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`, which is included into the project when you enable the LwM2M carrier library.
+When the LwM2M carrier library is enabled in your application, it includes the file :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`.
+This automatically initializes the library (using :c:func:`lwm2m_carrier_init`) and runs the library thread (:c:func:`lwm2m_carrier_run`).
 
 .. _lwm2m_configuration:
 
@@ -61,9 +60,7 @@ Enable the library by setting the :kconfig:option:`CONFIG_LWM2M_CARRIER` Kconfig
 The :ref:`lwm2m_carrier` sample project configuration (:file:`nrf/samples/nrf9160/lwm2m_carrier/prj.conf`) contains all the configurations that are needed by the LwM2M carrier library.
 
 To overwrite the carrier default settings, you can provide the initialization parameter :c:type:`lwm2m_carrier_config_t` with the Kconfig options specified in the following sections.
-Alternatively, you can enable the LWM2M carrier shell to overwrite the carrier default settings through the command line.
-In the :ref:`lwm2m_carrier` sample, you can enable the LWM2M carrier shell by :ref:`building with the overlay file <lwm2m_carrier_shell_overlay>` :file:`overlay-shell.conf`.
-See :ref:`lwm2m_shell` for more information on the shell.
+You can also use the provided :ref:`lwm2m_shell` to quickly get started and experiment with the API.
 
 .. _general_options_lwm2m:
 
@@ -74,14 +71,16 @@ Following are some of the general Kconfig options that you can configure:
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_BOOTSTRAP_SMARTCARD`:
 
-  * This configuration allows the LwM2M carrier library to use a URI stored on the SIM card.
+  * This configuration allows the LwM2M carrier library to use the bootstrap information stored on the SIM card.
     The configuration in the SIM will take precedence over any other configuration.
     For example, if a bootstrap server URI is fetched from the SIM, the configuration set by the :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP` Kconfig option is ignored.
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT`:
 
-  * This configuration specifies the session idle timeout (inactivity). Upon timeout, the LwM2M carrier library disconnects from one or more device management servers.
-  * The timeout closes the DTLS session. A new DTLS session will be created on the next activity (for example, lifetime trigger).
+  * This configuration specifies the session idle timeout (inactivity).
+    Upon timeout, the LwM2M carrier library disconnects from one or more device management servers.
+  * The timeout closes the DTLS session.
+    A new DTLS session will be created on the next activity (for example, lifetime trigger).
   * Leaving this configuration empty (0) sets it to a default of 60 seconds.
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN`:
@@ -89,7 +88,8 @@ Following are some of the general Kconfig options that you can configure:
   * This configuration produces different results depending on normal or generic mode of operation.
   * If :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is not set (normal), this configuration provides a fallback APN.
     This might be required in your application, depending on the requirements from the carrier.
-  * If :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is set (generic), :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` is used instead of the default APN and fallback APN is not provided.
+  * If :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is set (generic), :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` is used instead of the default APN.
+    The default APN becomes the fallback APN.
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS`, :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE`:
 
@@ -111,33 +111,31 @@ The server settings can put the LwM2M carrier library either in the normal mode 
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI`:
 
-  * This configuration lets the LwM2M carrier library connect to a custom server other than the normal carrier server, thereby enabling the generic mode.
+  * This configuration lets the LwM2M carrier library connect to a custom server other than the normal carrier server and enables the generic mode if used in an operator network that is not supported.
   * You must set this option during self-testing, or if the end product is not to be certified with the applicable carriers.
     For more information, see :ref:`lwm2m_certification`.
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG`:
 
-  * If the :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` option is configured, and the server requires a secure connection, a security tag for a PSK is required.
-    If the configuration is empty (0), it is ignored.
-  * The :ref:`modem_key_mgmt` section describes how to store credentials for the security tag specified in :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` into the nRF9160 modem.
+  * This configuration provides the library with a security tag containing a PSK.
+  * This configuration should normally be left empty (0) unless stated by the operator, or when connecting to a custom URI.
+    In this case, the library will automatically apply the correct PSK for the different carrier device management.
+  * The :ref:`sample <lwm2m_carrier>` allows you to set a PSK that is written to a modem security tag using the :kconfig:option:`CONFIG_CARRIER_APP_PSK` and :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` Kconfig options.
+    This is convenient for developing and debugging but must be avoided in the final product.
+    Instead, see :ref:`modem_key_mgmt` or :ref:`at_client_sample` sample for `provisioning a PSK <Managing credentials_>`_.
 
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_LIFETIME`:
 
   * This configuration specifies the lifetime of the custom LwM2M server.
   * This configuration is ignored if :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP` is set.
 
-  .. note::
-
-     A change of the bootstrap server URI between builds does not trigger a new bootstrap.
-     The bootstrap process is intended to happen only once unless it is initiated from the server.
-     To redo the bootstrap process, you must erase the flash and then load your application again.
 
 Device options
 ==============
 
-These values are reported in the Device Object.
-They are not expected to change during run time.
-If these values are not set by the application, the LwM2M carrier library sets the default values based on the modem and operator network.
+These values are reported in the Device Object and are not expected to change during run time.
+These configurations can be left empty unless otherwise stated by your operator.
+The library will automatically set the values according to the detected operator.
 
 Following are the device Kconfig options:
 
@@ -154,26 +152,30 @@ LwM2M carrier library events
 
 The :c:func:`lwm2m_carrier_event_handler` function must be implemented by your application.
 This is shown in the :ref:`lwm2m_carrier` sample.
-A weak implementation is included in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`.
+A ``__weak`` implementation is included in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_carrier.c`.
 
-Following are the various LwM2M carrier library events which are also listed in :file:`nrf/lib/bin/lwm2m_carrier/include/lwm2m_carrier.h`.
-
-
+Following are the various LwM2M carrier library events that are also listed in :file:`nrf/lib/bin/lwm2m_carrier/include/lwm2m_carrier.h`.
 
 * :c:macro:`LWM2M_CARRIER_EVENT_INIT`:
 
   * This event indicates that the carrier library has been successfully initialized.
-    :ref:`nrf_modem` is initialized and can be used. See :ref:`req_appln_limitations`).
-    The application can now attach to the network.
+    :ref:`nrf_modem` is initialized and can be used.
+    See :ref:`req_appln_limitations`.
+
   * If CA certificates are not already present in the modem, they can be written when receiving this event (and before attaching to the network).
-    The CA certificates needed for your device depends on your network operator.
-    The LwM2M carrier library will apply these certificates during certain out-of-band FOTA operations.
+    The CA certificates needed for your device depend on your network operator.
+    The LwM2M carrier library will apply these certificates during certain out-of-band FOTA updates.
     See :ref:`lwm2m_carrier` sample for an example of how these certificates are written to the modem using :ref:`modem_key_mgmt` library.
 
-* :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_DOWN`, :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_UP`:
+* :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_DOWN`:
 
   * These events indicate that the device must connect to, or disconnect from the LTE network.
-    They occur during the bootstrapping process, startup, and during FOTA.
+    They occur during the bootstrapping process and FOTA.
+
+* :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_UP`:
+
+  * These events indicate that the device must connect to, or disconnect from the LTE network.
+    They occur during the bootstrapping process, startup, and FOTA.
 
 * :c:macro:`LWM2M_CARRIER_EVENT_BOOTSTRAPPED`:
 
@@ -210,7 +212,7 @@ Following are the various LwM2M carrier library events which are also listed in 
 * :c:macro:`LWM2M_CARRIER_EVENT_FOTA_START`:
 
   * This event indicates that the modem update has started.
-  * The application must immediately terminate any open TLS sessions.
+  * The application must immediately terminate any open TLS and DTLS sessions.
   * See :ref:`req_appln_limitations`.
 
 * :c:macro:`LWM2M_CARRIER_EVENT_REBOOT`:
@@ -265,6 +267,11 @@ Following are the various LwM2M carrier library events which are also listed in 
 LwM2M carrier shell configuration
 *********************************
 
+The LwM2M carrier shell allows you to interact with the carrier library through the shell command line.
+This allows you to overwrite initialization parameters and call the different runtime APIs of the library.
+This can be useful for getting started and debugging.
+See :ref:`zephyr:shell_api` for more information.
+
 To enable and configure the LwM2M carrier shell, set the :kconfig:option:`CONFIG_LWM2M_CARRIER_SHELL` Kconfig option to ``y``.
 The :kconfig:option:`CONFIG_LWM2M_CARRIER_SHELL` Kconfig option has the following dependencies:
 
@@ -272,22 +279,22 @@ The :kconfig:option:`CONFIG_LWM2M_CARRIER_SHELL` Kconfig option has the followin
 * :kconfig:option:`CONFIG_SHELL`
 * :kconfig:option:`CONFIG_SETTINGS`
 
-In the :ref:`lwm2m_carrier` sample, the LWM2M carrier shell can be enabled by using the configuration overlay file :file:`overlay-shell.conf`.
+In the :ref:`lwm2m_carrier` sample, you can enable the LwM2M carrier shell by :ref:`building with the overlay file <lwm2m_carrier_shell_overlay>` :file:`overlay-shell.conf`.
 
 .. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_os_abstraction_shell.svg
     :alt: LwM2M carrier shell
 
     LwM2M carrier shell
 
-carrier_init
-============
+carrier_config
+==============
 
-The initialization parameter :c:type:`lwm2m_carrier_config_t` can be overwritten with custom settings through the LwM2M carrier shell command group ``carrier_init``.
-Use the ``print`` command to display the configurations that are written with ``carrier_init``:
+The initialization parameter :c:type:`lwm2m_carrier_config_t` can be overwritten with custom settings through the LwM2M carrier shell command group ``carrier_config``.
+Use the ``print`` command to display the configurations that are written with ``carrier_config``:
 
-.. code-block::
+.. code-block:: console
 
-    > carrier_init print
+    > carrier_config print
     Custom carrier server settings
       Enable custom settings         No
       Bootstrap from smartcard       No
@@ -296,8 +303,8 @@ Use the ``print`` command to display the configurations that are written with ``
       Service code
 
     Custom carrier server settings
-      Enable custom server settings  Yes
-      Is bootstrap server            Yes  (Not used without server URI)
+      Enable custom server settings  No
+      Is bootstrap server            No  (Not used without server URI)
       Server URI
       PSK security tag               0
       Server lifetime                0  (Not used when bootstrap server)
@@ -310,9 +317,17 @@ Use the ``print`` command to display the configurations that are written with ``
       Hardware version
       Software version
 
-These settings are applied by the function :c:func:`lwm2m_carrier_custom_init`.
+To allow time to change configurations before the library applies them, the application waits in the initialization phase (:c:func:`lwm2m_carrier_custom_init`) until ``auto_startup`` is set.
+
+.. code-block::
+
+   uart:~$ carrier_config auto_startup y
+   Set auto startup: Yes
+
+The settings are applied by the function :c:func:`lwm2m_carrier_custom_init`.
+
 This function is implemented in :file:`nrf/lib/bin/lwm2m_carrier/os/lwm2m_settings.c` that is included in the project when you enable the LwM2M carrier shell.
-The weak implementation of :c:func:`lwm2m_carrier_event_handler` calls :c:func:`lwm2m_carrier_custom_init` on receiving the :c:macro:`LWM2M_CARRIER_EVENT_INIT` event.
+The ``__weak`` implementation of :c:func:`lwm2m_carrier_event_handler` calls :c:func:`lwm2m_carrier_custom_init` on receiving the :c:macro:`LWM2M_CARRIER_EVENT_INIT` event.
 
 carrier_api
 ===========
@@ -320,7 +335,7 @@ carrier_api
 The LwM2M carrier shell command group ``carrier_api`` allows you to access the public LwM2M API as shown in :file:`nrf/lib/bin/lwm2m_carrier/include/lwm2m_carrier.h`.
 
 For example, to indicate the battery level of the device to the carrier, the function :c:func:`lwm2m_carrier_battery_level_set` is used.
-However, this can also be done through the ``carrier_api`` command:
+This can also be done through the ``carrier_api`` command:
 
 .. code-block::
 
@@ -341,7 +356,7 @@ To display help for all available shell commands, pass the following command to 
 If the optional argument is not provided, the command displays help for all command groups.
 
 If the optional argument is provided, it displays help for subcommands of the specified command group.
-For example, ``carrier_init help`` displays help for all ``carrier_init`` commands.
+For example, ``carrier_config help`` displays help for all ``carrier_config`` commands.
 
 Objects
 *******
@@ -374,8 +389,8 @@ The following values that reflect the state of the device must be kept up to dat
 * Error Code - Defaults to ``0`` if not set (No Error).
 * Device Type - Defaults to ``Smart Device`` if not set.
 * Software Version - Defaults to ``LwM2M <libversion>``. For example, ``LwM2M 0.30.2`` for release 0.30.2.
-* Hardware Version - Defaults to ``1.0`` if not set.
-* Location - Defaults to 0 if not set.
+* Hardware Version - Default value is read from the modem. An example value is ``nRF9160 SICA B0A``.
+* Location - Defaults to ``0`` if not set.
 
 The following values are read from the modem by default but can be overwritten:
 

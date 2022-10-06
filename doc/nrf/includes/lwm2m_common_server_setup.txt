@@ -17,7 +17,7 @@ The following instructions describe how to register your device to `Leshan Demo 
             * Endpoint - urn\:imei\:*your Device IMEI*
             * Security Mode - psk
             * Identity: - urn\:imei\:*your Device IMEI*
-            * Key - 000102030405060708090a0b0c0d0e0f
+            * Key - your key (for example, ``000102030405060708090a0b0c0d0e0f``)
 
       .. tab:: Coiote Device Management
 
@@ -30,7 +30,7 @@ The following instructions describe how to register your device to `Leshan Demo 
             * Endpoint - urn\:imei\:*your Device IMEI*
             * Friendly Name - *recognizable name*
             * Security mode - psk (Pre-Shared Key)
-            * Key - 000102030405060708090a0b0c0d0e0f
+            * Key - your key (for example, ``000102030405060708090a0b0c0d0e0f``)
 
             Also, make sure to select the :guilabel:`Key in hexadecimal` checkbox.
 
@@ -50,14 +50,14 @@ The following instructions describe how to register your device to `Leshan Demo 
          #. Click :guilabel:`NEXT` and select :guilabel:`Using (D)TLS` and enter following data:
 
             * Identity - urn\:imei\:*your device IMEI*
-            * Key - ``000102030405060708090a0b0c0d0e0f``
+            * Key - your key (for example, ``000102030405060708090a0b0c0d0e0f``)
          #. Click :guilabel:`NEXT` and leave default paths to be deleted.
          #. Click :guilabel:`NEXT` and in the :guilabel:`LWM2M Server Configuration` section, enter the following data:
 
             * Server URL - ``coaps://leshan.eclipseprojects.io:5684``
             * Select :guilabel:`Pre-shared Key` as the :guilabel:`Security Mode`
             * Identity - urn\:imei\:*your device IMEI*
-            * Key - ``000102030405060708090a0b0c0d0e0f``
+            * Key - your key (for example, ``000102030405060708090a0b0c0d0e0f``)
 
             This information is used when your client connects to the server.
             If you choose :guilabel:`Pre-shared Key`, you must add the values for :guilabel:`Identity` and :guilabel:`Key` fields (the configured Key need not match the Bootstrap Server configuration).
@@ -78,7 +78,7 @@ The following instructions describe how to register your device to `Leshan Demo 
             * Endpoint - urn\:imei\:*your Device IMEI*
             * Friendly Name - *recognisable name*
             * Security mode - psk (Pre-Shared Key)
-            * Key - 000102030405060708090a0b0c0d0e0f
+            * Key - your key (for example, ``000102030405060708090a0b0c0d0e0f``)
 
             Also, make sure to select the :guilabel:`Key in hexadecimal` checkbox.
 

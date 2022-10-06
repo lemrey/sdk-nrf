@@ -16,14 +16,13 @@ The sample supports the following development kit:
 
 .. table-from-sample-yaml::
 
-The sample is configured to compile and run as a non-secure application on nRF91's Cortex-M33.
-Therefore, it automatically includes the :ref:`secure_partition_manager` that prepares the required peripherals to be available for the application.
+.. include:: /includes/tfm.txt
 
 Overview
 ********
 
 LwM2M is an application layer protocol based on CoAP over UDP.
-It is designed to expose various resources for reading, writing, and executing through an LwM2M server in a very lightweight environment.
+It is designed to expose various resources for reading, writing, and executing through an LwM2M server in a lightweight environment.
 
 The LwM2M carrier library is needed for certification in certain operator networks.
 The LwM2M carrier sample shows how to integrate the LwM2M carrier library.
@@ -31,10 +30,11 @@ This sample is primarily meant to be run in the :ref:`applicable networks <lwm2m
 It will automatically connect to the correct device management servers, depending on which network operator is detected.
 
 Some of the configurations of the library must be changed according to your specific operator requirements.
-For example, at some point during certification, you might have to connect to an operator's test server(s), by overwriting the libraries automatic URI and PSK selection. (When :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is empty, the library connects to live/production servers).
+For example, at some point during certification, you might have to connect to one or more of an operator's test (certification) servers, by overwriting the library's automatic URI and PSK selection.
+When :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is empty, the library connects to live (production) servers.
 
-The sections below explains how you can configure the library in different ways to connect to Leshan and Coiote LwM2M servers.
-Configuring your application to connect to other servers (such as your operators test servers) might look different, depending on the operators device management framework.
+The sections below explain how you can configure the library in different ways to connect to Leshan and Coiote LwM2M servers.
+Configuring your application to connect to other servers (such as your operator's test servers) might look different, depending on the operator's device management framework.
 
 Configuration
 *************
@@ -47,8 +47,7 @@ Setup
 Before building and running the sample, complete the following steps:
 
 1. Select the device that you plan to test.
-#. Select the LwM2M server for testing and register the device on it.
-   You can also optionally enable notifications for the resources so that the server actively monitors the resources.
+#. Select the LwM2M server for testing.
 #. Setup the LwM2M server by completing the steps listed in :ref:`server_setup_lwm2m_carrier`.
    This step retrieves the server address and the security tag that will be needed during the next steps.
 #. :ref:`server_addr_PSK_carrier`.
@@ -64,7 +63,7 @@ Before building and running the sample, complete the following steps:
 Set the server address and PSK
 ------------------------------
 
-a. Open :file:`prj.conf`.
+a. Open :file:`prj.conf` (see :ref:`lwm2m_carrier_config_files` for more information).
 #. Set :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` to the correct server URL:
 
    * For `Leshan Demo Server`_ - ``coaps://leshan.eclipseprojects.io:5684`` (`public Leshan Demo Server`_).
@@ -75,9 +74,6 @@ a. Open :file:`prj.conf`.
 #. Set :kconfig:option:`CONFIG_CARRIER_APP_PSK` to the hexadecimal representation of the PSK used when registering the device with the server.
 #. Specify a :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG` to store the PSK.
    Alternatively, you could only specify a security tag if a PSK is previously stored to the security tag as shown in :ref:`LwM2M client provisioning documentation <lwm2m_client_provisioning>`.
-#. Disable :kconfig:option:`CONFIG_LWM2M_CARRIER_BOOTSTRAP_SMARTCARD` to give precedence to the custom configuration over the configuration in the SIM card.
-   For more information, see the :ref:`lwm2m_configuration` section in the LwM2M carrier library documentation.
-
 
 Configuration options
 =====================
@@ -90,7 +86,10 @@ Server options
 .. _CONFIG_CARRIER_APP_PSK:
 
 CONFIG_CARRIER_APP_PSK - Configuration for Pre-Shared Key
-   The sample configuration is used to set the hexadecimal representation of the PSK used when registering the device with the server. The PSK is stored in the security tag specified in :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG`.
+   The sample configuration is used to set the hexadecimal representation of the PSK used when registering the device with the server.
+   The PSK is stored in the security tag specified in :kconfig:option:`CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG`.
+
+.. _lwm2m_carrier_config_files:
 
 Configuration files
 ===================
@@ -109,7 +108,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/nrf9160/lwm2m_carrier`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 .. _lwm2m_carrier_shell_overlay:
 
@@ -151,6 +150,11 @@ Once bootstrap has been done, subsequent reconnects will not contain the bootstr
    LWM2M Carrier library sample.
    LWM2M_CARRIER_EVENT_INIT
    LWM2M_CARRIER_EVENT_REGISTERED
+
+The device is now registered to an LwM2M server, and the server can interact with it.
+If you used your own custom server as described in :ref:`server_setup_lwm2m_carrier`, you can try reading and observing the available resources.
+
+If you connected to the carrier (test) servers or live (production) servers, reach out to your mobile network operator to learn about how to proceed with certification tests or normal operation, respectively.
 
 Testing with the LwM2M shell
 ----------------------------
@@ -240,6 +244,6 @@ It uses the following `sdk-nrfxlib`_ library:
 
 * :ref:`nrfxlib:nrf_modem`
 
-In addition, it uses the following sample:
+In addition, it uses the following secure firmware component:
 
-* :ref:`secure_partition_manager`
+* :ref:`Trusted Firmware-M <ug_tfm>`

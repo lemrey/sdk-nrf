@@ -86,19 +86,15 @@
 			<desc>LwM2M carrier shell (lwm2m_shell.c)</desc>
 			<rect x="0" y="118.668" width="120.845" height="66.2052" class="st7"/>
 			<text x="11.22" y="148.47" class="st2">LwM2M carrier shell <tspan x="20.7" dy="1.2em" class="st4">(lwm2m_shell.c)</tspan></text>		</g>
-		<g id="shape18-54" transform="translate(403.911,-141.819)">
-			<title>Dynamic connector.18</title>
-			<path d="M6.68 177.79 L7.04 177.79 L17.02 177.79" class="st8"/>
-		</g>
-		<g id="shape19-63" transform="translate(499.208,-115.803)">
+		<g id="shape19-54" transform="translate(499.208,-115.803)">
 			<title>Dynamic connector.19</title>
 			<path d="M-7.09 191.55 L-7.09 191.91 L-7.09 240.6" class="st8"/>
 		</g>
-		<g id="shape20-70" transform="translate(457.184,-115.803)">
+		<g id="shape20-63" transform="translate(457.184,-115.803)">
 			<title>Dynamic connector.20</title>
 			<path d="M0 191.55 L0 191.91 L0 222.59 L-71.01 222.59 L-71.01 240.6" class="st8"/>
 		</g>
-		<g id="shape21-77" transform="translate(427.969,-19.9294)">
+		<g id="shape21-70" transform="translate(427.969,-19.9294)">
 			<title>Dynamic connector.21</title>
 			<path d="M-6.68 177.79 L-7.04 177.79 L-17.02 177.79" class="st8"/>
 		</g>

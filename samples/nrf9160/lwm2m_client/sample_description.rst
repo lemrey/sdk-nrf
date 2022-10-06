@@ -176,7 +176,6 @@ See :ref:`sensor_module_options` for information on enabling and configuring the
 
    When you track several resources and enable sensor module for several sensors , socket errors such as ``net_lwm2m_engine: Poll reported a socket error, 08`` and ``net_lwm2m_rd_client: RD Client socket error: 5`` might occur.
 
-
 Configuration
 *************
 
@@ -432,7 +431,7 @@ After building and running the sample, you can locate your device in the server:
 
 * Leshan - Devices are listed under **Clients**.
 * Coiote - Devices are listed under **Device inventory**.
-
+ 
 You can also optionally enable notifications for the resources so that the server actively monitors the resources.
 
 Queue Mode support
