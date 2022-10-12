@@ -114,9 +114,9 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 1a196ac01f117a1a5e7469a8fc75336e43f68009
+      revision: 338ac094d0c5c049ac2ecb70cb49f4041fec0aa3
     - name: sdk-secdom
-      revision: 2bbb673b798232e4edd5015ccf544eed38c6126a
+      revision: 82ed6b87987a7d174642b777192b132f4e29ee26
       path: core_fw/secdom
     - name: nrf-regtool
       revision: v2.0.1
@@ -125,7 +125,7 @@ manifest:
       path: modules/lib/nrfs
       revision: 9a7eb07f6fe98d3ae4492b55fa7cfe78c39edd69
     - name: sdk-sysctrl
-      revision: a56d754e571526328bf19d6372b312f2e2a9d476
+      revision: 7a0fb08cd763d66fae8c7c88a6e6eec754131efa
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
