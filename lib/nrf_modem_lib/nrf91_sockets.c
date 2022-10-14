@@ -10,7 +10,7 @@
  * @brief nrf91 socket offload provider
  */
 
-#include <nrf_modem_limits.h>
+#include <nrf_modem.h>
 #include <nrf_modem_os.h>
 #include <errno.h>
 #include <fcntl.h>
