@@ -59,6 +59,7 @@
     - sample.nrf9160.modem_shell.lwm2m
     - sample.nrf9160.modem_shell.cloud_mqtt_rest
     - sample.nrf9160.modem_shell.cloud_mqtt
+    - sample.nrf9160.modem_shell.cloud_mqtt_only
     - sample.nrf9160.modem_shell
     - sample.nrf9160.modem_shell.esp_wifi
     - sample.nrf9160.modem_shell.bt
@@ -76,6 +77,8 @@
     - sample.psa_tls.client.rsa.cc3xx_oberon
     - sample.psa_tls.client.ecdsa.cc3xx_oberon
     - integration.nrf_security.sha256
+    - regions.settings_storage_tfm
+    - sample.bluetooth.mesh.light_ctrl.emds
   platforms:
     - nrf5340dk_nrf5340_cpuapp_ns
   comment: "error: nrfx_uarte_config_t has no member named pselrts"
@@ -93,7 +96,9 @@
     - sample.peripheral.lpuart_int_driven
     - sample.nrf9160.udp
     - sample.peripheral.lpuart
+    - samples.peripheral.lpuart_nrf9160dk_debug
     - sample.nrf_profiler
+    - nrf_profiler.core
     - sample.nrf9160.sms
     - sample.nrf9160.nrf_cloud_rest_device_message
     - sample.nrf9160.pdn
@@ -186,6 +191,7 @@
     - sample.tfm.hello_world.bootloaders
     - sample.bluetooth.throughput
     - sample.bluetooth.shell_bt_nus
+    - sample.bluetooth.peripheral_mds
     - sample.bluetooth.peripheral_uart
     - sample.bluetooth.peripheral_rscs
     - sample.bluetooth.peripheral_nfc_pairing
