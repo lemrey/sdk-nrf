@@ -1,0 +1,13 @@
+#
+# Copyright (c) 2022 Nordic Semiconductor
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config FAKE_EVENT_MANAGER
+	bool "Use Fake Event Manager."
+	depends on UNITY
+	depends on !EVENT_MANAGER
+	help
+	  Use this module if you need to test application using
+	  event manager

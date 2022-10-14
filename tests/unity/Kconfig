@@ -4,5 +4,7 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+rsource "fake_event_manager/Kconfig"
+
 config UNITY
 	bool "Use Unity test framework"

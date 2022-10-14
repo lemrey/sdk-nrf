@@ -29,6 +29,7 @@ zephyr_library_sources(
 	${CMOCK_DIR}/src/cmock.c
 )
 
+add_subdirectory_ifdef(CONFIG_FAKE_EVENT_MANAGER fake_event_manager)
 zephyr_library_sources(src/generic_teardown.c)
 zephyr_compile_definitions(UNITY_INCLUDE_CONFIG_H)
 
