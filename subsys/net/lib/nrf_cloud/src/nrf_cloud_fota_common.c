@@ -92,9 +92,9 @@ int nrf_cloud_fota_fmfu_apply(void)
 		return err;
 	}
 
-	err = nrf_modem_lib_init(FULL_DFU_MODE);
+	err = nrf_modem_lib_init(BOOTLOADER_MODE);
 	if (err != 0) {
-		LOG_ERR("nrf_modem_lib_init(FULL_DFU_MODE) failed: %d", err);
+		LOG_ERR("nrf_modem_lib_init(BOOTLOADER_MODE) failed: %d", err);
 		(void)nrf_modem_lib_init(NORMAL_MODE);
 		return err;
 	}
