@@ -9,7 +9,7 @@
 #include <smp/smp.h>
 #include <mgmt/mgmt.h>
 #include <nrfx_ipc.h>
-#include <nrf_modem_full_dfu.h>
+#include <nrf_modem_bootloader.h>
 #include <mgmt/fmfu_mgmt.h>
 #include "fmfu_mgmt_internal.h"
 #include <zcbor_common.h>
@@ -116,7 +116,7 @@ static int fmfu_firmware_upload(struct mgmt_ctxt *ctx)
 
 	if (packet.data_len > 0) {
 		if (bootloader) {
-			rc = nrf_modem_full_dfu_bl_write(packet.data_len,
+			rc = nrf_modem_bootloader_bl_write(packet.data_len,
 					packet.data);
 			if (rc != 0) {
 				LOG_ERR("Error in starting transfer");
@@ -128,7 +128,7 @@ static int fmfu_firmware_upload(struct mgmt_ctxt *ctx)
 						  packet.target_address,
 						  packet.data_len);
 
-			rc = nrf_modem_full_dfu_fw_write(packet.target_address,
+			rc = nrf_modem_bootloader_fw_write(packet.target_address,
 							 packet.data_len,
 							 packet.data);
 			if (rc != 0) {
@@ -139,7 +139,7 @@ static int fmfu_firmware_upload(struct mgmt_ctxt *ctx)
 	}
 
 	if (whole_file_received) {
-		rc = nrf_modem_full_dfu_apply();
+		rc = nrf_modem_bootloader_update();
 		if (rc != 0) {
 			LOG_ERR("Error in transfer_end");
 			return MGMT_ERR_EBADSTATE;
@@ -154,7 +154,7 @@ static int fmfu_get_memory_hash(struct mgmt_ctxt *ctxt)
 {
 	uint64_t start;
 	uint64_t end;
-	struct nrf_modem_full_dfu_digest digest;
+	struct nrf_modem_bootloader_digest digest;
 	struct zcbor_string zdigest;
 	bool ok;
 	size_t decoded = 0;
@@ -180,7 +180,7 @@ static int fmfu_get_memory_hash(struct mgmt_ctxt *ctxt)
 		return MGMT_ERR_EINVAL;
 	}
 
-	rc = nrf_modem_full_dfu_digest(start, end - start, &digest);
+	rc = nrf_modem_bootloader_digest(start, end - start, &digest);
 
 	if (rc != 0) {
 		LOG_ERR("nrf_fmfu_hash_get failed, err: %d.", rc);
@@ -190,7 +190,7 @@ static int fmfu_get_memory_hash(struct mgmt_ctxt *ctxt)
 
 	/* Put the digest response in the response */
 	zdigest.value = digest.data;
-	zdigest.len = NRF_MODEM_FULL_DFU_DIGEST_LEN;
+	zdigest.len = NRF_MODEM_BOOTLOADER_DIGEST_LEN;
 
 	ok = zcbor_tstr_put_lit(zse, "digest")			&&
 	     zcbor_bstr_encode(zse, &zdigest)			&&
@@ -219,14 +219,8 @@ static struct mgmt_group fmfu_mgmt_group = {
 
 int fmfu_mgmt_init(void)
 {
-	struct nrf_modem_full_dfu_digest digest;
+	struct nrf_modem_bootloader_digest digest;
 
-	int err = nrf_modem_full_dfu_init(&digest);
-
-	if (err != 0) {
-		LOG_ERR("nrf_fmfu_init failed, err: %d\n.", err);
-		return err;
-	}
 	mgmt_register_group(&fmfu_mgmt_group);
 	return err;
 }
