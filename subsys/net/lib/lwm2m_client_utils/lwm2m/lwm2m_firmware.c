@@ -24,7 +24,7 @@
 
 #if defined(CONFIG_DFU_TARGET_FULL_MODEM)
 #include <dfu/dfu_target_full_modem.h>
-#include <nrf_modem_full_dfu.h>
+#include <nrf_modem_bootloader.h>
 #include <dfu/fmfu_fdev.h>
 #include <string.h>
 #endif
@@ -383,9 +383,9 @@ static uint8_t apply_fmfu_from_ext_flash(void)
 		return RESULT_UPDATE_FAILED;
 	}
 
-	ret = nrf_modem_lib_init(FULL_DFU_MODE);
+	ret = nrf_modem_lib_init(BOOTLOADER_MODE);
 	if (ret != 0) {
-		LOG_ERR("nrf_modem_lib_init(FULL_DFU_MODE) failed: %d\n", ret);
+		LOG_ERR("nrf_modem_lib_init(BOOTLOADER_MODE) failed: %d\n", ret);
 		return RESULT_UPDATE_FAILED;
 	}
 

@@ -34,7 +34,7 @@ void main(void)
 	/* Shutdown modem to prepare for DFU */
 	nrf_modem_lib_shutdown();
 
-	nrf_modem_lib_init(FULL_DFU_MODE);
+	nrf_modem_lib_init(BOOTLOADER_MODE);
 	/* Register SMP Communication stats */
 	fmfu_mgmt_stat_init();
 	/* Registers the OS management command handler group */
