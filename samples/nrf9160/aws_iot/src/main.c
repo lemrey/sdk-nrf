@@ -422,22 +422,22 @@ static void nrf_modem_lib_dfu_handler(void)
 	err = modem_lib_init_result;
 
 	switch (err) {
-	case MODEM_DFU_RESULT_OK:
+	case NRF_MODEM_DFU_RESULT_OK:
 		printk("Modem update suceeded, reboot\n");
 		sys_reboot(SYS_REBOOT_COLD);
 		break;
-	case MODEM_DFU_RESULT_UUID_ERROR:
-	case MODEM_DFU_RESULT_AUTH_ERROR:
+	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
+	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
 		printk("Modem update failed, error: %d\n", err);
 		printk("Modem will use old firmware\n");
 		sys_reboot(SYS_REBOOT_COLD);
 		break;
-	case MODEM_DFU_RESULT_HARDWARE_ERROR:
-	case MODEM_DFU_RESULT_INTERNAL_ERROR:
+	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
+	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
 		printk("Modem update malfunction, error: %d, reboot\n", err);
 		sys_reboot(SYS_REBOOT_COLD);
 		break;
-	case MODEM_DFU_RESULT_VOLTAGE_LOW:
+	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
 		printk("Modem update cancelled, error: %d\n", err);
 		printk("Please reboot once you have sufficient power for the DFU\n", err);
 		break;
