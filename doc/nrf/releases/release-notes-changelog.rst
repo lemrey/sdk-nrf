@@ -148,6 +148,7 @@ nRF9160: Serial LTE modem
 * Added:
 
   * Added optional data modem flow control option :ref:`CONFIG_SLM_DATAMODE_URC <CONFIG_SLM_DATAMODE_URC>`.
+  * Added support for the :ref:`liblwm2m_carrier_readme` library.
 
 * Updated:
 

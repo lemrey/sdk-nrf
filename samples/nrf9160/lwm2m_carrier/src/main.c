@@ -107,17 +107,21 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 #ifdef LWM2M_CARRIER_SETTINGS
 		if (!lwm2m_settings_enable_custom_server_config_get()){
 			err = carrier_psk_provision();
-				if (err) {
+			if (err) {
 				printk("failed to provision PSK\n");
 			}
 		}
 #else
 		err = carrier_psk_provision();
-			if (err) {
+		if (err) {
 			printk("failed to provision PSK\n");
 		}
 #endif /* LWM2M_CARRIER_SETTINGS */
-		err = lte_lc_init_and_connect_async(lte_event_handler);
+		err = lte_lc_init();
+		if (err != 0) {
+			printk("failed to initialize lte link controller library\n");
+		}
+		lte_lc_register_handler(lte_event_handler);
 		break;
 	case LWM2M_CARRIER_EVENT_LTE_LINK_UP:
 		printk("LWM2M_CARRIER_EVENT_LTE_LINK_UP\n");

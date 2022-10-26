@@ -857,12 +857,6 @@ static void on_state_init(struct modem_msg_data *msg)
 		err = setup();
 		__ASSERT(err == 0, "Failed running setup()");
 		SEND_EVENT(modem, MODEM_EVT_INITIALIZED);
-
-		err = lte_connect();
-		if (err) {
-			LOG_ERR("Failed connecting to LTE, error: %d", err);
-			SEND_ERROR(modem, MODEM_EVT_ERROR, err);
-		}
 	}
 }
 
