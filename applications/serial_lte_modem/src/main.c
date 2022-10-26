@@ -24,6 +24,10 @@
 #include "slm_at_host.h"
 #include "slm_at_fota.h"
 
+#ifdef CONFIG_LWM2M_CARRIER
+#include <lwm2m_carrier.h>
+#endif /* CONFIG_LWM2M_CARRIER */
+
 LOG_MODULE_REGISTER(slm, CONFIG_SLM_LOG_LEVEL);
 
 #define SLM_WQ_STACK_SIZE	KB(4)
@@ -33,6 +37,8 @@ static K_THREAD_STACK_DEFINE(slm_wq_stack_area, SLM_WQ_STACK_SIZE);
 static const struct device *gpio_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0));
 static struct gpio_callback gpio_cb;
 static struct k_work_delayable indicate_work;
+
+static K_SEM_DEFINE(entered_slm, 0, 1);
 
 /* global variable used across different files */
 struct k_work_q slm_work_q;
@@ -339,6 +345,8 @@ void handle_mcuboot_swap_ret(void)
 
 int start_execute(void)
 {
+	k_sem_take(&entered_slm, K_SECONDS(1));
+
 	int err;
 
 	LOG_INF("Serial LTE Modem");
@@ -365,6 +373,136 @@ static void indicate_wk(struct k_work *work)
 
 	indicate_stop();
 }
+
+#ifdef CONFIG_LWM2M_CARRIER
+void nrf_modem_recoverable_error_handler(uint32_t err)
+{
+	printk("Modem library recoverable error: %u\n", (unsigned int)err);
+}
+
+static void lte_event_handler(const struct lte_lc_evt *const evt)
+{
+	/* This event handler is not in use here. */
+	ARG_UNUSED(evt);
+}
+
+void print_err(const lwm2m_carrier_event_t *evt)
+{
+	const lwm2m_carrier_event_error_t *err = evt->data.error;
+
+	static const char *strerr[] = {
+		[LWM2M_CARRIER_ERROR_NO_ERROR] =
+			"No error",
+		[LWM2M_CARRIER_ERROR_BOOTSTRAP] =
+			"Bootstrap error",
+		[LWM2M_CARRIER_ERROR_LTE_LINK_UP_FAIL] =
+			"Failed to connect to the LTE network",
+		[LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL] =
+			"Failed to disconnect from the LTE network",
+		[LWM2M_CARRIER_ERROR_FOTA_PKG] =
+			"Package refused from modem",
+		[LWM2M_CARRIER_ERROR_FOTA_PROTO] =
+			"Protocol error",
+		[LWM2M_CARRIER_ERROR_FOTA_CONN] =
+			"Connection to remote server failed",
+		[LWM2M_CARRIER_ERROR_FOTA_CONN_LOST] =
+			"Connection to remote server lost",
+		[LWM2M_CARRIER_ERROR_FOTA_FAIL] =
+			"Modem firmware update failed",
+		[LWM2M_CARRIER_ERROR_CONFIGURATION] =
+			"Illegal object configuration detected",
+		[LWM2M_CARRIER_ERROR_INIT] =
+			"Initialization failure",
+		[LWM2M_CARRIER_ERROR_INTERNAL] =
+			"Internal failure",
+	};
+
+	__ASSERT(PART_OF_ARRAY(strerr[err->type]),
+		 "Unhandled liblwm2m_carrier error");
+
+	printk("%s, reason %d\n", strerr[err->type], err->value);
+}
+
+void print_deferred(const lwm2m_carrier_event_t *evt)
+{
+	const lwm2m_carrier_event_deferred_t *def = evt->data.deferred;
+
+	static const char *strdef[] = {
+		[LWM2M_CARRIER_DEFERRED_NO_REASON] =
+			"No reason given",
+		[LWM2M_CARRIER_DEFERRED_PDN_ACTIVATE] =
+			"Failed to activate PDN",
+		[LWM2M_CARRIER_DEFERRED_BOOTSTRAP_NO_ROUTE] =
+			"No route to bootstrap server",
+		[LWM2M_CARRIER_DEFERRED_BOOTSTRAP_CONNECT] =
+			"Failed to connect to bootstrap server",
+		[LWM2M_CARRIER_DEFERRED_BOOTSTRAP_SEQUENCE] =
+			"Bootstrap sequence not completed",
+		[LWM2M_CARRIER_DEFERRED_SERVER_NO_ROUTE] =
+			"No route to server",
+		[LWM2M_CARRIER_DEFERRED_SERVER_CONNECT] =
+			"Failed to connect to server",
+		[LWM2M_CARRIER_DEFERRED_SERVER_REGISTRATION] =
+			"Server registration sequence not completed",
+		[LWM2M_CARRIER_DEFERRED_SERVICE_UNAVAILABLE] =
+			"Server in maintenance mode",
+		[LWM2M_CARRIER_DEFERRED_SIM_MSISDN] =
+			"Waiting for SIM MSISDN",
+	};
+
+	__ASSERT(PART_OF_ARRAY(strdef[def->reason]),
+		 "Unhandled deferred reason");
+
+	printk("Reason: %s, timeout: %d seconds\n", strdef[def->reason],
+		def->timeout);
+}
+
+int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
+{
+	int err = 0;
+
+	switch (event->type) {
+	case LWM2M_CARRIER_EVENT_INIT:
+		printk("LWM2M_CARRIER_EVENT_INIT\n");
+		err = lte_lc_init_and_connect_async(lte_event_handler);
+		break;
+	case LWM2M_CARRIER_EVENT_LTE_LINK_UP:
+		printk("LWM2M_CARRIER_EVENT_LTE_LINK_UP\n");
+		err = lte_lc_connect_async(NULL);
+		break;
+	case LWM2M_CARRIER_EVENT_LTE_LINK_DOWN:
+		printk("LWM2M_CARRIER_EVENT_LTE_LINK_DOWN\n");
+		err = lte_lc_offline();
+		break;
+	case LWM2M_CARRIER_EVENT_LTE_POWER_OFF:
+		printk("LWM2M_CARRIER_EVENT_LTE_POWER_OFF\n");
+		err = lte_lc_power_off();
+		break;
+	case LWM2M_CARRIER_EVENT_BOOTSTRAPPED:
+		printk("LWM2M_CARRIER_EVENT_BOOTSTRAPPED\n");
+		break;
+	case LWM2M_CARRIER_EVENT_REGISTERED:
+		printk("LWM2M_CARRIER_EVENT_REGISTERED\n");
+		break;
+	case LWM2M_CARRIER_EVENT_DEFERRED:
+		printk("LWM2M_CARRIER_EVENT_DEFERRED\n");
+		print_deferred(event);
+		break;
+	case LWM2M_CARRIER_EVENT_FOTA_START:
+		printk("LWM2M_CARRIER_EVENT_FOTA_START\n");
+		break;
+	case LWM2M_CARRIER_EVENT_REBOOT:
+		printk("LWM2M_CARRIER_EVENT_REBOOT\n");
+		break;
+	case LWM2M_CARRIER_EVENT_ERROR:
+		printk("LWM2M_CARRIER_EVENT_ERROR\n");
+		print_err(event);
+		break;
+	}
+
+	return err;
+}
+#endif /* CONFIG_LWM2M_CARRIER */
 
 int main(void)
 {

@@ -272,6 +272,9 @@ The following configuration files are provided:
   You can include it by adding ``-DOVERLAY_CONFIG=overlay-secure_bootloader`` to your build command.
   See :ref:`cmake_options`.
 
+* :file:`overlay-carrier.conf` - Configuration file that adds |NCS| :ref:`liblwm2m_carrier_readme` support.
+  See :ref:`slm_carrier_library_support` for more information on how to connect to an operator's device management platform.
+
 * :file:`boards/nrf9160dk_nrf9160_ns.conf` - Configuration file specific for the nRF9160 DK.
   This file is automatically merged with the :file:`prj.conf` file when you build for the ``nrf9160dk_nrf9160_ns`` build target.
 
@@ -503,6 +506,30 @@ If you have an nRF52 Series DK running a client application, you can also use th
 #. Send AT commands and observe the responses from the development kit.
 
    See :ref:`slm_testing` for typical test cases.
+
+.. _slm_carrier_library_support:
+
+Using the carrier library
+=========================
+
+The application supports the |NCS| :ref:`liblwm2m_carrier_readme` library that you can use to connect to the operator's device management platform.
+See the library's documentation for more information and configuration options.
+
+To enable the LwM2M carrier library, add the parameter ``-DOVERLAY_CONFIG=overlay-carrier.conf`` to your build command.
+
+The CA root certificates that are needed for modem FOTA are not provisioned in the Serial LTE Modem application.
+You can flash the :ref:`lwm2m_carrier` sample to write the certificates to modem before flashing the Serial LTE Modem application, or use the :ref:`at_client_sample` sample as explained in :ref:`Preparing the nRF9160: LwM2M Client sample for production <lwm2m_client_provisioning>`.
+This can also be done directly in the Serial LTE Modem application by using the same AT commands as described for the :ref:`at_client_sample`.
+It is also possible to modify the Serial LTE Modem project itself to include the certificate provisioning, as demonstrated in the :ref:`lwm2m_carrier` sample.
+
+.. code-block:: c
+
+   int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
+   {
+           switch (event->type) {
+           case LWM2M_CARRIER_EVENT_INIT:
+                   carrier_cert_provision();
+           ...
 
 Dependencies
 ************
