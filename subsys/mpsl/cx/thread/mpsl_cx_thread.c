@@ -217,9 +217,9 @@ SYS_INIT(mpsl_cx_init, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEVICE);
 #else // !defined(CONFIG_MPSL_CX_PIN_FORWARDER)
 static int mpsl_cx_init(const struct device *dev)
 {
-	nrf_gpio_pin_mcu_select(req_spec.pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
-	nrf_gpio_pin_mcu_select(pri_spec.pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
-	nrf_gpio_pin_mcu_select(gra_spec.pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
+	nrf_gpio_pin_mcu_select(req_spec.pin, NRF_GPIO_PIN_SEL_NETWORK);
+	nrf_gpio_pin_mcu_select(pri_spec.pin, NRF_GPIO_PIN_SEL_NETWORK);
+	nrf_gpio_pin_mcu_select(gra_spec.pin, NRF_GPIO_PIN_SEL_NETWORK);
 
 	return 0;
 }
