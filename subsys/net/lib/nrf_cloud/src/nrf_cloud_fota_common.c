@@ -176,16 +176,16 @@ static enum nrf_cloud_fota_validate_status modem_delta_fota_validate_get(void)
 {
 #if defined(CONFIG_NRF_MODEM_LIB)
 	switch (modem_lib_init_result) {
-	case MODEM_DFU_RESULT_OK:
+	case NRF_MODEM_DFU_RESULT_OK:
 		LOG_INF("Modem FOTA update confirmed");
 		return NRF_CLOUD_FOTA_VALIDATE_PASS;
-	case MODEM_DFU_RESULT_INTERNAL_ERROR:
-	case MODEM_DFU_RESULT_UUID_ERROR:
-	case MODEM_DFU_RESULT_AUTH_ERROR:
-	case MODEM_DFU_RESULT_HARDWARE_ERROR:
+	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
+	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
+	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
+	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
 		LOG_ERR("Modem FOTA error: %d", modem_lib_init_result);
 		return NRF_CLOUD_FOTA_VALIDATE_FAIL;
-	case MODEM_DFU_RESULT_VOLTAGE_LOW:
+	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
 		LOG_ERR("Modem FOTA cancelled: %d", modem_lib_init_result);
 		LOG_ERR("Please reboot once you have sufficient power for the DFU");
 		return NRF_CLOUD_FOTA_VALIDATE_FAIL;
