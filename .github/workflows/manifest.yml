@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Manifest
-        uses: zephyrproject-rtos/action-manifest@2f1ad2908599d4fe747f886f9d733dd7eebae4ef
+        uses: zephyrproject-rtos/action-manifest@1f9dba05ba29759cdb5773de56fec63a07dac3a7
         with:
           github-token: ${{ secrets.NCS_GITHUB_TOKEN }}
           manifest-path: 'west.yml'
