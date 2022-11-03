@@ -46,6 +46,28 @@ After programming the sample to your development kit,, test it by performing the
 #. Observe that the LED pattern has changed (1 vs 2).
 #. Start over from point 1, to perform the delta update back to the previous version.
 
+Using the carrier library
+=========================
+
+The sample supports the |NCS| :ref:`liblwm2m_carrier_readme` library that you can use to connect to the operator's device management platform.
+See the library's documentation for more information and configuration options.
+
+To enable the LwM2M carrier library, add the parameter ``-DOVERLAY_CONFIG=overlay-carrier.conf`` to your build command.
+
+The CA root certificates that are needed for modem FOTA are not provisioned in the HTTP modem delta update sample.
+You can flash the :ref:`lwm2m_carrier` sample to write the certificates to modem before flashing the HTTP modem delta update sample,
+or use the :ref:`at_client_sample` sample as explained in :ref:`Preparing the nRF9160: LwM2M Client sample for production <lwm2m_client_provisioning>`.
+It is also possible to modify the HTTP modem delta update project itself to include the certificate provisioning, as demonstrated in the :ref:`lwm2m_carrier` sample.
+
+.. code-block:: c
+
+   int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
+   {
+           switch (event->type) {
+           case LWM2M_CARRIER_EVENT_INIT:
+                   carrier_cert_provision();
+           ...
+
 Dependencies
 ************
 

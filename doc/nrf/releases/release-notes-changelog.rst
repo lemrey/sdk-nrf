@@ -336,6 +336,24 @@ nRF9160 samples
     * Added handling for the new data receive events in the :ref:`lib_nrf_cloud` library.
     * Removed A-GPS and P-GPS processing; it is now handled by the :ref:`lib_nrf_cloud` library.
 
+* :ref:`http_application_update_sample`:
+
+  * Added:
+
+    * Support for the :ref:`liblwm2m_carrier_readme` library.
+
+* :ref:`http_full_modem_update_sample`:
+
+  * Added:
+
+    * Support for the :ref:`liblwm2m_carrier_readme` library.
+
+* :ref:`http_modem_delta_update_sample`:
+
+  * Added:
+
+    * Support for the :ref:`liblwm2m_carrier_readme` library.
+
 Thread samples
 --------------
 

@@ -12,7 +12,13 @@
 #include <nrf_modem_at.h>
 #include "update.h"
 
+#if defined(CONFIG_LWM2M_CARRIER)
+#include <lwm2m_carrier.h>
+#endif
+
 #define FOTA_TEST "FOTA-TEST"
+
+static K_SEM_DEFINE(started_application, 0, 1);
 
 NRF_MODEM_LIB_ON_INIT(modem_delta_update_init_hook,
 		      on_modem_lib_init, NULL);
@@ -88,12 +94,138 @@ static int num_leds(void)
 	}
 }
 
+#if defined(CONFIG_LWM2M_CARRIER)
+void nrf_modem_recoverable_error_handler(uint32_t err)
+{
+	printk("Modem library recoverable error: %u\n", (unsigned int)err);
+}
+
+static void lte_event_handler(const struct lte_lc_evt *const evt)
+{
+	/* This event handler is not in use here. */
+	ARG_UNUSED(evt);
+}
+
+void print_err(const lwm2m_carrier_event_t *evt)
+{
+	const lwm2m_carrier_event_error_t *err = evt->data.error;
+
+	static const char *strerr[] = {
+		[LWM2M_CARRIER_ERROR_NO_ERROR] =
+			"No error",
+		[LWM2M_CARRIER_ERROR_BOOTSTRAP] =
+			"Bootstrap error",
+		[LWM2M_CARRIER_ERROR_LTE_LINK_UP_FAIL] =
+			"Failed to connect to the LTE network",
+		[LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL] =
+			"Failed to disconnect from the LTE network",
+		[LWM2M_CARRIER_ERROR_FOTA_PKG] =
+			"Package refused from modem",
+		[LWM2M_CARRIER_ERROR_FOTA_PROTO] =
+			"Protocol error",
+		[LWM2M_CARRIER_ERROR_FOTA_CONN] =
+			"Connection to remote server failed",
+		[LWM2M_CARRIER_ERROR_FOTA_CONN_LOST] =
+			"Connection to remote server lost",
+		[LWM2M_CARRIER_ERROR_FOTA_FAIL] =
+			"Modem firmware update failed",
+		[LWM2M_CARRIER_ERROR_CONFIGURATION] =
+			"Illegal object configuration detected",
+		[LWM2M_CARRIER_ERROR_INIT] =
+			"Initialization failure",
+		[LWM2M_CARRIER_ERROR_INTERNAL] =
+			"Internal failure",
+	};
+
+	printk("%s, reason %d\n", strerr[err->type], err->value);
+}
+
+void print_deferred(const lwm2m_carrier_event_t *evt)
+{
+	const lwm2m_carrier_event_deferred_t *def = evt->data.deferred;
+
+	static const char *strdef[] = {
+		[LWM2M_CARRIER_DEFERRED_NO_REASON] =
+			"No reason given",
+		[LWM2M_CARRIER_DEFERRED_PDN_ACTIVATE] =
+			"Failed to activate PDN",
+		[LWM2M_CARRIER_DEFERRED_BOOTSTRAP_NO_ROUTE] =
+			"No route to bootstrap server",
+		[LWM2M_CARRIER_DEFERRED_BOOTSTRAP_CONNECT] =
+			"Failed to connect to bootstrap server",
+		[LWM2M_CARRIER_DEFERRED_BOOTSTRAP_SEQUENCE] =
+			"Bootstrap sequence not completed",
+		[LWM2M_CARRIER_DEFERRED_SERVER_NO_ROUTE] =
+			"No route to server",
+		[LWM2M_CARRIER_DEFERRED_SERVER_CONNECT] =
+			"Failed to connect to server",
+		[LWM2M_CARRIER_DEFERRED_SERVER_REGISTRATION] =
+			"Server registration sequence not completed",
+		[LWM2M_CARRIER_DEFERRED_SERVICE_UNAVAILABLE] =
+			"Server in maintenance mode",
+		[LWM2M_CARRIER_DEFERRED_SIM_MSISDN] =
+			"Waiting for SIM MSISDN",
+	};
+
+	printk("Reason: %s, timeout: %d seconds\n", strdef[def->reason],
+		def->timeout);
+}
+
+int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
+{
+	int err = 0;
+
+	switch (event->type) {
+	case LWM2M_CARRIER_EVENT_INIT:
+		printk("LWM2M_CARRIER_EVENT_INIT\n");
+		err = lte_lc_init();
+		lte_lc_register_handler(lte_event_handler);
+		break;
+	case LWM2M_CARRIER_EVENT_LTE_LINK_UP:
+		printk("LWM2M_CARRIER_EVENT_LTE_LINK_UP\n");
+		err = lte_lc_connect_async(NULL);
+		break;
+	case LWM2M_CARRIER_EVENT_LTE_LINK_DOWN:
+		printk("LWM2M_CARRIER_EVENT_LTE_LINK_DOWN\n");
+		err = lte_lc_offline();
+		break;
+	case LWM2M_CARRIER_EVENT_LTE_POWER_OFF:
+		printk("LWM2M_CARRIER_EVENT_LTE_POWER_OFF\n");
+		err = lte_lc_power_off();
+		break;
+	case LWM2M_CARRIER_EVENT_BOOTSTRAPPED:
+		printk("LWM2M_CARRIER_EVENT_BOOTSTRAPPED\n");
+		break;
+	case LWM2M_CARRIER_EVENT_REGISTERED:
+		printk("LWM2M_CARRIER_EVENT_REGISTERED\n");
+		break;
+	case LWM2M_CARRIER_EVENT_DEFERRED:
+		printk("LWM2M_CARRIER_EVENT_DEFERRED\n");
+		print_deferred(event);
+		break;
+	case LWM2M_CARRIER_EVENT_FOTA_START:
+		printk("LWM2M_CARRIER_EVENT_FOTA_START\n");
+		break;
+	case LWM2M_CARRIER_EVENT_REBOOT:
+		printk("LWM2M_CARRIER_EVENT_REBOOT\n");
+		break;
+	case LWM2M_CARRIER_EVENT_ERROR:
+		printk("LWM2M_CARRIER_EVENT_ERROR\n");
+		print_err(event);
+		break;
+	}
+
+	return err;
+}
+#endif /* CONFIG_LWM2M_CARRIER */
+
 void main(void)
 {
 	int err;
 
 	printk("HTTP delta modem update sample started\n");
 
+#if !defined(CONFIG_LWM2M_CARRIER)
 	printk("Initializing modem library\n");
 #if !defined(CONFIG_NRF_MODEM_LIB_SYS_INIT)
 	err = nrf_modem_lib_init(NORMAL_MODE);
@@ -102,7 +234,7 @@ void main(void)
 	 * fetch the returned error code instead of nrf_modem_lib_init
 	 */
 	err = modem_lib_init_result;
-#endif
+#endif /* CONFIG_NRF_MODEM_LIB_SYS_INIT */
 	switch (err) {
 	case MODEM_DFU_RESULT_OK:
 		printk("Modem firmware update successful!\n");
@@ -129,12 +261,15 @@ void main(void)
 		break;
 	}
 	printk("Initialized modem library\n");
+#endif /* CONFIG_LWM2M_CARRIER */
 
 	err = fota_download_init(fota_dl_handler);
 	if (err != 0) {
 		printk("fota_download_init() failed, err %d\n", err);
 		return;
 	}
+
+	k_sem_take(&started_application, K_SECONDS(1));
 
 	err = update_sample_init(&(struct update_sample_init_params){
 					.update_start = update_sample_start,
