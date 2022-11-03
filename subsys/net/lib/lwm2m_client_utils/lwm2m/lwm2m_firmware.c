@@ -1140,7 +1140,10 @@ void lwm2m_verify_modem_fw_update(void)
 		LOG_ERR("MODEM UPDATE FATAL ERROR %d. Modem failiure", ret);
 		result = RESULT_UPDATE_FAILED;
 		break;
-
+	case MODEM_DFU_RESULT_VOLTAGE_LOW:
+		LOG_ERR("MODEM UPDATE CANCELLED %d.", ret);
+		LOG_ERR("Please reboot once you have sufficient power for the DFU");
+		break;
 	default:
 		return;
 	}
