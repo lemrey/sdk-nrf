@@ -35,8 +35,8 @@
 		compatible = "zephyr,ipc-icmsg";
 		tx-region = <&ram30_shared_tx>;
 		rx-region = <&ram30_shared_rx>;
-		mboxes = <&mbox_remote 12>,
-			 <&mbox_local  12>;
+		mboxes = <&bellboard_cpuapp 12>,
+			 <&mbox_local 12>;
 		mbox-names = "tx", "rx";
 		status = "okay";
 	};
@@ -44,7 +44,6 @@
 
 &global_peripherals {
 	/* Delete and redefine nodes with custom compatible. */
-	/delete-node/ bellboard@9a000;
 	/delete-node/ vevif@8c8000; // SYSCtrl
 	/delete-node/ vevif@8d4000; // FLPR
 	/delete-node/ vevif@908000; // PPR
@@ -87,14 +86,6 @@
 		interrupt-parent = <&clic>;
 		instance = <0>;
 		status = "okay";
-		#mbox-cells = <1>;
-	};
-
-	mbox_remote: bellboard0@9a000 {
-		compatible = "nordic,mbox-nrf-ids";
-		status = "okay";
-		reg = <0x9a000 0x1000>;
-		domain = <NRF_IDS_DOMAIN_APP>; /* Remote bellboard belong to CPU App */
 		#mbox-cells = <1>;
 	};
 };
