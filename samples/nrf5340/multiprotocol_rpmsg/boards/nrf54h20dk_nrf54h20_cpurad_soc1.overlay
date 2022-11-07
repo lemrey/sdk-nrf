@@ -80,3 +80,8 @@
 &grtc {
 	status = "okay";
 };
+
+// Currently there is no sufficient RAM capacity to hold the data for CPUSEC bellboard. Disable it.
+&bellboard_cpusec {
+	status = "disabled";
+};
