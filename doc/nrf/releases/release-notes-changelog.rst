@@ -186,7 +186,9 @@ NFC samples
 nRF5340 samples
 ---------------
 
-|no_changes_yet_note|
+* :ref:`multiprotocol-rpmsg-sample`:
+
+  * Decreased the maximum supported number of concurrent Bluetooth LE connections to 4.
 
 Gazell samples
 --------------
