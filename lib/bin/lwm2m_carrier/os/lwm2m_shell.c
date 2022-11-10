@@ -21,6 +21,10 @@
 #define GREEN	"\e[0;32m"
 #define NORMAL	"\e[0m"
 
+static const char *pdn_type_str[4] = {
+	"IPv4v6", "IPv4", "IPv6", "Non-IP"
+};
+
 static int m_mem_free;
 
 static int cmd_device_time_read(const struct shell *shell, size_t argc, char **argv)
@@ -839,13 +843,15 @@ static int cmd_session_idle_timeout_set(const struct shell *shell, size_t argc, 
 {
 	if (argc != 2) {
 		shell_print(shell, "%s <seconds>", argv[0]);
+		shell_print(shell, " -1 = disabled");
+		shell_print(shell, "  0 = use default (60 seconds)");
 		return 0;
 	}
 
 	int32_t session_idle_timeout = atoi(argv[1]);
 
-	if (session_idle_timeout < 0 || session_idle_timeout > 86400) {
-		shell_print(shell, "invalid value, must be between 0 and 86400 (24 hours)");
+	if (session_idle_timeout < -1 || session_idle_timeout > 86400) {
+		shell_print(shell, "invalid value, must be -1 or between 0 and 86400 (24 hours)");
 		return 0;
 	}
 
@@ -886,7 +892,7 @@ static int cmd_sec_tag_set(const struct shell *shell, size_t argc, char **argv)
 		return 0;
 	}
 
-	uint32_t server_sec_tag = atoi(argv[1]);
+	uint32_t server_sec_tag = strtoul(argv[1], NULL, 10);
 	bool provisioned;
 
 	int err = modem_key_mgmt_exists(server_sec_tag, MODEM_KEY_MGMT_CRED_TYPE_PSK, &provisioned);
@@ -896,12 +902,12 @@ static int cmd_sec_tag_set(const struct shell *shell, size_t argc, char **argv)
 	}
 
 	lwm2m_settings_server_sec_tag_set(server_sec_tag);
-	shell_print(shell, "Set security tag: %d", server_sec_tag);
+	shell_print(shell, "Set security tag: %u", server_sec_tag);
 
 	if (!provisioned && server_sec_tag != 0) {
 		shell_print(shell, "Warning: a PSK does not exist in sec_tag %u.", server_sec_tag);
 		shell_print(shell, "This can be written using AT%%CMNG=0,%u,3,\"PSK\"",
-		server_sec_tag);
+			    server_sec_tag);
 	}
 
 	return 0;
@@ -968,6 +974,31 @@ static int cmd_auto_startup_set(const struct shell *shell, size_t argc, char **a
 	} else {
 		shell_print(shell, "Invalid input: <y|n>");
 	}
+
+	return 0;
+}
+
+static int cmd_pdn_type_set(const struct shell *shell, size_t argc, char **argv)
+{
+	if (argc != 2) {
+		shell_print(shell, "%s <pdn_type>", argv[0]);
+		for (int i = 0; i < ARRAY_SIZE(pdn_type_str); i++) {
+			shell_print(shell, "  %d = %s", i, pdn_type_str[i]);
+		}
+		return 0;
+	}
+
+	uint32_t pdn_type = atoi(argv[1]);
+
+	if (pdn_type > LWM2M_CARRIER_PDN_TYPE_NONIP) {
+		shell_print(shell, "invalid value, must be between 0 and %u",
+			    LWM2M_CARRIER_PDN_TYPE_NONIP);
+		return 0;
+	}
+
+	lwm2m_settings_pdn_type_set(pdn_type);
+
+	shell_print(shell, "Set pdn_type: %s (%d)", pdn_type_str[pdn_type], pdn_type);
 
 	return 0;
 }
@@ -1147,6 +1178,39 @@ static int cmd_service_code_set(const struct shell *shell, size_t argc, char **a
 	return 0;
 }
 
+static int device_serial_no_type_get(int device_serial_no_type)
+{
+	switch (device_serial_no_type) {
+	case 0:
+		return LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_IMEI;
+	case 1:
+		return LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_2DID;
+	default:
+		return -EINVAL;
+	}
+}
+
+static int cmd_device_serial_no_type_set(const struct shell *shell, size_t argc, char **argv)
+{
+	if (argc != 2) {
+		shell_print(shell, " 0 = IMEI");
+		shell_print(shell, " 1 = 2DID");
+		return 0;
+	}
+
+	int32_t device_serial_no_type = device_serial_no_type_get(atoi(argv[1]));
+
+	if (device_serial_no_type < 0) {
+		shell_print(shell, "Invalid input");
+		return 0;
+	}
+
+	lwm2m_settings_device_serial_no_type_set(device_serial_no_type);
+	shell_print(shell, "LG U+ Device Serial Number type set successfully");
+
+	return 0;
+}
+
 static int cmd_settings_print(const struct shell *shell, size_t argc, char **argv)
 {
 	ARG_UNUSED(argc);
@@ -1166,8 +1230,12 @@ static int cmd_settings_print(const struct shell *shell, size_t argc, char **arg
 	shell_print(shell, "  CoAP confirmable interval      %d",
 			lwm2m_settings_coap_con_interval_get());
 	shell_print(shell, "  APN                            %s", lwm2m_settings_apn_get());
+	shell_print(shell, "  PDN type                       %s",
+			pdn_type_str[lwm2m_settings_pdn_type_get()]);
 	shell_print(shell, "  Service code                   %s",
 			lwm2m_settings_service_code_get());
+	shell_print(shell, "  Device Serial Number type      %d",
+			lwm2m_settings_device_serial_no_type_get());
 	shell_print(shell, "");
 	shell_print(shell, "Custom carrier server settings   %s",
 			lwm2m_settings_enable_custom_server_config_get() ?
@@ -1293,9 +1361,12 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_config,
 		SHELL_CMD(bootstrap_from_smartcard, NULL, "Bootstrap from smartcard",
 			  cmd_bootstrap_from_smartcard_set),
 		SHELL_CMD(enable, NULL, "Enable custom settings", cmd_enable_set),
+		SHELL_CMD(pdn_type, NULL, "PDN type", cmd_pdn_type_set),
 		SHELL_CMD(print, NULL, "Print custom settings", cmd_settings_print),
 		SHELL_CMD(server, &sub_carrier_config_server, "Server configuration", NULL),
 		SHELL_CMD(service_code, NULL, "Service code", cmd_service_code_set),
+		SHELL_CMD(device_serial_no_type, NULL, "Device Serial Number type",
+			  cmd_device_serial_no_type_set),
 		SHELL_CMD(session_idle_timeout, NULL, "Session timeout time",
 			  cmd_session_idle_timeout_set),
 		SHELL_SUBCMD_SET_END

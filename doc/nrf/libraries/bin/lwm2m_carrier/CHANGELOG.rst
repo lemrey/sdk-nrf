@@ -91,6 +91,18 @@ Changes
   * You need to use only the Kconfig option :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI`.
     If the Kconfig option is empty, it is ignored.
 
+* Added the Kconfig option :kconfig:option:`CONFIG_LWM2M_CARRIER_PDN_TYPE`.
+
+  * The new :c:macro:`pdn_type` parameter in :c:macro:`lwm2m_carrier_config_t` is used to select the PDN type of the :c:macro:`apn` parameter.
+
+* Added the Kconfig option :kconfig:option:`LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NUMBER`.
+
+  * This configurations lets you choose between using the nRF9160 SoC 2DID Serial Number, or the Device IMEI as a Serial Number when connecting to the LG U+ device managment server.
+  * Now that there are several LG U+ options, they have been grouped in :c:struct:`lwm2m_carrier_lg_uplus_config_t`` inside :c:struct:`lwm2m_carrier_config_t`.
+
+  * The new :c:macro:`pdn_type` parameter in :c:macro:`lwm2m_carrier_config_t` is used to select the PDN type of the :c:macro:`apn` parameter.
+
+
 liblwm2m_carrier 0.30.2
 ***********************
 

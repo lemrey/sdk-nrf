@@ -80,6 +80,7 @@ void lwm2m_carrier_thread_run(void)
 
 	config.server_sec_tag = CONFIG_LWM2M_CARRIER_SERVER_SEC_TAG;
 	config.apn = CONFIG_LWM2M_CARRIER_CUSTOM_APN;
+	config.pdn_type = CONFIG_LWM2M_CARRIER_PDN_TYPE;
 	config.manufacturer = CONFIG_LWM2M_CARRIER_DEVICE_MANUFACTURER;
 	config.model_number = CONFIG_LWM2M_CARRIER_DEVICE_MODEL_NUMBER;
 	config.device_type = CONFIG_LWM2M_CARRIER_DEVICE_TYPE;
@@ -87,15 +88,19 @@ void lwm2m_carrier_thread_run(void)
 	config.software_version = CONFIG_LWM2M_CARRIER_DEVICE_SOFTWARE_VERSION;
 
 #ifdef CONFIG_LWM2M_CARRIER_LG_UPLUS
-	config.service_code = CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE;
+	config.lg_uplus.service_code = CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE;
+
+	if (IS_ENABLED(CONFIG_LWM2M_CARRIER_LG_UPLUS_2DID)) {
+		config.lg_uplus.device_serial_no_type =
+			LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_2DID;
+	} else {
+		config.lg_uplus.device_serial_no_type =
+			LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_IMEI;
+	}
 #endif
 
 #ifdef CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT
 	config.session_idle_timeout = CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT;
-#endif
-
-#ifdef CONFIG_LWM2M_CARRIER_COAP_CON_INTERVAL
-	config.coap_con_interval = CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT;
 #endif
 
 	err = lwm2m_carrier_custom_init(&config);

@@ -255,6 +255,37 @@ typedef struct {
 /** @} */
 
 /**
+ * @name PDN types.
+ * @{
+ */
+#define LWM2M_CARRIER_PDN_TYPE_IPV4V6 0
+#define LWM2M_CARRIER_PDN_TYPE_IPV4   1
+#define LWM2M_CARRIER_PDN_TYPE_IPV6   2
+#define LWM2M_CARRIER_PDN_TYPE_NONIP  3
+/** @} */
+
+/**
+ * @name LG U+ Device Serial Number types.
+ * @{
+ */
+#define LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_IMEI 0
+#define LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_2DID 1
+/** @} */
+
+/**
+ * @brief LG U+ configuration structure.
+ */
+typedef struct {
+	/**
+	 * LG U+ Service Code registered for this device. Null-terminated string of at most
+	 * 5 characters.
+	 */
+	const char *service_code;
+	/** Indicates the type of Device Serial Number to be used in the LG U+ network. */
+	uint8_t device_serial_no_type;
+} lwm2m_carrier_lg_uplus_config_t;
+
+/**
  * @brief Structure holding LwM2M carrier library initialization parameters.
  */
 typedef struct {
@@ -274,6 +305,8 @@ typedef struct {
 	int32_t coap_con_interval;
 	/** Optional custom APN. Null-terminated string of max 63 characters. */
 	const char *apn;
+	/** Optional PDN type for custom APN. */
+	uint8_t pdn_type;
 	/** Optional LwM2M device manufacturer name. Null-terminated string of max 32 characters. */
 	const char *manufacturer;
 	/** Optional LwM2M device model number. Null-terminated string of max 32 characters. */
@@ -284,11 +317,8 @@ typedef struct {
 	const char *hardware_version;
 	/** Optional LwM2M device software version. Null-terminated string of max 32 characters. */
 	const char *software_version;
-	/**
-	 * LG U+ Service Code registered for this device. This field is only required for devices
-	 * certifying with LG U+. Null-terminated string of at most 5 characters.
-	 */
-	const char *service_code;
+	/** Optional LG U+ configuration, only required for devices certifying with LG U+. */
+	lwm2m_carrier_lg_uplus_config_t lg_uplus;
 } lwm2m_carrier_config_t;
 
 /**

@@ -156,6 +156,7 @@ enum lwm2m_os_pdn_fam {
 	LWM2M_OS_PDN_FAM_IPV4,
 	LWM2M_OS_PDN_FAM_IPV6,
 	LWM2M_OS_PDN_FAM_IPV4V6,
+	LWM2M_OS_PDN_FAM_NONIP,
 };
 
 /** @brief PDN event */

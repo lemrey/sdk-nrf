@@ -33,9 +33,9 @@
 
 /* Divide flash area into NVS sectors */
 #define NVS_SECTOR_SIZE     (CONFIG_LWM2M_CARRIER_STORAGE_SECTOR_SIZE)
-#define NVS_SECTOR_COUNT    (FIXED_PARTITION_SIZE(lwm2m_carrier) / NVS_SECTOR_SIZE)
+#define NVS_SECTOR_COUNT    (FLASH_AREA_SIZE(lwm2m_carrier) / NVS_SECTOR_SIZE)
 /* Start address of the filesystem in flash */
-#define NVS_STORAGE_OFFSET  (FIXED_PARTITION_OFFSET(lwm2m_carrier))
+#define NVS_STORAGE_OFFSET  (FLASH_AREA_OFFSET(lwm2m_carrier))
 /* Flash Device runtime structure */
 #define NVS_FLASH_DEVICE    (DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller)))
 
@@ -621,7 +621,8 @@ void lwm2m_os_lte_mode_request(int32_t prefer)
 BUILD_ASSERT(
 	(int)LWM2M_OS_PDN_FAM_IPV4 == (int)PDN_FAM_IPV4 &&
 	(int)LWM2M_OS_PDN_FAM_IPV6 == (int)PDN_FAM_IPV6 &&
-	(int)LWM2M_OS_PDN_FAM_IPV4V6 == (int)PDN_FAM_IPV4V6,
+	(int)LWM2M_OS_PDN_FAM_IPV4V6 == (int)PDN_FAM_IPV4V6 &&
+	(int)LWM2M_OS_PDN_FAM_NONIP == (int)PDN_FAM_NONIP,
 	"Incompatible enums"
 );
 BUILD_ASSERT(

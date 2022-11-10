@@ -198,6 +198,22 @@ const char *lwm2m_settings_apn_get(void);
 int lwm2m_settings_apn_set(const char *new_apn);
 
 /**
+ * @brief Retrieve PDN type from the custom LwM2M settings.
+ *
+ * @retval The PDN type.
+ */
+int32_t lwm2m_settings_pdn_type_get(void);
+
+/**
+ * @brief Set or update the PDN type in the custom LwM2M settings.
+ *
+ * @param[in] new_pdn_type PDN type.
+ *
+ * @retval 0 on success, non-zero on failure.
+ */
+int lwm2m_settings_pdn_type_set(uint32_t new_pdn_type);
+
+/**
  * @brief Determines whether the LwM2M custom device settings are enabled.
  *
  * @retval  true if LwM2M custom device settings are enabled.
@@ -308,5 +324,21 @@ const char *lwm2m_settings_service_code_get(void);
  * @retval 0 on success, non-zero on failure.
  */
 int lwm2m_settings_service_code_set(const char *new_service_code);
+
+/**
+ * @brief Determines the LG U+ Device Serial Number type to be used.
+ *
+ * @retval The LG U+ Device Serial Number type.
+ */
+bool lwm2m_settings_device_serial_no_type_get(void);
+
+/**
+ * @brief Indicate the LG U+ Device Serial Number type to be used.
+ *
+ * @param new_device_serial_no_type  The LG U+ Device Serial Number type to be used.
+ *
+ * @retval 0 on success, non-zero on failure.
+ */
+int lwm2m_settings_device_serial_no_type_set(bool new_device_serial_no_type);
 
 #endif /* LWM2M_SETTINGS_H__ */

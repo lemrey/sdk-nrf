@@ -76,6 +76,33 @@ config LWM2M_CARRIER_CUSTOM_APN
 	help
 	  Add an optional custom APN.
 
+choice LWM2M_CARRIER_PDN_TYPE_CHOICE
+	prompt "PDN Type"
+	default LWM2M_CARRIER_PDN_IPV4V6
+
+config LWM2M_CARRIER_PDN_IPV4V6
+	bool "IPv4v6"
+
+config LWM2M_CARRIER_PDN_IPV4
+	bool "IPv4"
+
+config LWM2M_CARRIER_PDN_IPV6
+	bool "IPv6"
+
+config LWM2M_CARRIER_PDN_NONIP
+	bool "Non-IP"
+
+endchoice
+
+config LWM2M_CARRIER_PDN_TYPE
+	int
+	default 0 if LWM2M_CARRIER_PDN_IPV4V6
+	default 1 if LWM2M_CARRIER_PDN_IPV4
+	default 2 if LWM2M_CARRIER_PDN_IPV6
+	default 3 if LWM2M_CARRIER_PDN_NONIP
+	help
+	  PDN type for custom APN.
+
 config LWM2M_CARRIER_BOOTSTRAP_SMARTCARD
 	bool "Allow bootstrap from Smartcard"
 	default y
@@ -131,6 +158,23 @@ config LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE
 	string "LG U+ Service Code"
 	help
 	  Service Code registered for this device with LG U+.
+
+choice LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NUMBER
+	prompt "Device Serial Number used in LG U+ network"
+	default LWM2M_CARRIER_LG_UPLUS_IMEI
+
+config LWM2M_CARRIER_LG_UPLUS_IMEI
+	bool "Use IMEI as LG U+ Device Serial Number"
+	help
+	  Use the IMEI as the Device Serial Number registered for this device with LG U+.
+
+config LWM2M_CARRIER_LG_UPLUS_2DID
+	bool "Use 2DID as LG U+ Device Serial Number"
+	help
+	  Use the two-dimensional barcode of the SiP as the Device Serial Number
+	  registered for this device with LG U+.
+
+endchoice
 
 endif # LWM2M_CARRIER_LG_UPLUS
 

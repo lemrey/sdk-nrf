@@ -97,9 +97,19 @@ Following are some of the general Kconfig options that you can configure:
   * If :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_URI` is set (generic), :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` is used instead of the default APN.
     The default APN becomes the fallback APN.
 
+*  :kconfig:option:`CONFIG_LWM2M_CARRIER_PDN_TYPE`:
+
+  * This configuration selects the PDN type of the custom APN (:kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN`).
+  * If left empty, the default (IPV4V6) will be used.
+  * If :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_APN` is not set, this configuration is ignored.
+
 * :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS`, :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE`:
 
   * The :kconfig:option:`CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE` Kconfig option sets the LG U+ service code, which is needed to identify your device in the LG U+ device management.
+
+* ::kconfig:option:`LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NUMBER`
+
+  * This configurations lets you choose between using the nRF9160 SoC 2DID Serial Number, or the Device IMEI as a Serial Number when connecting to the LG U+ device managment server.
 
   .. note::
      Application DFU is needed to enable LG U+ functionality.
