@@ -4,34 +4,28 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+set(PLATFORM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sl/platform)
+
+set(ZEPHYR_CURRENT_LIBRARY nrf-802154-platform)
+zephyr_library_sources_ifdef(CONFIG_NRF_802154_SL_HPTIMER ${PLATFORM_DIR}/nrf_802154_hp_timer.c)
+zephyr_library_sources_ifdef(CONFIG_NRF_802154_SL_LPTIMER_RTC ${PLATFORM_DIR}/nrf_802154_platform_sl_lptimer_zephyr.c)
+zephyr_library_sources_ifdef(CONFIG_NRF_802154_SL_LPTIMER_GRTC ${PLATFORM_DIR}/nrf_802154_platform_sl_lptimer_grtc_zephyr.c)
+zephyr_library_sources_ifdef(CONFIG_NRF_802154_SL_LPTIMER_EVENTS_HALTIUM ${PLATFORM_DIR}/nrf_802154_platform_sl_lptimer_grtc_events_haltium.c)
+zephyr_library_sources_ifdef(CONFIG_NRF_802154_SL_LPTIMER_EVENTS_NRF54L ${PLATFORM_DIR}/nrf_802154_platform_sl_lptimer_grtc_events_nrf54l.c)
+
 if (CONFIG_NRF_802154_RADIO_DRIVER OR CONFIG_NRF_802154_SERIALIZATION)
-  if (CONFIG_NRF_802154_SL AND NOT CONFIG_SOC_PLATFORM_HALTIUM)
-    target_sources(nrf-802154-platform
-      PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/sl/platform/nrf_802154_hp_timer.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/sl/platform/nrf_802154_platform_sl_lptimer_zephyr.c
-    )
-  endif ()
-
-  if (CONFIG_SOC_NRF54H20_CPURAD)
-    target_sources(nrf-802154-platform
-      PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/sl/platform/nrf_802154_platform_sl_lptimer_grtc_zephyr.c
-      )
-  endif ()
-
   if (CONFIG_MPSL)
     target_compile_definitions(nrf-802154-platform PUBLIC NRF_802154_VERIFY_PERIPHS_ALLOC_AGAINST_MPSL=1)
   endif()
 
-  if (CONFIG_SOC_SERIES_NRF54HX)
+  if (CONFIG_SOC_SERIES_NRF54HX OR CONFIG_SOC_PLATFORM_NRF54L)
     target_compile_definitions(zephyr-802154-interface
       INTERFACE
         NRF_802154_TOTAL_TIMES_MEASUREMENT_ENABLED=0
       )
   endif ()
 
-  if (CONFIG_SOC_SERIES_NRF54HX OR CONFIG_SOC_SERIES_NRF53X)
+  if (CONFIG_SOC_SERIES_NRF54HX OR CONFIG_SOC_SERIES_NRF53X OR CONFIG_SOC_PLATFORM_NRF54L)
     set(NRF53_SERIES 1)
   endif ()
 
