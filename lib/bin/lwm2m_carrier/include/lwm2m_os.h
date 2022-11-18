@@ -32,8 +32,8 @@ extern "C" {
  */
 #define LWM2M_OS_MAX_TIMER_COUNT (5 + (LWM2M_OS_MAX_WORK_QS * 4))
 
-typedef void lwm2m_os_work_q_t;
-typedef void lwm2m_os_timer_t;
+typedef int lwm2m_os_work_q_t;
+typedef int lwm2m_os_timer_t;
 
 /**
  * @brief Maximum number of threads that the system must support.
@@ -47,8 +47,7 @@ typedef void (*lwm2m_os_thread_entry_t)(void *p1, void *p2, void *p3);
  */
 #define LWM2M_OS_MAX_SEM_COUNT (4 + (LWM2M_OS_MAX_WORK_QS * 2))
 
-/* pointer to semaphore object */
-typedef void lwm2m_os_sem_t;
+typedef int lwm2m_os_sem_t;
 
 #define LWM2M_OS_LTE_MODE_NONE   -1
 /* LTE Rel-13 Cat-M1 HD-FDD == E-UTRAN == LTE-M */
@@ -70,7 +69,7 @@ typedef void (*lwm2m_os_at_handler_callback_t)(const char *notif);
 /**
  * @brief Timer callback function.
  */
-typedef void (*lwm2m_os_timer_handler_t)(void *timer);
+typedef void (*lwm2m_os_timer_handler_t)(lwm2m_os_timer_t *timer);
 
 struct lwm2m_os_sms_deliver_address {
 	char   *address_str;

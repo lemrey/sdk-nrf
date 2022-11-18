@@ -27,6 +27,17 @@ static const char *pdn_type_str[4] = {
 
 static int m_mem_free;
 
+static const struct {
+	uint32_t bit_num;
+	char *name;
+} carriers_enabled_map[] = {
+	{ LWM2M_CARRIER_GENERIC, "Generic" },
+	{ LWM2M_CARRIER_VERIZON, "Verizon" },
+	{ LWM2M_CARRIER_ATT, "AT&T" },
+	{ LWM2M_CARRIER_LG_UPLUS, "LG U+" },
+	{ LWM2M_CARRIER_T_MOBILE, "T-Mobile" }
+};
+
 static int cmd_device_time_read(const struct shell *shell, size_t argc, char **argv)
 {
 	int32_t utc_time = 0;
@@ -715,6 +726,60 @@ static int cmd_app_data_send(const struct shell *shell, size_t argc, char **argv
 	return 0;
 }
 
+static int cmd_request_link_up(const struct shell *shell, size_t argc, char **argv)
+{
+	int err;
+
+	err = lwm2m_carrier_request(LWM2M_CARRIER_REQUEST_LINK_UP);
+
+	switch (err) {
+	case 0:
+		shell_print(shell, "Requested link up successfully");
+		break;
+	default:
+		shell_print(shell, "Unknown error: %d", err);
+		break;
+	}
+
+	return 0;
+}
+
+static int cmd_request_link_down(const struct shell *shell, size_t argc, char **argv)
+{
+	int err;
+
+	err = lwm2m_carrier_request(LWM2M_CARRIER_REQUEST_LINK_DOWN);
+
+	switch (err) {
+	case 0:
+		shell_print(shell, "Requested link down successfully");
+		break;
+	default:
+		shell_print(shell, "Unknown error: %d", err);
+		break;
+	}
+
+	return 0;
+}
+
+static int cmd_request_reboot(const struct shell *shell, size_t argc, char **argv)
+{
+	int err;
+
+	err = lwm2m_carrier_request(LWM2M_CARRIER_REQUEST_REBOOT);
+
+	switch (err) {
+	case 0:
+		shell_print(shell, "Requested reboot successfully");
+		break;
+	default:
+		shell_print(shell, "Unknown error: %d", err);
+		break;
+	}
+
+	return 0;
+}
+
 static int cmd_enable_set(const struct shell *shell, size_t argc, char **argv)
 {
 	lwm2m_settings_enable_custom_config_set(true);
@@ -748,8 +813,63 @@ static int string_to_bool(const char *str, bool *buffer)
 	return -EINVAL;
 }
 
-static int cmd_bootstrap_from_smartcard_set(const struct shell *shell, size_t argc, char
-	  **argv)
+static char *carriers_enabled_str(void)
+{
+	static char oper_str[255] = { 0 };
+	uint32_t carriers_enabled = lwm2m_settings_carriers_enabled_get();
+	int offset = 0;
+
+	if (carriers_enabled == UINT32_MAX) {
+		return "All";
+	} else if (carriers_enabled == 0) {
+		return "None";
+	}
+
+	for (int i = 0; i < ARRAY_SIZE(carriers_enabled_map); i++) {
+		if (carriers_enabled & carriers_enabled_map[i].bit_num) {
+			offset += snprintf(&oper_str[offset], sizeof(oper_str) - offset,
+					   "%s%s (%u)", (offset == 0) ? "" : ", ",
+					   carriers_enabled_map[i].name, i);
+		}
+	}
+
+	return oper_str;
+}
+
+static int cmd_carriers_set(const struct shell *shell, size_t argc, char **argv)
+{
+	if (argc < 2) {
+		shell_print(shell, "%s all", argv[0]);
+		shell_print(shell, "%s <id1> <id2> ...", argv[0]);
+		for (int i = 0; i < ARRAY_SIZE(carriers_enabled_map); i++) {
+			shell_print(shell, "  %d = %s", i, carriers_enabled_map[i].name);
+		}
+		return 0;
+	}
+
+	uint32_t carriers_enabled = 0;
+
+	if (strcasecmp(argv[1], "all") == 0) {
+		carriers_enabled = UINT32_MAX;
+	} else {
+		for (int i = 1; i < argc; i++) {
+			uint32_t oper_id = atoi(argv[i]);
+
+			if (oper_id < ARRAY_SIZE(carriers_enabled_map)) {
+				carriers_enabled |= carriers_enabled_map[oper_id].bit_num;
+			} else {
+				shell_error(shell, "Illegal operator: %u", oper_id);
+			}
+		}
+	}
+
+	lwm2m_settings_carriers_enabled_set(carriers_enabled);
+	shell_print(shell, "Set carriers enabled: %s", carriers_enabled_str());
+
+	return 0;
+}
+
+static int cmd_bootstrap_from_smartcard_set(const struct shell *shell, size_t argc, char **argv)
 {
 	if (argc != 2) {
 		shell_print(shell, "%s <y|n>", argv[0]);
@@ -787,6 +907,29 @@ static int cmd_is_bootstrap_server_set(const struct shell *shell, size_t argc, c
 	} else {
 		shell_print(shell, "Invalid input: <y|n>");
 	}
+
+	return 0;
+}
+
+static int cmd_server_binding_set(const struct shell *shell, size_t argc, char **argv)
+{
+	if (argc != 2) {
+		shell_print(shell, "%s <binding>", argv[0]);
+		shell_print(shell, "  U = UDP");
+		shell_print(shell, "  N = Non-IP");
+		return 0;
+	}
+
+	uint8_t server_binding = argv[1][0];
+
+	if ((strlen(argv[1]) != 1) || (server_binding != 'U' && server_binding != 'N')) {
+		shell_print(shell, "invalid value, must be 'U' or 'N'");
+		return 0;
+	}
+
+	lwm2m_settings_server_binding_set(server_binding);
+
+	shell_print(shell, "Set server binding: %c", server_binding);
 
 	return 0;
 }
@@ -1223,6 +1366,7 @@ static int cmd_settings_print(const struct shell *shell, size_t argc, char **arg
 	shell_print(shell, "Custom carrier settings          %s",
 			lwm2m_settings_enable_custom_config_get() ?
 			GREEN "Yes" NORMAL : RED "No" NORMAL);
+	shell_print(shell, "  Carriers enabled               %s", carriers_enabled_str());
 	shell_print(shell, "  Bootstrap from smartcard       %s",
 			lwm2m_settings_bootstrap_from_smartcard_get() ? "Yes" : "No");
 	shell_print(shell, "  Session idle timeout           %d",
@@ -1252,6 +1396,8 @@ static int cmd_settings_print(const struct shell *shell, size_t argc, char **arg
 			lwm2m_settings_server_lifetime_get(),
 			lwm2m_settings_is_bootstrap_server_get() ?
 			"(Not used when bootstrap server)" : "");
+	shell_print(shell, "  Server binding                 %c",
+			lwm2m_settings_server_binding_get());
 	shell_print(shell, "");
 	shell_print(shell, "Custom carrier device settings   %s",
 			lwm2m_settings_enable_custom_device_config_get() ?
@@ -1309,6 +1455,13 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_location,
 		SHELL_CMD(velocity, NULL, "Set velocity information", cmd_location_velocity),
 		SHELL_SUBCMD_SET_END);
 
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_request,
+		SHELL_CMD(link_down, NULL, "Link down", cmd_request_link_down),
+		SHELL_CMD(link_up, NULL, "Link up", cmd_request_link_up),
+		SHELL_CMD(reboot, NULL, "Reboot", cmd_request_reboot),
+		SHELL_SUBCMD_SET_END /* Array terminated. */
+);
+
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_portfolio,
 		SHELL_CMD(create, NULL, "Create an instance of the Portfolio object",
 			  cmd_portfolio_create),
@@ -1327,6 +1480,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_api,
 			  NULL),
 		SHELL_CMD(portfolio, &sub_carrier_portfolio, "Portfolio object operations",
 			  NULL),
+		SHELL_CMD(request, &sub_carrier_request, "Request an action", NULL),
 		SHELL_SUBCMD_SET_END);
 
 
@@ -1342,6 +1496,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_config_device,
 		SHELL_SUBCMD_SET_END);
 
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_config_server,
+		SHELL_CMD(binding, NULL, "Server binding", cmd_server_binding_set),
 		SHELL_CMD(disable, NULL, "Disable custom server settings", cmd_server_disable_set),
 		SHELL_CMD(enable, NULL, "Enable custom server settings", cmd_server_enable_set),
 		SHELL_CMD(is_bootstrap_server, NULL, "Is bootstrap server",
@@ -1354,12 +1509,13 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_config_server,
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_config,
 		SHELL_CMD(apn, NULL, "APN", cmd_apn_set),
 		SHELL_CMD(auto_startup, NULL, "Automatic startup", cmd_auto_startup_set),
+		SHELL_CMD(bootstrap_from_smartcard, NULL, "Bootstrap from smartcard",
+			  cmd_bootstrap_from_smartcard_set),
+		SHELL_CMD(carriers, NULL, "Carriers enabled", cmd_carriers_set),
 		SHELL_CMD(coap_confirmable_interval, NULL, "CoAP confirmable interval",
 			  cmd_coap_confirmable_interval),
 		SHELL_CMD(device, &sub_carrier_config_device, "Device configuration", NULL),
 		SHELL_CMD(disable, NULL, "Disable custom settings", cmd_disable_set),
-		SHELL_CMD(bootstrap_from_smartcard, NULL, "Bootstrap from smartcard",
-			  cmd_bootstrap_from_smartcard_set),
 		SHELL_CMD(enable, NULL, "Enable custom settings", cmd_enable_set),
 		SHELL_CMD(pdn_type, NULL, "PDN type", cmd_pdn_type_set),
 		SHELL_CMD(print, NULL, "Print custom settings", cmd_settings_print),

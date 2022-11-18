@@ -20,6 +20,7 @@ LOG_MODULE_REGISTER(lwm2m_settings, CONFIG_LOG_DEFAULT_LEVEL);
 #define AUTO_STARTUP_SETTINGS_KEY			"auto_startup"
 
 #define ENABLE_CUSTOM_CONFIG_SETTINGS_KEY		"enable_custom_config_settings"
+#define CARRIERS_ENABLED_SETTINGS_KEY			"carriers_enabled"
 #define BOOTSTRAP_FROM_SMARTCARD_SETTINGS_KEY		"bootstrap_from_smartcard"
 #define SESSION_IDLE_TIMEOUT_SETTINGS_KEY		"session_idle_timeout"
 #define COAP_CON_INTERVAL_SETTINGS_KEY			"coap_con_interval"
@@ -33,6 +34,7 @@ LOG_MODULE_REGISTER(lwm2m_settings, CONFIG_LOG_DEFAULT_LEVEL);
 #define SERVER_URI_SETTINGS_KEY				"server_uri"
 #define SERVER_SEC_TAG_SETTINGS_KEY			"server_sec_tag"
 #define SERVER_LIFETIME_SETTINGS_KEY			"server_lifetime"
+#define SERVER_BINDING_SETTINGS_KEY			"server_binding"
 
 #define ENABLE_CUSTOM_DEVICE_SETTINGS_KEY		"enable_custom_device_settings"
 #define MANUFACTURER_SETTINGS_KEY			"manufacturer"
@@ -46,6 +48,7 @@ struct k_sem auto_startup_sem;
 
 /* Default turn on certification mode when using custom configuration. */
 static bool enable_custom_config = true;
+static uint32_t carriers_enabled = UINT32_MAX;
 static bool bootstrap_from_smartcard = true;
 static int32_t session_idle_timeout;
 static int32_t coap_con_interval;
@@ -59,6 +62,7 @@ static bool is_bootstrap_server;
 static char server_uri[256];
 static uint32_t server_sec_tag;
 static int32_t server_lifetime;
+static uint8_t server_binding = 'U';
 
 static bool enable_custom_device_config;
 static char manufacturer[33];
@@ -76,6 +80,8 @@ static int settings_load_cb(const char *key, size_t len, settings_read_cb read_c
 		sz = read_cb(cb_arg, &auto_startup, sizeof(auto_startup));
 	} else if (strcmp(key, ENABLE_CUSTOM_CONFIG_SETTINGS_KEY) == 0) {
 		sz = read_cb(cb_arg, &enable_custom_config, sizeof(enable_custom_config));
+	} else if (strcmp(key, CARRIERS_ENABLED_SETTINGS_KEY) == 0) {
+		sz = read_cb(cb_arg, &carriers_enabled, sizeof(carriers_enabled));
 	} else if (strcmp(key, BOOTSTRAP_FROM_SMARTCARD_SETTINGS_KEY) == 0) {
 		sz = read_cb(cb_arg, &bootstrap_from_smartcard,
 			     sizeof(bootstrap_from_smartcard));
@@ -102,6 +108,8 @@ static int settings_load_cb(const char *key, size_t len, settings_read_cb read_c
 		sz = read_cb(cb_arg, &server_sec_tag, sizeof(server_sec_tag));
 	} else if (strcmp(key, SERVER_LIFETIME_SETTINGS_KEY) == 0) {
 		sz = read_cb(cb_arg, &server_lifetime, sizeof(server_lifetime));
+	} else if (strcmp(key, SERVER_BINDING_SETTINGS_KEY) == 0) {
+		sz = read_cb(cb_arg, &server_binding, sizeof(server_binding));
 	} else if (strcmp(key, ENABLE_CUSTOM_DEVICE_SETTINGS_KEY) == 0) {
 		sz = read_cb(cb_arg, &enable_custom_device_config,
 			     sizeof(enable_custom_device_config));
@@ -128,6 +136,7 @@ static void settings_enable_custom_config(lwm2m_carrier_config_t *config)
 {
 	LOG_INF("Enable custom configuration");
 
+	config->carriers_enabled = carriers_enabled;
 	config->disable_bootstrap_from_smartcard = !bootstrap_from_smartcard;
 	config->session_idle_timeout = session_idle_timeout;
 	config->coap_con_interval = coap_con_interval;
@@ -145,6 +154,7 @@ static void settings_enable_custom_server_config(lwm2m_carrier_config_t *config)
 	config->server_uri = server_uri;
 	config->server_sec_tag = server_sec_tag;
 	config->server_lifetime = server_lifetime;
+	config->server_binding = server_binding;
 }
 
 static void settings_enable_custom_device_config(lwm2m_carrier_config_t *config)
@@ -240,6 +250,24 @@ int lwm2m_settings_enable_custom_config_set(bool new_enable_custom_config)
 				    &enable_custom_config, sizeof(enable_custom_config));
 	if (err) {
 		LOG_ERR("Save " ENABLE_CUSTOM_CONFIG_SETTINGS_KEY " failed: %d", err);
+	}
+
+	return err;
+}
+
+uint32_t lwm2m_settings_carriers_enabled_get(void)
+{
+	return carriers_enabled;
+}
+
+int lwm2m_settings_carriers_enabled_set(uint32_t new_carriers_enabled)
+{
+	carriers_enabled = new_carriers_enabled;
+
+	int err = settings_save_one(LWM2M_SETTINGS_SUBTREE_NAME "/" CARRIERS_ENABLED_SETTINGS_KEY,
+				    &carriers_enabled, sizeof(carriers_enabled));
+	if (err) {
+		LOG_ERR("Save " CARRIERS_ENABLED_SETTINGS_KEY " failed: %d", err);
 	}
 
 	return err;
@@ -370,6 +398,24 @@ int lwm2m_settings_server_lifetime_set(const int32_t new_server_lifetime)
 				    &server_lifetime, sizeof(server_lifetime));
 	if (err) {
 		LOG_ERR("Save " SERVER_LIFETIME_SETTINGS_KEY " failed: %d", err);
+	}
+
+	return err;
+}
+
+uint8_t lwm2m_settings_server_binding_get(void)
+{
+	return server_binding;
+}
+
+int lwm2m_settings_server_binding_set(uint8_t new_server_binding)
+{
+	server_binding = new_server_binding;
+
+	int err = settings_save_one(LWM2M_SETTINGS_SUBTREE_NAME "/" SERVER_BINDING_SETTINGS_KEY,
+				    &server_binding, sizeof(server_binding));
+	if (err) {
+		LOG_ERR("Save " SERVER_BINDING_SETTINGS_KEY " failed: %d", err);
 	}
 
 	return err;

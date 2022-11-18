@@ -50,6 +50,22 @@ bool lwm2m_settings_enable_custom_config_get(void);
 int lwm2m_settings_enable_custom_config_set(bool new_enable_custom_config);
 
 /**
+ * @brief Determines which carriers are enabled.
+ *
+ * @retval  Bitmask corresponding to carrier oper_id values.
+ */
+uint32_t lwm2m_settings_carriers_enabled_get(void);
+
+ /**
+  * Set enabled carriers.
+  *
+  * @param new_carriers_enabled Bitmask corresponding to carrier oper_id values.
+  *
+  * @retval 0 on success, non-zero on failure.
+  */
+int lwm2m_settings_carriers_enabled_set(uint32_t new_carriers_enabled);
+
+/**
  * @brief Determines whether bootstrap from Smartcard mode is disabled.
  *
  * @retval true if bootstrap from Smartcard mode enabled.
@@ -131,6 +147,22 @@ int32_t lwm2m_settings_server_lifetime_get(void);
  * @retval 0 on success, non-zero on failure.
  */
 int lwm2m_settings_server_lifetime_set(const int32_t new_server_lifetime);
+
+/**
+ * @brief Retrieve the server binding from the custom LwM2M settings.
+ *
+ * @retval The server binding.
+ */
+uint8_t lwm2m_settings_server_binding_get(void);
+
+/**
+ * @brief Set or update the server binding in the custom LwM2M settings.
+ *
+ * @param[in] new_server_binding Server binding.
+ *
+ * @retval 0 on success, non-zero on failure.
+ */
+int lwm2m_settings_server_binding_set(uint8_t new_server_binding);
 
 /**
  * @brief Retrieve DTLS session idle timeout from the custom LwM2M settings.

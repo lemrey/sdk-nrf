@@ -273,6 +273,15 @@ typedef struct {
 /** @} */
 
 /**
+ * @name LwM2M carrier requests.
+ * @{
+ */
+#define LWM2M_CARRIER_REQUEST_REBOOT    0
+#define LWM2M_CARRIER_REQUEST_LINK_UP   1
+#define LWM2M_CARRIER_REQUEST_LINK_DOWN 2
+/** @} */
+
+/**
  * @brief LG U+ configuration structure.
  */
 typedef struct {
@@ -286,9 +295,22 @@ typedef struct {
 } lwm2m_carrier_lg_uplus_config_t;
 
 /**
+ * @brief LwM2M enabled carriers.
+ * @{
+ */
+#define LWM2M_CARRIER_GENERIC		0x00000001
+#define LWM2M_CARRIER_VERIZON		0x00000002
+#define LWM2M_CARRIER_ATT		0x00000004
+#define LWM2M_CARRIER_LG_UPLUS		0x00000008
+#define LWM2M_CARRIER_T_MOBILE		0x00000010
+/** @} */
+
+/**
  * @brief Structure holding LwM2M carrier library initialization parameters.
  */
 typedef struct {
+	/** Configure enabled carriers. All carriers are enabled when no bits are set. */
+	uint32_t carriers_enabled;
 	/** Disable bootstrap from Smartcard mode when this is enabled by the carrier. */
 	bool disable_bootstrap_from_smartcard;
 	/** Denotes whether @c server_uri is an LwM2M Bootstrap-Server or an LwM2M Server. */
@@ -297,6 +319,8 @@ typedef struct {
 	const char *server_uri;
 	/** Optional security tag when using a custom PSK. */
 	uint32_t server_sec_tag;
+	/** Optional server binding. Valid values: 'U' or 'N'. */
+	uint8_t server_binding;
 	/** Default server lifetime (in seconds). Used only for an LwM2M Server. */
 	int32_t server_lifetime;
 	/** Default DTLS session idle timeout (in seconds). */
@@ -355,6 +379,25 @@ int lwm2m_carrier_init(void);
  * @retval -EFAULT If library failed due to an internal error.
  */
 int lwm2m_carrier_run(const lwm2m_carrier_config_t *config);
+
+/**
+ * @brief Request the LwM2M carrier library to perform an action.
+ *
+ * @note This function will behave differently depending on the chosen @c request.
+ *       @c LWM2M_CARRIER_REQUEST_REBOOT shall request a system reboot.
+ *       @c LWM2M_CARRIER_REQUEST_LINK_UP shall indicate to the LwM2M carrier library that the
+ *          application is about to go online, so that a @c LWM2M_CARRIER_EVENT_LTE_LINK_UP shall
+ *          be generated once the library is ready.
+ *       @c LWM2M_CARRIER_REQUEST_LINK_DOWN shall indicate to the LwM2M carrier library that the
+ *          application is about to go offline, so that a @c LWM2M_CARRIER_EVENT_LTE_LINK_DOWN shall
+ *          be generated once the library is ready.
+ *
+ * @param[in] request Request to be sent to the LwM2M carrier library.
+ *
+ * @retval  0      If success.
+ * @retval -EINVAL If an invalid @c request was selected.
+ */
+int lwm2m_carrier_request(int request);
 
 /**
  * @brief Function to read all time parameters.

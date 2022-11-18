@@ -210,7 +210,7 @@ static void work_handler(struct k_work *work)
 	struct k_work_delayable *delayed_work = CONTAINER_OF(work, struct k_work_delayable, work);
 	struct lwm2m_work *lwm2m_work = CONTAINER_OF(delayed_work, struct lwm2m_work, work_item);
 
-	lwm2m_work->handler(lwm2m_work);
+	lwm2m_work->handler((lwm2m_os_timer_t *)lwm2m_work);
 }
 
 /* Delayed work queue functions */
@@ -257,7 +257,7 @@ lwm2m_os_timer_t *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler)
 		k_work_init_delayable(&work->work_item, work_handler);
 	}
 
-	return work;
+	return (lwm2m_os_timer_t *)work;
 }
 
 void lwm2m_os_timer_release(lwm2m_os_timer_t *timer)

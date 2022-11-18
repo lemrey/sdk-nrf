@@ -66,6 +66,26 @@ void lwm2m_carrier_thread_run(void)
 
 	lwm2m_carrier_config_t config = {0};
 
+#ifdef CONFIG_LWM2M_CARRIER_GENERIC
+	config.carriers_enabled |= LWM2M_CARRIER_GENERIC;
+#endif
+
+#ifdef CONFIG_LWM2M_CARRIER_VZW
+	config.carriers_enabled |= LWM2M_CARRIER_VERIZON;
+#endif
+
+#ifdef CONFIG_LWM2M_CARRIER_ATT
+	config.carriers_enabled |= LWM2M_CARRIER_ATT;
+#endif
+
+#ifdef CONFIG_LWM2M_CARRIER_LG_UPLUS
+	config.carriers_enabled |= LWM2M_CARRIER_LG_UPLUS;
+#endif
+
+#ifdef CONFIG_LWM2M_CARRIER_T_MOBILE
+	config.carriers_enabled |= LWM2M_CARRIER_T_MOBILE;
+#endif
+
 #ifndef CONFIG_LWM2M_CARRIER_BOOTSTRAP_SMARTCARD
 	config.disable_bootstrap_from_smartcard = true;
 #endif
