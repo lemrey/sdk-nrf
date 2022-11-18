@@ -23,8 +23,8 @@ static const char ca411[] = {
 	#include "../certs/DigiCertGlobalRootG2.pem"
 };
 static const char ca412[] = {
-	/* AT&T Interop */
-	#include "../certs/DSTRootCA-X3.pem"
+	/* VzW and Motive, AT&T */
+	#include "../certs/DigiCertGlobalRootCA.pem"
 };
 
 BUILD_ASSERT(sizeof(ca411) < KB(4), "Cert is too large");
