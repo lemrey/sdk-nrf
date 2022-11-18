@@ -36,8 +36,6 @@ A "99" at the end of the version number of this documentation indicates continuo
    libraries/index
    scripts
    release_notes
-   known_issues
-   known_issues_hcs
    software_maturity
    documentation
 

@@ -1,6 +1,6 @@
 .. _ncs_release_notes_changelog:
 
-Changelog for |NCS| v2.0.99
+Changelog for |NCS| v2.1.99
 ###########################
 
 .. contents::
@@ -394,7 +394,7 @@ Matter samples
 NFC samples
 -----------
 
-* Added a note to the documentation of each NFC sample about debug message configuration with the NFCT driver from the `nrfx`_ repository.
+|no_changes_yet_note|
 
 nRF5340 samples
 ---------------

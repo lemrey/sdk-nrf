@@ -49,8 +49,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/introduction/index.html
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
-      repo-path: sdk-zephyr-next
-      revision: c9bd0a4cfee6fddd1a1fc3b9a5d3df7797c2f87a
+      repo-path: sdk-zephyr
+      revision: v3.1.99-ncs1
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -112,23 +112,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 9f548160fa8f71eb771da131c50f8b599715bf07
-    - name: ic-next
-      repo-path: sdk-ic-next
-      path: modules/ic-next
-      revision: 379a64cbd7949a8ba83bd1d2334b2e4b1d35b873
-    - name: sdk-secdom
-      revision: e3196537cea8d042241bd680b85b9adc6a00593a
-      path: core_fw/secdom
-    - name: nrf-regtool
-      revision: 0f376966c9f7fbb87985a4e8184d3009a8598e2f
-      path: modules/lib/nrf-regtool
-    - name: nrfs
-      path: modules/lib/nrfs
-      revision: 2437a2ed460394dd8247f5aae2890ba9ebc0a012
-    - name: sdk-sysctrl
-      revision: 5e993d35c90ffd5804ddb9b449f9e246dad143c8
-      path: core_fw/sysctrl
+      revision: v2.1.0
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
@@ -140,7 +124,7 @@ manifest:
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: 15a08b71e9277ff0e541daaac717f16dda4e2bd6
+      revision: v2.1.0
       submodules:
         - name: nlio
           path: third_party/nlio/repo
@@ -153,7 +137,7 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: 486966780540a472181fb6b95ec53cb303bd8993
+      revision: v2.1.0
       groups:
       - nrf-802154
     - name: cjson
@@ -170,14 +154,10 @@ manifest:
       revision: be3663d2f3b8eefbdf91dc82ae040bdddd8f2345
       groups:
       - find-my
-    - name: sdk-lc3
-      revision: c47d9ee21c9cd8626a903c2e2f0c80c0920a1eb8
-      path: modules/lib/lc3
-      groups:
-      - nrf5340_audio
-    - name: suit-processor
-      revision: 77b45d6c1bada96313149f372e61ac95a471a123
-      path: modules/lib/suit-processor
+    - name: azure-sdk-for-c
+      repo-path: azure-sdk-for-c
+      path: modules/lib/azure-sdk-for-c
+      revision: 308c171cb4b5eed266649012a68406487ec81fb2
     # Other third-party repositories.
     - name: cmock
       path: test/cmock

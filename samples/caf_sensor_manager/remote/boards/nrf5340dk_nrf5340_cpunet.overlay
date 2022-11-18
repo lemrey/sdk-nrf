@@ -19,6 +19,12 @@
 		status = "okay";
 	};
 
+	sensor_sim: sensor_sim {
+		compatible = "nordic,sensor-sim";
+		label = "SENSOR_SIM";
+		acc-signal = "wave";
+	};
+
 	agg0: agg0 {
 		compatible = "caf,aggregator";
 		sensor_descr = "accel_sim_xyz";
