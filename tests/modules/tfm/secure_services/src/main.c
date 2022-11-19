@@ -116,7 +116,7 @@ void test_tfm_gpio_service(void)
 	zassert_equal(err, -1,
 		      "Invalid GPIO select mcu argument returned an unexpected result");
 
-	plt_err = tfm_platform_gpio_pin_mcu_select(66, NRF_GPIO_PIN_SEL_NETWORK, &err);
+	plt_err = tfm_platform_gpio_pin_mcu_select(66, NRF_GPIO_PIN_MCUSEL_NETWORK, &err);
 	zassert_equal(plt_err, TFM_PLATFORM_ERR_SUCCESS,
 		      "Valid GPIO mcu select operation returned an unexpected error");
 	zassert_equal(err, -1,
