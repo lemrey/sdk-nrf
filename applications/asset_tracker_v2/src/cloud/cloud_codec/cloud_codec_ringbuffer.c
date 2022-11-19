@@ -64,30 +64,25 @@ void cloud_codec_populate_ui_buffer(struct cloud_data_ui *ui_buffer,
 		buffer_count - 1);
 }
 
-void cloud_codec_populate_accel_buffer(
-				struct cloud_data_accelerometer *mov_buf,
-				struct cloud_data_accelerometer *new_accel_data,
-				int *head_mov_buf,
+void cloud_codec_populate_impact_buffer(
+				struct cloud_data_impact *impact_buf,
+				struct cloud_data_impact *new_impact_data,
+				int *head_impact_buf,
 				size_t buffer_count)
 {
-	if (!IS_ENABLED(CONFIG_DATA_ACCELEROMETER_BUFFER_STORE)) {
-		return;
-	}
-
-	if (!new_accel_data->queued) {
+	if (!new_impact_data->queued) {
 		return;
 	}
 
 	/* Go to start of buffer if end is reached. */
-	*head_mov_buf += 1;
-	if (*head_mov_buf == buffer_count) {
-		*head_mov_buf = 0;
+	*head_impact_buf += 1;
+	if (*head_impact_buf == buffer_count) {
+		*head_impact_buf = 0;
 	}
 
-	mov_buf[*head_mov_buf] = *new_accel_data;
+	impact_buf[*head_impact_buf] = *new_impact_data;
 
-	LOG_DBG("Entry: %d of %d in movement buffer filled", *head_mov_buf,
-		buffer_count - 1);
+	LOG_DBG("Entry: %d of %d in impact buffer filled", *head_impact_buf, buffer_count - 1);
 }
 
 void cloud_codec_populate_bat_buffer(struct cloud_data_battery *bat_buffer,

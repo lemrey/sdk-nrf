@@ -175,11 +175,11 @@ struct wifi_nrf_fmac_buf_map_info {
 struct wifi_nrf_fmac_init_dev_params {
 	unsigned char base_mac_addr[IMG_ETH_ADDR_LEN];
 	unsigned char def_vif_idx;
-	unsigned char rf_params[RF_PARAMS_SIZE];
+	unsigned char rf_params[NRF_WIFI_RF_PARAMS_SIZE];
 	bool rf_params_valid;
-#ifdef RPU_SLEEP_SUPPORT
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
 	int sleep_type;
-#endif /* RPU_SLEEP_SUPPORT */
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
 	unsigned int phy_calib;
 };
 

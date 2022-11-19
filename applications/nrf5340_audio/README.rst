@@ -10,7 +10,7 @@ nRF5340 Audio
 The nRF5340 Audio application demonstrates audio playback over isochronous channels (ISO) using LC3 codec compression and decompression, as per `Bluetooth® LE Audio specifications`_.
 It is developed for use with the :ref:`nrf53_audio_app_dk`.
 
-In its default configuration, the application requires access to the external repository containing the LC3 software codec.
+In its default configuration, the application requires the :ref:`LC3 software codec <nrfxlib:lc3>`.
 The application also comes with various tools, including the :file:`buildprog.py` Python script that simplifies building and programming the firmware.
 
 .. _nrf53_audio_app_overview:
@@ -121,6 +121,7 @@ These modules include the following major ones:
   * TWI/I2C
   * UART (debug)
   * Timer
+  * LC3 encoder/decoder
 
 * Application-specific Bluetooth modules for handling the Bluetooth connection:
 
@@ -136,13 +137,6 @@ These modules include the following major ones:
     It also handles events from Bluetooth LE and buttons, receives audio from the host, and forwards the audio data to the next module.
   * FIFO buffers
   * Synchronization module (part of `I2S-based firmware for gateway and headsets`_) - See `Synchronization module overview`_ for more information.
-
-* Application-specific modules from external sources:
-
-  * LC3 encoder/decoder (default)
-
-.. note::
-   :ref:`Selecting and configuring the right software codec <nrf53_audio_app_requirements_codec>` is required to run the application.
 
 Since the application architecture is uniform and the firmware code is shared, the set of audio modules in use depends on the chosen stream mode (BIS or CIS), the chosen audio inputs and outputs (USB or analog jack), and if the gateway or the headset configuration is selected.
 
@@ -244,7 +238,7 @@ The following external factors can affect the presentation compensation:
   Also, if the drift compensation loses synchronization, moving out of :c:enumerator:`DRIFT_STATE_LOCKED`, the presentation compensation moves back to :c:enumerator:`PRES_STATE_INIT`.
 * When audio is being played, it is expected that a new audio frame is received in each ISO connection interval.
   If this does not occur, the headset might have lost its connection with the gateway.
-  When the connection is restored, the application receives an :c:type:`sdu_ref` not consecutive with the previously received :c:type:`sdu_ref`.
+  When the connection is restored, the application receives a :c:type:`sdu_ref` not consecutive with the previously received :c:type:`sdu_ref`.
   Then the presentation compensation is put into :c:enumerator:`PRES_STATE_WAIT` to ensure that the audio is still in sync.
 
 .. note::
@@ -299,11 +293,7 @@ For CIS with TWS in mind, three kits are required.
 Software codec requirements
 ===========================
 
-The nRF5340 Audio application must the LC3 software (developed specifically for use with LE Audio).
-The codec requires :ref:`adding its own repository before building and running <nrf53_audio_app_configuration_repos>`.
-
-|lc3_codec_access_note|
-See :ref:`nrf53_audio_app_configuration_select_codec` for more information.
+The nRF5340 Audio application only supports the :ref:`LC3 software codec <nrfxlib:lc3>`, developed specifically for use with LE Audio.
 
 .. _nrf53_audio_app_dk:
 
@@ -384,7 +374,7 @@ The following table is a complete overview of the solder bridges on the nRF5340 
 +------------+-------------------------------------------------------------------------------------+--------------+--------+
 |SB5         | Cut to enable VBAT current measurements on P6                                       | Shorted      | Top    |
 +------------+-------------------------------------------------------------------------------------+--------------+--------+
-|SB6         | Cut to enable VBAT current measurements on P6                                       | Shorted      | Top    |
+|SB6         | Cut to enable HW CODEC 1.2V current measurements on P7                              | Shorted      | Top    |
 +------------+-------------------------------------------------------------------------------------+--------------+--------+
 |SB7         | Cut to enable HW CODEC 1.8V current measurements on P8                              | Shorted      | Top    |
 +------------+-------------------------------------------------------------------------------------+--------------+--------+
@@ -615,6 +605,14 @@ Only one of the following :file:`.conf` files is included when building:
   When building using the command line, you must explicitly specify if :file:`prj_release.conf` is going to be included instead of :file:`prj.conf`.
   See :ref:`nrf53_audio_app_building` for details.
 
+Requirements for FOTA
+=====================
+
+To test Firmware Over-The-Air (FOTA), you need an Android or iOS device with the `nRF Connect Device Manager`_ app installed.
+
+If you want to do FOTA upgrades for the application core and the network core at the same time, you need an external flash shield.
+See :ref:`nrf53_audio_app_configuration_configure_fota` for more details.
+
 .. _nrf53_audio_app_ui:
 
 User interface
@@ -664,7 +662,10 @@ The application uses the following buttons on the supported development kit:
 |               | * Pressed on the gateway during playback multiple times: Changes the tone frequency.   |
 |               |   The available values are 1000 Hz, 2000 Hz, and 4000 Hz.                              |
 +---------------+----------------------------------------------------------------------------------------+
-| **BTN 5**     | Mutes the playback volume.                                                             |
+| **BTN 5**     | Depending on the moment it is pressed:                                                 |
+|               |                                                                                        |
+|               | * Long-pressed during startup: Clears the previously stored bonding information.       |
+|               | * Pressed during playback: Mutes the playback volume.                                  |
 +---------------+----------------------------------------------------------------------------------------+
 | **RESET**     | Resets the device.                                                                     |
 +---------------+----------------------------------------------------------------------------------------+
@@ -756,44 +757,6 @@ Configuration
 
 |config|
 
-.. _nrf53_audio_app_configuration_repos:
-
-Setting up the nRF5340 Audio repositories
-=========================================
-
-The application relies on the following :ref:`external OSS repositories <dm_code_base>` that need to be pulled using west:
-
-* LC3 software codec repository
-* Hardware codec driver repository
-
-To have these repositories managed by west, complete the following steps:
-
-1. Add the group filter specific to the nRF5340 Audio application to the west manifest file of your project by running the following command:
-
-   .. code-block:: console
-
-      west config manifest.group-filter +nrf5340_audio
-
-#. Update west to fetch the repositories in the nRF5340 Audio group:
-
-   .. code-block:: console
-
-      west update
-
-If west can fetch the repositories correctly, you can now build the application.
-
-For more information about west, see :ref:`Zephyr's documentation page <zephyr:west>`.
-
-.. _nrf53_audio_app_configuration_select_codec:
-
-Selecting the audio software codec
-==================================
-
-The nRF5340 Audio application must use either the LC3 software (developed specifically for use with LE Audio).
-The codec requires :ref:`adding its own repository before building and running <nrf53_audio_app_configuration_repos>`.
-
-|lc3_codec_access_note|
-
 .. _nrf53_audio_app_configuration_select_bis:
 
 Selecting the BIS mode
@@ -820,7 +783,14 @@ Use this cable to connect the audio source (PC) to the analog **LINE IN** on the
 Configuring FOTA upgrades
 =========================
 
-You can configure FOTA upgrades to replace the applications on both the application core and the network core.
+.. caution::
+	Firmware based on the |NCS| versions earlier than v2.1.0 does not support DFU.
+	FOTA is not available for those versions.
+
+	You can test performing separate application and network core upgrades, but for production, both cores must be updated at the same time.
+	When updates take place in the inter-core communication module (HCI RPMsg), communication between the cores will break if they are not updated together.
+
+You can configure Firmware Over-The-Air (FOTA) upgrades to replace the applications on both the application core and the network core.
 The nRF5340 Audio application supports the following types of DFU flash memory layouts:
 
 * Internal flash memory layout - which supports only single-image DFU.
@@ -848,11 +818,19 @@ See the following table for the pin definitions.
 | P1.10       | CS                | D8          |
 +-------------+-------------------+-------------+
 
+.. note::
+   External flash shields must be connected for the kits to boot, even if DFU mode is not initiated.
+
 Enabling FOTA upgrades
 ----------------------
 
 The FOTA upgrades are only available when :ref:`nrf53_audio_app_building_script`.
-With the appropriate parameter provided, the :file:`buildprog.py` Python script will add overlay files for the given DFU type.
+With the appropriate parameters provided, the :file:`buildprog.py` Python script will add overlay files for the given DFU type.
+To enable the desired FOTA functions:
+
+* To define flash memory layout, include the ``-m internal`` parameter for the internal layout or the ``-m external`` parameter for the external layout.
+* To use the minimal size network core bootloader, add the ``-M`` parameter.
+
 For the full list of parameters and examples, see the :ref:`nrf53_audio_app_building_script_running` section.
 
 Entering the DFU mode
@@ -861,6 +839,16 @@ Entering the DFU mode
 The |NCS| uses :ref:`SMP server and mcumgr <zephyr:device_mgmt>` as the DFU backend.
 Unlike the CIS and BIS modes for gateway and headsets, the DFU mode is advertising using the SMP server service.
 For this reason, to enter the DFU mode, you must long press **BTN 4** during each device startup to have the nRF5340 Audio DK enter the DFU mode.
+
+To identify the devices before the DFU takes place, the DFU mode advertising names mention the device type directly.
+The names follow the pattern in which the device *ROLE* is inserted before the ``_DFU`` suffix.
+For example:
+
+* Gateway: NRF5340_AUDIO_GW_DFU
+* Left Headset: NRF5340_AUDIO_HL_DFU
+* Right Headset: NRF5340_AUDIO_HR_DFU
+
+The first part of these names is based on :kconfig:option:`CONFIG_BT_DEVICE_NAME`.
 
 .. _nrf53_audio_app_building:
 
@@ -882,15 +870,7 @@ You can build and program the application in one of the following ways:
 * :ref:`nrf53_audio_app_building_standard`.
   Using this method requires building and programming each development kit separately.
 
-Prerequisites
-=============
-
-Before building the application, make sure to meet the following prerequisites described in the :ref:`nrf53_audio_app_configuration` section:
-
-* :ref:`nrf53_audio_app_configuration_repos`
-* :ref:`nrf53_audio_app_configuration_select_codec`
-
-You might also want to check the :ref:`nRF5340 Audio application known issues <known_issues_nrf5340audio>`.
+You might want to check the :ref:`nRF5340 Audio application known issues <known_issues_nrf5340audio>` before building and programming the application.
 
 Testing out of the box
 ======================
@@ -898,7 +878,7 @@ Testing out of the box
 Each development kit comes preprogrammed with basic firmware that indicates if the kit is functional.
 Before building the application, you can verify if the kit is working by completing the following steps:
 
-1. Plug the device into the USB port using USB-C.
+1. Plug the device into the USB port.
 #. Turn on the development kit using the On/Off switch.
 #. Observe **RGB1** (bottom side LEDs around the center opening that illuminate the Nordic Semiconductor logo) turn solid yellow, **OB/EXT** turn solid green, and **LED3** start blinking green.
 
@@ -955,7 +935,7 @@ See the following examples of the parameter usage with the command run from the 
 
      python buildprog.py -c app -b debug -d both -m internal -M
 
-  If you run this command with the ``external`` DFU type parameter instead, the external flash memory layout will be enabled using the minimal size of the network core bootloader.
+  If you run this command with the ``external`` DFU type parameter instead of ``internal``, the external flash memory layout will be enabled.
 
 The command can be run from any location, as long as the correct path to :file:`buildprog.py` is given.
 
@@ -966,7 +946,7 @@ For example, when running the command above, the script creates the :file:`dev_g
 Programming with the script
    The development kits are programmed according to the serial numbers set in the JSON file.
    If you run the script with the ``-p`` parameter, you can program one or both of the cores after building the files.
-   Make sure to connect the development kits with your PC using USB-C and turn them on using the **POWER** switch before you run the command.
+   Make sure to connect the development kits to your PC using USB and turn them on using the **POWER** switch before you run the command.
    The command for programming can look as follows:
 
    .. code-block:: console
@@ -1005,43 +985,43 @@ Configuration table overview
 
    See the following table for the meaning of each column and the list of possible values:
 
-   +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
-   | Column                | Indication                                                                                          | Possible values                               |
-   +=======================+=====================================================================================================+===============================================+
-   | ``snr``               | Serial number of the device, as provided in the :file:`nrf5340_audio_dk_devices.json` file.         | Serial number.                                |
-   +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
-   | ``snr conn``          | Whether the device with the provided serial number is connected to the PC with a serial connection. | ``True`` - Connected.                         |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``False`` - Not connected.                    |
-   +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
-   | ``device``            | Device type, as provided in the :file:`nrf5340_audio_dk_devices.json` file.                         | ``headset`` - Headset.                        |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``gateway`` - Gateway.                        |
-   +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
-   | ``only reboot``       | Whether the device is to be only reset and not programmed.                                          | ``Not selected`` - No reset.                  |
-   |                       | This depends on the ``-r`` parameter in the command, which overrides other parameters.              +-----------------------------------------------+
-   |                       |                                                                                                     | ``Selected TBD`` - Only reset requested.      |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``Done`` - Reset done.                        |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``Failed`` - Reset failed.                    |
-   +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
-   |``core app programmed``| Whether the application core is to be programmed.                                                   | ``Not selected`` - Core won't be programmed.  |
-   |                       | This depends on the value provided to the ``-c`` parameter (see above).                             +-----------------------------------------------+
-   |                       |                                                                                                     | ``Selected TBD`` - Programming requested.     |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``Done`` - Programming done.                  |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``Failed`` - Programming failed.              |
-   +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
-   |``core net programmed``| Whether the network core is to be programmed.                                                       | ``Not selected`` - Core won't be programmed.  |
-   |                       | This depends on the value provided to the ``-c`` parameter (see above).                             +-----------------------------------------------+
-   |                       |                                                                                                     | ``Selected TBD`` - Programming requested.     |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``Done`` - Programming done.                  |
-   |                       |                                                                                                     +-----------------------------------------------+
-   |                       |                                                                                                     | ``Failed`` - Programming failed.              |
-   +-----------------------+-----------------------------------------------------------------------------------------------------+-----------------------------------------------+
+   +-----------------------+-----------------------------------------------------------------------------------------------------+-------------------------------------------------+
+   | Column                | Indication                                                                                          | Possible values                                 |
+   +=======================+=====================================================================================================+=================================================+
+   | ``snr``               | Serial number of the device, as provided in the :file:`nrf5340_audio_dk_devices.json` file.         | Serial number.                                  |
+   +-----------------------+-----------------------------------------------------------------------------------------------------+-------------------------------------------------+
+   | ``snr conn``          | Whether the device with the provided serial number is connected to the PC with a serial connection. | ``True`` - Connected.                           |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``False`` - Not connected.                      |
+   +-----------------------+-----------------------------------------------------------------------------------------------------+-------------------------------------------------+
+   | ``device``            | Device type, as provided in the :file:`nrf5340_audio_dk_devices.json` file.                         | ``headset`` - Headset.                          |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``gateway`` - Gateway.                          |
+   +-----------------------+-----------------------------------------------------------------------------------------------------+-------------------------------------------------+
+   | ``only reboot``       | Whether the device is to be only reset and not programmed.                                          | ``Not selected`` - No reset.                    |
+   |                       | This depends on the ``-r`` parameter in the command, which overrides other parameters.              +-------------------------------------------------+
+   |                       |                                                                                                     | ``Selected TBD`` - Only reset requested.        |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``Done`` - Reset done.                          |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``Failed`` - Reset failed.                      |
+   +-----------------------+-----------------------------------------------------------------------------------------------------+-------------------------------------------------+
+   |``core app programmed``| Whether the application core is to be programmed.                                                   | ``Not selected`` - Core will not be programmed. |
+   |                       | This depends on the value provided to the ``-c`` parameter (see above).                             +-------------------------------------------------+
+   |                       |                                                                                                     | ``Selected TBD`` - Programming requested.       |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``Done`` - Programming done.                    |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``Failed`` - Programming failed.                |
+   +-----------------------+-----------------------------------------------------------------------------------------------------+-------------------------------------------------+
+   |``core net programmed``| Whether the network core is to be programmed.                                                       | ``Not selected`` - Core will not be programmed. |
+   |                       | This depends on the value provided to the ``-c`` parameter (see above).                             +-------------------------------------------------+
+   |                       |                                                                                                     | ``Selected TBD`` - Programming requested.       |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``Done`` - Programming done.                    |
+   |                       |                                                                                                     +-------------------------------------------------+
+   |                       |                                                                                                     | ``Failed`` - Programming failed.                |
+   +-----------------------+-----------------------------------------------------------------------------------------------------+-------------------------------------------------+
 
 .. _nrf53_audio_app_building_standard:
 
@@ -1051,7 +1031,7 @@ Building and programming using command line
 You can also build the nRF5340 Audio application using the standard |NCS| :ref:`build steps <gs_programming>` for the command line.
 
 .. note::
-   Using this method requires you to build and progam each development kit one at a time before moving to the next configuration, which can be time-consuming.
+   Using this method requires you to build and program each development kit one at a time before moving to the next configuration, which can be time-consuming.
    :ref:`nrf53_audio_app_building_script` is recommended.
 
 Building the application
@@ -1075,14 +1055,14 @@ Complete the following steps to build the application:
 
       * For internal flash memory DFU: ``-DCONFIG_AUDIO_DFU=1``
       * For external flash memory DFU: ``-DCONFIG_AUDIO_DFU=2``
-      * For minimal sizes of the net core bootloader: ``-DCONFIG_B0N_MINIMAL=y``
+      * For minimal sizes of the network core bootloader: ``-DCONFIG_B0N_MINIMAL=y``
 
 #. Build the application using the standard :ref:`build steps <gs_programming>`.
    For example, if you want to build the firmware for the application core as a headset using the ``release`` application version, you can run the following command:
 
    .. code-block:: console
 
-      west build -b nrf5340_audio_dk_nrf5340_cpuapp --pristine -DCONFIG_AUDIO_DEV=1 -DCONF_FILE=prj_release.conf
+      west build -b nrf5340_audio_dk_nrf5340_cpuapp --pristine -- -DCONFIG_AUDIO_DEV=1 -DCONF_FILE=prj_release.conf
 
    Unlike when :ref:`nrf53_audio_app_building_script`, this command creates the build files directly in the :file:`build` directory.
    This means that you first need to program the headset development kits before you build and program gateway development kits.
@@ -1094,7 +1074,7 @@ Programming the application
 
 After building the files for the development kit you want to program, complete the following steps to program the application from the command line:
 
-1. Plug the device into the USB port using USB-C.
+1. Plug the device into the USB port.
 #. Turn on the development kit using the On/Off switch.
 #. Open a command prompt.
 #. Run the following command to print the SEGGER serial number of your development kit:
@@ -1167,7 +1147,7 @@ Testing the default CIS mode
 
 Complete the following steps to test the CIS mode for one gateway and two headset devices:
 
-1. Make sure that the development kits are still plugged into the USB port using USB-C and are turned on.
+1. Make sure that the development kits are still plugged into the USB ports and are turned on.
    After programming, **RGB2** starts blinking green on every device to indicate the ongoing CPU activity on the network core.
    **LED3** starts blinking green on every device to indicate the ongoing CPU activity on the application core.
 #. Wait for the **LED1** on the gateway to start blinking blue.
@@ -1199,6 +1179,10 @@ Complete the following steps to test the CIS mode for one gateway and two headse
    For each button press, the audio stream playback is stopped and the gateway sends a test tone to both headsets.
    These tones can be used as audio cues to check the synchronization of the headsets.
 
+After the kits have paired for the first time, they are now bonded.
+This means the Long-Term Key(LTK) is stored on each side, and that the kits will only connect to each other unless the bonding information is cleared.
+To clear the bonding information, press and hold **BTN5** during boot.
+
 When you finish testing, power off the nRF5340 Audio development kits by switching the power switch from On to Off.
 
 .. _nrf53_audio_app_testing_steps_bis:
@@ -1213,6 +1197,43 @@ Testing the BIS mode is identical to `Testing the default CIS mode`_, except for
   For example, you can decrease or increase the volume separately for each receiver during playback.
 
 .. _nrf53_audio_app_porting_guide:
+
+Testing FOTA upgrades
+---------------------
+
+`nRF Connect Device Manager`_ can be used for testing FOTA upgrades.
+The procedure for upgrading the firmware is identical for both headset and gateway firmware.
+You can test upgrading the firmware on both cores at the same time on a headset device by completing the following steps:
+
+1. Make sure you have :ref:`configured the application for FOTA <nrf53_audio_app_configuration_configure_fota>`.
+#. Install `nRF Connect Device Manager`_ on your Android or iOS device.
+#. Connect an external flash shield to the headset.
+#. Make sure the headset runs a firmware that supports DFU using external flash memory.
+   One way of doing this is to connect the headset to the USB port, turn it on, and then run this command:
+
+   .. code-block:: console
+
+      python buildprog.py -c both -b debug -d headset --pristine -m external -p
+
+   .. note::
+      When using the FOTA related functionality in the :file:`buildprog.py` script on Linux, the ``python`` command must execute Python 3.
+
+#. Use the :file:`buildprog.py` script to create a zip file that contains new firmware for both cores:
+
+   .. code-block:: console
+
+      python buildprog.py -c both -b debug -d headset --pristine -m external
+
+#. Transfer the generated zip file to your Android or iOS device.
+   The file name should start with :file:`dev_headset_build_debug_dfu_application`.
+   For transfer, you can use cloud services like Google Drive for Android or iCloud for iOS.
+#. Open `nRF Connect Device Manager`_ and look for ``NRF5340_AUDIO_HL_DFU`` in the scanned devices window.
+   The headset is left by default.
+#. Tap on :guilabel:`NRF5340_AUDIO_HL_DFU` and then on the downward arrow icon at the bottom of the screen.
+#. In the :guilabel:`Firmware Upgrade` section, tap :guilabel:`SELECT FILE`.
+#. Select the zip file you transferred to the device.
+#. Tap :guilabel:`START` and then :guilabel:`START` again in the notification to start the DFU process.
+#. When the DFU has finished, verify that the new application core and network core firmware works properly.
 
 Adapting application for end products
 *************************************
@@ -1278,6 +1299,14 @@ To use the nRF5340 Audio application with your custom board:
 #. Build the application by selecting the name of the new board (for example, ``new_audio_board_name``) in your build system.
    For example, when building from the command line, add ``-b new_audio_board_name`` to your build command.
 
+FOTA for end products
+=====================
+
+Do not use the default MCUBoot key for end products.
+See :ref:`ug_fw_update` and :ref:`west-sign` for more information.
+
+To create your own app that supports DFU, you can use the `nRF Connect Device Manager`_ libraries for Android and iOS.
+
 Dependencies
 ************
 
@@ -1318,8 +1347,9 @@ Legal notices and disclaimers
 *****************************
 
 Additional Disclaimer for the nRF5340 Audio application
-   This application and the LE Audio Controller Subsystem for nRF53 are marked as experimental.
-   The LE Audio Controller Subsystem for nRF53 associated with this release comes with QDID 181316.
+   This application and the LE Audio Controller Subsystem for nRF53 are marked as :ref:`experimental <software_maturity>`.
+   The DFU/FOTA functionality in this application is also marked as :ref:`experimental <software_maturity>`.
+
    This LE Audio link controller is tested and works in configurations used by the present reference code (for example, 2 concurrent CIS, or BIS).
    No other configurations than the ones used in the reference application are tested nor documented in this release.
 
@@ -1372,10 +1402,6 @@ Legal notices for the nRF5340 Audio DK
       © 2022 Nordic Semiconductor ASA.
       All rights are reserved.
       Reproduction in whole or in part is prohibited without the prior written permission of the copyright holder.
-
-.. |lc3_codec_access_note| replace:: The default software codec for the application is LC3, which is not open-source.
-   To build the application using this codec requires obtaining access to the LC3 codec repository.
-   To obtain access to the repository, `contact the sales department <Contact Us_>`_.
 
 .. |net_core_hex_note| replace:: The network core for both gateway and headsets is programmed with the precompiled Bluetooth Low Energy Controller binary file :file:`ble5-ctr-rpmsg_<XYZ>.hex`, where ``<XYZ>`` corresponds to the controller version, for example :file:`ble5-ctr-rpmsg_3216.hex`.
    This file includes the LE Audio Controller Subsystem for nRF53 and is provided in the :file:`applications/nrf5340_audio/bin` directory.

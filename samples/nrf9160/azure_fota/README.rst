@@ -63,11 +63,12 @@ Check and configure the following library Kconfig options:
 * :kconfig:option:`CONFIG_AZURE_FOTA_TLS` - Enables HTTPS for downloads. By default, TLS is enabled and currently, the transport protocol must be configured at compile time.
 * :kconfig:option:`CONFIG_AZURE_FOTA_SEC_TAG` - Sets the security tag for TLS credentials when using HTTPS as the transport layer. See :ref:`certificates` for more details.
 * :kconfig:option:`CONFIG_AZURE_IOT_HUB_HOSTNAME` - Sets the Azure IoT Hub host name. If DPS is used, the sample assumes that the IoT hub host name is unknown, and the configuration is ignored.
-* :kconfig:option:`CONFIG_AZURE_IOT_HUB_DEVICE_ID` - Specifies the device ID, which is used when connecting to Azure IoT Hub or when DPS is enabled.
+* :kconfig:option:`CONFIG_AZURE_IOT_HUB_DEVICE_ID` - Specifies the device ID, which is used when connecting to Azure IoT Hub.
+* :kconfig:option:`CONFIG_AZURE_IOT_HUB_DPS_REG_ID` - Specifies the device registration ID used for DPS.
 
 .. note::
-   If the :kconfig:option:`CONFIG_AZURE_IOT_HUB_DEVICE_ID_APP` option is disabled, set the device ID in the :file:`prj.conf` file.
-   If the :kconfig:option:`CONFIG_AZURE_IOT_HUB_DEVICE_ID_APP` option is enabled, provide the device ID using the :c:struct:`azure_iot_hub_config` configuration struct in a call to the :c:func:`azure_iot_hub_init` function.
+   To provide the device ID used in the connection towards Azure IoT Hub at run time, set the ``device_id`` member of the :c:struct:`azure_iot_hub_config` structure when calling the :c:func:`azure_iot_hub_connect` function.
+   If the ``device_id.size`` buffer size is zero, the compile-time option :kconfig:option:`CONFIG_AZURE_IOT_HUB_DEVICE_ID`` is used.
 
 Building and running
 ********************
@@ -101,7 +102,7 @@ Testing
 
 #. Log in to the `Azure Portal`_, navigate to :guilabel:`IoT Hub` and select your IoT hub.
 #. Navigate to :guilabel:`IoT devices` and select the device to update.
-#. In the device view, click the :guilabel:`Device Twin` button.
+#. In the device view, click :guilabel:`Device Twin`.
 #. Create a `firmware` JSON object inside the *desired* object of the device twin document, containing information about the binary to download:
 
    .. parsed-literal::

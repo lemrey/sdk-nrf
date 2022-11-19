@@ -20,7 +20,7 @@ The sample supports the following development kits:
 
 Before using the Memfault platform, you must register an account in the `Memfault registration page`_ and `create a new project in Memfault`_.
 
-.. include:: /includes/tfm_spm_thingy91.txt
+.. include:: /includes/tfm.txt
 
 To get access to all the benefits, like up to 100 free devices connected, register at the `Memfault registration page`_.
 
@@ -114,6 +114,8 @@ There are two sources for Kconfig options when using Memfault SDK in |NCS|:
 Check and configure the following options in Memfault SDK that are used by the sample:
 
 * :kconfig:option:`CONFIG_MEMFAULT`
+* :kconfig:option:`CONFIG_MEMFAULT_LOGGING_ENABLE`
+* :kconfig:option:`CONFIG_MEMFAULT_LOG_LEVEL_DBG`
 * :kconfig:option:`CONFIG_MEMFAULT_ROOT_CERT_STORAGE_NRF9160_MODEM`
 * :kconfig:option:`CONFIG_MEMFAULT_SHELL`
 * :kconfig:option:`CONFIG_MEMFAULT_HTTP_ENABLE`
@@ -146,7 +148,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/nrf9160/memfault`
 
-.. include:: /includes/thingy91_build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 Testing
 =======
@@ -160,11 +162,11 @@ Before testing, ensure that your device is configured with the project key of yo
 
    .. code-block:: console
 
-        *** Booting Zephyr OS build v2.4.99-ncs1-4934-g6d2b8c7b17aa  ***
-        <inf> <mflt>: Reset Reason, RESETREAS=0x0
-        <inf> <mflt>: Reset Causes:
-        <inf> <mflt>:  Power on Reset
-        <inf> <mflt>: GNU Build ID: a09094cdf9da13f20719f87016663ab529b71267
+        *** Booting Zephyr OS build v3.0.99-ncs1-4913-gf7b06162027d  ***
+        <inf> mflt: Reset Reason, RESETREAS=0x0
+        <inf> mflt: Reset Causes:
+        <inf> mflt: Power on Reset
+        <inf> mflt: GNU Build ID: a09094cdf9da13f20719f87016663ab529b71267
         <inf> memfault_sample: Memfault sample has started
 
 #. The sample connects to an available LTE network, which is indicated by the following message:
@@ -184,11 +186,11 @@ Before testing, ensure that your device is configured with the project key of yo
    .. code-block:: console
 
         <inf> memfault_sample: Sending already captured data to Memfault
-        <dbg> <mflt>: Response Complete: Parse Status 0 HTTP Status 202!
-        <dbg> <mflt>: Body: Accepted
-        <dbg> <mflt>: Response Complete: Parse Status 0 HTTP Status 202!
-        <dbg> <mflt>: Body: Accepted
-        <dbg> <mflt>: No more data to send
+        <dbg> mflt: memfault_platform_log: Response Complete: Parse Status 0 HTTP Status 202!
+        <dbg> mflt: memfault_platform_log: Body: Accepted
+        <dbg> mflt: memfault_platform_log: Response Complete: Parse Status 0 HTTP Status 202!
+        <dbg> mflt: memfault_platform_log: Body: Accepted
+        <dbg> mflt: memfault_platform_log: No more data to send
 
 #. Upload the symbol file generated from your build to your Memfault account so that the information from your application can be parsed. The symbol file is located in the build folder: :file:`memfault/build/zephyr/zephyr.elf`:
 
@@ -230,7 +232,6 @@ It uses the following `sdk-nrfxlib`_ library:
 
 * :ref:`nrfxlib:nrf_modem`
 
-In addition, it uses the following secure firmware components:
+In addition, it uses the following secure firmware component:
 
-* :ref:`secure_partition_manager`
 * :ref:`Trusted Firmware-M <ug_tfm>`

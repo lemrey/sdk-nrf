@@ -58,7 +58,7 @@ To connect to the Thingy:91 using LTE Link Monitor, complete the following steps
 #. Connect the Thingy:91 to a computer with a micro-Universal Serial Bus (USB) cable.
 #. Make sure that the Thingy:91 is powered on.
 #. Launch the LTE Link Monitor application.
-#. In the navigation bar, click :guilabel:`Select device`.
+#. In the navigation bar, click :guilabel:`SELECT DEVICE`.
    A drop-down menu appears.
 #. In the menu, select Thingy:91.
 #. In the LTE Link Monitor terminal, send an AT command to the modem.
@@ -125,16 +125,18 @@ You must use the build target ``thingy91_nrf9160_ns`` when building the applicat
 
 The table below shows the different types of build files that are generated and the different scenarios in which they are used:
 
-+--------------+----------------------------------------+----------------------------------------------------------------+
-| File         | File format                            | Programming scenario                                           |
-+==============+========================================+================================================================+
-|merged.hex    | Full image, HEX format                 | Using an external debug probe and nRF Connect Programmer       |
-+--------------+----------------------------------------+----------------------------------------------------------------+
-|app_signed.hex| MCUboot compatible image, HEX format   | Using the built-in bootloader and nRF Connect Programmer       |
-+--------------+----------------------------------------+----------------------------------------------------------------+
-|app_update.bin| MCUboot compatible image, binary format|* Using the built-in bootloader and mcumgr command line tool    |
-|              |                                        |* For FOTA updates                                              |
-+--------------+----------------------------------------+----------------------------------------------------------------+
++-----------------------+----------------------------------------+----------------------------------------------------------------+
+| File                  | File format                            | Programming scenario                                           |
++=======================+========================================+================================================================+
+|:file:`merged.hex`     | Full image, HEX format                 | Using an external debug probe and nRF Connect Programmer.      |
++-----------------------+----------------------------------------+----------------------------------------------------------------+
+|:file:`app_signed.hex` | MCUboot compatible image, HEX format   | Using the built-in bootloader and nRF Connect Programmer.      |
++-----------------------+----------------------------------------+----------------------------------------------------------------+
+|:file:`app_update.bin` | MCUboot compatible image, binary format|* Using the built-in bootloader and mcumgr command line tool.   |
+|                       |                                        |* For FOTA updates.                                             |
++-----------------------+----------------------------------------+----------------------------------------------------------------+
+
+For an overview of different types of build files in the |NCS|, see :ref:`app_build_output_files`.
 
 There are multiple methods of programming a sample or application onto a Thingy:91.
 You can choose the method based on the availability or absence of an external debug probe to program.
@@ -185,7 +187,7 @@ Complete the following steps after installing the |nRFVSC|:
 .. prog_extdebugprobe_end
 ..
 
-   e. In |VSC|, click the :guilabel:`Flash` option in the :guilabel:`Actions View`.
+   e. In |VSC|, click the :guilabel:`Flash` option in the **Actions View**.
 
       If you have multiple boards connected, you are prompted to pick a device at the top of the screen.
 

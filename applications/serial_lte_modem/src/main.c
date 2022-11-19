@@ -53,6 +53,16 @@ static void indicate_wk(struct k_work *work);
 
 BUILD_ASSERT(CONFIG_SLM_WAKEUP_PIN >= 0, "Wake up pin not configured");
 
+NRF_MODEM_LIB_ON_INIT(serial_lte_modem_init_hook, on_modem_lib_init, NULL);
+
+/* Initialized to value different than success (0) */
+static int modem_lib_init_result = -1;
+
+static void on_modem_lib_init(int ret, void *ctx)
+{
+	modem_lib_init_result = ret;
+}
+
 #if defined(CONFIG_NRF_MODEM_LIB_ON_FAULT_APPLICATION_SPECIFIC)
 static void on_modem_failure_shutdown(struct k_work *item);
 static void on_modem_failure_reinit(struct k_work *item);
@@ -64,7 +74,8 @@ void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {
 	char rsp[64];
 
-	sprintf(rsp, "#XMODEM: FAULT,0x%x,0x%x", fault_info->reason, fault_info->program_counter);
+	sprintf(rsp, "\r\n#XMODEM: FAULT,0x%x,0x%x\r\n", fault_info->reason,
+		fault_info->program_counter);
 	rsp_send(rsp, strlen(rsp));
 	/* For now we wait 10 ms to give the trace handler time to process trace data. */
 	k_work_reschedule(&modem_failure_shutdown_work, K_MSEC(10));
@@ -76,7 +87,7 @@ static void on_modem_failure_shutdown(struct k_work *work)
 	int ret = nrf_modem_lib_shutdown();
 
 	ARG_UNUSED(work);
-	sprintf(rsp, "#XMODEM: SHUTDOWN,%d", ret);
+	sprintf(rsp, "\r\n#XMODEM: SHUTDOWN,%d\r\n", ret);
 	rsp_send(rsp, strlen(rsp));
 	k_work_reschedule(&modem_failure_reinit_work, K_MSEC(10));
 }
@@ -87,7 +98,7 @@ static void on_modem_failure_reinit(struct k_work *work)
 	int ret = nrf_modem_lib_init(NORMAL_MODE);
 
 	ARG_UNUSED(work);
-	sprintf(rsp, "#XMODEM: INIT,%d", ret);
+	sprintf(rsp, "\r\n#XMODEM: INIT,%d\r\n", ret);
 	rsp_send(rsp, strlen(rsp));
 }
 #endif /* CONFIG_NRF_MODEM_LIB_ON_FAULT_APPLICATION_SPECIFIC */
@@ -245,7 +256,7 @@ void enter_sleep(void)
 
 static void handle_nrf_modem_lib_init_ret(void)
 {
-	int ret = nrf_modem_lib_get_init_ret();
+	int ret = modem_lib_init_result;
 
 	/* Handle return values relating to modem firmware update */
 	switch (ret) {

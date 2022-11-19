@@ -8,17 +8,21 @@ if (CONFIG_MCUBOOT)
       ${CONFIG_NRF53_MULTI_IMAGE_UPDATE})
   endif()
 
+  if (CONFIG_NRF53_RECOVERY_NETWORK_CORE)
+    set_shared(IMAGE ${IMAGE_NAME} PROPERTY NRF53_RECOVERY_NETWORK_CORE
+      ${CONFIG_NRF53_RECOVERY_NETWORK_CORE})
+  endif()
+
   dt_nodelabel(ram_flash_ctrl_dev NODELABEL nordic_ram_flash_controller)
   if (DEFINED ram_flash_ctrl_dev)
     # Share the information about the ram_flash node with the parent image.
     # This information is used to create the partition manager region.
     dt_nodelabel(ram_flash_dev NODELABEL flash_sim0)
-    dt_prop(ram_flash_ctrl_label PATH ${ram_flash_ctrl_dev} PROPERTY label)
     dt_reg_addr(ram_flash_addr PATH ${ram_flash_dev})
     dt_reg_size(ram_flash_size PATH ${ram_flash_dev})
     set_shared(IMAGE ${IMAGE_NAME} PROPERTY RAM_FLASH_ADDR ${ram_flash_addr})
     set_shared(IMAGE ${IMAGE_NAME} PROPERTY RAM_FLASH_SIZE ${ram_flash_size})
-    set_shared(IMAGE ${IMAGE_NAME} PROPERTY RAM_FLASH_LABEL ${ram_flash_ctrl_label})
+    set_shared(IMAGE ${IMAGE_NAME} PROPERTY RAM_FLASH_LABEL nordic_ram_flash_controller)
   endif()
 endif()
 
@@ -207,7 +211,7 @@ if(CONFIG_BOOTLOADER_MCUBOOT)
       )
   endif()
 
-  if (CONFIG_NRF53_UPGRADE_NETWORK_CORE AND CONFIG_PM_EXTERNAL_FLASH_MCUBOOT_SECONDARY)
+  if (CONFIG_NRF53_UPGRADE_NETWORK_CORE AND CONFIG_ADD_MCUBOOT_MEDIATE_SIM_FLASH_DTS)
     # To allow multi image update of the network core we add a devicetree
     # overlay which defines a flash controller used for emulating flash
     # in RAM.

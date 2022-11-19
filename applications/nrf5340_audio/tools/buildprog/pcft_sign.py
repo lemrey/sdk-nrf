@@ -39,17 +39,28 @@ def awklike(field_str, filename):
 
 def sign(orig_pcft_hex, build_dir):
     """ A function to combine and sign PCFT"""
+
+    if os.name == 'nt':
+        folder_slash ='\\'
+    else:
+        folder_slash ='/'
+
     # Make sure we input build_dir as absolute path
-    indices = [i for i, c in enumerate(build_dir) if c == '/']
-    final_file_prefix = build_dir[indices[-2]+1:].replace('/', '_')+'_'
+    indices = [i for i, c in enumerate(build_dir) if c == folder_slash]
+    final_file_prefix = build_dir[indices[-2]+1:].replace(folder_slash, '_')+'_'
 
     # RETEIVE setting value from .config
     # "${ZEPHYR_BASE}/../bootloader/mcuboot/root-rsa-2048.pem"
 
     mcuboot_rsa_key = awklike('CONFIG_BOOT_SIGNATURE_KEY_FILE=', build_dir +
                               '/mcuboot/zephyr/.config')
-    if ('/' in mcuboot_rsa_key) or ('\\' in mcuboot_rsa_key):
+
+    #'\\' is used for Windows, '/' is used for other Operating Systems like Linux.
+    if ('/' in mcuboot_rsa_key) or ('\\' in  mcuboot_rsa_key):
         print('absolute path')
+        # Zephyr script convert folder separator to '/'. Should do the same here no matter Windows or not.
+        if folder_slash in mcuboot_rsa_key:
+            mcuboot_rsa_key.replace(folder_slash, '/')
     else:
         print('relative path')
         mcuboot_rsa_key = ZEPHYR_BASE + '/../bootloader/mcuboot/' + mcuboot_rsa_key
@@ -181,14 +192,14 @@ def sign(orig_pcft_hex, build_dir):
     if ret_val:
         raise Exception("python error: " + str(ret_val))
 
-    os_cmd = f'python {ZEPHYR_BASE}/scripts/mergehex.py -o {build_dir}/b0n_container.hex\
+    os_cmd = f'python {ZEPHYR_BASE}/scripts/build/mergehex.py -o {build_dir}/b0n_container.hex\
     {build_dir}/{PCFT_HEX} {build_dir}/provision.hex'
 
     ret_val = os.system(os_cmd)
     if ret_val:
         raise Exception("python error: " + str(ret_val))
 
-    os_cmd = f'python {ZEPHYR_BASE}/scripts/mergehex.py -o {build_dir}/{FINAL_PCFT_HEX}\
+    os_cmd = f'python {ZEPHYR_BASE}/scripts/build/mergehex.py -o {build_dir}/{FINAL_PCFT_HEX}\
     --overlap=replace {build_dir}/hci_rpmsg/b0n/zephyr/zephyr.hex  {build_dir}/b0n_container.hex\
     {build_dir}/provision.hex {build_dir}/{PCFT_HEX} {build_dir}/signed_by_b0_pcft.hex'
 
@@ -213,7 +224,7 @@ def sign(orig_pcft_hex, build_dir):
     shutil.copy(src_path, dst_path)
 
     # Generate merged_domains.hex
-    os_cmd = f'python {ZEPHYR_BASE}/scripts/mergehex.py -o {build_dir}/zephyr/merged_domains.hex\
+    os_cmd = f'python {ZEPHYR_BASE}/scripts/build/mergehex.py -o {build_dir}/zephyr/merged_domains.hex\
     {build_dir}/{FINAL_PCFT_HEX} {build_dir}/zephyr/merged.hex'
 
     ret_val = os.system(os_cmd)

@@ -4,7 +4,7 @@ Matter samples
 ##############
 
 The |NCS| provides several samples showcasing the :ref:`Matter <ug_matter>` protocol.
-You can build the samples boards and configure them for different usage scenarios.
+You can build the samples for a variety of board targets and configure them for different usage scenarios.
 
 The following table lists variants and extensions available out of the box for each Matter sample:
 
@@ -44,12 +44,12 @@ The following table lists variants and extensions available out of the box for e
       - SSED
     * - Wi-Fi support
       -
-      -
+      - ✔
+      - ✔
       - ✔
       -
-      -
 
-See the sample documentation pages for instructions about how to enable these variants and extenstions.
+See the sample documentation pages for instructions about how to enable these variants and extensions.
 
 In addition to these samples, check also the :ref:`Thingy:53 Matter weather station <matter_weather_station_app>` application.
 

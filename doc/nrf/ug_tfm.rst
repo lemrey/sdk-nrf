@@ -18,7 +18,8 @@ It provides a highly configurable set of software components to create a Trusted
 This is achieved by a set of secure run time services such as Secure Storage, Cryptography, Audit Logs, and Attestation.
 Additionally, secure boot through MCUboot in TF-M ensures integrity of runtime software and supports firmware upgrade.
 
-Support for TF-M with :ref:`minimal version <tfm_minimal_build>` disabled in |NCS| is currently experimental.
+.. note::
+   Support for TF-M with :ref:`minimal version <tfm_minimal_build>` disabled in |NCS| is currently :ref:`experimental <software_maturity>`.
 
 For official documentation, see the `TF-M documentation`_.
 
@@ -77,7 +78,7 @@ A minimal version of the TF-M secure application is provided in |NCS| to show ho
 
 The secure services supported by this minimal version allow for generating random numbers, and the platform services.
 
-This corresponds to the feature set provided by the :ref:`secure_partition_manager` (SPM).
+This corresponds to the feature set provided by the deprecated :ref:`secure_partition_manager` (SPM).
 
 The minimal version of TF-M is disabled by setting the :kconfig:option:`CONFIG_TFM_PROFILE_TYPE_NOT_SET` option or one of the other build profiles.
 

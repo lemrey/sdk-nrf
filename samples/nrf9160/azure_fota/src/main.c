@@ -23,6 +23,16 @@ static struct k_work_delayable reboot_work;
 BUILD_ASSERT(!IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT),
 			 "This sample does not support auto init and connect");
 
+NRF_MODEM_LIB_ON_INIT(azure_fota_init_hook, on_modem_lib_init, NULL);
+
+/* Initialized to value different than success (0) */
+static int modem_lib_init_result = -1;
+
+static void on_modem_lib_init(int ret, void *ctx)
+{
+	modem_lib_init_result = ret;
+}
+
 static void azure_event_handler(struct azure_iot_hub_evt *const evt)
 {
 	switch (evt->type) {
@@ -47,40 +57,28 @@ static void azure_event_handler(struct azure_iot_hub_evt *const evt)
 	case AZURE_IOT_HUB_EVT_DATA_RECEIVED:
 		printk("AZURE_IOT_HUB_EVT_DATA_RECEIVED\n");
 		break;
-	case AZURE_IOT_HUB_EVT_DPS_CONNECTING:
-		printk("AZURE_IOT_HUB_EVT_DPS_CONNECTING\n");
-		break;
-	case AZURE_IOT_HUB_EVT_DPS_REGISTERING:
-		printk("AZURE_IOT_HUB_EVT_DPS_REGISTERING\n");
-		break;
-	case AZURE_IOT_HUB_EVT_DPS_DONE:
-		printk("AZURE_IOT_HUB_EVT_DPS_DONE\n");
-		break;
-	case AZURE_IOT_HUB_EVT_DPS_FAILED:
-		printk("AZURE_IOT_HUB_EVT_DPS_FAILED\n");
-		break;
 	case AZURE_IOT_HUB_EVT_TWIN_RECEIVED:
 		printk("AZURE_IOT_HUB_EVT_TWIN_RECEIVED\n");
 		break;
 	case AZURE_IOT_HUB_EVT_TWIN_DESIRED_RECEIVED:
 		printk("AZURE_IOT_HUB_EVT_TWIN_DESIRED_RECEIVED\n");
 		printf("Desired device property: %.*s\n",
-		       evt->data.msg.len,
-		       evt->data.msg.ptr);
+		       evt->data.msg.payload.size,
+		       evt->data.msg.payload.ptr);
 		break;
 	case AZURE_IOT_HUB_EVT_DIRECT_METHOD:
 		printk("AZURE_IOT_HUB_EVT_DIRECT_METHOD\n");
-		printk("Method name: %s\n", evt->data.method.name);
-		printf("Payload: %.*s\n", evt->data.method.payload_len,
-		       evt->data.method.payload);
+		printk("Method name: %s\n", evt->data.method.name.ptr);
+		printf("Payload: %.*s\n", evt->data.method.payload.size,
+		       evt->data.method.payload.ptr);
 		break;
 	case AZURE_IOT_HUB_EVT_TWIN_RESULT_SUCCESS:
 		printk("AZURE_IOT_HUB_EVT_TWIN_RESULT_SUCCESS, ID: %s\n",
-		       evt->data.result.rid);
+		       evt->data.result.request_id.ptr);
 		break;
 	case AZURE_IOT_HUB_EVT_TWIN_RESULT_FAIL:
 		printk("AZURE_IOT_HUB_EVT_TWIN_RESULT_FAIL, ID %s, status %d\n",
-		       evt->data.result.rid, evt->data.result.status);
+		       evt->data.result.request_id.ptr, evt->data.result.status);
 		break;
 	case AZURE_IOT_HUB_EVT_PUBACK:
 		printk("AZURE_IOT_HUB_EVT_PUBACK\n");
@@ -170,16 +168,27 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 
 static void modem_configure(void)
 {
-	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
-		/* Do nothing, modem is already configured and LTE connected. */
-	} else {
-		int err = lte_lc_init_and_connect_async(lte_handler);
+	int err;
 
-		if (err) {
-			printk("Modem could not be configured, error: %d\n",
-			       err);
-			return;
-		}
+	err = lte_lc_init();
+	if (err) {
+		printk("Failed initializing the link controller, error: %d\n", err);
+		return;
+	}
+
+	/* Explicitly disable PSM so that don't go to sleep after the initial connection
+	 * establishment. Needed to be able to pick up new FOTA jobs more quickly.
+	 */
+	err = lte_lc_psm_req(false);
+	if (err) {
+		printk("Failed disabling PSM, error: %d\n", err);
+		return;
+	}
+
+	err = lte_lc_connect_async(lte_handler);
+	if (err) {
+		printk("Modem could not be configured, error: %d\n", err);
+		return;
 	}
 }
 
@@ -190,8 +199,7 @@ void main(void)
 	printk("Azure FOTA sample started\n");
 	printk("This may take a while if a modem firmware update is pending\n");
 
-	err = nrf_modem_lib_get_init_ret();
-	switch (err) {
+	switch (modem_lib_init_result) {
 	case MODEM_DFU_RESULT_OK:
 		printk("Modem firmware update successful!\n");
 		printk("Modem will run the new firmware after reboot\n");
@@ -217,7 +225,7 @@ void main(void)
 
 	k_work_init_delayable(&reboot_work, reboot_work_fn);
 
-	err = azure_iot_hub_init(NULL, azure_event_handler);
+	err = azure_iot_hub_init(azure_event_handler);
 	if (err) {
 		printk("Azure IoT Hub could not be initialized, error: %d\n",
 		       err);
@@ -228,7 +236,11 @@ void main(void)
 	modem_configure();
 	k_sem_take(&network_connected_sem, K_FOREVER);
 
-	err = azure_iot_hub_connect();
+	static struct azure_iot_hub_config config = {
+		.use_dps = IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS),
+	};
+
+	err = azure_iot_hub_connect(&config);
 	if (err < 0) {
 		printk("azure_iot_hub_connect failed: %d\n", err);
 		return;

@@ -11,6 +11,19 @@ The Peripheral HIDS keyboard sample demonstrates how to use the :ref:`hids_readm
 
 The sample also shows how to perform LE Secure Connections Out-of-Band pairing using NFC.
 
+Requirements
+************
+
+The sample supports the following development kits:
+
+.. table-from-sample-yaml::
+
+.. include:: /includes/tfm.txt
+
+.. include:: /includes/hci_rpmsg_overlay.txt
+
+If the NFC_OOB_PAIRING feature is enabled, the sample requires a smartphone or a tablet with Android v8.0.0 or newer.
+
 Overview
 ********
 
@@ -36,17 +49,6 @@ After reading the tag, the device can pair with the nRF52 device which is advert
 After connecting, the sample application behaves in the same way as the original HID Keyboard sample.
 Reading the NFC tag again when the application is in a connected state causes disconnection.
 When the connection is lost, advertising does not restart automatically.
-
-Requirements
-************
-
-The sample supports the following development kits:
-
-.. table-from-sample-yaml::
-
-.. include:: /includes/hci_rpmsg_overlay.txt
-
-If the `NFC_OOB_PAIRING` feature is enabled, the sample requires  a smartphone or a tablet with Android v8.0.0 or newer.
 
 User interface
 **************
@@ -92,7 +94,7 @@ Building and running
 ********************
 .. |sample path| replace:: :file:`samples/bluetooth/peripheral_hids_keyboard`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 Testing
 =======
@@ -133,12 +135,14 @@ To test with `nRF Connect for Desktop`_, complete the following steps:
 #. Press **Button 4** on the kit if the device is not advertising.
    Advertising is indicated by blinking **LED 1**.
 #. |connect_terminal|
-#. Connect to the device from nRF Connect (the device is advertising as "NCS HIDS keyboard").
+#. Start `nRF Connect for Desktop`_.
+#. Open the Bluetooth Low Energy app.
+#. Connect to the device from the app. The device is advertising as "NCS HIDS keyboard".
 #. Pair the devices:
 
-   a. Click the settings button for the device in nRF Connect.
-   b. Select :guilabel:`Pair`.
-   c. Optionally, check :guilabel:`Perform Bonding`.
+   a. Click the settings button for the device in the app.
+   #. Select :guilabel:`Pair`.
+   #. Optionally, select :guilabel:`Perform Bonding`.
 
    Optionally, check :guilabel:`Enable MITM protection` to pair with MITM protection and use a button on the device to confirm or reject the passkey value.
 
@@ -168,7 +172,7 @@ To test with `nRF Connect for Desktop`_, complete the following steps:
 
    Observe that **LED 3** turns on.
 #. Select the same HID Report again.
-   Enter ``00`` in the text box and click the :guilabel:`Write` button.
+   Enter ``00`` in the text box and click :guilabel:`Write`.
    This sets the modifier bit to 00, which simulates turning Caps Lock OFF.
 
    Observe that **LED 3** turns off.
@@ -232,3 +236,7 @@ References
 * `HID usage tables`_
 * `Bluetooth Secure Simple Pairing Using NFC`_
 * `Bluetooth Core Specification`_ Volume 3 Part H Chapter 2
+
+The sample also uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

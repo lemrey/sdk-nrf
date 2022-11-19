@@ -19,20 +19,24 @@
 #include <zephyr/kernel.h>
 #include <pm_config.h>
 #include <zephyr/logging/log.h>
-#include <nrfx.h>
 #include <zephyr/dfu/mcuboot.h>
 #include <dfu/dfu_target.h>
 #include <dfu/dfu_target_stream.h>
+#include <zephyr/devicetree.h>
 
 LOG_MODULE_REGISTER(dfu_target_mcuboot, CONFIG_DFU_TARGET_LOG_LEVEL);
 
-#define MAX_FILE_SEARCH_LEN 500
 #define MCUBOOT_HEADER_MAGIC 0x96f3b83d
 
 #define IS_ALIGNED_32(POINTER) (((uintptr_t)(const void *)(POINTER)) % 4 == 0)
 
 #define _MB_SEC_PAT(i, x) PM_MCUBOOT_SECONDARY_ ## i ## _ ## x
 
+#define _MB_SEC_PAT_STRING(i, x) STRINGIFY(PM_MCUBOOT_SECONDARY_ ## i ## _ ## x)
+
+#define _MB_SEC_PAT_DEV(i, x) COND_CODE_1(DT_NODE_EXISTS(PM_MCUBOOT_SECONDARY_##i##_##x), \
+			      (DEVICE_DT_GET_OR_NULL(PM_MCUBOOT_SECONDARY_##i##_##x)), \
+			      (DEVICE_DT_GET_OR_NULL(DT_NODELABEL(PM_MCUBOOT_SECONDARY_##i##_##x))))
 
 #define _H_MB_SEC_LA(i) (PM_MCUBOOT_SECONDARY_## i ##_ADDRESS + \
 			 PM_MCUBOOT_SECONDARY_## i ##_SIZE - 1)
@@ -50,71 +54,39 @@ LOG_MODULE_REGISTER(dfu_target_mcuboot, CONFIG_DFU_TARGET_LOG_LEVEL);
 /* For the first image the Partition Managed doesen't us 0 indice.
  * Let's define liberal macros with 0 for making code more generic.
  */
-#define PM_MCUBOOT_SECONDARY_0_SIZE     PM_MCUBOOT_SECONDARY_SIZE
-#define PM_MCUBOOT_SECONDARY_0_ADDRESS  PM_MCUBOOT_SECONDARY_ADDRESS
-#define PM_MCUBOOT_SECONDARY_0_DEV_NAME PM_MCUBOOT_SECONDARY_DEV_NAME
+#define PM_MCUBOOT_SECONDARY_0_SIZE	PM_MCUBOOT_SECONDARY_SIZE
+#define PM_MCUBOOT_SECONDARY_0_ADDRESS	PM_MCUBOOT_SECONDARY_ADDRESS
+#define PM_MCUBOOT_SECONDARY_0_NAME	STRINGIFY(PM_MCUBOOT_SECONDARY_NAME)
+#define PM_MCUBOOT_SECONDARY_0_DEV	PM_MCUBOOT_SECONDARY_DEV
 
 static const size_t secondary_size[] = {
-	LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_PAT, (,), SIZE)
+	LIST_DROP_EMPTY(LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_PAT, (,), SIZE))
 };
 
 static const off_t secondary_address[] = {
-	LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_PAT, (,), ADDRESS)
+	LIST_DROP_EMPTY(LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_PAT, (,), ADDRESS))
 };
 
-static const char *const secondary_dev_name[] = {
-	LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_PAT, (,), DEV_NAME)
+static const struct device *const secondary_dev[] = {
+	LIST_DROP_EMPTY(LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_PAT_DEV, (,), DEV))
+};
+
+static const char *const secondary_name[] = {
+	LIST_DROP_EMPTY(LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_PAT_STRING, (,), NAME))
 };
 
 static const off_t secondary_last_address[] = {
-	LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_LA, (,))
+	LIST_DROP_EMPTY(LISTIFY(TARGET_IMAGE_COUNT, _MB_SEC_LA, (,)))
 };
 
 static const char *const target_id_name[] = {
-	LISTIFY(TARGET_IMAGE_COUNT, _STR_TARGET_NAME, (,))
+	LIST_DROP_EMPTY(LISTIFY(TARGET_IMAGE_COUNT, _STR_TARGET_NAME, (,)))
 };
 
 static uint8_t *stream_buf;
 static size_t stream_buf_len;
 static size_t stream_buf_bytes;
 static uint8_t curr_sec_img;
-
-int dfu_ctx_mcuboot_set_b1_file(char *const file, bool s0_active,
-				const char **selected_path)
-{
-	if (file == NULL || selected_path == NULL) {
-		LOG_ERR("Got NULL pointer");
-		return -EINVAL;
-	}
-
-	if (!nrfx_is_in_ram(file)) {
-		LOG_ERR("'file' pointer is not located in RAM");
-		return -EFAULT;
-	}
-
-	/* Ensure that 'file' is null-terminated. */
-	if (strnlen(file, MAX_FILE_SEARCH_LEN) == MAX_FILE_SEARCH_LEN) {
-		LOG_ERR("Input is not null terminated");
-		return -ENOTSUP;
-	}
-
-	/* We have verified that there is a null-terminator, so this is safe */
-	char *delimiter = strstr(file, " ");
-
-	if (delimiter == NULL) {
-		/* Could not find delimiter in input */
-		*selected_path = NULL;
-		return 0;
-	}
-
-	/* Insert null-terminator to split the dual filepath into two separate filepaths */
-	*delimiter = '\0';
-	const char *s0_path = file;
-	const char *s1_path = delimiter + 1;
-
-	*selected_path = s0_active ? s1_path : s0_path;
-	return 0;
-}
 
 bool dfu_target_mcuboot_identify(const void *const buf)
 {
@@ -157,10 +129,10 @@ int dfu_target_mcuboot_init(size_t file_size, int img_num, dfu_target_callback_t
 		return -EFBIG;
 	}
 
-	flash_dev = device_get_binding(secondary_dev_name[img_num]);
-	if (flash_dev == NULL) {
-		LOG_ERR("Failed to get device '%s'",
-			secondary_dev_name[img_num]);
+	flash_dev = secondary_dev[img_num];
+	if (!device_is_ready(flash_dev)) {
+		LOG_ERR("Failed to get device for area '%s'",
+			secondary_name[img_num]);
 		return -EFAULT;
 	}
 

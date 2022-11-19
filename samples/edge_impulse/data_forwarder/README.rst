@@ -17,6 +17,8 @@ The sample supports the following development kits:
 
 .. table-from-sample-yaml::
 
+.. include:: /includes/tfm.txt
+
 Overview
 ********
 
@@ -52,7 +54,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/edge_impulse/data_forwarder`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 Testing
 =======
@@ -65,7 +67,7 @@ After programming the sample to your development kit, test it by performing the 
 #. Trigger sampling data from the device using Edge Impulse studio:
 
    a. Go to the :guilabel:`Data acquisition` tab.
-   #. In the :guilabel:`Record new data` panel, set the desired values and click :guilabel:`Start sampling`.
+   #. In the **Record new data** panel, set the desired values and click :guilabel:`Start sampling`.
 
       .. figure:: ../../../doc/nrf/images/ei_data_acquisition.png
          :scale: 50 %
@@ -92,3 +94,7 @@ This sample uses the following |NCS| drivers:
 In addition, it uses the following Zephyr drivers:
 
 * :ref:`zephyr:uart_api`
+
+The sample also uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

@@ -24,12 +24,6 @@ extern "C" {
 
 /** @brief Sensor event types submitted by the Sensor module. */
 enum sensor_module_event_type {
-	/** Motion detected. Acceleration of the device has exceeded the configured threshold.
-	 *  Payload is of type @ref sensor_module_accel_data (accel). The associated acceleration
-	 *  values contain the motion that caused the device to exceed the configured threshold.
-	 */
-	SENSOR_EVT_MOVEMENT_DATA_READY,
-
 	/** Accelerometer reported activity.
 	 *  Acceleration exceeded the configured activity threshold.
 	 */
@@ -39,6 +33,11 @@ enum sensor_module_event_type {
 	 *  Acceleration stayed below the threshold for a given time.
 	 */
 	SENSOR_EVT_MOVEMENT_INACTIVITY_DETECTED,
+
+	/** Impact detected.
+	 *  Payload is of type @ref sensor_module_data (impact).
+	 */
+	SENSOR_EVT_MOVEMENT_IMPACT_DETECTED,
 
 	/** Environmental sensors have been sampled.
 	 *  Payload is of type @ref sensor_module_data (sensors).
@@ -83,6 +82,14 @@ struct sensor_module_accel_data {
 	double values[ACCELEROMETER_AXIS_COUNT];
 };
 
+/** @brief Structure used to provide impact data. */
+struct sensor_module_impact_data {
+	/** Uptime when the data was sampled. */
+	int64_t timestamp;
+	/** Acceleration on impact, measured in G. */
+	double magnitude;
+};
+
 /** @brief Sensor module event. */
 struct sensor_module_event {
 	/** Sensor module application event header. */
@@ -94,6 +101,8 @@ struct sensor_module_event {
 		struct sensor_module_data sensors;
 		/** Variable that contains acceleration data. */
 		struct sensor_module_accel_data accel;
+		/** Variable that contains impact data. */
+		struct sensor_module_impact_data impact;
 		/** Module ID, used when acknowledging shutdown requests. */
 		uint32_t id;
 		/** Code signifying the cause of error. */

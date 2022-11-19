@@ -9,6 +9,22 @@ Bluetooth: Direct Test Mode
 
 This sample enables the Direct Test Mode functions described in `Bluetooth® Core Specification <Bluetooth Core Specification_>`_: Version 5.2, Vol. 6, Part F.
 
+Requirements
+************
+
+The sample supports the following development kit:
+
+.. table-from-sample-yaml::
+
+Additionally, the sample requires one of the following testing devices:
+
+  * Dedicated test equipment, like an Anritsu MT8852 tester.
+    See :ref:`direct_test_mode_testing_anritsu`.
+  * Another development kit with the same sample.
+    See :ref:`direct_test_mode_testing_board`.
+  * Another development kit connected to a PC with the Direct Test Mode sample available in the `nRF Connect for Desktop`_.
+    See :ref:`direct_test_mode_testing_app`.
+
 Overview
 ********
 
@@ -259,22 +275,6 @@ Instead, they are printed by the RTT logger.
 If you want to view the debug messages, follow the procedure in :ref:`testing_rtt_connect`.
 For more information about debugging in the |NCS|, see :ref:`gs_debugging`.
 
-Requirements
-************
-
-The sample supports the following development kit:
-
-.. table-from-sample-yaml::
-
-Additionally, the sample requires one of the following testing devices:
-
-  * Dedicated test equipment, like an Anritsu MT8852 tester.
-    See :ref:`direct_test_mode_testing_anritsu`.
-  * Another development kit with the same sample.
-    See :ref:`direct_test_mode_testing_board`.
-  * Another development kit connected to a PC with the Direct Test Mode sample available in the `nRF Connect for Desktop`_.
-    See :ref:`direct_test_mode_testing_app`.
-
 Building and running
 ********************
 
@@ -335,9 +335,8 @@ Testing with another development kit
 Testing with nRF Connect for Desktop
 ------------------------------------
 
-1. Connect the development kit to the computer using a USB cable.
-   The computer assigns to the development kit a COM port on Windows or a ttyACM device on Linux, which is visible in the Device Manager.
-#. Connect to the kit with a terminal emulator.
+1. |connect_kit|
+#. |connect_terminal|
    See `Direct Test Mode terminal connection`_ for the required settings.
 #. Start the ``TRANSMITTER_TEST`` by sending the ``0x80 0x96`` DTM command to the connected development kit.
    This command triggers TX activity on 2402 MHz frequency (1st channel) with ``10101010`` packet pattern and 37-byte packet length.
@@ -382,16 +381,16 @@ The RealTerm terminal program offers a graphical interface for setting up your c
 
 To test DTM with RealTerm, complete the following steps:
 
-1. On the :guilabel:`Display` tab, set :guilabel:`Display As` to :guilabel:`Hex[space]`.
+1. On the :guilabel:`Display` tab, set **Display As** to **Hex[space]**.
 
    .. figure:: /images/realterm_hex_display.png
       :alt: Set the RealTerm display format
 
 #. Open the :guilabel:`Port` tab and configure the serial port parameters:
 
-   a. Set the :guilabel:`Baud` to 19200 **(1)**.
-   #. Select your J-Link serial port from the :guilabel:`Port` list **(2)**.
-   #. Set the port status to "Open" **(3)**.
+   a. Set the **Baud** to ``19200`` **(1)**.
+   #. Select your J-Link serial port from the **Port** list **(2)**.
+   #. Set the port status to ``Open`` **(3)**.
 
    .. figure:: /images/real_term_serial_port.png
       :alt: RealTerm serial port settings
@@ -399,7 +398,7 @@ To test DTM with RealTerm, complete the following steps:
 #. Open the :guilabel:`Send` tab:
 
    a. Write the command as a hexadecimal number in the field **(1)**.
-      For example, write **0x00 0x00** to send a **Reset** command.
+      For example, write ``0x00 0x00`` to send a **Reset** command.
    #. Click the :guilabel:`Send Numbers` button **(2)** to send the command.
    #. Observe the response in the DTM in area **(3)**.
       The response is encoded as hexadecimal numbers.
@@ -441,13 +440,13 @@ On Ubuntu, run:
 
       Configuration window
 
-   a. Select :guilabel:`Serial port setup` and set UART baudrate to 19200.
+   a. Select :guilabel:`Serial port setup` and set UART baudrate to ``19200``.
 
       .. figure:: /images/minicom_serial_port.png
          :alt: minicom serial port settings
 
-   #. Select :guilabel:`Screen and keyboard` and press **S** on the keyboard to enable the **Hex Display**.
-   #. Press **Q** on the keyboard to enable **Local echo**.
+   #. Select :guilabel:`Screen and keyboard` and press S on the keyboard to enable the **Hex Display**.
+   #. Press Q on the keyboard to enable **Local echo**.
 
       .. figure:: /images/minicom_terminal_cfg.png
          :alt: minicom terminal screen and keyboard settings
@@ -457,7 +456,7 @@ On Ubuntu, run:
 
 #. Send DTM commands:
 
-   To send DTM commands, use **echo** with **-ne** options in another terminal.
+   To send DTM commands, use ``echo`` with ``-ne`` options in another terminal.
    You must encode the data as hexadecimal numbers (\xHH, byte with hexadecimal value HH, 1 to 2 digits).
 
    .. parsed-literal::

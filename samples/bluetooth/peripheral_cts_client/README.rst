@@ -9,11 +9,6 @@ Bluetooth: Peripheral CTS client
 
 The Peripheral CTS client sample demonstrates how to use the :ref:`cts_client_readme`.
 
-Overview
-********
-
-The CTS client sample implements a Current Time Service client. It uses the Current Time Service to read the current time. The time received is printed on the UART.
-
 Requirements
 ************
 
@@ -21,7 +16,17 @@ The sample supports the following development kits:
 
 .. table-from-sample-yaml::
 
+.. include:: /includes/tfm.txt
+
 The sample also requires a device running a CTS Server to connect with (for example, a Bluetooth® Low Energy dongle and nRF Connect for Desktop).
+
+Overview
+********
+
+The CTS client sample implements a Current Time Service client.
+It uses the Current Time Service to read the current time.
+The time received is printed on the UART.
+
 
 User interface
 **************
@@ -39,7 +44,7 @@ Building and running
 ********************
 .. |sample path| replace:: :file:`samples/bluetooth/peripheral_cts_client`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 .. _peripheral_cts_client_testing:
 
@@ -50,16 +55,17 @@ After programming the sample to your development kit, you can test it with `nRF 
 
 1. |connect_terminal_specific|
 #. Reset the kit.
-#. Start `nRF Connect for Desktop`_ and select the connected dongle that is used for communication.
-#. Go to the :guilabel:`Server setup` tab.
-   Click the dongle configuration and select :guilabel:`Load setup`.
+#. Start `nRF Connect for Desktop`_
+#. Open the Bluetooth Low Energy app and select the connected dongle that is used for communication.
+#. Open the :guilabel:`SERVER SETUP` tab.
+   Click the dongle configuration and select **Load setup**.
    Load the :file:`cts_central.ncs` file that is located under :file:`samples/bluetooth/peripheral_cts_client` in the |NCS| folder structure.
 #. Click :guilabel:`Apply to device`.
-#. Go to the :guilabel:`Connection Map` tab.
-   Click the dongle configuration and select :guilabel:`Security parameters`.
+#. Open the :guilabel:`CONNECTION MAP` tab.
+   Click the dongle configuration and select **Security parameters**.
    Check :guilabel:`Perform Bonding`, and click :guilabel:`Apply`.
-#. Set the value of :guilabel:`Current Time Service` > :guilabel:`Current Time` to ``C2 07 0B 0F 0C 22 38 06 80 02`` and click Write.
-#. Connect to the device from nRF Connect. The device is advertising as "Nordic_CTS".
+#. Set the value of **Current Time Service** > **Current Time** to ``C2 07 0B 0F 0C 22 38 06 80 02`` and click :guilabel:`Write`.
+#. Connect to the device from the app. The device is advertising as "Nordic_CTS".
 #. Wait until the bond is established. Verify that the UART data is received as follows::
 
       Connected xx:xx:xx:xx:xx:xx (random)
@@ -135,3 +141,7 @@ In addition, it uses the following Zephyr libraries:
   * ``include/bluetooth/conn.h``
   * ``include/bluetooth/uuid.h``
   * ``include/bluetooth/gatt.h``
+
+The sample also uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

@@ -446,9 +446,8 @@ void AppTask::LockStateChanged(BoltLockManager::State state, BoltLockManager::Op
 		break;
 	}
 
-	if (source != BoltLockManager::OperationSource::kRemote) {
-		sAppTask.UpdateClusterState(state, source);
-	}
+	/* Handle changing attribute state in the application */
+	sAppTask.UpdateClusterState(state, source);
 }
 
 void AppTask::UpdateStatusLED()
@@ -491,23 +490,26 @@ void AppTask::ChipEventHandler(const ChipDeviceEvent *event, intptr_t /* arg */)
 		sHaveBLEConnections = ConnectivityMgr().NumBLEConnections() != 0;
 		UpdateStatusLED();
 		break;
-	case DeviceEventType::kThreadStateChange:
-	case DeviceEventType::kWiFiConnectivityChange:
 #if defined(CONFIG_NET_L2_OPENTHREAD)
+	case DeviceEventType::kDnssdPlatformInitialized:
+#if CONFIG_CHIP_OTA_REQUESTOR
+		InitBasicOTARequestor();
+#endif /* CONFIG_CHIP_OTA_REQUESTOR */
+		break;
+	case DeviceEventType::kThreadStateChange:
 		sIsNetworkProvisioned = ConnectivityMgr().IsThreadProvisioned();
 		sIsNetworkEnabled = ConnectivityMgr().IsThreadEnabled();
 #elif defined(CONFIG_CHIP_WIFI)
+	case DeviceEventType::kWiFiConnectivityChange:
 		sIsNetworkProvisioned = ConnectivityMgr().IsWiFiStationProvisioned();
 		sIsNetworkEnabled = ConnectivityMgr().IsWiFiStationEnabled();
-#endif
-		UpdateStatusLED();
-		break;
-	case DeviceEventType::kThreadConnectivityChange:
 #if CONFIG_CHIP_OTA_REQUESTOR
-		if (event->ThreadConnectivityChange.Result == kConnectivity_Established) {
+		if (event->WiFiConnectivityChange.Result == kConnectivity_Established) {
 			InitBasicOTARequestor();
 		}
+#endif /* CONFIG_CHIP_OTA_REQUESTOR */
 #endif
+		UpdateStatusLED();
 		break;
 	default:
 		break;

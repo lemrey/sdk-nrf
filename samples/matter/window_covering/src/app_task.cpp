@@ -23,8 +23,8 @@
 #include <credentials/examples/DeviceAttestationCredsExample.h>
 
 #include <dk_buttons_and_leds.h>
-#include <logging/log.h>
-#include <zephyr.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/zephyr.h>
 
 #define FACTORY_RESET_TRIGGER_TIMEOUT 3000
 #define FACTORY_RESET_CANCEL_WINDOW_TIMEOUT 3000
@@ -460,11 +460,9 @@ void AppTask::ChipEventHandler(const ChipDeviceEvent *aEvent, intptr_t)
 		Instance().mIsThreadEnabled = ConnectivityMgr().IsThreadEnabled();
 		UpdateStatusLED();
 		break;
-	case DeviceEventType::kThreadConnectivityChange:
+	case DeviceEventType::kDnssdPlatformInitialized:
 #if CONFIG_CHIP_OTA_REQUESTOR
-		if (aEvent->ThreadConnectivityChange.Result == kConnectivity_Established) {
-			InitBasicOTARequestor();
-		}
+		InitBasicOTARequestor();
 #endif
 		break;
 	default:

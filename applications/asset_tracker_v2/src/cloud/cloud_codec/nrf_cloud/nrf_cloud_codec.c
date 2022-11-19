@@ -29,6 +29,7 @@ enum batch_data_type {
 	MODEM_STATIC,
 	MODEM_DYNAMIC,
 	VOLTAGE,
+	IMPACT,
 };
 
 /* Function that checks the version number of the incoming message and determines if it has already
@@ -413,7 +414,22 @@ static int config_add(cJSON *parent, struct cloud_data_cfg *data, const char *ob
 		goto exit;
 	}
 
-	err = json_add_number(config_obj, CONFIG_ACC_THRESHOLD, data->accelerometer_threshold);
+	err = json_add_number(config_obj,
+			      CONFIG_ACC_ACT_THRESHOLD, data->accelerometer_activity_threshold);
+	if (err) {
+		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
+		goto exit;
+	}
+
+	err = json_add_number(config_obj,
+			      CONFIG_ACC_INACT_THRESHOLD, data->accelerometer_inactivity_threshold);
+	if (err) {
+		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
+		goto exit;
+	}
+
+	err = json_add_number(config_obj,
+			      CONFIG_ACC_INACT_TIMEOUT, data->accelerometer_inactivity_timeout);
 	if (err) {
 		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
 		goto exit;
@@ -471,7 +487,9 @@ static void config_get(cJSON *parent, struct cloud_data_cfg *data)
 	cJSON *active_wait = cJSON_GetObjectItem(parent, CONFIG_ACTIVE_TIMEOUT);
 	cJSON *move_res = cJSON_GetObjectItem(parent, CONFIG_MOVE_RES);
 	cJSON *move_timeout = cJSON_GetObjectItem(parent, CONFIG_MOVE_TIMEOUT);
-	cJSON *acc_thres = cJSON_GetObjectItem(parent, CONFIG_ACC_THRESHOLD);
+	cJSON *acc_act_thres = cJSON_GetObjectItem(parent, CONFIG_ACC_ACT_THRESHOLD);
+	cJSON *acc_inact_thres = cJSON_GetObjectItem(parent, CONFIG_ACC_INACT_THRESHOLD);
+	cJSON *acc_inact_timeout = cJSON_GetObjectItem(parent, CONFIG_ACC_INACT_TIMEOUT);
 	cJSON *nod_list = cJSON_GetObjectItem(parent, CONFIG_NO_DATA_LIST);
 
 	if (gnss_timeout != NULL) {
@@ -494,8 +512,16 @@ static void config_get(cJSON *parent, struct cloud_data_cfg *data)
 		data->movement_timeout = move_timeout->valueint;
 	}
 
-	if (acc_thres != NULL) {
-		data->accelerometer_threshold = acc_thres->valuedouble;
+	if (acc_act_thres != NULL) {
+		data->accelerometer_activity_threshold = acc_act_thres->valuedouble;
+	}
+
+	if (acc_inact_thres != NULL) {
+		data->accelerometer_inactivity_threshold = acc_inact_thres->valuedouble;
+	}
+
+	if (acc_inact_timeout != NULL) {
+		data->accelerometer_inactivity_timeout = acc_inact_timeout->valuedouble;
 	}
 
 	if (nod_list != NULL && cJSON_IsArray(nod_list)) {
@@ -626,6 +652,38 @@ static int add_batch_data(cJSON *array, enum batch_data_type type, void *buf, si
 			data[i].queued = false;
 			break;
 		}
+		case IMPACT: {
+			int err, len;
+			char magnitude[10];
+			struct cloud_data_impact *data = (struct cloud_data_impact *)buf;
+
+			if (data[i].queued == false) {
+				break;
+			}
+
+			err = date_time_uptime_to_unix_time_ms(&data[i].ts);
+			if (err) {
+				LOG_ERR("date_time_uptime_to_unix_time_ms, error: %d", err);
+				return -EOVERFLOW;
+			}
+
+			len = snprintk(magnitude, sizeof(magnitude), "%.2f",
+				       data[i].magnitude);
+			if ((len < 0) || (len >= sizeof(magnitude))) {
+				LOG_ERR("Cannot convert magnitude to string, buffer too small");
+				return -ERANGE;
+			}
+
+			err = add_data(array, NULL, APP_ID_IMPACT, magnitude,
+				       &data[i].ts, data[i].queued, NULL, false);
+			if (err && err != -ENODATA) {
+				return err;
+			}
+
+			data[i].queued = false;
+			break;
+		}
+
 		case BUTTON: {
 			int err, len;
 			char button[2];
@@ -936,7 +994,7 @@ int cloud_codec_encode_data(struct cloud_codec_data *output,
 			    struct cloud_data_modem_static *modem_stat_buf,
 			    struct cloud_data_modem_dynamic *modem_dyn_buf,
 			    struct cloud_data_ui *ui_buf,
-			    struct cloud_data_accelerometer *accel_buf,
+			    struct cloud_data_impact *impact_buf,
 			    struct cloud_data_battery *bat_buf)
 {
 	/* Encoding of the latest buffer entries is not supported.
@@ -1006,20 +1064,79 @@ exit:
 	return err;
 }
 
+int cloud_codec_encode_impact_data(struct cloud_codec_data *output,
+				   struct cloud_data_impact *impact_buf)
+{
+	int err, len;
+	char *buffer;
+	cJSON *root_obj = NULL;
+	char magnitude[10];
+
+	if (!impact_buf->queued) {
+		err = -ENODATA;
+		goto exit;
+	}
+
+	root_obj = cJSON_CreateObject();
+	if (root_obj == NULL) {
+		return -ENOMEM;
+	}
+
+	len = snprintk(magnitude, sizeof(magnitude), "%.2f", impact_buf->magnitude);
+	if ((len < 0) || (len >= sizeof(magnitude))) {
+		LOG_ERR("Cannot convert magnitude to string, buffer too small");
+		err = -ERANGE;
+		goto exit;
+	}
+
+	err = json_add_str(root_obj, DATA_TYPE, magnitude);
+	if (err) {
+		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
+		goto exit;
+	}
+
+	err = add_meta_data(root_obj, APP_ID_IMPACT, &impact_buf->ts, true);
+	if (err) {
+		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
+		goto exit;
+	}
+
+	buffer = cJSON_PrintUnformatted(root_obj);
+	if (buffer == NULL) {
+		LOG_ERR("Failed to allocate memory for JSON string");
+
+		err = -ENOMEM;
+		goto exit;
+	}
+
+	impact_buf->queued = false;
+
+	if (IS_ENABLED(CONFIG_CLOUD_CODEC_LOG_LEVEL_DBG)) {
+		json_print_obj("Encoded message:\n", root_obj);
+	}
+
+	output->buf = buffer;
+	output->len = strlen(buffer);
+
+exit:
+	cJSON_Delete(root_obj);
+	return err;
+}
+
 int cloud_codec_encode_batch_data(struct cloud_codec_data *output,
 				  struct cloud_data_gnss *gnss_buf,
 				  struct cloud_data_sensors *sensor_buf,
 				  struct cloud_data_modem_static *modem_stat_buf,
 				  struct cloud_data_modem_dynamic *modem_dyn_buf,
 				  struct cloud_data_ui *ui_buf,
-				  struct cloud_data_accelerometer *accel_buf,
+				  struct cloud_data_impact *impact_buf,
 				  struct cloud_data_battery *bat_buf,
 				  size_t gnss_buf_count,
 				  size_t sensor_buf_count,
 				  size_t modem_stat_buf_count,
 				  size_t modem_dyn_buf_count,
 				  size_t ui_buf_count,
-				  size_t accel_buf_count,
+				  size_t impact_buf_count,
 				  size_t bat_buf_count)
 {
 	int err;
@@ -1044,6 +1161,12 @@ int cloud_codec_encode_batch_data(struct cloud_codec_data *output,
 	}
 
 	err = add_batch_data(root_array, BUTTON, ui_buf, ui_buf_count);
+	if (err) {
+		LOG_ERR("Failed adding button data to array, error: %d", err);
+		goto exit;
+	}
+
+	err = add_batch_data(root_array, IMPACT, impact_buf, impact_buf_count);
 	if (err) {
 		LOG_ERR("Failed adding button data to array, error: %d", err);
 		goto exit;
@@ -1094,8 +1217,6 @@ int cloud_codec_encode_batch_data(struct cloud_codec_data *output,
 	output->len = strlen(buffer);
 
 exit:
-	/* Clear buffers that are not handled by this function. */
-	memset(accel_buf, 0, accel_buf_count * sizeof(struct cloud_data_accelerometer));
 	cJSON_Delete(root_array);
 	return err;
 }

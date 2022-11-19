@@ -3,11 +3,11 @@
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
-#include <kernel.h>
-#include <ztest.h>
-#include <busy_sim.h>
-#include <drivers/uart.h>
-#include <random/rand32.h>
+#include <zephyr/kernel.h>
+#include <zephyr/ztest.h>
+#include <zephyr/busy_sim.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/random/rand32.h>
 
 static uint32_t tx_req_cnt;
 static uint32_t tx_done_cnt;
@@ -233,6 +233,12 @@ static void test_async_api_stress(void)
 
 void test_main(void)
 {
+	/* Read first random number. There are some generators which do not support
+	 * reading first random number from an interrupt context (initialization
+	 * is performed at the first read).
+	 */
+	(void)sys_rand32_get();
+
 	ztest_test_suite(lpuart_test,
 			 ztest_unit_test(test_async_api_stress)
 			);

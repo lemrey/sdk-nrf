@@ -136,9 +136,9 @@ Configuring models
 
 See :ref:`ug_bt_mesh_model_config_app` for details on how to configure the mesh models with the nRF Mesh mobile app.
 
-Configure the Generic OnOff Server model on each element on the :guilabel:`Mesh Light` node:
+Configure the Generic OnOff Server model on each element on the **Mesh Light** node:
 
-* Bind the model to :guilabel:`Application Key 1`.
+* Bind the model to **Application Key 1**.
 
   Once the model is bound to the application key, you can control the first LED on the device.
 * In the model view, tap :guilabel:`ON` (one of the Generic On Off Controls) to light up the first LED on the development kit.
@@ -168,3 +168,7 @@ In addition, it uses the following Zephyr libraries:
 * :ref:`zephyr:bluetooth_mesh`:
 
   * ``include/bluetooth/mesh.h``
+
+The sample also uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

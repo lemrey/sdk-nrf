@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include <zephyr/net/ethernet.h>
-
+#include <zephyr/logging/log.h>
 
 #include "rpu_fw_patches.h"
 #include "fmac_api.h"
@@ -23,6 +23,8 @@
 #ifdef CONFIG_WPA_SUPP
 #include "zephyr_wpa_supp_if.h"
 #endif /* CONFIG_WPA_SUPP */
+
+LOG_MODULE_DECLARE(wifi_nrf, CONFIG_WIFI_LOG_LEVEL);
 
 static const unsigned char aggregation = 1;
 static const unsigned char wmm = 1;
@@ -193,8 +195,6 @@ out:
 void wifi_nrf_fmac_dev_rem_zep(struct wifi_nrf_ctx_zep *rpu_ctx_zep)
 {
 	wifi_nrf_fmac_dev_rem(rpu_ctx_zep->rpu_ctx);
-
-	k_free(rpu_ctx_zep);
 }
 
 enum wifi_nrf_status wifi_nrf_fmac_def_vif_add_zep(struct wifi_nrf_ctx_zep *rpu_ctx_zep,
@@ -238,8 +238,6 @@ void wifi_nrf_fmac_def_vif_rem_zep(struct wifi_nrf_vif_ctx_zep *vif_ctx_zep)
 	rpu_ctx_zep = vif_ctx_zep->rpu_ctx_zep;
 
 	wifi_nrf_fmac_del_vif(rpu_ctx_zep->rpu_ctx, vif_ctx_zep->vif_idx);
-
-	k_free(vif_ctx_zep);
 }
 
 enum wifi_nrf_status wifi_nrf_fmac_def_vif_state_chg(struct wifi_nrf_vif_ctx_zep *vif_ctx_zep,
@@ -272,7 +270,7 @@ enum wifi_nrf_status wifi_nrf_fmac_dev_init_zep(struct wifi_nrf_ctx_zep *rpu_ctx
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct wifi_nrf_fmac_init_dev_params params;
 	int ret = -1;
-	char *rf_params = DEF_RF_PARAMS;
+	char *rf_params = NRF_WIFI_DEF_RF_PARAMS;
 	struct host_rpu_umac_info *umac_info;
 
 	memset(&params, 0, sizeof(params));
@@ -294,7 +292,7 @@ enum wifi_nrf_status wifi_nrf_fmac_dev_init_zep(struct wifi_nrf_ctx_zep *rpu_ctx
 		params.rf_params_valid = false;
 	}
 
-	params.phy_calib = DEF_PHY_CALIB;
+	params.phy_calib = NRF_WIFI_DEF_PHY_CALIB;
 
 	umac_info = wifi_nrf_fmac_umac_info(rpu_ctx_zep->rpu_ctx);
 
@@ -302,9 +300,9 @@ enum wifi_nrf_status wifi_nrf_fmac_dev_init_zep(struct wifi_nrf_ctx_zep *rpu_ctx
 		/* override rf_params with calib data */
 	}
 
-#ifdef RPU_SLEEP_SUPPORT
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
 	params.sleep_type = HW_SLEEP_ENABLE;
-#endif
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
 
 	status = wifi_nrf_fmac_dev_init(rpu_ctx_zep->rpu_ctx, &params);
 
@@ -342,8 +340,7 @@ static int wifi_nrf_drv_main_zep(const struct device *dev)
 {
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
-	int ret = -1;
-	struct wifi_nrf_fmac_callbk_fns callbk_fns;
+	struct wifi_nrf_fmac_callbk_fns callbk_fns = { 0 };
 	struct img_data_config_params data_config;
 	struct rx_buf_pool_params rx_buf_pools[MAX_NUM_OF_RX_QUEUES];
 
@@ -384,34 +381,28 @@ static int wifi_nrf_drv_main_zep(const struct device *dev)
 
 	if (rpu_drv_priv_zep.fmac_priv == NULL) {
 		LOG_ERR("%s: wifi_nrf_fmac_init failed\n", __func__);
-		goto out;
+		goto err;
 	}
 
 	status = wifi_nrf_fmac_dev_add_zep(&rpu_drv_priv_zep);
 
 	if (status != WIFI_NRF_STATUS_SUCCESS) {
 		LOG_ERR("%s: wifi_nrf_fmac_dev_add_zep failed\n", __func__);
-		wifi_nrf_fmac_deinit(rpu_drv_priv_zep.fmac_priv);
-		goto out;
+		goto fmac_deinit;
 	}
 
 	status = wifi_nrf_fmac_def_vif_add_zep(&rpu_drv_priv_zep.rpu_ctx_zep, 0, dev);
 
 	if (status != WIFI_NRF_STATUS_SUCCESS) {
 		LOG_ERR("%s: wifi_nrf_fmac_def_vif_add_zep failed\n", __func__);
-		wifi_nrf_fmac_dev_rem_zep(&rpu_drv_priv_zep.rpu_ctx_zep);
-		wifi_nrf_fmac_deinit(rpu_drv_priv_zep.fmac_priv);
-		goto out;
+		goto rpu_rem;
 	}
 
 	status = wifi_nrf_fmac_dev_init_zep(&rpu_drv_priv_zep.rpu_ctx_zep);
 
 	if (status != WIFI_NRF_STATUS_SUCCESS) {
 		LOG_ERR("%s: wifi_nrf_fmac_dev_init_zep failed\n", __func__);
-		wifi_nrf_fmac_def_vif_rem_zep(vif_ctx_zep);
-		wifi_nrf_fmac_dev_rem_zep(vif_ctx_zep->rpu_ctx_zep);
-		wifi_nrf_fmac_deinit(rpu_drv_priv_zep.fmac_priv);
-		goto out;
+		goto vif_rem;
 	}
 
 	/* Bring the default interface up in the firmware */
@@ -419,24 +410,27 @@ static int wifi_nrf_drv_main_zep(const struct device *dev)
 
 	if (status != WIFI_NRF_STATUS_SUCCESS) {
 		LOG_ERR("%s: wifi_nrf_fmac_def_vif_state_chg failed\n", __func__);
-		wifi_nrf_fmac_dev_deinit_zep(vif_ctx_zep->rpu_ctx_zep);
-		wifi_nrf_fmac_def_vif_rem_zep(vif_ctx_zep);
-		wifi_nrf_fmac_dev_rem_zep(vif_ctx_zep->rpu_ctx_zep);
-		wifi_nrf_fmac_deinit(rpu_drv_priv_zep.fmac_priv);
-		goto out;
+		goto dev_deinit;
 	}
 
-	ret = 0;
-out:
-	return ret;
+	return 0;
+dev_deinit:
+	wifi_nrf_fmac_dev_deinit_zep(vif_ctx_zep->rpu_ctx_zep);
+vif_rem:
+	wifi_nrf_fmac_def_vif_rem_zep(vif_ctx_zep);
+rpu_rem:
+	wifi_nrf_fmac_dev_rem_zep(&rpu_drv_priv_zep.rpu_ctx_zep);
+fmac_deinit:
+	wifi_nrf_fmac_deinit(rpu_drv_priv_zep.fmac_priv);
+err:
+	return -1;
 }
 
-static const struct wifi_nrf_dev_ops dev_ops = {
-	.if_api.iface_api.init = wifi_nrf_if_init,
-	.if_api.get_capabilities = wifi_nrf_if_caps_get,
-	.if_api.send = wifi_nrf_if_send,
-
-	.off_api.disp_scan = wifi_nrf_disp_scan_zep,
+static const struct net_wifi_mgmt_offload wifi_offload_ops = {
+	.wifi_iface.iface_api.init = wifi_nrf_if_init,
+	.wifi_iface.get_capabilities = wifi_nrf_if_caps_get,
+	.wifi_iface.send = wifi_nrf_if_send,
+	.scan = wifi_nrf_disp_scan_zep,
 };
 
 
@@ -467,5 +461,5 @@ ETH_NET_DEVICE_INIT(wlan0, /* name - token */
 		    NULL, /* cfg */
 #endif /* !CONFIG_WPA_SUPP */
 		    CONFIG_WIFI_INIT_PRIORITY, /* prio */
-		    &dev_ops, /* api */
+		    &wifi_offload_ops, /* api */
 		    1500); /*mtu */

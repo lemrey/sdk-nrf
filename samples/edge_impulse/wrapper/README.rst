@@ -17,6 +17,8 @@ The sample supports the following development kits:
 
 .. table-from-sample-yaml::
 
+.. include:: /includes/tfm.txt
+
 Overview
 ********
 
@@ -49,8 +51,8 @@ To run the sample using a custom machine learning model, you must complete the f
 #. Check the example input data in your Edge Impulse studio project:
 
    a. Go to the :guilabel:`Live classification` tab.
-   #. In the :guilabel:`Classifying existing test sample` panel, select one of the test samples.
-   #. Press :guilabel:`Load sample` to display the raw data preview.
+   #. In the **Classifying existing test sample** panel, select one of the test samples.
+   #. Click :guilabel:`Load sample` to display the raw data preview.
 
       .. figure:: ../../../doc/nrf/images/ei_loading_test_sample.png
          :scale: 50 %
@@ -66,7 +68,7 @@ To run the sample using a custom machine learning model, you must complete the f
 
          Raw data preview in Edge Impulse studio
 
-#. Copy information from the :guilabel:`Raw features` list into an array defined in the :file:`input_data.h` file.
+#. Copy information from the **Raw features** list into an array defined in the :file:`input_data.h` file.
 
 .. note::
     If you provide more input data than a single input window can hold, the prediction will be triggered multiple times.
@@ -78,7 +80,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/edge_impulse/wrapper`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 Testing
 =======
@@ -117,3 +119,7 @@ Dependencies
 This sample uses the following |NCS| subsystems:
 
 * :ref:`ei_wrapper`
+
+In addition, it uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

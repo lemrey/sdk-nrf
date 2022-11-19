@@ -10,6 +10,17 @@ Bluetooth: Peripheral HIDS mouse
 The Peripheral HIDS mouse sample demonstrates how to use the :ref:`hids_readme` to implement a mouse input device that you can connect to your computer.
 This sample also shows how to perform directed advertising.
 
+Requirements
+************
+
+The sample supports the following development kits:
+
+.. table-from-sample-yaml::
+
+.. include:: /includes/tfm.txt
+
+.. include:: /includes/hci_rpmsg_overlay.txt
+
 Overview
 ********
 
@@ -25,15 +36,6 @@ This feature is enabled by default and it changes the way in which advertising w
 When the device wants to advertise, it starts with high duty cycle directed advertising provided that it has bonding information.
 If the timeout occurs, then the device starts directed advertising to the next bonded peer.
 If all bonding information is used and there is still no connection, then the regular advertising starts.
-
-Requirements
-************
-
-The sample supports the following development kits:
-
-.. table-from-sample-yaml::
-
-.. include:: /includes/hci_rpmsg_overlay.txt
 
 User interface
 **************
@@ -68,7 +70,7 @@ Building and running
 ********************
 .. |sample path| replace:: :file:`samples/bluetooth/peripheral_hids_mouse`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 Testing
 =======
@@ -99,14 +101,16 @@ Testing with nRF Connect for Desktop
 To test with `nRF Connect for Desktop`_, complete the following steps:
 
 1. Power on your development kit.
-#. Connect to the device from nRF Connect (the device is advertising as "NCS HIDS mouse").
+#. Start `nRF Connect for Desktop`_.
+#. Open the Bluetooth Low Energy app.
+#. Connect to the device from the app. The device is advertising as "NCS HIDS mouse"
 #. Optionally, bond to the device.
-   To do so, click the settings button for the device in nRF Connect, select :guilabel:`Pair`, check :guilabel:`Perform Bonding`, and click :guilabel:`Pair`.
+   Click the settings button for the device in the app, select **Pair**, check :guilabel:`Perform Bonding`, and click :guilabel:`Pair`.
    Optionally check :guilabel:`Enable MITM protection` to pair with MITM protection and use a button on the device to confirm or reject passkey value.
-#. Click Match in nRF Connect app.
+#. Click :guilabel:`Match` in the app.
    Wait until the bond is established before you continue.
 #. Observe that the services of the connected device are shown.
-#. Click the :guilabel:`Play` button for all HID Report characteristics.
+#. Click :guilabel:`Play` for all HID Report characteristics.
 #. Push **Button 1** on the kit.
    Observe that a notification is received on one of the HID Report characteristics, containing the value ``FB0F00``.
 
@@ -151,6 +155,10 @@ In addition, it uses the following Zephyr libraries:
   * ``include/bluetooth/uuid.h``
   * ``include/bluetooth/gatt.h``
   * ``samples/bluetooth/gatt/bas.h``
+
+The sample also uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`
 
 References
 **********

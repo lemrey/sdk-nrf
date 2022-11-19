@@ -10,6 +10,17 @@ Bluetooth: Central HIDS
 The Central HIDS sample demonstrates how to use the :ref:`hogp_readme` to interact with a HIDS server.
 Basically, the sample simulates a computer that connects to a mouse or a keyboard.
 
+Requirements
+************
+
+The sample supports the following development kits:
+
+.. table-from-sample-yaml::
+
+.. include:: /includes/tfm.txt
+
+The sample also requires a HIDS device to connect with (for example, another development kit running the :ref:`peripheral_hids_mouse` or :ref:`peripheral_hids_keyboard` sample, or a Bluetooth® Low Energy dongle and nRF Connect for Desktop).
+
 Overview
 ********
 
@@ -22,14 +33,6 @@ If any boot reports are detected, the behavior depends on if they are boot mouse
 * If a boot mouse report is detected, the sample subscribes to it.
 * If a boot keyboard report is detected, the sample subscribes to its input report, and the sample functionality of changing the CAPSLOCK LED is enabled (Button 1 and 3).
 
-Requirements
-************
-
-The sample supports the following development kits:
-
-.. table-from-sample-yaml::
-
-The sample also requires a HIDS device to connect with (for example, another development kit running the :ref:`peripheral_hids_mouse` or :ref:`peripheral_hids_keyboard` sample, or a Bluetooth® Low Energy dongle and nRF Connect for Desktop).
 
 User interface
 **************
@@ -56,7 +59,7 @@ Building and Running
 ********************
 .. |sample path| replace:: :file:`samples/bluetooth/central_hids`
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_ns.txt
 
 
 Testing
@@ -116,12 +119,13 @@ Testing with nRF Connect for Desktop
 
 1. |connect_terminal_specific|
 #. Reset the kit.
-#. Start `nRF Connect for Desktop`_ and select the connected dongle that is used for communication.
-#. Go to the :guilabel:`Server setup` tab.
+#. Start `nRF Connect for Desktop`_.
+#. Open the Bluetooth Low Energy app and select the connected dongle that is used for communication.
+#. Open the :guilabel:`SERVER SETUP` tab.
    Click the dongle configuration and select :guilabel:`Load setup`.
    Load the :file:`hids_keyboard.ncs` file that is located under :file:`samples/bluetooth/central_hids` in the |NCS| folder structure.
 #. Click :guilabel:`Apply to device`.
-#. Go to the :guilabel:`Connection Map` tab.
+#. Open the :guilabel:`CONNECTION MAP` tab.
    Click the dongle configuration and select :guilabel:`Advertising setup`.
 
    The current version of nRF Connect cannot store the advertising setup, so it must be configured manually.
@@ -144,7 +148,7 @@ Testing with nRF Connect for Desktop
    #. Add a **Complete local name** of your choice to the **Scan response data**.
    #. Click :guilabel:`Apply` and :guilabel:`Close`.
 
-#. In the Adapter settings, choose :guilabel:`Start advertising`.
+#. In the **Adapter settings**, choose :guilabel:`Start advertising`.
 #. Wait until the kit that runs the Central HIDS sample connects.
    All detected descriptors are listed.
    Check for information similar to the following::
@@ -155,8 +159,8 @@ Testing with nRF Connect for Desktop
 
 #. Explore the first report inside Human Interface Device (the one with eight values).
    Change any of the values and note that the kit logs the change.
-#. Press **Button 2** on the kit and observe that the Protocol Mode value changes from ``01`` to ``00``.
-#. Press **Button 1** and **Button 3** one after another and observe that the Boot Keyboard Output Report value toggles between ``00`` and ``02``.
+#. Press **Button 2** on the kit and observe that the **Protocol Mode** value changes from ``01`` to ``00``.
+#. Press **Button 1** and **Button 3** one after another and observe that the **Boot Keyboard Output Report** value toggles between ``00`` and ``02``.
 
 Dependencies
 *************
@@ -181,3 +185,7 @@ In addition, it uses the following Zephyr libraries:
   * ``include/bluetooth/hci.h``
   * ``include/bluetooth/conn.h``
   * ``include/bluetooth/uuid.h``
+
+The sample also uses the following secure firmware component:
+
+* :ref:`Trusted Firmware-M <ug_tfm>`

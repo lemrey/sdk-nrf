@@ -11,7 +11,7 @@ The Software Bill of Materials (SBOM) is a :ref:`west <zephyr:west>` extension c
 It provides a list of used licenses for an application build or specific files.
 
 .. note::
-    Generating a list of licenses from an application build is experimental.
+    Generating a list of licenses from an application build is :ref:`experimental <software_maturity>`.
     The accuracy of detection is constantly verified.
     Both implementation and usage may change in the future.
 
@@ -205,15 +205,15 @@ Detectors
 
 The ``ncs-sbom`` command includes the following detectors:
 
-* ``spdx-tag`` - search for the ``SPDX-License-Identifier`` in the source code or the binary file.
+* ``spdx-tag`` - Search for the ``SPDX-License-Identifier`` in the source code or the binary file.
 
   For guidelines, see `SPDX identifier`_. Enabled by default.
 
-* ``full-text`` - compare the contents of the source file with a small database of reference texts.
+* ``full-text`` - Compare the contents of the source file with a small database of reference texts.
 
   The database is part of the ``ncs-sbom`` command. Enabled by default.
 
-* ``scancode-toolkit`` - license detection by the `Scancode-Toolkit`_. Enabled and optional by default.
+* ``scancode-toolkit`` - License detection by the `Scancode-Toolkit`_. Enabled and optional by default.
 
   If the ``scancode`` command is not on your ``PATH``, you can use the ``--scancode`` option to provide it, for example:
 
@@ -223,7 +223,7 @@ The ``ncs-sbom`` command includes the following detectors:
 
   This detector is optional because it is significantly slower than the others.
 
-* ``external-file`` - search for license information in an external file. Enabled by default.
+* ``external-file`` - Search for license information in an external file. Enabled by default.
 
   The external file has the following properties:
 
@@ -245,7 +245,7 @@ The ``ncs-sbom`` command includes the following detectors:
       * NCS-SBOM-Apply-To-File: lib/**/*.lib
       */
 
-* ``cache-database`` - use license information detected and cached earlier in the cache database file.
+* ``cache-database`` - Use license information detected and cached earlier in the cache database file.
   Disabled by default.
 
   Provide the cache database file using the following argument:

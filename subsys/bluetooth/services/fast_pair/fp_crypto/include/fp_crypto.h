@@ -7,6 +7,8 @@
 #ifndef _FP_CRYPTO_H_
 #define _FP_CRYPTO_H_
 
+#include <zephyr/types.h>
+
 #include "fp_common.h"
 
 /**
@@ -34,6 +36,8 @@ extern "C" {
 #define FP_CRYPTO_ADDITIONAL_DATA_NONCE_LEN	8U
 /** Length of Additional Data packet header (128 bits = 16 bytes). */
 #define FP_CRYPTO_ADDITIONAL_DATA_HEADER_LEN	16U
+/** Length of battery info (1-byte length and type field and 3-byte battery values field). */
+#define FP_CRYPTO_BATTERY_INFO_LEN		4U
 
 /** Hash value using SHA-256.
  *
@@ -50,13 +54,18 @@ int fp_crypto_sha256(uint8_t *out, const uint8_t *in, size_t data_len);
  * @param[out] out 256-bit (32-byte) buffer to receive hashed result.
  * @param[in] in Input data.
  * @param[in] data_len Length of input data.
- * @param[in] aes_key 128-bit (16-byte) AES key used to encrypt data.
+ * @param[in] hmac_key HMAC key used to encrypt data.
+ * @param[in] hmac_key_len Length of HMAC key.
  *
  * @return 0 If the operation was successful. Otherwise, a (negative) error code is returned.
  */
-int fp_crypto_hmac_sha256(uint8_t *out, const uint8_t *in, size_t data_len, const uint8_t *aes_key);
+int fp_crypto_hmac_sha256(uint8_t *out,
+			  const uint8_t *in,
+			  size_t data_len,
+			  const uint8_t *hmac_key,
+			  size_t hmac_key_len);
 
-/** Encrypt message using AES-128.
+/** Encrypt message using AES-128-ECB.
  *
  * @param[out] out 128-bit (16-byte) buffer to receive encrypted message.
  * @param[in] in 128-bit (16-byte) plaintext message.
@@ -64,9 +73,9 @@ int fp_crypto_hmac_sha256(uint8_t *out, const uint8_t *in, size_t data_len, cons
  *
  * @return 0 If the operation was successful. Otherwise, a (negative) error code is returned.
  */
-int fp_crypto_aes128_encrypt(uint8_t *out, const uint8_t *in, const uint8_t *k);
+int fp_crypto_aes128_ecb_encrypt(uint8_t *out, const uint8_t *in, const uint8_t *k);
 
-/** Decrypt message using AES-128.
+/** Decrypt message using AES-128-ECB.
  *
  * @param[out] out 128-bit (16-byte) buffer to receive plaintext message.
  * @param[in] in 128-bit (16-byte) ciphertext message.
@@ -74,7 +83,7 @@ int fp_crypto_aes128_encrypt(uint8_t *out, const uint8_t *in, const uint8_t *k);
  *
  * @return 0 If the operation was successful. Otherwise, a (negative) error code is returned.
  */
-int fp_crypto_aes128_decrypt(uint8_t *out, const uint8_t *in, const uint8_t *k);
+int fp_crypto_aes128_ecb_decrypt(uint8_t *out, const uint8_t *in, const uint8_t *k);
 
 /** Encrypt data using AES-128-CTR.
  *
@@ -140,11 +149,13 @@ size_t fp_crypto_account_key_filter_size(size_t n);
  *			       equal to number of Account Keys.
  * @param[in] n Number of account keys (n >= 1).
  * @param[in] salt Random byte - Salt.
+ * @param[in] battery_info Battery info or NULL if there is no battery info. Length of battery info
+ *			   must be equal to @ref FP_CRYPTO_BATTERY_INFO_LEN.
  *
  * @return 0 If the operation was successful. Otherwise, a (negative) error code is returned.
  */
 int fp_crypto_account_key_filter(uint8_t *out, const struct fp_account_key *account_key_list,
-				 size_t n, uint8_t salt);
+				 size_t n, uint8_t salt, const uint8_t *battery_info);
 
 /** Encode data to Additional Data packet.
  *

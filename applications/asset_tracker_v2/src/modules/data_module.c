@@ -40,11 +40,6 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_DATA_MODULE_LOG_LEVEL);
 #define DEVICE_SETTINGS_KEY			"data_module"
 #define DEVICE_SETTINGS_CONFIG_KEY		"config"
 
-/* Value that is used to limit the maximum allowed device configuration value
- * for the accelerometer threshold. 100 m/s2 ~ 10.2g.
- */
-#define ACCELEROMETER_S_M2_MAX 100
-
 struct data_msg_data {
 	union {
 		struct modem_module_event modem;
@@ -72,7 +67,7 @@ static enum state_type {
 static struct cloud_data_gnss gnss_buf[CONFIG_DATA_GNSS_BUFFER_COUNT];
 static struct cloud_data_sensors sensors_buf[CONFIG_DATA_SENSOR_BUFFER_COUNT];
 static struct cloud_data_ui ui_buf[CONFIG_DATA_UI_BUFFER_COUNT];
-static struct cloud_data_accelerometer accel_buf[CONFIG_DATA_ACCELEROMETER_BUFFER_COUNT];
+static struct cloud_data_impact impact_buf[CONFIG_DATA_IMPACT_BUFFER_COUNT];
 static struct cloud_data_battery bat_buf[CONFIG_DATA_BATTERY_BUFFER_COUNT];
 static struct cloud_data_modem_dynamic modem_dyn_buf[CONFIG_DATA_MODEM_DYNAMIC_BUFFER_COUNT];
 static struct cloud_data_neighbor_cells neighbor_cells;
@@ -91,23 +86,23 @@ static int head_gnss_buf;
 static int head_sensor_buf;
 static int head_modem_dyn_buf;
 static int head_ui_buf;
-static int head_accel_buf;
+static int head_impact_buf;
 static int head_bat_buf;
 
 static K_SEM_DEFINE(config_load_sem, 0, 1);
 
 /* Default device configuration. */
 static struct cloud_data_cfg current_cfg = {
-	.gnss_timeout			= CONFIG_DATA_GNSS_TIMEOUT_SECONDS,
-	.active_mode			= (IS_ENABLED(CONFIG_DATA_DEVICE_MODE) ? true : false),
-	.active_wait_timeout		= CONFIG_DATA_ACTIVE_TIMEOUT_SECONDS,
-	.movement_resolution		= CONFIG_DATA_MOVEMENT_RESOLUTION_SECONDS,
-	.movement_timeout		= CONFIG_DATA_MOVEMENT_TIMEOUT_SECONDS,
-	.accelerometer_threshold	= CONFIG_DATA_ACCELEROMETER_THRESHOLD,
-	.no_data.gnss			= (IS_ENABLED(CONFIG_DATA_SAMPLE_GNSS_DEFAULT)
-					   ? false : true),
-	.no_data.neighbor_cell		= (IS_ENABLED(CONFIG_DATA_SAMPLE_NEIGHBOR_CELLS_DEFAULT)
-					   ? false : true)
+	.gnss_timeout		 = CONFIG_DATA_GNSS_TIMEOUT_SECONDS,
+	.active_mode		 = IS_ENABLED(CONFIG_DATA_DEVICE_MODE_ACTIVE),
+	.active_wait_timeout	 = CONFIG_DATA_ACTIVE_TIMEOUT_SECONDS,
+	.movement_resolution	 = CONFIG_DATA_MOVEMENT_RESOLUTION_SECONDS,
+	.movement_timeout	 = CONFIG_DATA_MOVEMENT_TIMEOUT_SECONDS,
+	.accelerometer_activity_threshold	= CONFIG_DATA_ACCELEROMETER_ACT_THRESHOLD,
+	.accelerometer_inactivity_threshold	= CONFIG_DATA_ACCELEROMETER_INACT_THRESHOLD,
+	.accelerometer_inactivity_timeout	= CONFIG_DATA_ACCELEROMETER_INACT_TIMEOUT_SECONDS,
+	.no_data.gnss		 = !IS_ENABLED(CONFIG_DATA_SAMPLE_GNSS_DEFAULT),
+	.no_data.neighbor_cell	 = !IS_ENABLED(CONFIG_DATA_SAMPLE_NEIGHBOR_CELLS_DEFAULT)
 };
 
 static struct k_work_delayable data_send_work;
@@ -371,6 +366,7 @@ static int config_settings_handler(const char *key, size_t len,
 			LOG_ERR("Failed to load configuration, error: %d", err);
 		} else {
 			LOG_DBG("Device configuration loaded from flash");
+			err = 0;
 		}
 	}
 
@@ -472,7 +468,12 @@ static void config_print_all(void)
 	LOG_DBG("Movement resolution: %d", current_cfg.movement_resolution);
 	LOG_DBG("Movement timeout: %d", current_cfg.movement_timeout);
 	LOG_DBG("GPS timeout: %d", current_cfg.gnss_timeout);
-	LOG_DBG("Accelerometer threshold: %.2f", current_cfg.accelerometer_threshold);
+	LOG_DBG("Accelerometer act threshold: %.2f",
+		 current_cfg.accelerometer_activity_threshold);
+	LOG_DBG("Accelerometer inact threshold: %.2f",
+		 current_cfg.accelerometer_inactivity_threshold);
+	LOG_DBG("Accelerometer inact timeout: %.2f",
+		 current_cfg.accelerometer_inactivity_timeout);
 
 	if (!current_cfg.no_data.neighbor_cell) {
 		LOG_DBG("Requesting of neighbor cell data is enabled");
@@ -589,7 +590,7 @@ static void data_encode(void)
 					      &modem_stat,
 					      &modem_dyn_buf[head_modem_dyn_buf],
 					      &ui_buf[head_ui_buf],
-					      &accel_buf[head_accel_buf],
+					      &impact_buf[head_impact_buf],
 					      &bat_buf[head_bat_buf]);
 		switch (err) {
 		case 0:
@@ -619,14 +620,14 @@ static void data_encode(void)
 						    &modem_stat,
 						    modem_dyn_buf,
 						    ui_buf,
-						    accel_buf,
+						    impact_buf,
 						    bat_buf,
 						    ARRAY_SIZE(gnss_buf),
 						    ARRAY_SIZE(sensors_buf),
 						    MODEM_STATIC_ARRAY_SIZE,
 						    ARRAY_SIZE(modem_dyn_buf),
 						    ARRAY_SIZE(ui_buf),
-						    ARRAY_SIZE(accel_buf),
+						    ARRAY_SIZE(impact_buf),
 						    ARRAY_SIZE(bat_buf));
 		switch (err) {
 		case 0:
@@ -798,6 +799,31 @@ static void data_ui_send(void)
 	data_send(DATA_EVT_UI_DATA_SEND, &codec);
 }
 
+static void data_impact_send(void)
+{
+	int err;
+	struct cloud_codec_data codec = {0};
+
+	if (!date_time_is_valid()) {
+		return;
+	}
+
+	err = cloud_codec_encode_impact_data(&codec, &impact_buf[head_impact_buf]);
+	if (err == -ENODATA) {
+		LOG_DBG("No new impact data to encode, error: %d", err);
+		return;
+	} else if (err == -ENOTSUP) {
+		LOG_WRN("Encoding of impact data is not supported, error: %d", err);
+		return;
+	} else if (err) {
+		LOG_ERR("Encoding impact data failed, error: %d", err);
+		SEND_ERROR(data, DATA_EVT_ERROR, err);
+		return;
+	}
+
+	data_send(DATA_EVT_IMPACT_DATA_SEND, &codec);
+}
+
 static void requested_data_clear(void)
 {
 	recv_req_data_count = 0;
@@ -941,19 +967,29 @@ static void new_config_handle(struct cloud_data_cfg *new_config)
 		LOG_ERR("New Movement timeout out of range: %d", new_config->movement_timeout);
 	}
 
-	if ((new_config->accelerometer_threshold < ACCELEROMETER_S_M2_MAX) &&
-	    (new_config->accelerometer_threshold > 0)) {
-		if (current_cfg.accelerometer_threshold != new_config->accelerometer_threshold) {
-			current_cfg.accelerometer_threshold = new_config->accelerometer_threshold;
-
-			LOG_WRN("New Accelerometer threshold: %.2f",
-				current_cfg.accelerometer_threshold);
-
-			config_change = true;
-		}
-	} else {
-		LOG_ERR("New Accelerometer threshold out of range: %.2f",
-			new_config->accelerometer_threshold);
+	if (current_cfg.accelerometer_activity_threshold !=
+	    new_config->accelerometer_activity_threshold) {
+		current_cfg.accelerometer_activity_threshold =
+		new_config->accelerometer_activity_threshold;
+		LOG_WRN("New Accelerometer act threshold: %.2f",
+			current_cfg.accelerometer_activity_threshold);
+		config_change = true;
+	}
+	if (current_cfg.accelerometer_inactivity_threshold !=
+	    new_config->accelerometer_inactivity_threshold) {
+		current_cfg.accelerometer_inactivity_threshold =
+		new_config->accelerometer_inactivity_threshold;
+		LOG_WRN("New Accelerometer inact threshold: %.2f",
+			current_cfg.accelerometer_inactivity_threshold);
+		config_change = true;
+	}
+	if (current_cfg.accelerometer_inactivity_timeout !=
+	    new_config->accelerometer_inactivity_timeout) {
+		current_cfg.accelerometer_inactivity_timeout =
+		new_config->accelerometer_inactivity_timeout;
+		LOG_WRN("New Accelerometer inact timeout: %.2f",
+			current_cfg.accelerometer_inactivity_timeout);
+		config_change = true;
 	}
 
 	/* If there has been a change in the currently applied device configuration we want to store
@@ -1093,6 +1129,11 @@ static void on_cloud_state_connected(struct data_msg_data *msg)
 		return;
 	}
 
+	if (IS_EVENT(msg, data, DATA_EVT_IMPACT_DATA_READY)) {
+		data_impact_send();
+		return;
+	}
+
 	if (IS_EVENT(msg, cloud, CLOUD_EVT_DISCONNECTED)) {
 		state_set(STATE_CLOUD_DISCONNECTED);
 		return;
@@ -1125,8 +1166,12 @@ static void on_all_states(struct data_msg_data *msg)
 				msg->module.cloud.data.config.movement_timeout,
 			.gnss_timeout =
 				msg->module.cloud.data.config.gnss_timeout,
-			.accelerometer_threshold =
-				msg->module.cloud.data.config.accelerometer_threshold,
+			.accelerometer_activity_threshold =
+				msg->module.cloud.data.config.accelerometer_activity_threshold,
+			.accelerometer_inactivity_threshold =
+				msg->module.cloud.data.config.accelerometer_inactivity_threshold,
+			.accelerometer_inactivity_timeout =
+				msg->module.cloud.data.config.accelerometer_inactivity_timeout,
 			.no_data.gnss =
 				msg->module.cloud.data.config.no_data.gnss,
 			.no_data.neighbor_cell =
@@ -1305,18 +1350,18 @@ static void on_all_states(struct data_msg_data *msg)
 		requested_data_status_set(APP_DATA_ENVIRONMENTAL);
 	}
 
-	if (IS_EVENT(msg, sensor, SENSOR_EVT_MOVEMENT_DATA_READY)) {
-		struct cloud_data_accelerometer new_movement_data = {
-			.values[0] = msg->module.sensor.data.accel.values[0],
-			.values[1] = msg->module.sensor.data.accel.values[1],
-			.values[2] = msg->module.sensor.data.accel.values[2],
-			.ts = msg->module.sensor.data.accel.timestamp,
+	if (IS_EVENT(msg, sensor, SENSOR_EVT_MOVEMENT_IMPACT_DETECTED)) {
+		struct cloud_data_impact new_impact_data = {
+			.magnitude = msg->module.sensor.data.impact.magnitude,
+			.ts = msg->module.sensor.data.impact.timestamp,
 			.queued = true
 		};
 
-		cloud_codec_populate_accel_buffer(accel_buf, &new_movement_data,
-						  &head_accel_buf,
-						  ARRAY_SIZE(accel_buf));
+		cloud_codec_populate_impact_buffer(impact_buf, &new_impact_data,
+						   &head_impact_buf,
+						   ARRAY_SIZE(impact_buf));
+		SEND_EVENT(data, DATA_EVT_IMPACT_DATA_READY);
+		return;
 	}
 
 	if (IS_EVENT(msg, gnss, GNSS_EVT_DATA_READY)) {

@@ -23,17 +23,12 @@ void BindingHandler::Init()
 	DeviceLayer::PlatformMgr().ScheduleWork(InitInternal);
 }
 
-void BindingHandler::OnInvokeCommandFailure(DeviceProxy *aDevice, BindingData &aBindingData, CHIP_ERROR aError)
+void BindingHandler::OnInvokeCommandFailure(BindingData &aBindingData, CHIP_ERROR aError)
 {
 	CHIP_ERROR error;
 
 	if (aError == CHIP_ERROR_TIMEOUT && !BindingHandler::GetInstance().mCaseSessionRecovered) {
 		LOG_INF("Response timeout for invoked command, trying to recover CASE session.");
-		if (!aDevice)
-			return;
-
-		/* Release current CASE session. */
-		aDevice->Disconnect();
 
 		/* Set flag to not try recover session multiple times. */
 		BindingHandler::GetInstance().mCaseSessionRecovered = true;
@@ -56,7 +51,7 @@ void BindingHandler::OnInvokeCommandFailure(DeviceProxy *aDevice, BindingData &a
 }
 
 void BindingHandler::OnOffProcessCommand(CommandId aCommandId, const EmberBindingTableEntry &aBinding,
-					 DeviceProxy *aDevice, void *aContext)
+					 OperationalDeviceProxy *aDevice, void *aContext)
 {
 	CHIP_ERROR ret = CHIP_NO_ERROR;
 	BindingData *data = reinterpret_cast<BindingData *>(aContext);
@@ -69,9 +64,15 @@ void BindingHandler::OnOffProcessCommand(CommandId aCommandId, const EmberBindin
 			BindingHandler::GetInstance().mCaseSessionRecovered = false;
 	};
 
-	auto onFailure = [aDevice, dataRef = *data](CHIP_ERROR aError) mutable {
-		BindingHandler::OnInvokeCommandFailure(aDevice, dataRef, aError);
+	auto onFailure = [dataRef = *data](CHIP_ERROR aError) mutable {
+		BindingHandler::OnInvokeCommandFailure(dataRef, aError);
 	};
+
+	if (aDevice) {
+		/* We are validating connection is ready once here instead of multiple times in each case statement
+		 * below. */
+		VerifyOrDie(aDevice->ConnectionReady());
+	}
 
 	switch (aCommandId) {
 	case Clusters::OnOff::Commands::Toggle::Id:
@@ -122,7 +123,7 @@ void BindingHandler::OnOffProcessCommand(CommandId aCommandId, const EmberBindin
 }
 
 void BindingHandler::LevelControlProcessCommand(CommandId aCommandId, const EmberBindingTableEntry &aBinding,
-						DeviceProxy *aDevice, void *aContext)
+						OperationalDeviceProxy *aDevice, void *aContext)
 {
 	BindingData *data = reinterpret_cast<BindingData *>(aContext);
 
@@ -134,11 +135,17 @@ void BindingHandler::LevelControlProcessCommand(CommandId aCommandId, const Embe
 			BindingHandler::GetInstance().mCaseSessionRecovered = false;
 	};
 
-	auto onFailure = [aDevice, dataRef = *data](CHIP_ERROR aError) mutable {
-		BindingHandler::OnInvokeCommandFailure(aDevice, dataRef, aError);
+	auto onFailure = [dataRef = *data](CHIP_ERROR aError) mutable {
+		BindingHandler::OnInvokeCommandFailure(dataRef, aError);
 	};
 
 	CHIP_ERROR ret = CHIP_NO_ERROR;
+
+	if (aDevice) {
+		/* We are validating connection is ready once here instead of multiple times in each case statement
+		 * below. */
+		VerifyOrDie(aDevice->ConnectionReady());
+	}
 
 	switch (aCommandId) {
 	case Clusters::LevelControl::Commands::MoveToLevel::Id: {
@@ -163,8 +170,8 @@ void BindingHandler::LevelControlProcessCommand(CommandId aCommandId, const Embe
 	}
 }
 
-void BindingHandler::LightSwitchChangedHandler(const EmberBindingTableEntry &binding, DeviceProxy *deviceProxy,
-					       void *context)
+void BindingHandler::LightSwitchChangedHandler(const EmberBindingTableEntry &binding,
+					       OperationalDeviceProxy *deviceProxy, void *context)
 {
 	VerifyOrReturn(context != nullptr, LOG_ERR("Invalid context for Light switch handler"););
 	BindingData *data = static_cast<BindingData *>(context);

@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <zephyr/net/socket.h>
-#include "nrf_socket.h"
-#include <modem/modem_key_mgmt.h>
 #include <zephyr/net/tls_credentials.h>
 #include "slm_util.h"
 #include "slm_at_host.h"
@@ -531,7 +529,7 @@ static int do_bind(uint16_t port)
 			LOG_ERR("bind() failed: %d", -errno);
 			return -errno;
 		}
-		LOG_DBG("bind to %s", log_strdup(ipv4_addr));
+		LOG_DBG("bind to %s", ipv4_addr);
 	} else if (sock.family == AF_INET6) {
 		char ipv6_addr[INET6_ADDRSTRLEN] = {0};
 
@@ -555,7 +553,7 @@ static int do_bind(uint16_t port)
 			LOG_ERR("bind() failed: %d", -errno);
 			return -errno;
 		}
-		LOG_DBG("bind to %s", log_strdup(ipv6_addr));
+		LOG_DBG("bind to %s", ipv6_addr);
 	} else {
 		return -EINVAL;
 	}
@@ -570,10 +568,10 @@ static int do_connect(const char *url, uint16_t port)
 		.sa_family = AF_UNSPEC
 	};
 
-	LOG_DBG("connect %s:%d", log_strdup(url), port);
+	LOG_DBG("connect %s:%d", url, port);
 	ret = util_resolve_host(sock.cid, url, port, sock.family, &sa);
 	if (ret) {
-		LOG_ERR("getaddrinfo() error: %s", log_strdup(gai_strerror(ret)));
+		LOG_ERR("getaddrinfo() error: %s", gai_strerror(ret));
 		return -EAGAIN;
 	}
 	if (sa.sa_family == AF_INET) {
@@ -792,10 +790,10 @@ static int do_sendto(const char *url, uint16_t port, const uint8_t *data, int da
 		.sa_family = AF_UNSPEC
 	};
 
-	LOG_DBG("sendto %s:%d", log_strdup(url), port);
+	LOG_DBG("sendto %s:%d", url, port);
 	ret = util_resolve_host(sock.cid, url, port, sock.family, &sa);
 	if (ret) {
-		LOG_ERR("getaddrinfo() error: %s", log_strdup(gai_strerror(ret)));
+		LOG_ERR("getaddrinfo() error: %s", gai_strerror(ret));
 		return -EAGAIN;
 	}
 
@@ -836,10 +834,10 @@ static int do_sendto_datamode(const uint8_t *data, int datalen)
 		.sa_family = AF_UNSPEC
 	};
 
-	LOG_DBG("sendto %s:%d", log_strdup(udp_url), udp_port);
+	LOG_DBG("sendto %s:%d", udp_url, udp_port);
 	ret = util_resolve_host(sock.cid, udp_url, udp_port, sock.family, &sa);
 	if (ret) {
-		LOG_ERR("getaddrinfo() error: %s", log_strdup(gai_strerror(ret)));
+		LOG_ERR("getaddrinfo() error: %s", gai_strerror(ret));
 		return -EAGAIN;
 	}
 
@@ -928,7 +926,7 @@ static int do_poll(int timeout)
 		for (int i = 0; i < SLM_MAX_SOCKET_COUNT; i++) {
 			/* If fd is equal to -1	then revents is cleared (set to zero) */
 			if (fds[i].revents != 0) {
-				sprintf(rsp_buf, "\r\n#XPOLL: %d,\"0x%08x\"\r\n",
+				sprintf(rsp_buf, "\r\n#XPOLL: %d,\"0x%04x\"\r\n",
 					fds[i].fd, fds[i].revents);
 				rsp_send(rsp_buf, strlen(rsp_buf));
 			}

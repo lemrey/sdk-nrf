@@ -13,6 +13,9 @@
 
 #if !defined(CONFIG_MPSL_FEM_PIN_FORWARDER)
 #include <mpsl_fem_config_nrf21540_gpio.h>
+#if IS_ENABLED(CONFIG_MPSL_FEM_POWER_MODEL)
+#include "mpsl_fem_power_model_interface.h"
+#endif
 #include <nrfx_gpiote.h>
 #if IS_ENABLED(CONFIG_HAS_HW_NRF_PPI)
 #include <nrfx_ppi.h>
@@ -274,6 +277,17 @@ static int mpsl_fem_init(const struct device *dev)
 {
 	ARG_UNUSED(dev);
 
+#if IS_ENABLED(CONFIG_MPSL_FEM_POWER_MODEL)
+	int err;
+	const mpsl_fem_power_model_t *power_model = mpsl_fem_power_model_to_use_get();
+
+	err = mpsl_fem_power_model_set(power_model);
+
+	if (err) {
+		return err;
+	}
+#endif /* IS_ENABLED(CONFIG_MPSL_FEM_POWER_MODEL) */
+
 	mpsl_fem_device_config_254_apply_set(IS_ENABLED(CONFIG_MPSL_FEM_DEVICE_CONFIG_254));
 
 	return fem_nrf21540_gpio_configure();
@@ -288,42 +302,32 @@ static int mpsl_fem_host_init(const struct device *dev)
 	ARG_UNUSED(dev);
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), tx_en_gpios)
-	uint8_t tx_en_pin = DT_GPIO_PIN(DT_NODELABEL(nrf_radio_fem), tx_en_gpios);
+	uint8_t tx_en_pin = NRF_DT_GPIOS_TO_PSEL(DT_NODELABEL(nrf_radio_fem), tx_en_gpios);
 
-	mpsl_fem_pin_extend_with_port(
-		&tx_en_pin, DT_GPIO_LABEL(DT_NODELABEL(nrf_radio_fem), tx_en_gpios));
 	soc_secure_gpio_pin_mcu_select(tx_en_pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), rx_en_gpios)
-	uint8_t rx_en_pin = DT_GPIO_PIN(DT_NODELABEL(nrf_radio_fem), rx_en_gpios);
+	uint8_t rx_en_pin = NRF_DT_GPIOS_TO_PSEL(DT_NODELABEL(nrf_radio_fem), rx_en_gpios);
 
-	mpsl_fem_pin_extend_with_port(
-		&rx_en_pin, DT_GPIO_LABEL(DT_NODELABEL(nrf_radio_fem), rx_en_gpios));
 	soc_secure_gpio_pin_mcu_select(rx_en_pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), pdn_gpios)
-	uint8_t pdn_pin = DT_GPIO_PIN(DT_NODELABEL(nrf_radio_fem), pdn_gpios);
+	uint8_t pdn_pin = NRF_DT_GPIOS_TO_PSEL(DT_NODELABEL(nrf_radio_fem), pdn_gpios);
 
-	mpsl_fem_pin_extend_with_port(
-		&pdn_pin, DT_GPIO_LABEL(DT_NODELABEL(nrf_radio_fem), pdn_gpios));
 	soc_secure_gpio_pin_mcu_select(pdn_pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), mode_gpios)
-	uint8_t mode_pin = DT_GPIO_PIN(DT_NODELABEL(nrf_radio_fem), mode_gpios);
+	uint8_t mode_pin = NRF_DT_GPIOS_TO_PSEL(DT_NODELABEL(nrf_radio_fem), mode_gpios);
 
-	mpsl_fem_pin_extend_with_port(
-		&mode_pin, DT_GPIO_LABEL(DT_NODELABEL(nrf_radio_fem), mode_gpios));
 	soc_secure_gpio_pin_mcu_select(mode_pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), ant_sel_gpios)
-	uint8_t ant_sel_pin = DT_GPIO_PIN(DT_NODELABEL(nrf_radio_fem), ant_sel_gpios);
+	uint8_t ant_sel_pin = NRF_DT_GPIOS_TO_PSEL(DT_NODELABEL(nrf_radio_fem), ant_sel_gpios);
 
-	mpsl_fem_pin_extend_with_port(
-		&ant_sel_pin, DT_GPIO_LABEL(DT_NODELABEL(nrf_radio_fem), ant_sel_gpios));
 	soc_secure_gpio_pin_mcu_select(ant_sel_pin, NRF_GPIO_PIN_MCUSEL_NETWORK);
 #endif
 

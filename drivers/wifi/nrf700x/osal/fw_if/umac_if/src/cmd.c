@@ -85,9 +85,9 @@ enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 				   unsigned char def_vif_idx,
 				   unsigned char *rf_params,
 				   bool rf_params_valid,
-#ifdef RPU_SLEEP_SUPPORT
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
 				   int sleep_type,
-#endif /* RPU_SLEEP_SUPPORT */
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
 				   struct img_data_config_params config,
 				   unsigned int phy_calib)
 {
@@ -126,7 +126,7 @@ enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 		wifi_nrf_osal_mem_cpy(fmac_dev_ctx->fpriv->opriv,
 				      umac_cmd_data->sys_params.rf_params,
 				      rf_params,
-				      RF_PARAMS_SIZE);
+				      NRF_WIFI_RF_PARAMS_SIZE);
 	}
 
 	umac_cmd_data->sys_params.phy_calib = phy_calib;
@@ -134,21 +134,21 @@ enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 	umac_cmd_data->sys_params.sw_bringup_time = SW_DELAY;
 	umac_cmd_data->sys_params.bcn_time_out = BCN_TIMEOUT;
 	umac_cmd_data->sys_params.calib_sleep_clk = CALIB_SLEEP_CLOCK_ENABLE;
-#ifdef RPU_SLEEP_SUPPORT
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
 	umac_cmd_data->sys_params.sleep_enable = sleep_type;
-#endif /* RPU_SLEEP_SUPPORT */
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
 	wifi_nrf_osal_mem_cpy(fmac_dev_ctx->fpriv->opriv,
 			      umac_cmd_data->rx_buf_pools,
 			      fmac_dev_ctx->fpriv->rx_buf_pools,
 			      sizeof(umac_cmd_data->rx_buf_pools));
 	umac_cmd_data->data_config_params = config;
-	umac_cmd_data->temp_vbat_config_params.temp_based_calib_en = TEMP_CALIB_ENABLE;
-	umac_cmd_data->temp_vbat_config_params.temp_calib_bitmap = DEF_PHY_TEMP_CALIB;
-	umac_cmd_data->temp_vbat_config_params.vbat_calibp_bitmap = DEF_PHY_VBAT_CALIB;
-	umac_cmd_data->temp_vbat_config_params.temp_vbat_mon_period = TEMP_CALIB_PERIOD;
-	umac_cmd_data->temp_vbat_config_params.vth_low = VBAT_LOW;
-	umac_cmd_data->temp_vbat_config_params.vth_hi = VBAT_HIGH;
-	umac_cmd_data->temp_vbat_config_params.temp_threshold = TEMP_CALIB_THRESHOLD;
+	umac_cmd_data->temp_vbat_config_params.temp_based_calib_en = NRF_WIFI_TEMP_CALIB_ENABLE;
+	umac_cmd_data->temp_vbat_config_params.temp_calib_bitmap = NRF_WIFI_DEF_PHY_TEMP_CALIB;
+	umac_cmd_data->temp_vbat_config_params.vbat_calibp_bitmap = NRF_WIFI_DEF_PHY_VBAT_CALIB;
+	umac_cmd_data->temp_vbat_config_params.temp_vbat_mon_period = NRF_WIFI_TEMP_CALIB_PERIOD;
+	umac_cmd_data->temp_vbat_config_params.vth_low = NRF_WIFI_VBAT_LOW;
+	umac_cmd_data->temp_vbat_config_params.vth_hi = NRF_WIFI_VBAT_HIGH;
+	umac_cmd_data->temp_vbat_config_params.temp_threshold = NRF_WIFI_TEMP_CALIB_THRESHOLD;
 
 	status = wifi_nrf_hal_ctrl_cmd_send(fmac_dev_ctx->hal_dev_ctx,
 					    umac_cmd,

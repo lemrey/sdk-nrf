@@ -90,6 +90,17 @@ static char rx_buf[REST_RX_BUF_SZ];
 /* Buffer used for JSON Web Tokens (JWTs) */
 static char jwt[JWT_BUF_SZ];
 
+NRF_MODEM_LIB_ON_INIT(nrf_cloud_rest_fota_init_hook,
+		      on_modem_lib_init, NULL);
+
+/* Initialized to value different than success (0) */
+static int modem_lib_init_result = -1;
+
+static void on_modem_lib_init(int ret, void *ctx)
+{
+	modem_lib_init_result = ret;
+}
+
 /* nRF Cloud REST context */
 static struct nrf_cloud_rest_context rest_ctx = {
 	.connect_socket = -1,
@@ -126,7 +137,7 @@ static int rest_fota_settings_set(const char *key, size_t len_rd, settings_read_
 		return -EINVAL;
 	}
 
-	LOG_DBG("Settings key: %s, size: %d", log_strdup(key), len_rd);
+	LOG_DBG("Settings key: %s, size: %d", key, len_rd);
 
 	if (strncmp(key, FOTA_SETTINGS_KEY_PENDING_JOB, strlen(FOTA_SETTINGS_KEY_PENDING_JOB))) {
 		return -ENOMSG;
@@ -148,7 +159,7 @@ static int rest_fota_settings_set(const char *key, size_t len_rd, settings_read_
 
 	if (sz == sizeof(pending_job)) {
 		LOG_INF("Saved job: %s, type: %d, validate: %d, bl: 0x%X",
-			log_strdup(pending_job.id), pending_job.type,
+			pending_job.id, pending_job.type,
 			pending_job.validate, pending_job.bl_flags);
 	} else {
 		LOG_INF("FOTA settings size smaller than current, likely outdated");
@@ -263,7 +274,7 @@ static int generate_jwt(void)
 		return err;
 	}
 
-	LOG_DBG("JWT:\n%s", log_strdup(jwt));
+	LOG_DBG("JWT:\n%s", jwt);
 	rest_ctx.auth = jwt;
 
 	return 0;
@@ -422,7 +433,6 @@ static void process_pending_job(void)
 int init(void)
 {
 	struct modem_param_info mdm_param;
-	int modem_lib_init_result;
 	int err = init_led();
 
 	if (err) {
@@ -457,9 +467,7 @@ int init(void)
 	}
 #endif
 
-	if (IS_ENABLED(CONFIG_NRF_MODEM_LIB_SYS_INIT)) {
-		modem_lib_init_result = nrf_modem_lib_get_init_ret();
-	} else {
+	if (!IS_ENABLED(CONFIG_NRF_MODEM_LIB_SYS_INIT)) {
 		modem_lib_init_result = nrf_modem_lib_init(NORMAL_MODE);
 	}
 
@@ -485,15 +493,13 @@ int init(void)
 
 	err = modem_info_params_init(&mdm_param);
 	if (!err) {
-		LOG_INF("Application Name: %s",
-			log_strdup(mdm_param.device.app_name));
-		LOG_INF("nRF Connect SDK version: %s",
-			log_strdup(mdm_param.device.app_version));
+		LOG_INF("Application Name: %s", mdm_param.device.app_name);
+		LOG_INF("nRF Connect SDK version: %s", mdm_param.device.app_version);
 
 		err = modem_info_params_get(&mdm_param);
 		if (!err) {
 			LOG_INF("Modem FW Ver: %s",
-				log_strdup(mdm_param.device.modem_fw.value_string));
+				mdm_param.device.modem_fw.value_string);
 		} else {
 			LOG_WRN("Unable to obtain modem info, error: %d", err);
 		}
@@ -507,7 +513,7 @@ int init(void)
 		return err;
 	}
 
-	LOG_INF("Device ID: %s", log_strdup(device_id));
+	LOG_INF("Device ID: %s", device_id);
 
 	err = dk_buttons_init(button_handler);
 	if (err) {
@@ -613,7 +619,7 @@ static int check_for_job(void)
 		return 1;
 	}
 
-	LOG_INF("FOTA Job: %s, type: %d\n", log_strdup(job.id), job.type);
+	LOG_INF("FOTA Job: %s, type: %d\n", job.id, job.type);
 	return 0;
 }
 

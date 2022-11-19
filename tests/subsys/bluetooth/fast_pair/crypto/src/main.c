@@ -46,13 +46,14 @@ static void test_hmac_sha256(void)
 
 	zassert_equal(sizeof(result_buf), sizeof(hashed_result),
 		      "Invalid size of expected result.");
-	zassert_ok(fp_crypto_hmac_sha256(result_buf, input_data, sizeof(input_data), aes_key),
+	zassert_ok(fp_crypto_hmac_sha256(
+		   result_buf, input_data, sizeof(input_data), aes_key, sizeof(aes_key)),
 		   "Error during hashing data.");
 	zassert_mem_equal(result_buf, hashed_result, sizeof(hashed_result),
 			  "Invalid hashing result.");
 }
 
-static void test_aes128(void)
+static void test_aes128_ecb(void)
 {
 	static const uint8_t plaintext[] = {0xF3, 0x0F, 0x4E, 0x78, 0x6C, 0x59, 0xA7, 0xBB, 0xF3,
 					    0x87, 0x3B, 0x5A, 0x49, 0xBA, 0x97, 0xEA};
@@ -66,12 +67,12 @@ static void test_aes128(void)
 	uint8_t result_buf[FP_CRYPTO_AES128_BLOCK_LEN];
 
 	zassert_equal(sizeof(result_buf), sizeof(ciphertext), "Invalid size of expected result.");
-	zassert_ok(fp_crypto_aes128_encrypt(result_buf, plaintext, key),
+	zassert_ok(fp_crypto_aes128_ecb_encrypt(result_buf, plaintext, key),
 		   "Error during value encryption.");
 	zassert_mem_equal(result_buf, ciphertext, sizeof(ciphertext), "Invalid encryption result.");
 
 	zassert_equal(sizeof(result_buf), sizeof(plaintext), "Invalid size of expected result.");
-	zassert_ok(fp_crypto_aes128_decrypt(result_buf, ciphertext, key),
+	zassert_ok(fp_crypto_aes128_ecb_decrypt(result_buf, ciphertext, key),
 		   "Error during value decryption.");
 	zassert_mem_equal(result_buf, plaintext, sizeof(plaintext), "Invalid decryption result.");
 }
@@ -199,9 +200,23 @@ static void test_bloom_filter(void)
 	zassert_equal(s, sizeof(first_bloom_filter),
 		      "Invalid size of expected result.");
 	zassert_ok(fp_crypto_account_key_filter(first_result_buf, first_account_key_list,
-						ARRAY_SIZE(first_account_key_list), salt),
+						ARRAY_SIZE(first_account_key_list), salt, NULL),
 		   "Error during filter computing");
 	zassert_mem_equal(first_result_buf, first_bloom_filter, sizeof(first_bloom_filter),
+			  "Invalid resulting filter.");
+
+	static const uint8_t battery_info[] = {0b00110011, 0b01000000, 0b01000000, 0b01000000};
+
+	static const uint8_t first_bloom_filter_with_battery_info[] = {0x4A, 0x00, 0xF0, 0x00};
+
+	zassert_equal(sizeof(first_result_buf), sizeof(first_bloom_filter_with_battery_info),
+		      "Invalid size of expected result.");
+	zassert_ok(fp_crypto_account_key_filter(first_result_buf, first_account_key_list,
+						ARRAY_SIZE(first_account_key_list), salt,
+						battery_info),
+		   "Error during filter computing");
+	zassert_mem_equal(first_result_buf, first_bloom_filter_with_battery_info,
+			  sizeof(first_bloom_filter_with_battery_info),
 			  "Invalid resulting filter.");
 
 	static const struct fp_account_key second_account_key_list[] = {
@@ -219,9 +234,22 @@ static void test_bloom_filter(void)
 	zassert_equal(s, sizeof(second_bloom_filter),
 		      "Invalid size of expected result.");
 	zassert_ok(fp_crypto_account_key_filter(second_result_buf, second_account_key_list,
-						ARRAY_SIZE(second_account_key_list), salt),
+						ARRAY_SIZE(second_account_key_list), salt, NULL),
 		   "Error during filter computing");
 	zassert_mem_equal(second_result_buf, second_bloom_filter, sizeof(second_bloom_filter),
+			  "Invalid resulting filter.");
+
+	static const uint8_t second_bloom_filter_with_battery_info[] = {0x10, 0x22, 0x56, 0xC0,
+									0x4D};
+
+	zassert_equal(sizeof(second_result_buf), sizeof(second_bloom_filter_with_battery_info),
+		      "Invalid size of expected result.");
+	zassert_ok(fp_crypto_account_key_filter(second_result_buf, second_account_key_list,
+						ARRAY_SIZE(second_account_key_list), salt,
+						battery_info),
+		   "Error during filter computing");
+	zassert_mem_equal(second_result_buf, second_bloom_filter_with_battery_info,
+			  sizeof(second_bloom_filter_with_battery_info),
 			  "Invalid resulting filter.");
 }
 
@@ -280,7 +308,7 @@ void test_main(void)
 	ztest_test_suite(fast_pair_crypto_tests,
 			 ztest_unit_test(test_sha256),
 			 ztest_unit_test(test_hmac_sha256),
-			 ztest_unit_test(test_aes128),
+			 ztest_unit_test(test_aes128_ecb),
 			 ztest_unit_test(test_aes128_ctr),
 			 ztest_unit_test(test_ecdh),
 			 ztest_unit_test(test_aes_key_from_ecdh_shared_secret),

@@ -13,7 +13,27 @@ The device works as a Matter accessory device, meaning it can be paired and cont
 You can use this application as a reference for creating your own application.
 
 .. note::
-    The Matter protocol is in an early development stage and must be treated as an experimental feature.
+    The Matter protocol is in an early development stage and must be treated as an :ref:`experimental <software_maturity>` feature.
+
+Requirements
+************
+
+The application supports the following development kits:
+
+.. table-from-sample-yaml::
+
+To commission the weather station device and control it remotely through a Thread network, you also need a Matter controller device :ref:`configured on PC or smartphone <ug_matter_configuring>`.
+This requires additional hardware depending on your setup.
+The recommended way of getting measurement values is using the mobile Matter controller application that comes with a graphical interface, performs measurements automatically and visualizes the data.
+
+To program a Thingy:53 device where the preprogrammed MCUboot bootloader has been erased, you need the external J-Link programmer.
+If you have an nRF5340 DK that has an onboard J-Link programmer, you can also use it for this purpose.
+
+If the Thingy:53 is programmed with Thingy:53-compatible sample or application, you can also update the firmware using MCUboot's serial recovery or DFU over Bluetooth LE.
+See :ref:`thingy53_app_guide` for details.
+
+.. note::
+    |matter_gn_required_note|
 
 Overview
 ********
@@ -68,31 +88,12 @@ If a board has other configuration files, for example associated with partition 
 Before you start testing the application, you can select one of the build types supported by Matter weather station application, depending on the building method.
 This application supports the following build types:
 
-* ``debug`` -- Debug version of the application - can be used to enable additional features for verifying the application behavior, such as logs or command-line shell.
-* ``release`` -- Release version of the application - can be used to enable only the necessary application functionalities to optimize its performance.
+* ``debug`` - Debug version of the application. You can use this version to enable additional features for verifying the application behavior, such as logs or command-line shell.
+* ``release`` - Release version of the application. You can use this version to enable only the necessary application functionalities to optimize its performance.
 
 .. note::
     `Selecting a build type`_ is optional.
     The ``debug`` build type is used by default if no build type is explicitly selected.
-
-Requirements
-************
-
-The application supports the following development kits:
-
-.. table-from-sample-yaml::
-
-To commission the weather station device and control it remotely through a Thread network, you also need a Matter controller device :ref:`configured on PC or smartphone <ug_matter_configuring>` (which requires additional hardware depending on which setup you choose).
-The recommended way of getting measurement values is using the mobile Matter controller application that comes with a neat graphical interface, performs measurements automatically and visualizes the data.
-
-To program a Thingy:53 device where the preprogrammed MCUboot bootloader has been erased, you need the external J-Link programmer.
-If you own an nRF5340 DK that has an onboard J-Link programmer, you can also use it for this purpose.
-
-If the Thingy:53 is programmed with Thingy:53-compatible sample or application, then you can also update the firmware using MCUboot's serial recovery or DFU over Bluetooth LE.
-See :ref:`thingy53_app_guide` for details.
-
-.. note::
-    |matter_gn_required_note|
 
 User interface
 **************
@@ -202,16 +203,16 @@ After programming the application, perform the following steps to test the Matte
 #. Read sensor measurements in CHIP Tool for Android:
 
    a. In the CHIP Tool for Android application main menu, tap the :guilabel:`SENSOR CLUSTERS` button to open the sensor measurements section.
-      This section contains text boxes to enter :guilabel:`Device ID` and :guilabel:`Endpoint ID`, a drop-down menu with available measurements and two buttons, :guilabel:`READ` and :guilabel:`WATCH`.
+      This section contains text boxes to enter **Device ID** and **Endpoint ID**, a drop-down menu with available measurements and two buttons, :guilabel:`READ` and :guilabel:`WATCH`.
 
       .. figure:: /images/chiptool_sensor_cluster.gif
          :alt: Sensor cluster section selection
 
          Sensor cluster section selection
 
-      On this image, :guilabel:`Device ID` has the value ``5`` and :guilabel:`Endpoint ID` has the value ``1``.
+      On this image, **Device ID** has the value ``5`` and **Endpoint ID** has the value ``1``.
    #. Select one of the available measurement types from the drop-down menu.
-   #. Enter one of the following values for :guilabel:`Endpoint ID`, depending on the selected measurement type:
+   #. Enter one of the following values for **Endpoint ID**, depending on the selected measurement type:
 
       * 1 - Temperature measurement
       * 2 - Relative humidity measurement
@@ -232,7 +233,7 @@ After programming the application, perform the following steps to test the Matte
          Continuous temperature measurement watch
 
       The vertical axis represents the measurement values and the horizontal axis represents the current time.
-   #. Change the displayed measurement by selecting a different measurement type from the drop-down list and entering the corresponding :guilabel:`Endpoint ID` value.
+   #. To change the displayed measurement, select a different measurement type from the drop-down list and enter the corresponding **Endpoint ID** value.
 
       .. figure:: /images/chiptool_relative_humidity.gif
          :alt: Relative humidity measurement type selection

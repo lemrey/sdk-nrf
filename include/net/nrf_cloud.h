@@ -476,7 +476,7 @@ struct nrf_cloud_gnss_data {
 	/** The type of GNSS data below. */
 	enum nrf_cloud_gnss_type type;
 	/** UNIX epoch timestamp (in milliseconds) of the data.
-	 * If a negative value is provided, the timestamp will be ingored.
+	 * If a negative value is provided, the timestamp will be ignored.
 	 */
 	int64_t ts_ms;
 	union {
@@ -546,7 +546,7 @@ int nrf_cloud_init(const struct nrf_cloud_init_param *param);
  * @note If nRF Cloud FOTA is enabled and a FOTA job is active
  *  uninit will not be performed.
  *
- * @note This function is solely intended to allow the this library to be deactivated when
+ * @note This function is solely intended to allow this library to be deactivated when
  *  no longer needed. You can recover from any error state you may encounter without calling this
  *  function. See @ref nrf_cloud_disconnect for a way to reset the nRF Cloud connection state
  *  without uninitializing the whole library.
@@ -631,7 +631,7 @@ int nrf_cloud_sensor_data_stream(const struct nrf_cloud_sensor_data *param);
  *
  * This API is used to send pre-encoded data to nRF Cloud.
  *
- * @param[in] msg Pointer to a structure containting data and topic
+ * @param[in] msg Pointer to a structure containing data and topic
  *                information.
  *
  * @retval 0       If successful.
@@ -747,6 +747,9 @@ int nrf_cloud_jwt_generate(uint32_t time_valid_s, char * const jwt_buf, size_t j
  *        information is read from non-volatile storage on startup. This function
  *        is intended to be used by custom REST-based FOTA implementations.
  *        It is called internally if CONFIG_NRF_CLOUD_FOTA is enabled.
+ *        For pending NRF_CLOUD_FOTA_MODEM_DELTA jobs the modem library must
+ *        be initialized before calling this function, otherwise the job will
+ *        be marked as completed without validation.
  *
  * @param[in] job FOTA job state information.
  * @param[out] reboot_required A reboot is needed to complete a FOTA update.
@@ -794,10 +797,26 @@ int nrf_cloud_handle_error_message(const char *const buf,
 				   enum nrf_cloud_error *const err);
 
 /**
+ * @brief Function to retrieve the FOTA type of a pending FOTA job. A value of
+ *        NRF_CLOUD_FOTA_TYPE__INVALID indicates that there are no pending FOTA jobs.
+ *        Depends on CONFIG_NRF_CLOUD_FOTA.
+ *
+ * @param[out] pending_fota_type FOTA type of pending job.
+ *
+ * @retval 0 FOTA type was retrieved.
+ * @retval -EINVAL Error; invalid parameter.
+ * @return A negative value indicates an error.
+ */
+int nrf_cloud_fota_pending_job_type_get(enum nrf_cloud_fota_type * const pending_fota_type);
+
+/**
  * @brief Function to validate a pending FOTA installation before initializing this library.
  *        This function enables the application to control the reboot/reinit process during FOTA
  *        updates. If this function is not called directly by the application, it will
  *        be called internally when @ref nrf_cloud_init is executed.
+ *        For pending NRF_CLOUD_FOTA_MODEM_DELTA jobs the modem library must
+ *        be initialized before calling this function, otherwise the job will
+ *        be marked as completed without validation.
  *        Depends on CONFIG_NRF_CLOUD_FOTA.
  *
  * @param[out] fota_type_out FOTA type of pending job.
@@ -817,7 +836,8 @@ int nrf_cloud_fota_pending_job_validate(enum nrf_cloud_fota_type * const fota_ty
  * @brief Function to set the flash device used for full modem FOTA updates.
  *        This function is intended to be used by custom REST-based FOTA implementations.
  *        It is called internally when @ref nrf_cloud_init is executed if
- *        CONFIG_NRF_CLOUD_FOTA is enabled.
+ *        CONFIG_NRF_CLOUD_FOTA is enabled. It can be called before @ref nrf_cloud_init
+ *        if required by the application.
  *
  * @param[in] fmfu_dev_inf Flash device information.
  *
@@ -852,10 +872,10 @@ bool nrf_cloud_fota_is_type_modem(const enum nrf_cloud_fota_type type);
 
 /**
  * @brief Function to determine if the specified FOTA type is enabled by the
- *        configuration.
- *        Depends on CONFIG_NRF_CLOUD_FOTA.
- *        REST-based FOTA applications are responsible for determining
- *        their supported FOTA types.
+ *        configuration. This function returns false if both CONFIG_NRF_CLOUD_FOTA
+ *        and CONFIG_NRF_CLOUD_REST are disabled.
+ *        REST-based applications are responsible for implementing FOTA updates
+ *        for all configured types.
  *
  * @param[in] type Fota type.
  *

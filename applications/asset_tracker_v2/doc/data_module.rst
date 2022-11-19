@@ -46,7 +46,7 @@ You can alter the default values of the :ref:`Real-time configurations <real_tim
 Connection evaluation
 =====================
 
-This is an experimental feature.
+This is an :ref:`experimental <software_maturity>` feature.
 The module can decide to hold off encoding and sending of sampled data based on evaluation of the LTE connection and estimated energy consumed to send the data.
 This feature is enabled by setting the :ref:`CONFIG_DATA_GRANT_SEND_ON_CONNECTION_QUALITY <CONFIG_DATA_GRANT_SEND_ON_CONNECTION_QUALITY>` Kconfig option.
 The module can deny the sending of data a number of times before it is sent regardless.
@@ -66,10 +66,17 @@ The energy levels map directly to the :ref:`lte_lc_readme` structure :c:struct:`
 Configuration options
 *********************
 
-.. _CONFIG_DATA_DEVICE_MODE:
+Options that alter the default values of the application's real-time configurations:
 
-CONFIG_DATA_DEVICE_MODE
-   This configuration sets the device mode.
+.. _CONFIG_DATA_DEVICE_MODE_ACTIVE:
+
+CONFIG_DATA_DEVICE_MODE_ACTIVE
+   This configuration sets the device in active mode.
+
+.. _CONFIG_DATA_DEVICE_MODE_PASSIVE:
+
+CONFIG_DATA_DEVICE_MODE_PASSIVE
+   This configuration sets the device in passive mode.
 
 .. _CONFIG_DATA_ACTIVE_TIMEOUT_SECONDS:
 
@@ -86,15 +93,39 @@ CONFIG_DATA_MOVEMENT_RESOLUTION_SECONDS
 CONFIG_DATA_MOVEMENT_TIMEOUT_SECONDS
    This configuration sets the movement timeout value.
 
-.. _CONFIG_DATA_ACCELEROMETER_THRESHOLD:
+.. _CONFIG_DATA_ACCELEROMETER_ACT_THRESHOLD:
 
-CONFIG_DATA_ACCELEROMETER_THRESHOLD
-   This configuration sets the accelerometer threshold value.
+CONFIG_DATA_ACCELEROMETER_ACT_THRESHOLD
+   This configuration sets the upper accelerometer threshold value.
+
+.. _CONFIG_DATA_ACCELEROMETER_INACT_THRESHOLD:
+
+CONFIG_DATA_ACCELEROMETER_INACT_THRESHOLD
+   This configuration sets the lower accelerometer threshold value.
+
+.. _CONFIG_DATA_ACCELEROMETER_INACT_TIMEOUT_SECONDS:
+
+CONFIG_DATA_ACCELEROMETER_INACT_TIMEOUT_SECONDS
+   This configuration sets a timeout in seconds after which the accelerometer reports inactivity.
 
 .. _CONFIG_DATA_GNSS_TIMEOUT_SECONDS:
 
 CONFIG_DATA_GNSS_TIMEOUT_SECONDS
    This configuration sets the GNSS timeout value.
+
+.. _CONFIG_DATA_SAMPLE_GNSS_DEFAULT:
+
+CONFIG_DATA_SAMPLE_GNSS_DEFAULT
+   This configuration includes GNSS during sampling.
+   Enabled by default.
+
+.. _CONFIG_DATA_SAMPLE_NEIGHBOR_CELLS_DEFAULT:
+
+CONFIG_DATA_SAMPLE_NEIGHBOR_CELLS_DEFAULT
+   This configuration includes neighbor cell measurements during sampling.
+   Enabled by default.
+
+Other options:
 
 .. _CONFIG_DATA_GRANT_SEND_ON_CONNECTION_QUALITY:
 

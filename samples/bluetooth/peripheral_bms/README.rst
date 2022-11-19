@@ -9,13 +9,6 @@ Bluetooth: Peripheral Bond Management Service (BMS)
 
 The peripheral BMS sample demonstrates how to use the :ref:`bms_readme`.
 
-Overview
-********
-
-When connected, the sample waits for Client's requests to perform any bond deleting operation.
-
-It supports up to two simultaneous Client connections.
-
 Requirements
 ************
 
@@ -24,6 +17,13 @@ The sample supports the following development kits:
 .. table-from-sample-yaml::
 
 The sample also requires a Bluetooth® Low Energy dongle and nRF Connect for Desktop.
+
+Overview
+********
+
+When connected, the sample waits for Client's requests to perform any bond deleting operation.
+
+It supports up to two simultaneous Client connections.
 
 User interface
 **************
@@ -45,20 +45,21 @@ Building and running
 Testing
 =======
 
-After programming the sample to your development kit, test it by performing the following steps:
+|test_sample|
 
 1. |connect_terminal_specific|
 #. Reset the kit.
-#. Start `nRF Connect for Desktop`_ and select the connected device that is used for communication.
-#. Connect to the device from nRF Connect.
+#. Start `nRF Connect for Desktop`_.
+#. Open the Bluetooth Low Energy app and select the connected device that is used for communication.
+#. Connect to the device from the app.
    The device is advertising as "Nordic_BMS".
-#. Bond with the device:
+#. Bind with the device:
 
-   a. Click the :guilabel:`Settings` button for the device in nRF Connect.
-   b. Select :guilabel:`Pair`.
-   c. Select :guilabel:`Keyboard and display` in the IO capabilities setting.
-   d. Select :guilabel:`Perform Bonding`.
-   e. Click :guilabel:`Pair`.
+   a. Click the :guilabel:`Settings` button for the device in the app.
+   #. Select :guilabel:`Pair`.
+   #. Select :guilabel:`Keyboard and display` in the IO capabilities setting.
+   #. Select :guilabel:`Perform Bonding`.
+   #. Click :guilabel:`Pair`.
 
 #. Check the logs to verify that the connection security is updated.
 #. Disconnect the device in nRF Connect.

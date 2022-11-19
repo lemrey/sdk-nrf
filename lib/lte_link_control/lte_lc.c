@@ -155,12 +155,12 @@ static void at_handler_cereg(const char *response)
 	enum lte_lc_lte_mode lte_mode;
 	struct lte_lc_psm_cfg psm_cfg = {0};
 
-	LOG_DBG("+CEREG notification: %s", log_strdup(response));
+	LOG_DBG("+CEREG notification: %s", response);
 
 	err = parse_cereg(response, true, &reg_status, &cell, &lte_mode);
 	if (err) {
 		LOG_ERR("Failed to parse notification (error %d): %s",
-			err, log_strdup(response));
+			err, response);
 		return;
 	}
 
@@ -501,7 +501,7 @@ static int enable_notifications(void)
 				*end = '\0';
 			}
 
-			LOG_WRN("Current modem firmware version: %s", log_strdup(buf));
+			LOG_WRN("Current modem firmware version: %s", buf);
 		}
 	}
 
@@ -590,7 +590,8 @@ static int connect_lte(bool blocking)
 	    (reg_status == LTE_LC_NW_REG_REGISTERED_ROAMING)) {
 		LOG_DBG("The device is already registered with an LTE network");
 
-		return 0;
+		err = 0;
+		goto exit;
 	}
 
 	if (blocking) {
@@ -772,7 +773,7 @@ int lte_lc_psm_param_set(const char *rptau, const char *rat)
 
 	if (rptau != NULL) {
 		strcpy(psm_param_rptau, rptau);
-		LOG_DBG("RPTAU set to %s", log_strdup(psm_param_rptau));
+		LOG_DBG("RPTAU set to %s", psm_param_rptau);
 	} else {
 		*psm_param_rptau = '\0';
 		LOG_DBG("RPTAU use default");
@@ -780,7 +781,7 @@ int lte_lc_psm_param_set(const char *rptau, const char *rat)
 
 	if (rat != NULL) {
 		strcpy(psm_param_rat, rat);
-		LOG_DBG("RAT set to %s", log_strdup(psm_param_rat));
+		LOG_DBG("RAT set to %s", psm_param_rat);
 	} else {
 		*psm_param_rat = '\0';
 		LOG_DBG("RAT use default");
@@ -928,7 +929,7 @@ int lte_lc_edrx_param_set(enum lte_lc_lte_mode mode, const char *edrx)
 
 	if (edrx) {
 		strcpy(edrx_param, edrx);
-		LOG_DBG("eDRX set to %s for %s", log_strdup(edrx_param),
+		LOG_DBG("eDRX set to %s for %s", edrx_param,
 			(mode == LTE_LC_LTE_MODE_LTEM) ? "LTE-M" : "NB-IoT");
 	} else {
 		*edrx_param = '\0';
@@ -957,7 +958,7 @@ int lte_lc_ptw_set(enum lte_lc_lte_mode mode, const char *ptw)
 
 	if (ptw != NULL) {
 		strcpy(ptw_param, ptw);
-		LOG_DBG("PTW set to %s for %s", log_strdup(ptw_param),
+		LOG_DBG("PTW set to %s for %s", ptw_param,
 			(mode == LTE_LC_LTE_MODE_LTEM) ? "LTE-M" : "NB-IoT");
 	} else {
 		*ptw_param = '\0';
@@ -1085,7 +1086,7 @@ int lte_lc_nw_reg_status_get(enum lte_lc_nw_reg_status *status)
 	err = nrf_modem_at_scanf("AT+CEREG?",
 		"+CEREG: "
 		"%*u,"		/* <n> */
-		"%u,"		/* <stat> */
+		"%hu,"		/* <stat> */
 		"%*[^,],"	/* <tac> */
 		"\"%x\",",	/* <ci> */
 		&status_tmp,
@@ -1097,9 +1098,9 @@ int lte_lc_nw_reg_status_get(enum lte_lc_nw_reg_status *status)
 
 	if (!is_cellid_valid(cell_id)) {
 		*status = LTE_LC_NW_REG_UNKNOWN;
+	} else {
+		*status = status_tmp;
 	}
-
-	*status = status_tmp;
 
 	return 0;
 }
@@ -1634,7 +1635,7 @@ int lte_lc_periodic_search_get(struct lte_lc_periodic_search_cfg *const cfg)
 	cfg->pattern_count = err - 3;
 
 	if (cfg->pattern_count >= 1) {
-		LOG_DBG("Pattern 1: %s", log_strdup(pattern_buf[0]));
+		LOG_DBG("Pattern 1: %s", pattern_buf[0]);
 
 		err = parse_periodic_search_pattern(pattern_buf[0], &cfg->patterns[0]);
 		if (err) {
@@ -1644,7 +1645,7 @@ int lte_lc_periodic_search_get(struct lte_lc_periodic_search_cfg *const cfg)
 	}
 
 	if (cfg->pattern_count >= 2) {
-		LOG_DBG("Pattern 2: %s", log_strdup(pattern_buf[1]));
+		LOG_DBG("Pattern 2: %s", pattern_buf[1]);
 
 		err = parse_periodic_search_pattern(pattern_buf[1], &cfg->patterns[1]);
 		if (err) {
@@ -1654,7 +1655,7 @@ int lte_lc_periodic_search_get(struct lte_lc_periodic_search_cfg *const cfg)
 	}
 
 	if (cfg->pattern_count >= 3) {
-		LOG_DBG("Pattern 3: %s", log_strdup(pattern_buf[2]));
+		LOG_DBG("Pattern 3: %s", pattern_buf[2]);
 
 		err = parse_periodic_search_pattern(pattern_buf[2], &cfg->patterns[2]);
 		if (err) {
@@ -1664,7 +1665,7 @@ int lte_lc_periodic_search_get(struct lte_lc_periodic_search_cfg *const cfg)
 	}
 
 	if (cfg->pattern_count == 4) {
-		LOG_DBG("Pattern 4: %s", log_strdup(pattern_buf[3]));
+		LOG_DBG("Pattern 4: %s", pattern_buf[3]);
 
 		err = parse_periodic_search_pattern(pattern_buf[3], &cfg->patterns[3]);
 		if (err) {
@@ -1674,6 +1675,44 @@ int lte_lc_periodic_search_get(struct lte_lc_periodic_search_cfg *const cfg)
 	}
 
 	return 0;
+}
+
+int lte_lc_reduced_mobility_get(enum lte_lc_reduced_mobility_mode *mode)
+{
+	int ret;
+	uint16_t mode_tmp;
+
+	if (mode == NULL) {
+		return -EINVAL;
+	}
+
+	ret = nrf_modem_at_scanf("AT%REDMOB?", "%%REDMOB: %hu", &mode_tmp);
+	if (ret != 1) {
+		LOG_ERR("AT command failed, nrf_modem_at_scanf() returned error: %d", ret);
+		return -EFAULT;
+	}
+
+	*mode = mode_tmp;
+
+	return 0;
+}
+
+int lte_lc_reduced_mobility_set(enum lte_lc_reduced_mobility_mode mode)
+{
+	int ret = nrf_modem_at_printf("AT%%REDMOB=%d", mode);
+
+	if (ret) {
+		/* Failure to send the AT command. */
+		LOG_ERR("AT command failed, returned error code: %d", ret);
+		return -EFAULT;
+	}
+
+	return 0;
+}
+
+int lte_lc_factory_reset(enum lte_lc_factory_reset_type type)
+{
+	return nrf_modem_at_printf("AT%%XFACTORYRESET=%d", type) ? -EFAULT : 0;
 }
 
 #if defined(CONFIG_LTE_AUTO_INIT_AND_CONNECT)

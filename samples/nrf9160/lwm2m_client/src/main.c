@@ -72,7 +72,7 @@ void client_acknowledge(void)
 static struct k_work_delayable ncell_meas_work;
 void ncell_meas_work_handler(struct k_work *work)
 {
-	lte_lc_neighbor_cell_measurement(LTE_LC_NEIGHBOR_SEARCH_TYPE_DEFAULT);
+	lwm2m_ncell_schedule_measurement();
 	k_work_schedule(&ncell_meas_work, K_SECONDS(CONFIG_APP_NEIGHBOUR_CELL_SCAN_INTERVAL));
 }
 #endif
@@ -341,6 +341,10 @@ static void rd_client_event(struct lwm2m_ctx *client, enum lwm2m_rd_client_event
 		LOG_DBG("Queue mode RX window closed");
 		break;
 
+	case LWM2M_RD_CLIENT_EVENT_ENGINE_SUSPENDED:
+		LOG_DBG("LwM2M engine suspended");
+		break;
+
 	case LWM2M_RD_CLIENT_EVENT_NETWORK_ERROR:
 		LOG_ERR("LwM2M engine reported a network error.");
 		reconnect = true;
@@ -441,7 +445,7 @@ void main(void)
 	/* use IMEI as unique endpoint name */
 	snprintk(endpoint_name, sizeof(endpoint_name), "%s%s", CONFIG_APP_ENDPOINT_PREFIX,
 		 imei_buf);
-	LOG_INF("endpoint: %s", log_strdup(endpoint_name));
+	LOG_INF("endpoint: %s", (char *)endpoint_name);
 
 	/* Setup LwM2M */
 	ret = lwm2m_setup();

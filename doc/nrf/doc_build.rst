@@ -28,7 +28,7 @@ Complete the following steps to install the required tools:
 1. If you have not done so already, install the |NCS| as described in :ref:`gs_installing` or :ref:`gs_assistant`.
 #. Install or update all required :ref:`Python dependencies <additional_deps>`.
 #. Install `Doxygen`_.
-#. Install `mscgen`_ and make sure that the ``mscgen`` executable is in your :envvar:`PATH`.
+#. Install `Mscgen`_ and make sure that the ``mscgen`` executable is in your :envvar:`PATH`.
 #. Install PlantUML.
    On Windows, you can install `PlantUML from chocolatey`_.
 
@@ -119,7 +119,7 @@ That means that if you do not have local modifications to a documentation set, y
 Downloading is usually quicker than building the documentation from scratch, however, this might depend on your Internet connection speed.
 
 .. note::
-   Using cached builds is currently in an experimental state.
+   Using cached builds is currently in an :ref:`experimental <software_maturity>` state.
 
 To enable the online cache, set the :envvar:`NCS_CACHE_ENABLE` environment variable.
 For example, on Windows, enter the following command::

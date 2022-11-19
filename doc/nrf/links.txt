@@ -93,10 +93,17 @@
 
 .. _`SMP over Bluetooth`: https://github.com/apache/mynewt-mcumgr/blob/master/transport/smp-bluetooth.md
 
-.. _`Android CHIPTool`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/bb3c7570/src/android/CHIPTool
-.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/bb3c7570/src/controller
+.. _`Matter GitHub repository`: https://github.com/project-chip/connectedhomeip
+.. _`dedicated Matter fork`: https://github.com/nrfconnect/sdk-connectedhomeip
+.. _`Android CHIPTool`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/b8c6fe4c/src/android/CHIPTool
+.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/b8c6fe4c/src/controller
 .. _`ZCL Advanced Platform`: https://github.com/project-chip/zap
 .. _`Matter nRF Connect releases`: https://github.com/nrfconnect/sdk-connectedhomeip/releases
+.. _`Matter Certification Policy`: https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/policies/matter_certificate_policy.adoc
+.. _`Kconfig.mcuboot.defaults`: https://github.com/project-chip/connectedhomeip/blob/master/config/nrfconnect/chip-module/Kconfig.mcuboot.defaults
+.. _`Matter specification repository`: https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/policies/
+
+.. _`DCL Quick Start Guide`: https://github.com/zigbee-alliance/distributed-compliance-ledger/blob/master/docs/quickStartGuide.adoc
 
 .. _`nRF Cloud JSON protocol schemas`: https://github.com/nRFCloud/application-protocols
 
@@ -121,14 +128,10 @@
 
 .. _`TinyCBOR`: https://intel.github.io/tinycbor/current/
 
-.. _`Timestamping`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v1.8.x/docs/guides/FourKindsOfData.html#time-stamping
 
-.. _`nRF Asset Tracker project`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v1.8.x/docs/project/Index.html
-.. _`nRF Asset Tracker for AWS`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v1.8.x/docs/aws/Index.html
-.. _`nRF Asset Tracker for Azure`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v1.8.x/docs/azure/Index.html
-.. _`nRF Asset Tracker web application`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v1.8.x/docs/app/Index.html
-.. _`Getting started guide for nRF Asset Tracker for AWS`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v1.8.x/docs/aws/GettingStarted/Index.html
-.. _`Getting started guide for nRF Asset Tracker for Azure`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v1.8.x/docs/azure/GettingStarted/Index.html
+.. _`nRF Asset Tracker project`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v2.1.x/docs/project/Index.html
+.. _`Getting started guide for nRF Asset Tracker for AWS`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v2.1.x/docs/aws/GettingStarted/Index.html
+.. _`Getting started guide for nRF Asset Tracker for Azure`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v2.1.x/docs/azure/GettingStarted/Index.html
 
 .. _`nRF Connect for Visual Studio Code`: https://nrfconnect.github.io/vscode-nrf-connect
 .. _`nRF Kconfig`: https://nrfconnect.github.io/vscode-nrf-connect/kconfig/nrfkconfig.html
@@ -136,6 +139,7 @@
 .. _`Installing on Linux`: https://nrfconnect.github.io/vscode-nrf-connect/connect/install.html#installing-on-linux
 .. _`Creating an application`: https://nrfconnect.github.io/vscode-nrf-connect/connect/create_app.html
 .. _`Building an application`: https://nrfconnect.github.io/vscode-nrf-connect/connect/build_app.html
+.. _`Building nRF Connect SDK application quick guide`: https://nrfconnect.github.io/vscode-nrf-connect/connect/build_app_ncs.html
 .. _`Testing an application`: https://nrfconnect.github.io/vscode-nrf-connect/connect/test_app.html
 .. _`Debugging an application`: https://nrfconnect.github.io/vscode-nrf-connect/connect/debug_app.html
 .. _`West integration`: https://nrfconnect.github.io/vscode-nrf-connect/connect/west.html
@@ -157,6 +161,7 @@
 .. _`nRF Connect SDK latest documentation`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html
 
 .. _`known issues page on the main branch`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html
+.. _`known issues for nRF Connect SDK v2.1.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html?v=v2-1-0
 .. _`known issues for nRF Connect SDK v2.0.2`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html?v=v2-0-2
 .. _`known issues for nRF Connect SDK v2.0.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html?v=v2-0-1
 .. _`known issues for nRF Connect SDK v2.0.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html?v=v2-0-0
@@ -224,6 +229,7 @@
 .. _`TF-M documentation`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/tfm/index.html
 .. _`TF-M secure partition integration guide`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/tfm/docs/integration_guide/services/tfm_secure_partition_addition.html
 
+.. _`Repositories and revisions for v2.1.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.0/nrf/introduction.html#repositories-and-revisions
 .. _`Repositories and revisions for v2.0.2`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.2/nrf/introduction.html#repositories-and-revisions
 .. _`Repositories and revisions for v2.0.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.1/nrf/introduction.html#repositories-and-revisions
 .. _`Repositories and revisions for v2.0.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.0/nrf/introduction.html#repositories-and-revisions
@@ -231,6 +237,7 @@
 .. _`Repositories and revisions for v1.9.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.1/nrf/introduction.html#repositories-and-revisions
 .. _`Repositories and revisions`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.0/nrf/introduction.html#repositories-and-revisions
 
+.. _`Modem library changelog for v2.1.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.0/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v2.0.2`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.2/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v2.0.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.1/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v2.0.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.0/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
@@ -238,6 +245,7 @@
 .. _`Modem library changelog for v1.9.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.1/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v1.9.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.0/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 
+.. _`LwM2M carrier library changelog for v2.1.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.0/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
 .. _`LwM2M carrier library changelog for v2.0.2`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.2/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
 .. _`LwM2M carrier library changelog for v2.0.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.1/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
 .. _`LwM2M carrier library changelog for v2.0.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.0/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
@@ -301,9 +309,10 @@
 
 .. _`iBasis network coverage spreadsheet`: https://www.nordicsemi.com/-/media/Software-and-other-downloads/3rd-party/iBasis-simplified-coverage-map-for-web.pdf?la=en&hash=CA7DBF400243D8A7A7BDA94873B50E73C26B4FAC
 
+.. _`nRF Connect SDK v2.1.0 webinar`: https://www.nordicsemi.com/Events/2022/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v210?utm_campaign=2022%20Webinars&utm_source=Documentation&utm_medium=Link%20to%20webinar%20%7C%20from%20documentation&utm_content=Link%20to%20webinar%20%7C%20from%20documentation
+.. _`nRF Connect SDK v2.0.0 webinar`: https://www.nordicsemi.com/Events/2022/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v2?utm_campaign=2022%20Webinars&utm_source=developer.nordicsemi.com&utm_medium=Webinar%20registration%20%7C%20nRF%20Connect%20SDK%20v2.0&utm_content=Webinar%20registration%20%7C%20nRF%20Connect%20SDK%20v2.0
 .. _`nRF Connect SDK v1.9.0 webinar`: https://www.nordicsemi.com/Events/2022/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v19?utm_campaign=2022%20Webinars&utm_source=developer.nordicsemi.com&utm_medium=In-line%20text%20%7C%20nRF%20Connect%20SDK%20v1.9%20%7C%20Link%20to%20webinar
 
-.. _`nRF Connect SDK v2.0.0 webinar`: https://www.nordicsemi.com/Events/2022/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v2?utm_campaign=2022%20Webinars&utm_source=developer.nordicsemi.com&utm_medium=Webinar%20registration%20%7C%20nRF%20Connect%20SDK%20v2.0&utm_content=Webinar%20registration%20%7C%20nRF%20Connect%20SDK%20v2.0
 
 .. _`Contact Us`: https://www.nordicsemi.com/About-us/Contact-Us
 .. _`Nordic Semiconductor Wi-Fi products`: https://www.nordicsemi.com/Products/WiFi
@@ -337,9 +346,11 @@
 .. _`system mode section in the AT Commands reference document`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/mob_termination_ctrl_status/xsystemmode.html
 .. _`Credential storage management %CMNG`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/security/cmng.html
 .. _`Packet Domain AT commands`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/packet_domain/packet_domain.html?cp=2_1_6
+.. _`3GPP Release 14 features AT command`: https://infocenter.nordicsemi.com/index.jsp?topic=%2Fref_at_commands%2FREF%2Fat_commands%2Fnw_service%2Frel14feat_read.html&cp=2_1_7_16_1
 .. _`AT+CNEC set command`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/mobile_termination_errors/cnec_set.html
 .. _`AT+CGEREP set command`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/packet_domain/cgerep_set.html
 .. _`AT%CONEVAL`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/mob_termination_ctrl_status/coneval.html
+.. _`Modem trace AT command documentation`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/mob_termination_ctrl_status/xmodemtrace.html
 
 .. _`Getting started with nRF Connect SDK (nRF53 Series)`: https://infocenter.nordicsemi.com/topic/ug_gsg_ncs/UG/gsg/intro.html
 .. _`Debugging nRF5340 with SES`: https://infocenter.nordicsemi.com/topic/ug_gsg_ncs/UG/gsg/debug.html?cp=1_1_0_7
@@ -347,6 +358,7 @@
 .. _`nRF5340 Product Specification`: https://infocenter.nordicsemi.com/topic/ps_nrf5340/keyfeatures_html5.html
 .. _`nRF5340 DK User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf5340_dk/UG/dk/intro.html
 .. _`Execute in place page in the nRF5340 Product Specification`: https://infocenter.nordicsemi.com/topic/ps_nrf5340/qspi.html#execute_in_place
+.. _`nRF5340 DK Compatibility Matrix`: https://infocenter.nordicsemi.com/topic/comp_matrix_nrf5340/COMP/nrf5340/nrf5340_comp_matrix.html
 
 .. _`Getting started with nRF Connect SDK (nRF52 Series)`: https://infocenter.nordicsemi.com/topic/ug_gsg_ncs52/UG/gsg/intro.html
 
@@ -354,6 +366,7 @@
 .. _`System OFF mode`: https://infocenter.nordicsemi.com/topic/ps_nrf52840/power.html#unique_1384365742
 .. _`nRF52840 DK User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf52840_dk/UG/dk/intro.html
 .. _`nRF52840 Dongle User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf52840_dongle/UG/nrf52840_Dongle/intro.html
+.. _`nRF52840 DK Compatibility Matrix`: https://infocenter.nordicsemi.com/topic/comp_matrix_nrf52840/COMP/nrf52840/nrf52840_comp_matrix.html
 
 .. _`nRF52833 Product Specification`: https://infocenter.nordicsemi.com/topic/ps_nrf52833/keyfeatures_html5.html
 .. _`nRF52833 DK User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf52833_dk/UG/dk/intro.html
@@ -454,6 +467,8 @@
 .. _`Bluetooth Core Specification`: https://www.bluetooth.com/specifications/specs/
 .. _`Bluetooth® LE Audio specifications`: https://www.bluetooth.com/learn-about-bluetooth/recent-enhancements/le-audio/le-audio-specifications/
 
+.. _`Join Bluetooth SIG`: https://www.bluetooth.com/develop-with-bluetooth/join/
+
 .. _`HID Service Specification`: https://www.bluetooth.org/docman/handlers/downloaddoc.ashx?doc_id=245140
 .. _`Battery Service Specification`: https://www.bluetooth.org/docman/handlers/downloaddoc.ashx?doc_id=245138
 .. _`Bluetooth Low Energy RF PHY Test Specification`: https://www.bluetooth.org/docman/handlers/DownloadDoc.ashx?doc_id=225827
@@ -462,6 +477,8 @@
 .. _`Running Speed and Cadence Service Specification`: https://www.bluetooth.com/specifications/specs/running-speed-and-cadence-service-1-0/
 
 .. _`Bluetooth SIG company identifiers`: https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers/
+
+.. _`Bluetooth SIG's Qualification Process`: https://www.bluetooth.com/develop-with-bluetooth/qualification-listing/
 
 .. _`Bluetooth mesh model specification`:
 .. _`Bluetooth mesh profile specification`: https://www.bluetooth.com/specifications/specs/
@@ -532,10 +549,20 @@
 .. _`Device enrollments with Azure Portal`: https://docs.microsoft.com/en-us/azure/iot-dps/how-to-manage-enrollments
 .. _`Add certificates to the DPS instance`: https://docs.microsoft.com/en-us/azure/iot-dps/how-to-verify-certificates
 .. _`Registering the device with Azure IoT Hub`: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-create-through-portal#register-a-new-device-in-the-iot-hub
+.. _`Azure IoT TLS: Critical changes`: https://techcommunity.microsoft.com/t5/internet-of-things-blog/azure-iot-tls-critical-changes-are-almost-here-and-why-you/ba-p/2393169
+.. _`Azure SDK for Embedded C`: https://azure.github.io/azure-sdk-for-c/
+.. _`Azure SDK for Embedded C IoT client libraries`: https://github.com/nrfconnect/azure-sdk-for-c/blob/main/sdk/docs/iot/README.md
+
 
 .. _`Windows Hardware Lab Kit`: https://docs.microsoft.com/en-us/windows-hardware/test/hlk/
 
+.. _`Swift Pair`: https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/bluetooth-swift-pair
+
 .. _`Windows path length limitations`: https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+
+.. _`Windows 11`: https://www.microsoft.com/software-download/windows11
+.. _`Windows 10`: https://www.microsoft.com/en-us/software-download/windows10
+
 
 .. ### Source: ietf.org
 
@@ -561,6 +588,8 @@
 .. _`J-PAKE: Password-Authenticated Key Exchange by Juggling`: https://datatracker.ietf.org/doc/html/rfc8236#section-3
 
 .. _`CBOR Object Signing and Encryption (COSE)`: https://datatracker.ietf.org/doc/html/rfc8152
+
+.. _`SPAKE2+`: https://datatracker.ietf.org/doc/pdf/draft-bar-cfrg-spake2plus-02.pdf
 
 .. ### Source: pubs.opengroup.org
 
@@ -620,6 +649,7 @@
 .. _`Thread Group's Commissioning White Paper`: https://www.threadgroup.org/Portals/0/documents/support/CommissioningWhitePaper_658_2.pdf
 .. _`Thread 1.2 in Commercial White Paper`: https://www.threadgroup.org/Portals/0/documents/support/ThreadInCommercialWhitePaper_2542_1.pdf
 .. _`Thread 1.2 Base Features`: https://www.threadgroup.org/Portals/0/documents/support/Thread%201.2%20Base%20Features.pdf
+.. _`Join Thread Group`:
 .. _`Thread Group members`: https://www.threadgroup.org/thread-group
 .. _`Thread Group's certification information`: https://www.threadgroup.org/What-is-Thread/Certification
 .. _`Thread 1.3.0 Features White Paper`: https://www.threadgroup.org/Portals/0/documents/support/Thread1.3.0WhitePaper_07192022_3990_1.pdf
@@ -724,6 +754,11 @@
 .. _`Zigbee Specification`: https://zigbeealliance.org/developer_resources/
 .. _`Zigbee Cluster Library specification`: https://zigbeealliance.org/wp-content/uploads/2019/12/07-5123-06-zigbee-cluster-library-specification.pdf
 
+.. _`Connectivity Standards Alliance Certification Policy`: https://csa-iot.org/wp-content/uploads/2021/12/07-4842-14-ptsc-certification-policy.pdf
+.. _`Connectivity Standards Alliance members`: https://csa-iot.org/members/
+.. _`Join CSA`:
+.. _`CSA's Become Member page`: https://csa-iot.org/become-member/
+
 .. ### Source: Chocolatey
 
 .. _`Install chocolatey`: https://chocolatey.org/install
@@ -755,6 +790,19 @@
 
 .. _`Google Chrome browser`: https://www.google.com/chrome
 
+.. ### Source: ubuntu.com
+
+.. _`Linux - Ubuntu 22.04 LTS`: https://releases.ubuntu.com/22.04/
+.. _`Linux - Ubuntu 20.04 LTS`: https://releases.ubuntu.com/20.04/
+
+.. ### Source: apple.com
+
+.. _`macOS 12`: https://www.apple.com/macos/monterey/
+.. _`macOS 11`: https://support.apple.com/en-us/HT211896
+.. _`macOS 10.15`: https://support.apple.com/en-us/HT210642
+.. _`Apple Notification Center Service Specification`: https://developer.apple.com/library/archive/documentation/CoreBluetooth/Reference/AppleNotificationCenterServiceSpecification/Introduction/Introduction.html
+.. _`Apple Media Service Reference`: https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/AppleMediaService_Reference/Introduction/Introduction.html
+
 .. ### Source: other
 
 .. _`Developing Matter products with nRF Connect SDK`: https://www.youtube.com/watch?v=kdMJQFDRoss
@@ -765,6 +813,7 @@
 .. _`Bosch BSEC`: https://www.bosch-sensortec.com/software-tools/software/bsec/
 
 .. _`ADXL362`: https://www.analog.com/en/products/adxl362.html#product-overview
+.. _`ADXL372`: https://www.analog.com/en/products/adxl372.html#product-overview
 
 .. _`ARM TrustZone`: https://developer.arm.com/documentation/100690/0200/ARM-TrustZone-technology?lang=en
 .. _`ARM Flash Patch and Breakpoint Unit`: https://developer.arm.com/documentation/100166/0001/Debug/Flash-Patch-and-Breakpoint-Unit--FPB-
@@ -779,10 +828,6 @@
 .. _`GCC compiler`: https://gcc.gnu.org/
 
 .. _`MCUboot`: https://www.mcuboot.com
-
-.. _`Apple Notification Center Service Specification`: https://developer.apple.com/library/archive/documentation/CoreBluetooth/Reference/AppleNotificationCenterServiceSpecification/Introduction/Introduction.html
-
-.. _`Apple Media Service Reference`: https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/AppleMediaService_Reference/Introduction/Introduction.html
 
 .. _`nRF Mesh mobile app for iOS`: https://apps.apple.com/us/app/nrf-mesh/id1380726771
 .. _`nRF Mesh mobile app for Android`: https://play.google.com/store/apps/details?id=no.nordicsemi.android.nrfmeshprovisioner
@@ -850,7 +895,7 @@
 
 .. _`reStructuredText Primer`: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 
-.. _`mscgen`: http://www.mcternan.me.uk/mscgen/
+.. _`Mscgen`: http://www.mcternan.me.uk/mscgen/
 
 .. _`Doxygen`: https://www.doxygen.nl/
 
@@ -876,6 +921,8 @@
 
 .. _`Baltimore CyberTrust Root certificate`: https://cacerts.digicert.com/BaltimoreCyberTrustRoot.crt.pem
 
+.. _`DigiCert Global Root G2`: https://cacerts.digicert.com/DigiCertGlobalG2TLSRSASHA2562020CA1.crt.pem
+
 .. _`SKY66112-11 page`: https://www.skyworksinc.com/en/Products/Front-end-Modules/SKY66112-11
 
 .. _`SKY66114-11 page`: https://www.skyworksinc.com/en/Products/Front-end-Modules/SKY66114-11
@@ -886,6 +933,9 @@
 .. _`GN website`: https://gn.googlesource.com/gn/#getting-a-binary
 
 .. _`Power Saving Mode (PSM)`: https://www.sharetechnote.com/html/Handbook_LTE_PSM.html
+
+.. _`Distributed Compliance Ledger`:
+.. _`Distributed Compliance Ledger website`: https://webui.dcl.csa-iot.org/
 
 .. _`Leshan Demo Server web UI`:
 .. _`public Leshan Demo Server`: https://leshan.eclipseprojects.io
@@ -905,8 +955,6 @@
 
 .. _`HERE Positioning`: https://www.here.com/platform/positioning
 
-.. _`Polte Location API`: https://www.polte.com/solutions/polte-location-api
-
 .. _`SPDX tool`: https://spdx.dev/
 .. _`SPDX identifier`: https://spdx.dev/ids/
 .. _`SPDX License List`: https://spdx.org/licenses/
@@ -924,3 +972,5 @@
 .. _`Teraterm`: https://ttssh2.osdn.jp/index.html.en
 
 .. _`GNU Project Debugger`: https://www.sourceware.org/gdb/
+
+.. _`SIGMA`: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf

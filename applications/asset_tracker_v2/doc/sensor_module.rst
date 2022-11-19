@@ -31,7 +31,9 @@ The following table lists the sensors and sensor data types supported by the mod
 +-------------------------+-----------------+
 | Air Quality (BSEC only) | `BME680`_       |
 +-------------------------+-----------------+
-| Acceleration            | `ADXL362`_      |
+| Acceleration (Activity) | `ADXL362`_      |
++-------------------------+-----------------+
+| Acceleration (Impact)   | `ADXL372`_      |
 +-------------------------+-----------------+
 
 The module controls and collects data from the sensors by interacting with their :ref:`device drivers <device_model_api>` using :ref:`Zephyr's generic sensor API <sensor_api>`.
@@ -47,24 +49,27 @@ When data sampling has been carried out, the :c:enum:`SENSOR_EVT_ENVIRONMENTAL_D
    If the sensor module is queried for sensor data when building for the DK, the event :c:enum:`SENSOR_EVT_ENVIRONMENTAL_NOT_SUPPORTED` is sent out by the module
    upon data sampling.
 
-Motion detection
-================
+Motion activity detection
+=========================
 
-Motion is detected when acceleration in either X, Y or Z plane exceeds the configured threshold value.
-The threshold is set in one of the following two ways:
+Motion activity is detected when acceleration in either X, Y or Z plane exceeds the configured activity threshold value.
+Stillness is detected when the acceleration is less than the configured inactivity threshold value for the duration of the inactivity time.
+The threshold values are set in one of the following two ways:
 
 * When receiving the :c:enum:`DATA_EVT_CONFIG_INIT` event after boot.
-  This event contains the default threshold value set by the :ref:`CONFIG_DATA_ACCELEROMETER_THRESHOLD <CONFIG_DATA_ACCELEROMETER_THRESHOLD>` option or retrieved from flash.
+  This event contains the default threshold values set by the options :ref:`CONFIG_DATA_ACCELEROMETER_ACT_THRESHOLD <CONFIG_DATA_ACCELEROMETER_ACT_THRESHOLD>` and :ref:`CONFIG_DATA_ACCELEROMETER_INACT_THRESHOLD <CONFIG_DATA_ACCELEROMETER_INACT_THRESHOLD>` or retrieved from flash.
 * When receiving the :c:enum:`DATA_EVT_CONFIG_READY` event.
   This occurs when a new threshold value has been updated from cloud.
 
-Both events contain an accelerometer threshold value ``accelerometer_threshold`` in m/s2, present in the event structure.
+Both events contain upper and lower accelerometer threshold values ``accelerometer_activity_threshold`` and ``accelerometer_inactivity_threshold`` in m/s2, present in the event structure.
+Further, they contain a timeout value ``accelerometer_inactivity_timeout`` in seconds.
 
 Motion detection is enabled and disabled according to the device mode parameter, received in the configuration events.
 It is enabled in the passive mode and disabled in the active mode.
+Data sampling requests are sent out both on activity events and inactivity events.
 
 The sensor module sends out a :c:enum:`SENSOR_EVT_MOVEMENT_ACTIVITY_DETECTED` event if it detects movement.
-Similarly, :c:enum:`SENSOR_EVT_MOVEMENT_INACTIVITY_DETECTED` is sent out if there is no movement in a while.
+Similarly, :c:enum:`SENSOR_EVT_MOVEMENT_INACTIVITY_DETECTED` is sent out if there is no movement within the configured timeout.
 
 .. note::
    The DK does not have an external accelerometer.
@@ -74,6 +79,21 @@ Similarly, :c:enum:`SENSOR_EVT_MOVEMENT_INACTIVITY_DETECTED` is sent out if ther
    The accelerometer available on the Thingy:91 needs detailed tuning for each use case to determine reliably which readings are considered as motion.
    This is beyond the scope of the general asset tracker framework this application provides.
    Therefore, the readings are not transmitted to the cloud and are only used to detect a binary active and inactive state.
+
+.. _motion_impact_detection:
+
+Motion impact detection
+=======================
+
+Motion impact is detected when the magnitude (root sum squared) of acceleration exceeds the configured threshold value.
+To enable motion impact detection, you must include :kconfig:option:`CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION` and :kconfig:option:`CONFIG_ADXL372` when building the application.
+
+The threshold is configured using the :kconfig:option:`CONFIG_ADXL372_ACTIVITY_THRESHOLD` option.
+The accelerometer records acceleration magnitude when it is in the active mode and reports the peak magnitude once it reverts to the inactive mode.
+The accelerometer changes to active mode when the activity threshold is exceeded and reverts to inactive mode once acceleration stays below
+:kconfig:option:`CONFIG_ADXL372_INACTIVITY_THRESHOLD` for the duration specified in the :kconfig:option:`CONFIG_ADXL372_INACTIVITY_TIME` option.
+
+When an impact has been detected, a :c:enum:`SENSOR_EVT_MOVEMENT_IMPACT_DETECTED` event is sent from the sensor module.
 
 .. _bosch_software_environmental_cluster_library:
 
@@ -105,10 +125,10 @@ Configuration options
 CONFIG_SENSOR_THREAD_STACK_SIZE - Sensor module thread stack size
    This option configures the sensor module's internal thread stack size.
 
-.. _CONFIG_DATA_ACCELEROMETER_THRESHOLD:
+.. _CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION:
 
-CONFIG_DATA_ACCELEROMETER_THRESHOLD
-   This configuration sets the accelerometer threshold value.
+CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION
+   This configuration option enables the impact detection feature.
 
 .. _external_sensor_API_BSEC_configurations:
 

@@ -12,6 +12,9 @@
 
 #if !defined(CONFIG_MPSL_CX_PIN_FORWARDER)
 #include <mpsl_cx_abstract_interface.h>
+#else
+#include <string.h>
+#include <soc_secure.h>
 #endif
 
 #include <stddef.h>
@@ -45,13 +48,14 @@
 #error No enabled coex nodes registered in DTS.
 #endif
 
+#if !defined(CONFIG_MPSL_CX_PIN_FORWARDER)
+
 #define REQUEST_LEAD_TIME 0U
 
 static const struct gpio_dt_spec req_spec     = GPIO_DT_SPEC_GET(CX_NODE, req_gpios);
 static const struct gpio_dt_spec pri_dir_spec = GPIO_DT_SPEC_GET(CX_NODE, pri_dir_gpios);
 static const struct gpio_dt_spec grant_spec   = GPIO_DT_SPEC_GET(CX_NODE, grant_gpios);
 
-#if !defined(CONFIG_MPSL_CX_PIN_FORWARDER)
 static mpsl_cx_cb_t callback;
 static struct gpio_callback grant_cb;
 

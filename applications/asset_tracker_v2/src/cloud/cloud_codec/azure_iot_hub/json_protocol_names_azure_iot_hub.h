@@ -22,7 +22,9 @@
 #define CONFIG_MOVE_TIMEOUT		  "mvt"
 #define CONFIG_MOVE_RES			  "mvres"
 #define CONFIG_GNSS_TIMEOUT		  "gnsst"
-#define CONFIG_ACC_THRESHOLD		  "acct"
+#define CONFIG_ACC_ACT_THRESHOLD	  "accath"
+#define CONFIG_ACC_INACT_THRESHOLD	  "accith"
+#define CONFIG_ACC_INACT_TIMEOUT	  "accito"
 #define CONFIG_NO_DATA_LIST		  "nod"
 #define CONFIG_NO_DATA_LIST_GNSS	  "gnss"
 #define CONFIG_NO_DATA_LIST_NEIGHBOR_CELL "ncell"
@@ -41,6 +43,7 @@
 #define DATA_BUTTON	    "btn"
 #define DATA_CONFIG	    "cfg"
 #define DATA_VERSION	    "version"
+#define DATA_IMPACT	    "impact"
 
 #define DATA_MOVEMENT   "acc"
 #define DATA_MOVEMENT_X "x"

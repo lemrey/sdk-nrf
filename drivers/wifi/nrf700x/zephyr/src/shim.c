@@ -25,7 +25,6 @@
 #include "osal_ops.h"
 #include "qspi_if.h"
 
-
 LOG_MODULE_REGISTER(wifi_nrf, CONFIG_WIFI_LOG_LEVEL);
 
 static void *zep_shim_mem_alloc(size_t size)
@@ -154,57 +153,33 @@ static void zep_shim_spinlock_irq_rel(void *lock, unsigned long *flags)
 
 static int zep_shim_pr_dbg(const char *fmt, va_list args)
 {
-	char *mod_fmt = NULL;
+	char buf[80];
 
-	mod_fmt = k_calloc(strlen(fmt) + 1 + 3, sizeof(char));
+	vsnprintf(buf, sizeof(buf), fmt, args);
 
-	if (!mod_fmt) {
-		LOG_ERR("%s: Unable to allocate memory for mod_fmt\n", __func__);
-		return -1;
-	}
-
-	strcpy(mod_fmt, "Debug: ");
-	strcat(mod_fmt, fmt);
-
-	vprintk(mod_fmt, args);
+	LOG_DBG("%s", buf);
 
 	return 0;
 }
 
 static int zep_shim_pr_info(const char *fmt, va_list args)
 {
-	char *mod_fmt = NULL;
+	char buf[80];
 
-	mod_fmt = k_calloc(strlen(fmt) + 1 + 3, sizeof(char));
+	vsnprintf(buf, sizeof(buf), fmt, args);
 
-	if (!mod_fmt) {
-		LOG_ERR("%s: Unable to allocate memory for mod_fmt\n", __func__);
-		return -1;
-	}
-
-	strcpy(mod_fmt, "Info: ");
-	strcat(mod_fmt, fmt);
-
-	vprintk(mod_fmt, args);
+	LOG_INF("%s", buf);
 
 	return 0;
 }
 
 static int zep_shim_pr_err(const char *fmt, va_list args)
 {
-	char *mod_fmt = NULL;
+	char buf[256];
 
-	mod_fmt = k_calloc(strlen(fmt) + 1 + 3, sizeof(char));
+	vsnprintf(buf, sizeof(buf), fmt, args);
 
-	if (!mod_fmt) {
-		LOG_ERR("%s: Unable to allocate memory for mod_fmt\n", __func__);
-		return -1;
-	}
-
-	strcpy(mod_fmt, "Error: ");
-	strcat(mod_fmt, fmt);
-
-	vprintk(mod_fmt, args);
+	LOG_ERR("%s", buf);
 
 	return 0;
 }
@@ -331,7 +306,6 @@ void *net_pkt_to_nbuf(struct net_pkt *pkt)
 	nwb = zep_shim_nbuf_alloc(len + 100);
 
 	if (!nwb) {
-		LOG_ERR("Out of memory for sending frame\n");
 		return NULL;
 	}
 
@@ -355,10 +329,13 @@ void *net_pkt_from_nbuf(void *iface, void *frm)
 
 	data = zep_shim_nbuf_data_get(nwb);
 
-	pkt = net_pkt_rx_alloc_with_buffer(iface, len, AF_UNSPEC, 0, K_FOREVER);
+	pkt = net_pkt_rx_alloc_with_buffer(iface, len, AF_UNSPEC, 0, K_MSEC(100));
+
+	if (!pkt) {
+		return NULL;
+	}
 
 	if (net_pkt_write(pkt, data, len)) {
-		LOG_ERR("Out of memory for received frame");
 		net_pkt_unref(pkt);
 		pkt = NULL;
 	}
@@ -620,7 +597,7 @@ static void zep_shim_bus_qspi_deinit(void *os_qspi_priv)
 	k_free(qspi_priv);
 }
 
-#ifdef RPU_SLEEP_SUPPORT
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
 static int zep_shim_bus_qspi_ps_sleep(void *os_qspi_priv)
 {
 	rpu_sleep();
@@ -630,7 +607,7 @@ static int zep_shim_bus_qspi_ps_sleep(void *os_qspi_priv)
 
 static int zep_shim_bus_qspi_ps_wake(void *os_qspi_priv)
 {
-	rpu_wake();
+	rpu_wakeup();
 
 	return 0;
 }
@@ -639,7 +616,7 @@ static int zep_shim_bus_qspi_ps_status(void *os_qspi_priv)
 {
 	return rpu_sleep_status();
 }
-#endif
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
 
 static void zep_shim_bus_qspi_dev_host_map_get(void *os_qspi_dev_ctx,
 					       struct wifi_nrf_osal_host_map *host_map)
@@ -714,7 +691,7 @@ static void zep_shim_bus_qspi_intr_unreg(void *os_qspi_dev_ctx)
 {
 }
 
-#ifdef RPU_SLEEP_SUPPORT
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
 static void *zep_shim_timer_alloc(void)
 {
 	struct timer_list *timer = NULL;
@@ -749,7 +726,7 @@ static void zep_shim_timer_kill(void *timer)
 {
 	del_timer_sync(timer);
 }
-#endif
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
 
 static const struct wifi_nrf_osal_ops wifi_nrf_os_zep_ops = {
 	.mem_alloc = zep_shim_mem_alloc,
@@ -821,7 +798,7 @@ static const struct wifi_nrf_osal_ops wifi_nrf_os_zep_ops = {
 	.bus_qspi_dev_intr_unreg = zep_shim_bus_qspi_intr_unreg,
 	.bus_qspi_dev_host_map_get = zep_shim_bus_qspi_dev_host_map_get,
 
-#ifdef RPU_SLEEP_SUPPORT
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
 	.timer_alloc = zep_shim_timer_alloc,
 	.timer_init = zep_shim_timer_init,
 	.timer_free = zep_shim_timer_free,
@@ -831,7 +808,7 @@ static const struct wifi_nrf_osal_ops wifi_nrf_os_zep_ops = {
 	.bus_qspi_ps_sleep = zep_shim_bus_qspi_ps_sleep,
 	.bus_qspi_ps_wake = zep_shim_bus_qspi_ps_wake,
 	.bus_qspi_ps_status = zep_shim_bus_qspi_ps_status,
-#endif
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
 };
 
 const struct wifi_nrf_osal_ops *get_os_ops(void)

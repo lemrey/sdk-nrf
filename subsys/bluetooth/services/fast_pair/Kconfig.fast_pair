@@ -14,10 +14,13 @@ menuconfig BT_FAST_PAIR
 if BT_FAST_PAIR
 
 config BT_FAST_PAIR_EXT_PN
-	bool "Personalized Name extension"
+	bool
 	select BT_FAST_PAIR_STORAGE_EXT_PN
 	help
 	  Enable Fast Pair Personalized Name extension.
+
+	  The feature is not fully supported. Fast Pair Service's Additional
+	  Data characteristic is not implemented.
 
 rsource "fp_crypto/Kconfig.fp_crypto"
 rsource "fp_storage/Kconfig.fp_storage"
@@ -56,6 +59,7 @@ config BT_FAST_PAIR_AUTH
 	default y
 	select BT_SMP
 	select BT_SMP_APP_PAIRING_ACCEPT
+	select BT_SMP_ENFORCE_MITM
 	help
 	  Add Fast Pair Bluetooth authentication source files.
 

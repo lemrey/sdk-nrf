@@ -4,10 +4,14 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #include <stdbool.h>
+#if defined(CONFIG_NRF_MODEM)
 #include <nrf_modem.h>
+#endif
+#if defined(CONFIG_NRF_MODEM_LIB)
 #include <modem/nrf_modem_lib.h>
+#endif
 #include <zephyr/dfu/mcuboot.h>
 #include <dfu/dfu_target_full_modem.h>
 #include <dfu/fmfu_fdev.h>
@@ -16,6 +20,19 @@
 #endif
 #include <zephyr/logging/log.h>
 #include <net/nrf_cloud.h>
+
+#if defined(CONFIG_NRF_MODEM_LIB)
+NRF_MODEM_LIB_ON_INIT(nrf_cloud_fota_common_init_hook,
+		      on_modem_lib_init, NULL);
+
+/* Initialized to value different than success (0) */
+static int modem_lib_init_result = -1;
+
+static void on_modem_lib_init(int ret, void *ctx)
+{
+	modem_lib_init_result = ret;
+}
+#endif
 
 LOG_MODULE_REGISTER(nrf_cloud_fota_common, CONFIG_NRF_CLOUD_LOG_LEVEL);
 
@@ -63,6 +80,7 @@ int nrf_cloud_fota_fmfu_dev_set(const struct dfu_target_fmfu_fdev *const fmfu_de
 int nrf_cloud_fota_fmfu_apply(void)
 {
 	if (!fmfu_dev_set) {
+		LOG_ERR("Flash device for full modem FOTA is not set");
 		return -EACCES;
 	}
 
@@ -157,8 +175,6 @@ static enum nrf_cloud_fota_validate_status app_fota_validate_get(void)
 static enum nrf_cloud_fota_validate_status modem_delta_fota_validate_get(void)
 {
 #if defined(CONFIG_NRF_MODEM_LIB)
-	int modem_lib_init_result = nrf_modem_lib_get_init_ret();
-
 	switch (modem_lib_init_result) {
 	case MODEM_DFU_RESULT_OK:
 		LOG_INF("Modem FOTA update confirmed");
@@ -184,6 +200,9 @@ static enum nrf_cloud_fota_validate_status modem_full_fota_validate_get(void)
 
 #if defined(CONFIG_NRF_CLOUD_FOTA_FULL_MODEM_UPDATE)
 	err = nrf_cloud_fota_fmfu_apply();
+	if (err) {
+		LOG_ERR("Full modem FOTA was not applied, error: %d", err);
+	}
 #endif
 
 	return (err ? NRF_CLOUD_FOTA_VALIDATE_FAIL :
@@ -284,4 +303,27 @@ int nrf_cloud_pending_fota_job_process(struct nrf_cloud_settings_fota_job * cons
 	}
 
 	return 0;
+}
+
+bool nrf_cloud_fota_is_type_enabled(const enum nrf_cloud_fota_type type)
+{
+	if (!IS_ENABLED(CONFIG_NRF_CLOUD_FOTA) && !IS_ENABLED(CONFIG_NRF_CLOUD_REST)) {
+		return false;
+	}
+
+	switch (type) {
+	case NRF_CLOUD_FOTA_APPLICATION:
+		return IS_ENABLED(CONFIG_BOOTLOADER_MCUBOOT);
+	case NRF_CLOUD_FOTA_BOOTLOADER:
+		return IS_ENABLED(CONFIG_BOOTLOADER_MCUBOOT) &&
+		       IS_ENABLED(CONFIG_BUILD_S1_VARIANT) &&
+		       IS_ENABLED(CONFIG_SECURE_BOOT);
+	case NRF_CLOUD_FOTA_MODEM_DELTA:
+		return IS_ENABLED(CONFIG_NRF_MODEM);
+	case NRF_CLOUD_FOTA_MODEM_FULL:
+		return IS_ENABLED(CONFIG_NRF_CLOUD_FOTA_FULL_MODEM_UPDATE) &&
+		       IS_ENABLED(CONFIG_NRF_MODEM);
+	default:
+		return false;
+	}
 }

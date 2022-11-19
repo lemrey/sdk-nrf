@@ -15,6 +15,7 @@
 #define DATA_MODEM_STATIC   "deviceInfo"
 #define DATA_CONFIG	    "config"
 #define DATA_VERSION	    "version"
+#define DATA_IMPACT         "impact"
 
 #define DATA_GROUP     "messageType"
 #define DATA_ID	       "appId"
@@ -33,6 +34,7 @@
 #define APP_ID_TEMPERATURE "TEMP"
 #define APP_ID_RSRP	   "RSRP"
 #define APP_ID_CELL_POS    "CELL_POS"
+#define APP_ID_IMPACT      "IMPACT"
 
 #define MODEM_CURRENT_BAND     "currentBand"
 #define MODEM_NETWORK_MODE     "networkMode"
@@ -52,7 +54,9 @@
 #define CONFIG_MOVE_TIMEOUT		  "movementTimeout"
 #define CONFIG_MOVE_RES			  "movementResolution"
 #define CONFIG_GNSS_TIMEOUT		  "gnssTimeout"
-#define CONFIG_ACC_THRESHOLD		  "movementThreshold"
+#define CONFIG_ACC_ACT_THRESHOLD	  "accThreshAct"
+#define CONFIG_ACC_INACT_THRESHOLD	  "accThreshInact"
+#define CONFIG_ACC_INACT_TIMEOUT	  "accTimeoutInact"
 #define CONFIG_NO_DATA_LIST		  "nod"
 #define CONFIG_NO_DATA_LIST_GNSS	  "gnss"
 #define CONFIG_NO_DATA_LIST_NEIGHBOR_CELL "ncell"

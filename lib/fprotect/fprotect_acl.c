@@ -57,7 +57,6 @@ static int fprotect_set_permission(uint32_t start, size_t length,
 	return 0;
 }
 
-#ifdef CONFIG_FPROTECT_ENABLE_IS_PROTECTED
 uint32_t fprotect_is_protected(uint32_t addr)
 {
 	uint32_t region_idx;
@@ -90,7 +89,6 @@ uint32_t fprotect_is_protected(uint32_t addr)
 
 	return 0;
 }
-#endif
 
 int fprotect_area(uint32_t start, size_t length)
 {
@@ -98,12 +96,8 @@ int fprotect_area(uint32_t start, size_t length)
 				       NRF_ACL_PERM_READ_NO_WRITE);
 }
 
-#if defined(CONFIG_FPROTECT_ENABLE_NO_ACCESS)
-
 int fprotect_area_no_access(uint32_t start, size_t length)
 {
 	return fprotect_set_permission(start, length,
 				       NRF_ACL_PERM_NO_READ_NO_WRITE);
 }
-
-#endif

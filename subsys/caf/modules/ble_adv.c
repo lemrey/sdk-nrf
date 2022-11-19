@@ -11,7 +11,7 @@
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 
-#include <bluetooth/bt_le_adv_prov.h>
+#include <bluetooth/adv_prov.h>
 
 #define MODULE ble_adv
 #include <caf/events/module_state_event.h>
@@ -165,7 +165,7 @@ static int ble_adv_start_directed(const bt_addr_le_t *addr, bool fast_adv)
 	char addr_str[BT_ADDR_LE_STR_LEN];
 	bt_addr_le_to_str(addr, addr_str, sizeof(addr_str));
 
-	LOG_INF("Direct advertising to %s", log_strdup(addr_str));
+	LOG_INF("Direct advertising to %s", addr_str);
 
 	return 0;
 }
@@ -230,8 +230,7 @@ static int ble_adv_start_undirected(const bt_addr_le_t *bond_addr,
 				    bool fast_adv)
 {
 	struct bt_le_adv_param adv_param = {
-		.options = BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_ONE_TIME |
-			   BT_LE_ADV_OPT_USE_NAME,
+		.options = BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_ONE_TIME,
 	};
 
 	LOG_INF("Use %s advertising", (fast_adv)?("fast"):("slow"));
@@ -528,9 +527,19 @@ static bool handle_ble_peer_event(const struct ble_peer_event *event)
 
 	switch (event->state) {
 	case PEER_STATE_CONNECTED:
-		err = ble_adv_stop();
-		break;
+	{
+		bool wu = false;
 
+		if (IS_ENABLED(CONFIG_CAF_BLE_ADV_GRACE_PERIOD) &&
+		    (state == STATE_GRACE_PERIOD)) {
+			wu = true;
+		}
+		err = ble_adv_stop();
+		if (wu) {
+			APP_EVENT_SUBMIT(new_wake_up_event());
+		}
+		break;
+	}
 	case PEER_STATE_SECURED:
 		if (peer_is_rpa[cur_identity] == PEER_RPA_ERASED) {
 			if (bt_addr_le_is_rpa(bt_conn_get_dst(event->id))) {
@@ -562,6 +571,34 @@ static bool handle_ble_peer_event(const struct ble_peer_event *event)
 
 	if (err) {
 		module_set_state(MODULE_STATE_ERROR);
+	}
+
+	return false;
+}
+
+static bool handle_ble_adv_data_update_event(const struct ble_adv_data_update_event *event)
+{
+	ARG_UNUSED(event);
+
+	int err = 0;
+	bool in_grace_period = false;
+
+	switch (state) {
+	case STATE_GRACE_PERIOD:
+		in_grace_period = true;
+		/* Fall-through */
+
+	case STATE_ACTIVE_FAST:
+	case STATE_ACTIVE_SLOW:
+		err = update_undirected_advertising(NULL, in_grace_period);
+		if (err) {
+			LOG_ERR("Cannot modify advertising data (err %d)", err);
+		}
+		break;
+
+	default:
+		/* Advertising data will be updated on undirected advertising start. */
+		break;
 	}
 
 	return false;
@@ -741,6 +778,10 @@ static bool app_event_handler(const struct app_event_header *aeh)
 		return handle_ble_peer_event(cast_ble_peer_event(aeh));
 	}
 
+	if (is_ble_adv_data_update_event(aeh)) {
+		return handle_ble_adv_data_update_event(cast_ble_adv_data_update_event(aeh));
+	}
+
 	if (IS_ENABLED(CONFIG_CAF_BLE_ADV_BLE_BOND_SUPPORTED) &&
 	    is_ble_peer_operation_event(aeh)) {
 		return handle_ble_peer_operation_event(cast_ble_peer_operation_event(aeh));
@@ -764,6 +805,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE(MODULE, module_state_event);
 APP_EVENT_SUBSCRIBE(MODULE, ble_peer_event);
+APP_EVENT_SUBSCRIBE(MODULE, ble_adv_data_update_event);
 #if CONFIG_CAF_BLE_ADV_BLE_BOND_SUPPORTED
 APP_EVENT_SUBSCRIBE(MODULE, ble_peer_operation_event);
 #endif /* CONFIG_CAF_BLE_ADV_BLE_BOND_SUPPORTED */
