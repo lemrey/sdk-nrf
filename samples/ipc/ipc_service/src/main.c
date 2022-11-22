@@ -12,13 +12,16 @@
 
 #include <zephyr/ipc/ipc_service.h>
 
+#if DT_NODE_EXISTS(DT_NODELABEL(ppr_code))
+#define PPR_START_ADDR DT_REG_ADDR(DT_NODELABEL(ppr_code))
+#include <hal/nrf_vpr.h>
+#endif
+
 #ifdef CONFIG_TEST_EXTRA_STACK_SIZE
 #define STACKSIZE	(1024 + CONFIG_TEST_EXTRA_STACK_SIZE)
 #else
 #define STACKSIZE	(1024)
 #endif
-
-#define STACKSIZE	(1024 + CONFIG_TEST_EXTRA_STACK_SIZE)
 
 LOG_MODULE_REGISTER(host, LOG_LEVEL_INF);
 

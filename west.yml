@@ -49,8 +49,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/introduction/index.html
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
-      repo-path: sdk-zephyr
-      revision: v3.1.99-ncs1
+      repo-path: sdk-zephyr-next
+      revision: 95a0f20cf2be7c8e75dae9bde56ad3526e7bd56d
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -112,7 +112,23 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: v2.1.0
+      revision: a8a2852be7cb1c5b296e9f801cd4d4658b6a4007
+    - name: ic-next
+      repo-path: sdk-ic-next
+      path: modules/ic-next
+      revision: fdf10c7c977c79d05e32f5672b8b56b3852fd9c5
+    - name: sdk-secdom
+      revision: v3.6.0
+      path: core_fw/secdom
+    - name: nrf-regtool
+      revision: 0c5e2705737a8aedd0b5c296dfe93016c5faaa59
+      path: modules/lib/nrf-regtool
+    - name: nrfs
+      path: modules/lib/nrfs
+      revision: 2437a2ed460394dd8247f5aae2890ba9ebc0a012
+    - name: sdk-sysctrl
+      revision: 0066d2250f1eb22d8c6a5092f079537e765c3111
+      path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
@@ -124,7 +140,7 @@ manifest:
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: v2.1.0
+      revision: 15a08b71e9277ff0e541daaac717f16dda4e2bd6
       submodules:
         - name: nlio
           path: third_party/nlio/repo
@@ -158,6 +174,10 @@ manifest:
       repo-path: azure-sdk-for-c
       path: modules/lib/azure-sdk-for-c
       revision: 308c171cb4b5eed266649012a68406487ec81fb2
+    - name: suit-processor
+      remote: nordicsemi
+      revision: 77b45d6c1bada96313149f372e61ac95a471a123
+      path: modules/lib/suit-processor
     # Other third-party repositories.
     - name: cmock
       path: test/cmock

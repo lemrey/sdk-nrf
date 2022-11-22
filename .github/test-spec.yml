@@ -1,4 +1,15 @@
 # This is the Jenkins ci variant of the .github/labler.yaml
+"CI-run-twister": # Not supported in Jenkinsfile yet
+ - any:
+    - "!.github/**/*"
+    - "!.vscode/**/*"
+    - "!doc/**/*"
+    - "!test-manifests/**/*"
+    - "!CODEOWNERS"
+    - "!LICENSE"
+    - "!**/*.rst"
+    - "!VERSION"
+    - "!ncs_version.h.in"
 
 "CI-tool-test-linux":
   - "scripts/requirements*.txt"
@@ -11,6 +22,13 @@
 "CI-tool-test-darwin":
   - "scripts/requirements*.txt"
   - "scripts/tools-versions-darwin.txt"
+
+# to build doc, twister must be also executed
+# thus removing "!doc/**/*" and "!**/*.rst" from CI-run-twister
+
+"CI-sdk-nrf-next-doc":
+  - "doc/**/*"
+  - "**/*.rst"
 
 "CI-iot-zephyr-lwm2m-test":
   - "lib/nrf_modem_lib/**/*"

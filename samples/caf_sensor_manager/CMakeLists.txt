@@ -17,3 +17,8 @@ zephyr_include_directories(
   configuration/${BOARD})
 
 add_subdirectory(src/modules)
+
+if (CONFIG_SOC_PLATFORM_HALTIUM)
+  build_secdom()
+  build_sysctrl()
+endif()
