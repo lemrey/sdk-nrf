@@ -264,6 +264,11 @@ See `Bluetooth mesh samples`_ for the list of changes for the Bluetooth mesh sam
   * Disabled automatic security re-establishment request as a peripheral (:kconfig:option:`CONFIG_BT_GATT_AUTO_SEC_REQ`) to allow the Fast Pair Seeker to control the security re-establishment.
   * Added API to check Account Key presence (:c:func:`bt_fast_pair_has_account_key`).
 
+* :ref:`hids_readme`:
+
+  * Fixed a possible out-of-bounds memory access issue in the :c:func:`hids_protocol_mode_write` and :c:func:`bt_hids_boot_kb_inp_rep_send` functions.
+  * Fixed the :c:func:`hids_ctrl_point_write` function behavior.
+
 Bootloader libraries
 --------------------
 
