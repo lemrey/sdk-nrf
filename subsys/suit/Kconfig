@@ -8,7 +8,7 @@ menuconfig SUIT
 	bool "Enable SUIT processor"
 	select SUIT_PROCESSOR
 	imply NRF_SECURITY
-	depends on (SOC_NRF52840 || SOC_NRF5420)
+	depends on (SOC_NRF52840 || SOC_NRF54H20)
 
 if SUIT
 

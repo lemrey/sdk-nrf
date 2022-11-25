@@ -10,7 +10,7 @@
 
 #if defined(CONFIG_SOC_NRF52840)
 #define DEFAULT_PSA_KEY_ID 0x7fffffe0
-#elif defined(CONFIG_SOC_NRF5420)
+#elif defined(CONFIG_SOC_NRF54H20)
 #define DEFAULT_PSA_KEY_ID 0x7fffffe0
 #else
 #define DEFAULT_PSA_KEY_ID 0
