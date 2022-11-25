@@ -9,13 +9,15 @@
 #include <drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
 
-#define SUIT_STORAGE_ADDRESS         FLASH_AREA_OFFSET(suit_storage)
-#ifdef CONFIG_SOC_NRF54H20
-#define SUIT_STORAGE_OFFSET          (SUIT_STORAGE_ADDRESS - DT_REG_ADDR(DT_NODELABEL(mram10)))
-#else /* CONFIG_SOC_NRF54H20 */
-#define SUIT_STORAGE_OFFSET          SUIT_STORAGE_ADDRESS
-#endif /* CONFIG_SOC_NRF54H20 */
-#define SUIT_STORAGE_SIZE            FLASH_AREA_SIZE(suit_storage)
+/* Calculate absolute address from flash offset. */
+#define FLASH_ADDRESS(address)  (COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mram10)), \
+	((address) + (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)), \
+	(address)))
+
+#define SUIT_STORAGE_ADDRESS     FLASH_ADDRESS(SUIT_STORAGE_OFFSET)
+#define SUIT_STORAGE_OFFSET      FLASH_AREA_OFFSET(suit_storage)
+#define SUIT_STORAGE_SIZE        FLASH_AREA_SIZE(suit_storage)
+
 #define UPDATE_MAGIC_VALUE_AVAILABLE 0x5555AAAA
 #define UPDATE_MAGIC_VALUE_CLEARED   0xAAAA5555
 #define UPDATE_MAGIC_VALUE_EMPTY     0xFFFFFFFF

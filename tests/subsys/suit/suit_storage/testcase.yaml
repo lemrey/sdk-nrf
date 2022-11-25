@@ -2,3 +2,8 @@ tests:
   suit-processor.integration.suit_storage:
     platform_allow: nrf52840dk_nrf52840
     tags: suit-processor suit_storage
+
+  suit-processor.integration.suit_storage.fpga:
+    extra_args: CONFIG_EMULATOR_FPGA=y
+    platform_allow: nrf54h20dk_nrf54h20_cpusec
+    tags: suit-processor suit_storage fpga
