@@ -176,7 +176,6 @@ manifest:
       groups:
       - nrf5340_audio
     - name: suit-processor
-      remote: nordicsemi
       revision: 146d8a650eb06225afade1520ce9f52938d61c97
       path: modules/lib/suit-processor
     # Other third-party repositories.
