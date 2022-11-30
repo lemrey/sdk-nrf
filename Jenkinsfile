@@ -1,4 +1,4 @@
-@Library("CI_LIB") _
+@Library("CI_LIB@master") _
 
 def pipeline = new ncs.sdk_nrf_next.Main()
 
