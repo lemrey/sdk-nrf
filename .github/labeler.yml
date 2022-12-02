@@ -15,4 +15,4 @@
   - "**/*.rst"
 
 "changelog-entry-required":
-  - all: ["!doc/nrf/releases/release-notes-changelog.rst"]
+  - all: ["!doc/nrf/releases/release-notes-changelog_hcs.rst"]
