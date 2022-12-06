@@ -165,7 +165,7 @@ int suit_plat_swap(suit_component_t dst_handle, suit_component_t src_handle)
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 }
 
-int suit_plat_check_run(suit_component_t image_handle, struct zcbor_string *run_args)
+int suit_plat_check_invoke(suit_component_t image_handle, struct zcbor_string *invoke_args)
 {
 	const struct suit_component_impl *impl = suit_plat_component_impl_get(image_handle);
 
@@ -173,14 +173,14 @@ int suit_plat_check_run(suit_component_t image_handle, struct zcbor_string *run_
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (impl->run == NULL) {
+	if (impl->invoke == NULL) {
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
 
 	return SUIT_SUCCESS;
 }
 
-int suit_plat_run(suit_component_t image_handle, struct zcbor_string *run_args)
+int suit_plat_invoke(suit_component_t image_handle, struct zcbor_string *invoke_args)
 {
 	const struct suit_component_impl *impl = suit_plat_component_impl_get(image_handle);
 
@@ -188,9 +188,9 @@ int suit_plat_run(suit_component_t image_handle, struct zcbor_string *run_args)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (impl->run == NULL) {
+	if (impl->invoke == NULL) {
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
 
-	return impl->run(image_handle, run_args);
+	return impl->invoke(image_handle, invoke_args);
 }

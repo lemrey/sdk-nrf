@@ -25,7 +25,7 @@ typedef int (*suit_component_write_t)(suit_component_t handle, size_t offset, ui
 				      size_t len);
 
 /** Start executing the code stored inside the component. */
-typedef int (*suit_component_run_t)(suit_component_t handle, struct zcbor_string *run_args);
+typedef int (*suit_component_invoke_t)(suit_component_t handle, struct zcbor_string *invoke_args);
 
 /** Get the address for direct read operations and return the number of bytes available. */
 typedef size_t (*suit_component_read_address_t)(suit_component_t handle, uint8_t **read_address);
@@ -51,7 +51,7 @@ struct suit_component_impl {
 
 	suit_component_read_t read;
 	suit_component_write_t write;
-	suit_component_run_t run;
+	suit_component_invoke_t invoke;
 	suit_component_read_address_t read_address;
 
 	suit_component_check_uuid_t check_vid;

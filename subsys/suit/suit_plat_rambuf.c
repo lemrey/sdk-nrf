@@ -25,7 +25,7 @@ static const uint8_t cid_uuid_raw[] = {
 };
 
 
-static bool decode_component_id(struct zcbor_string *component_id, uint8_t *cpu_id, uint8_t *run_address, size_t *size)
+static bool decode_component_id(struct zcbor_string *component_id, uint8_t *cpu_id, uint8_t *invoke_address, size_t *size)
 {
 	ZCBOR_STATE_D(state, 2, component_id->value, component_id->len, SUIT_MAX_NUM_COMPONENT_ID_PARTS);
 	struct zcbor_string component_type;
@@ -37,7 +37,7 @@ static bool decode_component_id(struct zcbor_string *component_id, uint8_t *cpu_
 	res = res && zcbor_int_decode(state, cpu_id, 1);
 	res = res && zcbor_bstr_end_decode(state);
 	res = res && zcbor_bstr_start_decode(state, NULL);
-	res = res && zcbor_size_decode(state, (size_t *)run_address);
+	res = res && zcbor_size_decode(state, (size_t *)invoke_address);
 	res = res && zcbor_bstr_end_decode(state);
 	res = res && zcbor_bstr_start_decode(state, NULL);
 	res = res && zcbor_size_decode(state, (size_t *)size);
@@ -51,14 +51,14 @@ static int init(suit_component_t handle)
 {
 	struct zcbor_string *component_id;
 	uint8_t cpu_id;
-	uint8_t run_address;
+	uint8_t invoke_address;
 	size_t size;
 
 	/* Verify that the component ID has the correct format. */
 	if (suit_plat_component_id_get(handle, &component_id) != SUIT_SUCCESS) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
-	if (!decode_component_id(component_id, &cpu_id, &run_address, &size)) {
+	if (!decode_component_id(component_id, &cpu_id, &invoke_address, &size)) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
@@ -110,7 +110,7 @@ static int write(suit_component_t handle, size_t offset, uint8_t *buf, size_t le
 	return SUIT_SUCCESS;
 }
 
-static int run(suit_component_t handle, struct zcbor_string *run_args)
+static int invoke(suit_component_t handle, struct zcbor_string *invoke_args)
 {
 	return SUIT_SUCCESS;
 }
@@ -154,7 +154,7 @@ static struct suit_component_impl impl = {
 	.init = init,
 	.read = read,
 	.write = write,
-	.run = run,
+	.invoke = invoke,
 	.read_address = read_address,
 	.check_vid = check_vid,
 	.check_cid = check_cid,
