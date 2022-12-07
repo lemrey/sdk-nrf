@@ -72,7 +72,7 @@ static void test_data_big_response(void)
 	struct data_big_content rand_test_data;
 
 	for (size_t i = 0; i < DATA_BIG_EVENT_BLOCK_SIZE; i++) {
-		event->block[i] = buffer[i];
+		event->block[i] = sys_rand32_get();
 	}
 
 	memset(&data_big_response, 0, sizeof(data_big_response));
