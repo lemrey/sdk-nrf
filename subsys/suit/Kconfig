@@ -32,4 +32,13 @@ config SUIT_PARTITION_ENVELOPE_SIZE
 
 endmenu
 
+config APP_LINK_WITH_SUIT_ORCHESTRATOR_INTERFACE
+	bool
+	default y
+
+# Configure SUIT_LOG_LEVEL
+module = SUIT
+module-str = Software Updates for Internet of Things
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
 endif #SUIT
