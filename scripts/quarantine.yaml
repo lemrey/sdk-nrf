@@ -328,9 +328,3 @@
   platforms:
     - nrf9160dk_nrf9160_ns
   comment: "Cannot specify link options for target 'tfm_ns' which is not built by this"
-
-- scenarios:
-    - suit-processor.integration.fetch_integrated_payload
-  platforms:
-    - nrf52840dk_nrf52840
-  comment: "Depends on the newest zcbor"
