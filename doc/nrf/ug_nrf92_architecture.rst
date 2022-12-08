@@ -338,34 +338,41 @@ The Secure Domain can access all the memory regions in the system and does not r
 
 The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_0`` to provide the needed access rights:
 
-===========  =====  ===========  ======================================================
-OVERRIDE Id  Owner  Permissions  Regions
-===========  =====  ===========  ======================================================
-3            All    R            UICRs
-4            App    RWS          SecDom <-> App IPC; App's Secure data
-5            App    RW           Radio <-> App IPC; App's Non-Secure data
-6            App    RXS          App's S-NSC; App's Secure code
-7            App    RX           App's Non-Secure code
-8            Radio  RWS          SecDom <-> Radio IPC; Radio's Secure data
-9            Radio  RW           Radio <-> App IPC; Radio's Non-Secure data
-10           Radio  RXS          Radio's S-NSC; Radio's Secure code
-11           Radio  RX           Radio's Non-Secure code
-12           Cell   RWS          SecDom <-> Cell IPC; Cell's Secure data
-13           Cell   RW           Cell <-> App IPC; Cell's Non-Secure data
-14           Cell   RXS          Cell's S-NSC; Cell's Secure code
-15           Cell   RX           Cell's Non-Secure code
-18           ISIM   RWX          ISIM's code and storage
-29           App    RW           App's NV storage; DFU storage bank
-30           Radio  RW           Radio's NV storage
-===========  =====  ===========  ======================================================
+===========  =====  ===========  ==========  ======================================================
+OVERRIDE Id  Owner  Permissions  SECUREMASK  Regions
+===========  =====  ===========  ==========  ======================================================
+3            All    R            any         UICRs
+4            App    RW           1           Radio <-> App IPC; App's Non-Secure data
+5            App    RWS          1 *         SecDom <-> App IPC; App's Secure data
+6            App    RX           1           App's Non-Secure code
+7            App    RXS          0           App's S-NSC; App's Secure code
+8            Radio  RW           1           Radio <-> App IPC; Radio's Non-Secure data
+9            Radio  RWS          1 *         SecDom <-> Radio IPC; Radio's Secure data
+10           Radio  RX           1           Radio's Non-Secure code
+11           Radio  RXS          0           Radio's S-NSC; Radio's Secure code
+12           Cell   RW           1           Cell <-> App IPC; Cell's Non-Secure data
+13           Cell   RWS          1 *         SecDom <-> Cell IPC; Cell's Secure data
+14           Cell   RX           1           Cell's Non-Secure code
+15           Cell   RXS          0           Cell's S-NSC; Cell's Secure code
+21           ISIM   RWX          0           ISIM's code and storage
+29           App    RW           1           App's NV storage; DFU storage bank
+30           Radio  RW           1           Radio's NV storage
+31           Cell   RW           1           Cell's NV storage
+===========  =====  ===========  ==========  ======================================================
+
+.. note::
+   SECUREMASK can be set to ``0`` for any secure memory partition.
+   However, beause of the hardware configuration, OVERRIDEs marked with * have SECUREMASK set to ``1``.
+   Such configuration implies that addresses of this entry should have 28th bit cleared.
+   It does not expose any security thread because permissions filtering denies access from non-secure masters.
 
 The Secure Domain configures OVERRIDEs in the MPC assigned to ``AXI_1`` to provide the access rights needed:
 
-===========  =======  ===========  ================================================================================================================
-OVERRIDE Id  Owner    Permissions  Regions
-===========  =======  ===========  ================================================================================================================
-5            SysCtrl  RW           Radio's non-volatile storage; App's non-volatile storage; DFU storage bank; Secure Domain's non-volatile storage
-===========  =======  ===========  ================================================================================================================
+===========  =======  ===========  ==========  ================================================================================================================
+OVERRIDE Id  Owner    Permissions  SECUREMASK  Regions
+===========  =======  ===========  ==========  ================================================================================================================
+5            SysCtrl  RW           1           Radio's non-volatile storage; App's non-volatile storage; DFU storage bank; Secure Domain's non-volatile storage
+===========  =======  ===========  ==========  ================================================================================================================
 
    .. note::
       During the installation step of the Device Firmware Update procedure, write access is enabled for more MRAM partitions.
@@ -373,26 +380,26 @@ OVERRIDE Id  Owner    Permissions  Regions
 
 The Secure Domain configures OVERRIDEs in the MPC assigned to ``AXI_2`` to provide the access rights needed:
 
-===========  =====  ===========  ==============================================================================
-OVERRIDE Id  Owner  Permissions  Regions
-===========  =====  ===========  ==============================================================================
-1            App    RW(S)        Application mngMbox; SysCtrl <-> App IPC
-2            App    RWX(S)       FLPR code; FLPR data; FLPR <-> App IPC; DMA buffers for App's fast peripherals
-3            Radio  RW(S)        Radio mngMbox; SysCtrl <-> Radio IPC
-4            Radio  RW(S)        DMA buffers for Radio's fast peripherals (if any)
-5            Cell   RW(S)        Cell mngMbox; SysCtrl <-> Cell IPC
-6            Cell   RW(S)        DMA buffers for Cell's fast peripherals (if any)
-===========  =====  ===========  ==============================================================================
+===========  =====  ===========  ==========  ==============================================================================
+OVERRIDE Id  Owner  Permissions  SECUREMASK  Regions
+===========  =====  ===========  ==========  ==============================================================================
+1            App    RW           1           Application mngMbox; SysCtrl <-> App IPC
+2            App    RWX          1           FLPR code; FLPR data; FLPR <-> App IPC; DMA buffers for App's fast peripherals
+3            Radio  RW           1           Radio mngMbox; SysCtrl <-> Radio IPC
+4            Radio  RW           1           DMA buffers for Radio's fast peripherals (if any)
+5            Cell   RW           1           Cell mngMbox; SysCtrl <-> Cell IPC
+6            Cell   RW           1           DMA buffers for Cell's fast peripherals (if any)
+===========  =====  ===========  ==========  ==============================================================================
 
 The Secure Domain configures OVERRIDEs in the MPC assigned to ``AXI_3`` to provide the access rights needed:
 
-===========  =====  ===========  ===========================================================================
-OVERRIDE Id  Owner  Permissions  Regions
-===========  =====  ===========  ===========================================================================
-1            App    RWX(S)       PPR code; PPR data; PPR <-> App IPC; DMA buffers for App's slow peripherals
-3            Radio  RW(S)        DMA buffers for Radio's slow peripherals (if any)
-6            Cell   RW(S)        DMA buffers for Cell's slow peripherals (if any)
-===========  =====  ===========  ===========================================================================
+===========  =====  ===========  ==========  ===========================================================================
+OVERRIDE Id  Owner  Permissions  SECUREMASK  Regions
+===========  =====  ===========  ==========  ===========================================================================
+1            App    RWX          1           PPR code; PPR data; PPR <-> App IPC; DMA buffers for App's slow peripherals
+3            Radio  RW           1           DMA buffers for Radio's slow peripherals (if any)
+6            Cell   RW           1           DMA buffers for Cell's slow peripherals (if any)
+===========  =====  ===========  ==========  ===========================================================================
 
 .. TODO: Diagrams showing memory view from App's SPE, App's NSPE, maybe for other cores as well?
 
