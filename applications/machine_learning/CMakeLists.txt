@@ -6,6 +6,8 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
+set(ZEPHYR_EXTRA_MODULES ${CMAKE_CURRENT_LIST_DIR})
+
 if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}")
   message(FATAL_ERROR
           "Board ${BOARD} is not supported.\n"
@@ -44,6 +46,7 @@ zephyr_include_directories(
 )
 
 # Application sources
+add_subdirectory(common/src/modules)
 add_subdirectory(src/events)
 add_subdirectory(src/modules)
 add_subdirectory(src/util)

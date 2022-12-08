@@ -6,6 +6,15 @@
 
 menu "Application options"
 
+config ML_APP_INCLUDE_REMOTE_IMAGE
+	bool "Include remote image build"
+	depends on SOC_NRF54H20_CPUAPP
+
+config ML_APP_REMOTE_BOARD
+	string "The name of the board to be used by remote image"
+	depends on ML_APP_INCLUDE_REMOTE_IMAGE
+	default "nrf54h20dk_nrf54h20_cpuppr@soc1" if (BOARD_NRF54H20DK_NRF54H20_CPUAPP && HW_REVISION_SOC1)
+
 config ML_APP_SENSOR_EVENT_DESCR
 	string "Description of handled sensor event"
 	default ""

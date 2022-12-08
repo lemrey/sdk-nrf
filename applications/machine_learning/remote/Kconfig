@@ -1,0 +1,18 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Machine learning application (remote core)"
+
+rsource "../common/Kconfig"
+# Kconfig.ml_app should land in "../common/src/" but im not
+# placing it there just to avoid conflicts when HCS will is synced with NCS
+rsource "../src/Kconfig.ml_app"
+
+endmenu
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu

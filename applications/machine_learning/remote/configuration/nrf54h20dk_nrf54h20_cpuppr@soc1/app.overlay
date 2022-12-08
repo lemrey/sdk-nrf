@@ -1,0 +1,69 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+ / {
+	chosen {
+		zephyr,console = &uart135;
+	};
+
+	reserved-memory {
+		ram31_agg_area0: memory@2fc06a00 {
+			reg = <0x2fc06a00 0x600>;
+		};
+
+		ram31_shared_rx: memory@2fc07000 {
+			reg = <0x2fc07000 0x0800>;
+		};
+
+		ram31_shared_tx: memory@2fc07800 {
+			reg = <0x2fc07800 0x0800>;
+		};
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-icmsg";
+		tx-region = <&ram31_shared_tx>;
+		rx-region = <&ram31_shared_rx>;
+		mboxes = <&bellboard_cpuapp 12>,
+			 <&vevif_cpuppr 12>;
+		mbox-names = "tx", "rx";
+		status = "okay";
+	};
+
+	sensor_stub: sensor_stub {
+		compatible = "nordic,sensor-stub";
+		label = "SENSOR_STUB";
+		generator = "sensor_stub_gen";
+		status = "okay";
+	};
+
+	agg0: agg0 {
+		compatible = "caf,aggregator";
+		sensor_descr = "accel_stub_xyz";
+		buf_data_length = <240>;
+		sample_size = <3>;
+		buf_count = <6>;
+		memory-region = <&ram31_agg_area0>;
+		status = "okay";
+	};
+};
+
+&ram3x {
+	ram3x_cpuppr: memory@7c80 {
+		status = "okay";
+		compatible = "zephyr,memory-region", "mmio-sram";
+		zephyr,memory-region = "DMA_RAM3x_PPR";
+		#memory-region-cells = < 0x0 >;
+		reg = <0x7c80 0x80>;
+	};
+};
+
+&uart135 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuppr>;
+	tx-pin = <7>;
+	rx-pin = <6>;
+};
