@@ -17,6 +17,14 @@ menu "SUIT component implementations"
 config SUIT_COMPONENT_RAMBUF
 	bool "Include MRAM as RAM buffer implementation"
 
+config SUIT_PARTITION_N_ENVELOPES
+	int "Number of envelopes, possible to store on SUIT partition"
+	default 1
+
+config SUIT_PARTITION_ENVELOPE_SIZE
+	int "The maximum size of envelope that can be stored on SUIT partition"
+	default 2048
+
 endmenu
 
 endif #SUIT
