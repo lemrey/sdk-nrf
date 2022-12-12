@@ -1,0 +1,4 @@
+tests:
+  suit-processor.integration.suit_storage:
+    platform_allow: nrf52840dk_nrf52840
+    tags: suit-processor suit_storage
