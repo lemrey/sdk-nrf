@@ -118,7 +118,7 @@ manifest:
       repo-path: sdk-nrfxlib
       path: nrfxlib
       remote: lemrey
-      revision: 8b6365419d88f8418d86201baa0972565aa4677f
+      revision: libmodem-upmerge
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
