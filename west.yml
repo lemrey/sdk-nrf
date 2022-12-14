@@ -176,7 +176,7 @@ manifest:
       groups:
       - nrf5340_audio
     - name: suit-processor
-      revision: ed0b19c4d3f1e8a3ae8a999aa5e97b4b81740b33
+      revision: 77b45d6c1bada96313149f372e61ac95a471a123
       path: modules/lib/suit-processor
     # Other third-party repositories.
     - name: cmock
