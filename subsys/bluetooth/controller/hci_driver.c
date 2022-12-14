@@ -24,6 +24,7 @@
 #include <sdc_hci.h>
 #include <sdc_hci_vs.h>
 #include <mpsl/mpsl_work.h>
+#include <mpsl/mpsl_lib.h>
 
 #include "multithreading_lock.h"
 #include "hci_internal.h"
@@ -535,6 +536,38 @@ static int configure_supported_features(void)
 		}
 	}
 
+	if (IS_ENABLED(CONFIG_BT_CTLR_SYNC_TRANSFER_SENDER)) {
+		if (IS_ENABLED(CONFIG_BT_CENTRAL)) {
+			err = sdc_support_periodic_adv_sync_transfer_sender_central();
+			if (err) {
+				return -ENOTSUP;
+			}
+		}
+
+		if (IS_ENABLED(CONFIG_BT_PERIPHERAL)) {
+			err = sdc_support_periodic_adv_sync_transfer_sender_peripheral();
+			if (err) {
+				return -ENOTSUP;
+			}
+		}
+	}
+
+	if (IS_ENABLED(CONFIG_BT_CTLR_SYNC_TRANSFER_RECEIVER)) {
+		if (IS_ENABLED(CONFIG_BT_CENTRAL)) {
+			err = sdc_support_periodic_adv_sync_transfer_receiver_central();
+			if (err) {
+				return -ENOTSUP;
+			}
+		}
+
+		if (IS_ENABLED(CONFIG_BT_PERIPHERAL)) {
+			err = sdc_support_periodic_adv_sync_transfer_receiver_peripheral();
+			if (err) {
+				return -ENOTSUP;
+			}
+		}
+	}
+
 	if (IS_ENABLED(CONFIG_BT_CTLR_PHY_CODED)) {
 		err = sdc_support_le_coded_phy();
 		if (err) {
@@ -785,13 +818,27 @@ static int hci_driver_open(void)
 	}
 
 	err = MULTITHREADING_LOCK_ACQUIRE();
-	if (!err) {
-		err = sdc_enable(receive_signal_raise, sdc_mempool);
-		MULTITHREADING_LOCK_RELEASE();
-	}
-	if (err < 0) {
+	if (err) {
 		return err;
 	}
+
+	if (IS_ENABLED(CONFIG_BT_UNINIT_MPSL_ON_DISABLE)) {
+		if (!mpsl_is_initialized()) {
+			err = mpsl_lib_init();
+			if (err) {
+				MULTITHREADING_LOCK_RELEASE();
+				return err;
+			}
+		}
+	}
+
+	err = sdc_enable(receive_signal_raise, sdc_mempool);
+	if (err) {
+		MULTITHREADING_LOCK_RELEASE();
+		return err;
+	}
+
+	MULTITHREADING_LOCK_RELEASE();
 
 	return 0;
 }
@@ -813,6 +860,14 @@ static int hci_driver_close(void)
 	if (err) {
 		MULTITHREADING_LOCK_RELEASE();
 		return err;
+	}
+
+	if (IS_ENABLED(CONFIG_BT_UNINIT_MPSL_ON_DISABLE)) {
+		err = mpsl_lib_uninit();
+		if (err) {
+			MULTITHREADING_LOCK_RELEASE();
+			return err;
+		}
 	}
 
 	MULTITHREADING_LOCK_RELEASE();
