@@ -79,7 +79,20 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	return SUIT_ERR_UNSUPPORTED_COMMAND;
+	/* During SUIT-based boot, all fetch commands become non-integrated, since all
+	 * severable parts of envelope are removed.
+	 * In such case, the manifest should be considered as valid during dry run,
+	 * even if the component does not support fetching external parts.
+	 *
+	 * Due to the fact, that this check is executed for both: boot and upgrade scenarios,
+	 * it is valid to assume that if an install step contains fetch directive, the component
+	 * must implement either fetch or fetch_integrated APIs.
+	 */
+	if (impl->fetch_integrated == NULL) {
+		return SUIT_ERR_UNSUPPORTED_COMMAND;
+	}
+
+	return SUIT_SUCCESS;
 }
 
 int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
