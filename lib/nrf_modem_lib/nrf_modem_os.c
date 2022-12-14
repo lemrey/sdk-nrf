@@ -201,6 +201,15 @@ int32_t nrf_modem_os_timedwait(uint32_t context, int32_t *timeout)
 	return 0;
 }
 
+int nrf_modem_os_sleep(uint32_t timeout)
+{
+	if (timeout == NRF_MODEM_OS_NO_WAIT || timeout == NRF_MODEM_OS_FOREVER) {
+		return -NRF_EINVAL;
+	}
+
+	return k_sleep(K_MSEC(timeout));
+}
+
 /* Set OS errno from modem library.
  *
  * Note: The nrf_errnos are aligned with the libc minimal errnos used in Zephyr. Hence,
