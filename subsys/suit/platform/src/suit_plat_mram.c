@@ -9,6 +9,9 @@
 #include <zcbor_decode.h>
 #include <suit_plat_driver_com.h>
 #include <drivers/flash.h>
+#ifdef CONFIG_FLASH_SIMULATOR
+#include <zephyr/drivers/flash/flash_simulator.h>
+#endif /* CONFIG_FLASH_SIMULATOR */
 
 /* Convert absolute address into an offset, reachable through the flash API. */
 #define FLASH_OFFSET(address)                                                                      \
@@ -189,6 +192,18 @@ static size_t read_address(suit_component_t handle, uint8_t **read_address)
 						  &size)) {
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
+
+#ifdef CONFIG_FLASH_SIMULATOR
+		size_t f_size;
+		void *f_base_address;
+
+		f_base_address = flash_simulator_get_memory(fdev, &f_size);
+		if ((size_t)*read_address >= f_size) {
+			return SUIT_ERR_CRASH;
+		}
+
+		*read_address = &(((uint8_t *)f_base_address)[(size_t)(*read_address)]);
+#endif /* CONFIG_FLASH_SIMULATOR */
 	}
 
 	return (read_address == NULL ? cs->dry_read_size : cs->read_size);

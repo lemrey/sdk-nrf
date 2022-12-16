@@ -8,11 +8,19 @@
 #include <suit_storage.h>
 #include <drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
+#ifdef CONFIG_FLASH_SIMULATOR
+#include <zephyr/drivers/flash/flash_simulator.h>
+#endif /* CONFIG_FLASH_SIMULATOR */
 
 /* Calculate absolute address from flash offset. */
+#ifdef CONFIG_FLASH_SIMULATOR
+static uint8_t *f_base_addrress = NULL;
+#define FLASH_ADDRESS(address)  (f_base_addrress + address)
+#else /* CONFIG_FLASH_SIMULATOR */
 #define FLASH_ADDRESS(address)  (COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mram10)), \
 	((address) + (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)), \
 	(address)))
+#endif /* CONFIG_FLASH_SIMULATOR */
 
 #define SUIT_STORAGE_ADDRESS     FLASH_ADDRESS(SUIT_STORAGE_OFFSET)
 #define SUIT_STORAGE_OFFSET      FLASH_AREA_OFFSET(suit_storage)
@@ -458,6 +466,12 @@ static void test_suit_storage_invalid_indexes(void)
 
 void test_main(void)
 {
+#ifdef CONFIG_FLASH_SIMULATOR
+	static const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+	size_t f_size = 0;
+	f_base_addrress = flash_simulator_get_memory(fdev, &f_size);
+#endif /* CONFIG_FLASH_SIMULATOR */
+
 	ztest_test_suite(test_suit_storage_update,
 			 ztest_unit_test_setup_teardown(
 				test_suit_storage_init,

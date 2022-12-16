@@ -8,6 +8,9 @@
 #include <zephyr/storage/flash_map.h>
 #include <zcbor_decode.h>
 #include "suit_storage.h"
+#ifdef CONFIG_FLASH_SIMULATOR
+#include <zephyr/drivers/flash/flash_simulator.h>
+#endif /* CONFIG_FLASH_SIMULATOR */
 
 #define FLASH_AREA_ERASE_BLOCK_SIZE(label)  \
 	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(label)), erase_block_size)
@@ -15,9 +18,14 @@
 	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(label)), write_block_size)
 
 /* Calculate absolute address from flash offset. */
+#ifdef CONFIG_FLASH_SIMULATOR
+static uint8_t *f_base_address = NULL;
+#define FLASH_ADDRESS(address)  (f_base_address + address)
+#else /* CONFIG_FLASH_SIMULATOR */
 #define FLASH_ADDRESS(address)  (COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mram10)), \
 	((address) + (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)), \
 	(address)))
+#endif /* CONFIG_FLASH_SIMULATOR */
 
 #define SUIT_STORAGE_ADDRESS     FLASH_ADDRESS(SUIT_STORAGE_OFFSET)
 #define SUIT_STORAGE_OFFSET      FLASH_AREA_OFFSET(suit_storage)
@@ -244,6 +252,11 @@ int suit_storage_init(void)
 		fdev = NULL;
 		return -ENXIO;
 	}
+
+#ifdef CONFIG_FLASH_SIMULATOR
+	size_t f_size = 0;
+	f_base_address = flash_simulator_get_memory(fdev, &f_size);
+#endif /* CONFIG_FLASH_SIMULATOR */
 
 	if (sizeof(struct suit_storage) > SUIT_STORAGE_SIZE) {
 		return -ENOSR;
