@@ -253,6 +253,7 @@
     - sample.aes_gcm.cc312
     - sample.aes_ctr
     - sample.ecdsa
+    - sample.bluetooth.peripheral_power_profiling
   platforms:
     - nrf5340dk_nrf5340_cpuapp_ns
   comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
