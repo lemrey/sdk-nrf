@@ -433,6 +433,10 @@
   - "drivers/wifi/**/*"
   - "samples/wifi/**/*"
 
+"CI-suit-dfu-test":
+  - "subsys/suit/**/*"
+  - "tests/subsys/suit/**/*"
+
 "CI-test_sdk_hcs":
   - any:
     - "!doc/*"
