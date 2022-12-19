@@ -22,3 +22,5 @@ zephyr_compile_options(-Werror)
 if (CONFIG_64BIT)
   set(bit_arg -b 64)
 endif()
+
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../common" "${PROJECT_BINARY_DIR}/test_common")
