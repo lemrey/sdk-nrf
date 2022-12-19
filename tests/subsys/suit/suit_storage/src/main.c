@@ -14,8 +14,8 @@
 
 /* Calculate absolute address from flash offset. */
 #ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_addrress = NULL;
-#define FLASH_ADDRESS(address)  (f_base_addrress + address)
+static uint8_t *f_base_address = NULL;
+#define FLASH_ADDRESS(address)  (f_base_address + address)
 #else /* CONFIG_FLASH_SIMULATOR */
 #define FLASH_ADDRESS(address)  (COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mram10)), \
 	((address) + (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)), \
@@ -469,7 +469,7 @@ void test_main(void)
 #ifdef CONFIG_FLASH_SIMULATOR
 	static const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
 	size_t f_size = 0;
-	f_base_addrress = flash_simulator_get_memory(fdev, &f_size);
+	f_base_address = flash_simulator_get_memory(fdev, &f_size);
 #endif /* CONFIG_FLASH_SIMULATOR */
 
 	ztest_test_suite(test_suit_storage_update,

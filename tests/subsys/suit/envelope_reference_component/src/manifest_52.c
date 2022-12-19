@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#if defined(CONFIG_SOC_NRF52840)
+#if defined(CONFIG_SOC_NRF52840) || defined(CONFIG_BOARD_NATIVE_POSIX)
 #include <suit_types.h>
 
 /** @brief SUIT envelope generated using the manifest/sample.json input file.
@@ -65,4 +65,4 @@ uint8_t manifest_buf[] = {
 };
 
 const size_t manifest_len = sizeof(manifest_buf);
-#endif /* CONFIG_SOC_NRF52840 */
+#endif /* CONFIG_SOC_NRF52840 || CONFIG_BOARD_NATIVE_POSIX */
