@@ -7,8 +7,10 @@
 menuconfig SUIT
 	bool "Enable SUIT processor"
 	select SUIT_PROCESSOR
-	imply NRF_SECURITY
-	depends on (SOC_NRF52840 || SOC_NRF54H20)
+	imply NRF_SECURITY if SOC_FAMILY_NRF
+	imply MBEDTLS if !SOC_FAMILY_NRF
+	select FLASH
+	select FLASH_SIMULATOR if BOARD_NATIVE_POSIX
 
 if SUIT
 
@@ -46,6 +48,16 @@ config SUIT_MAX_MRAM_COMPONENTS
 	  Default value is 8 and minimal 1.
 	default 8
 	depends on SUIT_COMPONENT_MRAM
+
+if MBEDTLS
+config SUIT_DEFAULT_MBEDTLS_CONFIG
+	bool "Use default mbedTLS configuration file"
+	default y
+	select MBEDTLS_USER_CONFIG_ENABLE
+
+config MBEDTLS_USER_CONFIG_FILE
+	default "user-tls-conf.h" if SUIT_DEFAULT_MBEDTLS_CONFIG
+endif
 
 endmenu
 

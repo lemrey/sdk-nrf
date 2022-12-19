@@ -13,7 +13,7 @@
 #elif defined(CONFIG_SOC_NRF54H20)
 #define DEFAULT_PSA_KEY_ID 0x7fffffe0
 #else
-#define DEFAULT_PSA_KEY_ID 0
+#define DEFAULT_PSA_KEY_ID 0x7fffffe0
 #endif
 
 int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *digest,
