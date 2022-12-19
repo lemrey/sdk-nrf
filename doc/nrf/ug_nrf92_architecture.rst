@@ -338,28 +338,29 @@ The Secure Domain can access all the memory regions in the system and does not r
 
 The Secure Domain configures OVERRIDEs in MPC assigned to ``AXI_0`` to provide the needed access rights:
 
-===========  =====  ===========  ==========  ======================================================
-OVERRIDE Id  Owner  Permissions  SECUREMASK  Regions
-===========  =====  ===========  ==========  ======================================================
-3            All    R            any         App's and Radio's UICRs
-4            App    RW           1           Radio <-> App IPC; App's Non-Secure data
-5            App    RWS          1 *         SecDom <-> App IPC; App's Secure data
-6            App    RX           1           App's Non-Secure code
-7            App    RXS          0           App's S-NSC; App's Secure code
-8            Radio  RW           1           Radio <-> App IPC; Radio's Non-Secure data
-9            Radio  RWS          1 *         SecDom <-> Radio IPC; Radio's Secure data
-10           Radio  RX           1           Radio's Non-Secure code
-11           Radio  RXS          0           Radio's S-NSC; Radio's Secure code
-12           Cell   RW           1           Cell <-> App IPC; Cell's Non-Secure data
-13           Cell   RWS          1 *         SecDom <-> Cell IPC; Cell's Secure data
-14           Cell   RX           1           Cell's Non-Secure code
-15           Cell   RXS          0           Cell's S-NSC; Cell's Secure code
-17           All    R            1           Cell's UICR
-21           ISIM   RWX          0           ISIM's code and storage
-29           App    RW           1           App's NV storage; DFU storage bank
-30           Radio  RW           1           Radio's NV storage
-31           Cell   RW           1           Cell's NV storage
-===========  =====  ===========  ==========  ======================================================
+===========  =======  ===========  ==========  ======================================================
+OVERRIDE Id  Owner    Permissions  SECUREMASK  Regions
+===========  =======  ===========  ==========  ======================================================
+1            SysCtlr  RS           1 *         PM Sequence File
+3            All      R            any         App's and Radio's UICRs
+4            App      RW           1           Radio <-> App IPC; App's Non-Secure data
+5            App      RWS          1 *         SecDom <-> App IPC; App's Secure data
+6            App      RX           1           App's Non-Secure code
+7            App      RXS          0           App's S-NSC; App's Secure code
+8            Radio    RW           1           Radio <-> App IPC; Radio's Non-Secure data
+9            Radio    RWS          1 *         SecDom <-> Radio IPC; Radio's Secure data
+10           Radio    RX           1           Radio's Non-Secure code
+11           Radio    RXS          0           Radio's S-NSC; Radio's Secure code
+12           Cell     RW           1           Cell <-> App IPC; Cell's Non-Secure data
+13           Cell     RWS          1 *         SecDom <-> Cell IPC; Cell's Secure data
+14           Cell     RX           1           Cell's Non-Secure code
+15           Cell     RXS          0           Cell's S-NSC; Cell's Secure code
+17           All      R            1           Cell's UICR
+21           ISIM     RWX          0           ISIM's code and storage
+29           App      RW           1           App's NV storage; DFU storage bank
+30           Radio    RW           1           Radio's NV storage
+31           Cell     RW           1           Cell's NV storage
+===========  =======  ===========  ==========  ======================================================
 
 .. note::
    SECUREMASK can be set to ``0`` for any secure memory partition.
