@@ -9,26 +9,28 @@
 #include <zcbor_decode.h>
 #include "suit_storage.h"
 
-#define FLASH_AREA_ERASE_BLOCK_SIZE(a)                                                             \
-	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(suit_storage)), erase_block_size)
-#define FLASH_AREA_WRITE_BLOCK_SIZE(a)                                                             \
-	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(suit_storage)), write_block_size)
+#define FLASH_AREA_ERASE_BLOCK_SIZE(label)  \
+	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(label)), erase_block_size)
+#define FLASH_AREA_WRITE_BLOCK_SIZE(label)  \
+	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(label)), write_block_size)
+
+/* Calculate absolute address from flash offset. */
+#define FLASH_ADDRESS(address)  (COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mram10)), \
+	((address) + (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)), \
+	(address)))
+
+#define SUIT_STORAGE_ADDRESS     FLASH_ADDRESS(SUIT_STORAGE_OFFSET)
+#define SUIT_STORAGE_OFFSET      FLASH_AREA_OFFSET(suit_storage)
+#define SUIT_STORAGE_SIZE        FLASH_AREA_SIZE(suit_storage)
+#define SUIT_STORAGE_EB_SIZE     FLASH_AREA_ERASE_BLOCK_SIZE(suit_storage)
+#define SUIT_STORAGE_WRITE_SIZE  FLASH_AREA_WRITE_BLOCK_SIZE(suit_storage)
+
 #define CEIL_DIV(a, b) ((((a)-1) / (b)) + 1)
 #define EB_SIZE(type) (CEIL_DIV(sizeof(type), SUIT_STORAGE_EB_SIZE) * SUIT_STORAGE_EB_SIZE)
 
-#define SUIT_STORAGE_ADDRESS FLASH_AREA_OFFSET(suit_storage)
-#ifdef CONFIG_SOC_NRF54H20
-#define SUIT_STORAGE_OFFSET (SUIT_STORAGE_ADDRESS - DT_REG_ADDR(DT_NODELABEL(mram10)))
-#else /* CONFIG_SOC_NRF54H20 */
-#define SUIT_STORAGE_OFFSET SUIT_STORAGE_ADDRESS
-#endif /* CONFIG_SOC_NRF54H20 */
-#define SUIT_STORAGE_SIZE FLASH_AREA_SIZE(suit_storage)
-#define SUIT_STORAGE_EB_SIZE FLASH_AREA_ERASE_BLOCK_SIZE(suit_storage)
-#define SUIT_STORAGE_WRITE_SIZE FLASH_AREA_WRITE_BLOCK_SIZE(suit_storage)
-
-#define UPDATE_MAGIC_VALUE_AVAILABLE 0x5555AAAA
-#define UPDATE_MAGIC_VALUE_CLEARED 0xAAAA5555
-#define UPDATE_MAGIC_VALUE_EMPTY 0xFFFFFFFF
+#define UPDATE_MAGIC_VALUE_AVAILABLE  0x5555AAAA
+#define UPDATE_MAGIC_VALUE_CLEARED    0xAAAA5555
+#define UPDATE_MAGIC_VALUE_EMPTY      0xFFFFFFFF
 
 struct update_candidate_info {
 	int update_magic_value;

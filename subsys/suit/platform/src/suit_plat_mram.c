@@ -10,10 +10,18 @@
 #include <suit_plat_driver_com.h>
 #include <drivers/flash.h>
 
+/* Convert absolute address into an offset, reachable through the flash API. */
+#define FLASH_OFFSET(address)  (COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mram10)), \
+	((address) - (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)), \
+	(address)))
+
+
 static const struct device *fdev;
-static size_t read_size; ///! The size of the current contents in the current slot.
-static size_t
-	dry_read_size; ///! The size of the current contents in the current slot while dry running commands.
+/* The size of the current contents in the current slot. */
+static size_t read_size;
+/* The size of the current contents in the current slot while dry running commands. */
+static size_t dry_read_size;
+
 
 static int init(suit_component_t handle)
 {
@@ -56,8 +64,9 @@ static int read(suit_component_t handle, size_t offset, uint8_t *buf, size_t *le
 		}
 
 		if (buf != NULL) {
-			return (flash_read(fdev, offset, buf, *len) == 0) ? SUIT_SUCCESS :
-									    SUIT_ERR_CRASH;
+			return (flash_read(fdev, FLASH_OFFSET(offset), buf, *len) == 0) ?
+				       SUIT_SUCCESS :
+				       SUIT_ERR_CRASH;
 		}
 
 		return SUIT_SUCCESS;
@@ -94,7 +103,8 @@ static int write(suit_component_t handle, size_t offset, uint8_t *buf, size_t le
 		}
 #endif
 
-		return (flash_write(fdev, offset, buf, len) == 0) ? SUIT_SUCCESS : SUIT_ERR_CRASH;
+		return (flash_write(fdev, FLASH_OFFSET(offset), buf, len) == 0) ? SUIT_SUCCESS :
+										  SUIT_ERR_CRASH;
 	} else {
 		if (offset + len > dry_read_size) {
 			dry_read_size = offset + len;
