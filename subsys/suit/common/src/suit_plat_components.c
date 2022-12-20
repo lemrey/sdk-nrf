@@ -80,7 +80,8 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 	}
 
 	/* Store component ID and keys, so the selected implementation can use it in the future. */
-	component->component_id = component_id;
+	component->component_id.value = component_id->value;
+	component->component_id.len = component_id->len;
 	component->key_ids = key_ids;
 	component->num_key_ids = num_key_ids;
 
@@ -129,13 +130,13 @@ int suit_plat_component_impl_data_get(suit_component_t handle, void **impl_data)
 
 int suit_plat_component_id_get(suit_component_t handle, struct zcbor_string **component_id)
 {
-	const struct suit_plat_component *component = component_from_handle(handle);
+	struct suit_plat_component *component = component_from_handle(handle);
 
 	if (component == NULL) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	*component_id = component->component_id;
+	*component_id = &(component->component_id);
 	return SUIT_SUCCESS;
 }
 

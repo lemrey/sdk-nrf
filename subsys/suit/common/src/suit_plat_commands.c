@@ -7,7 +7,6 @@
 #include <suit_platform.h>
 #include <suit_platform_internal.h>
 
-
 int suit_plat_check_slot(suit_component_t component_handle, unsigned int slot)
 {
 	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
@@ -23,8 +22,7 @@ int suit_plat_check_slot(suit_component_t component_handle, unsigned int slot)
 	return impl->check_slot(component_handle, slot);
 }
 
-int suit_plat_check_vid(struct zcbor_string *vid_uuid,
-		suit_component_t component_handle)
+int suit_plat_check_vid(struct zcbor_string *vid_uuid, suit_component_t component_handle)
 {
 	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
 
@@ -39,8 +37,7 @@ int suit_plat_check_vid(struct zcbor_string *vid_uuid,
 	return impl->check_vid(component_handle, vid_uuid);
 }
 
-int suit_plat_check_cid(struct zcbor_string *cid_uuid,
-		suit_component_t component_handle)
+int suit_plat_check_cid(struct zcbor_string *cid_uuid, suit_component_t component_handle)
 {
 	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
 
@@ -55,8 +52,7 @@ int suit_plat_check_cid(struct zcbor_string *cid_uuid,
 	return impl->check_cid(component_handle, cid_uuid);
 }
 
-int suit_plat_check_did(struct zcbor_string *did_uuid,
-		suit_component_t component_handle)
+int suit_plat_check_did(struct zcbor_string *did_uuid, suit_component_t component_handle)
 {
 	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
 
@@ -145,17 +141,12 @@ static int copy(suit_component_t dst_handle, suit_component_t src_handle, bool d
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if ((src_impl->read_address == NULL) ||
-	    (dst_impl->write == NULL)) {
+	if ((src_impl->read_address == NULL) || (dst_impl->write == NULL)) {
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
 
 	read_size = src_impl->read_address(src_handle, (dry_run ? NULL : &read_address));
-	return dst_impl->write(
-		dst_handle,
-		0,
-		(dry_run ? NULL : read_address),
-		read_size);
+	return dst_impl->write(dst_handle, 0, (dry_run ? NULL : read_address), read_size);
 }
 
 int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handle)

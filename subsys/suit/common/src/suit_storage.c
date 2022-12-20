@@ -9,33 +9,30 @@
 #include <zcbor_decode.h>
 #include "suit_storage.h"
 
-
-#define FLASH_AREA_ERASE_BLOCK_SIZE(a) \
+#define FLASH_AREA_ERASE_BLOCK_SIZE(a)                                                             \
 	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(suit_storage)), erase_block_size)
-#define FLASH_AREA_WRITE_BLOCK_SIZE(a) \
+#define FLASH_AREA_WRITE_BLOCK_SIZE(a)                                                             \
 	DT_PROP(DT_GPARENT(DT_NODE_BY_FIXED_PARTITION_LABEL(suit_storage)), write_block_size)
-#define CEIL_DIV(a, b)  ((((a) - 1) / (b)) + 1)
-#define EB_SIZE(type)  (CEIL_DIV(sizeof(type), SUIT_STORAGE_EB_SIZE) * SUIT_STORAGE_EB_SIZE)
+#define CEIL_DIV(a, b) ((((a)-1) / (b)) + 1)
+#define EB_SIZE(type) (CEIL_DIV(sizeof(type), SUIT_STORAGE_EB_SIZE) * SUIT_STORAGE_EB_SIZE)
 
-#define SUIT_STORAGE_ADDRESS         FLASH_AREA_OFFSET(suit_storage)
+#define SUIT_STORAGE_ADDRESS FLASH_AREA_OFFSET(suit_storage)
 #ifdef CONFIG_SOC_NRF54H20
-#define SUIT_STORAGE_OFFSET          (SUIT_STORAGE_ADDRESS - DT_REG_ADDR(DT_NODELABEL(mram10)))
+#define SUIT_STORAGE_OFFSET (SUIT_STORAGE_ADDRESS - DT_REG_ADDR(DT_NODELABEL(mram10)))
 #else /* CONFIG_SOC_NRF54H20 */
-#define SUIT_STORAGE_OFFSET          SUIT_STORAGE_ADDRESS
+#define SUIT_STORAGE_OFFSET SUIT_STORAGE_ADDRESS
 #endif /* CONFIG_SOC_NRF54H20 */
-#define SUIT_STORAGE_SIZE            FLASH_AREA_SIZE(suit_storage)
-#define SUIT_STORAGE_EB_SIZE         FLASH_AREA_ERASE_BLOCK_SIZE(suit_storage)
-#define SUIT_STORAGE_WRITE_SIZE      FLASH_AREA_WRITE_BLOCK_SIZE(suit_storage)
+#define SUIT_STORAGE_SIZE FLASH_AREA_SIZE(suit_storage)
+#define SUIT_STORAGE_EB_SIZE FLASH_AREA_ERASE_BLOCK_SIZE(suit_storage)
+#define SUIT_STORAGE_WRITE_SIZE FLASH_AREA_WRITE_BLOCK_SIZE(suit_storage)
 
 #define UPDATE_MAGIC_VALUE_AVAILABLE 0x5555AAAA
-#define UPDATE_MAGIC_VALUE_CLEARED   0xAAAA5555
-#define UPDATE_MAGIC_VALUE_EMPTY     0xFFFFFFFF
-
-
+#define UPDATE_MAGIC_VALUE_CLEARED 0xAAAA5555
+#define UPDATE_MAGIC_VALUE_EMPTY 0xFFFFFFFF
 
 struct update_candidate_info {
 	int update_magic_value;
-	void* dfu_partition_addr;
+	void *dfu_partition_addr;
 	size_t dfu_partition_size;
 };
 
@@ -61,10 +58,8 @@ struct SUIT_Envelope {
 
 static const struct device *fdev;
 
-static int decode_SUIT_Envelope_Tagged(
-		const uint8_t *payload, size_t payload_len,
-		struct SUIT_Envelope *result,
-		size_t *payload_len_out)
+static int decode_SUIT_Envelope_Tagged(const uint8_t *payload, size_t payload_len,
+				       struct SUIT_Envelope *result, size_t *payload_len_out)
 {
 	bool ret = false;
 	zcbor_state_t states[3];
@@ -73,10 +68,10 @@ static int decode_SUIT_Envelope_Tagged(
 
 	if (zcbor_tag_expect(states, 107) && zcbor_map_start_decode(states) == true) {
 		/* Parse authentication wrapper and manifest. */
-		ret = (zcbor_uint32_expect(states, 2)
-			&& zcbor_bstr_decode(states, &(result->suit_authentication_wrapper))
-			&& zcbor_uint32_expect(states, 3)
-			&& zcbor_bstr_decode(states, &(result->suit_manifest)));
+		ret = (zcbor_uint32_expect(states, 2) &&
+		       zcbor_bstr_decode(states, &(result->suit_authentication_wrapper)) &&
+		       zcbor_uint32_expect(states, 3) &&
+		       zcbor_bstr_decode(states, &(result->suit_manifest)));
 
 		/* Ignore remaining items, consume backups and finish decoding.*/
 		if (zcbor_list_map_end_force_decode(states) == false) {
@@ -85,8 +80,7 @@ static int decode_SUIT_Envelope_Tagged(
 	}
 
 	if (ret && (payload_len_out != NULL)) {
-		*payload_len_out = MIN(payload_len,
-				(size_t)states[0].payload - (size_t)payload);
+		*payload_len_out = MIN(payload_len, (size_t)states[0].payload - (size_t)payload);
 	}
 
 	if (!ret) {
@@ -129,7 +123,8 @@ static size_t header_len(size_t num_elems)
  *
  * @return 0 on success, negative value otherwise.
  */
-static int save_envelope_partial(size_t index, const void *addr, size_t size, bool reset, bool flush)
+static int save_envelope_partial(size_t index, const void *addr, size_t size, bool reset,
+				 bool flush)
 {
 	int err = 0;
 	static uint8_t write_buf[SUIT_STORAGE_WRITE_SIZE];
@@ -150,8 +145,8 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
 		buf_fill_level = 0;
 		offset = 0;
 		current_index = index;
-		err = flash_erase(fdev,
-			SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, envelopes[index]),
+		err = flash_erase(
+			fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, envelopes[index]),
 			sizeof(((struct suit_storage *)0)->envelopes[0].envelope_eb));
 	}
 
@@ -171,11 +166,10 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
 	/* If write buffer is full - write it into the memory. */
 	if ((err == 0) && (buf_fill_level == sizeof(write_buf))) {
 		err = flash_write(fdev,
-			SUIT_STORAGE_OFFSET
-			+ offsetof(struct suit_storage, envelopes[index].envelope)
-			+ offset,
-			write_buf,
-			sizeof(write_buf));
+				  SUIT_STORAGE_OFFSET +
+					  offsetof(struct suit_storage, envelopes[index].envelope) +
+					  offset,
+				  write_buf, sizeof(write_buf));
 
 		buf_fill_level = 0;
 		offset += sizeof(write_buf);
@@ -186,11 +180,10 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
 		size_t write_size = ((size / sizeof(write_buf)) * sizeof(write_buf));
 
 		err = flash_write(fdev,
-			SUIT_STORAGE_OFFSET
-			+ offsetof(struct suit_storage, envelopes[index].envelope)
-			+ offset,
-			addr,
-			write_size);
+				  SUIT_STORAGE_OFFSET +
+					  offsetof(struct suit_storage, envelopes[index].envelope) +
+					  offset,
+				  addr, write_size);
 
 		size -= write_size;
 		offset += write_size;
@@ -214,11 +207,10 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
 		}
 
 		err = flash_write(fdev,
-			SUIT_STORAGE_OFFSET
-			+ offsetof(struct suit_storage, envelopes[index].envelope)
-			+ offset,
-			write_buf,
-			sizeof(write_buf));
+				  SUIT_STORAGE_OFFSET +
+					  offsetof(struct suit_storage, envelopes[index].envelope) +
+					  offset,
+				  write_buf, sizeof(write_buf));
 
 		buf_fill_level = 0;
 		offset = 0;
@@ -233,18 +225,14 @@ static int save_update_info(struct update_candidate_info *info)
 		return -ENXIO;
 	}
 
-	int err = flash_erase(fdev,
-		SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update_eb),
-		sizeof(((struct suit_storage *)0)->update_eb));
+	int err = flash_erase(fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update_eb),
+			      sizeof(((struct suit_storage *)0)->update_eb));
 	if (err != 0) {
 		return err;
 	}
 
-	return flash_write(fdev,
-		SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update),
-		info, sizeof(*info));
+	return flash_write(fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update), info, sizeof(*info));
 }
-
 
 int suit_storage_init(void)
 {
@@ -259,8 +247,8 @@ int suit_storage_init(void)
 		return -ENOSR;
 	}
 
-	if (CEIL_DIV(SUIT_STORAGE_SIZE,
-		SUIT_STORAGE_EB_SIZE) * SUIT_STORAGE_EB_SIZE != SUIT_STORAGE_SIZE) {
+	if (CEIL_DIV(SUIT_STORAGE_SIZE, SUIT_STORAGE_EB_SIZE) * SUIT_STORAGE_EB_SIZE !=
+	    SUIT_STORAGE_SIZE) {
 		return -EBADF;
 	}
 
@@ -277,7 +265,7 @@ bool suit_storage_update_available(void)
 
 	if ((storage->update.update_magic_value != UPDATE_MAGIC_VALUE_AVAILABLE) ||
 	    (storage->update.dfu_partition_addr == NULL) ||
-	    (storage->update.dfu_partition_size == 0)){
+	    (storage->update.dfu_partition_size == 0)) {
 		return false;
 	}
 
@@ -336,16 +324,14 @@ int suit_storage_installed_envelope_get(size_t index, void **addr, size_t *size)
 	 * Set the size variable value to the decoded envelope size,
 	 * that does not contain severable elements.
 	 */
-	int err = decode_SUIT_Envelope_Tagged(
-		(const uint8_t *)(*addr), CONFIG_SUIT_PARTITION_ENVELOPE_SIZE,
-		&envelope, size);
+	int err = decode_SUIT_Envelope_Tagged((const uint8_t *)(*addr),
+					      CONFIG_SUIT_PARTITION_ENVELOPE_SIZE, &envelope, size);
 	if (err != 0) {
 		return err;
 	}
 
 	return 0;
 }
-
 
 int suit_storage_update_set(void *addr, size_t size)
 {
@@ -377,7 +363,7 @@ int suit_storage_install_envelope(size_t index, void *addr, size_t size)
 	}
 
 	if ((addr == NULL) || (size == 0) || (index >= CONFIG_SUIT_PARTITION_N_ENVELOPES)) {
-	    return -EINVAL;
+		return -EINVAL;
 	}
 
 	/* Validate input data by parsing buffer as SUIT envelope.
@@ -399,10 +385,9 @@ int suit_storage_install_envelope(size_t index, void *addr, size_t size)
 	}
 
 	size_t offset = header_len(envelope.suit_authentication_wrapper.len);
-	err = save_envelope_partial(index,
-		envelope.suit_authentication_wrapper.value - offset,
-		envelope.suit_authentication_wrapper.len + offset,
-		false, false);
+	err = save_envelope_partial(index, envelope.suit_authentication_wrapper.value - offset,
+				    envelope.suit_authentication_wrapper.len + offset, false,
+				    false);
 	if (err != 0) {
 		return err;
 	}
@@ -413,10 +398,8 @@ int suit_storage_install_envelope(size_t index, void *addr, size_t size)
 	}
 
 	offset = header_len(envelope.suit_manifest.len);
-	err = save_envelope_partial(index,
-		envelope.suit_manifest.value - offset,
-		envelope.suit_manifest.len + offset,
-		false, true);
+	err = save_envelope_partial(index, envelope.suit_manifest.value - offset,
+				    envelope.suit_manifest.len + offset, false, true);
 	if (err != 0) {
 		return err;
 	}

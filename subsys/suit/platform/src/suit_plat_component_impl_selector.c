@@ -7,8 +7,13 @@
 #include <zcbor_decode.h>
 #include <suit_platform_internal.h>
 
+#ifdef CONFIG_SUIT_COMPONENT_RAMBUF
 /** Forward declaration of the RAM-based component implementation constructor. */
 struct suit_component_impl *suit_component_rambuf_impl(void);
+#elif CONFIG_SUIT_COMPONENT_MRAM
+/** Forward declaration of the MRAM-based component implementation constructor. */
+struct suit_component_impl *suit_component_mram_impl(void);
+#endif
 
 struct suit_component_impl *
 suit_component_select_impl(struct zcbor_string *component_id,
@@ -29,7 +34,13 @@ suit_component_select_impl(struct zcbor_string *component_id,
 	/* Try loading the component using supported loaders. */
 	switch (component_type.value[0]) {
 	case 'M':
+#ifdef CONFIG_SUIT_COMPONENT_RAMBUF
 		return suit_component_rambuf_impl();
+#elif CONFIG_SUIT_COMPONENT_MRAM
+		return suit_component_mram_impl();
+#else
+		#error "Configuration invalid no implementation selected for 'M'"
+#endif
 
 	default:
 		break;

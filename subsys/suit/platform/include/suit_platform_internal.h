@@ -65,7 +65,7 @@ struct suit_plat_component {
 	struct suit_component_impl *
 		impl; ///! The pointer to the implementation to use to interface with the component.
 	void *impl_data; ///! Slot to store the implementation-specific private data.
-	struct zcbor_string *
+	struct zcbor_string
 		component_id; ///! Slot to store the component ID. The implementation may use it instead of building full internal context.
 	struct zcbor_string **key_ids; ///! Slot to store the keys that authenticated the component.
 	size_t num_key_ids; ///! Length of the key array.

@@ -15,7 +15,12 @@ if SUIT
 menu "SUIT component implementations"
 
 config SUIT_COMPONENT_RAMBUF
-	bool "Include MRAM as RAM buffer implementation"
+	bool "Include RAM buffer as MRAM suit component implementation"
+	depends on !SUIT_COMPONENT_MRAM
+
+config SUIT_COMPONENT_MRAM
+	bool "Include MRAM/Flash suit component implementation"
+	select FLASH
 
 config SUIT_PARTITION_N_ENVELOPES
 	int "Number of envelopes, possible to store on SUIT partition"
