@@ -112,7 +112,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: a8a2852be7cb1c5b296e9f801cd4d4658b6a4007
+      revision: a2876abe5fa0566f341ea515bdc9ea1975fcc7bf
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
@@ -127,7 +127,7 @@ manifest:
       path: modules/lib/nrfs
       revision: 2437a2ed460394dd8247f5aae2890ba9ebc0a012
     - name: sdk-sysctrl
-      revision: 0066d2250f1eb22d8c6a5092f079537e765c3111
+      revision: 5e993d35c90ffd5804ddb9b449f9e246dad143c8
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m

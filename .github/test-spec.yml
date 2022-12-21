@@ -432,3 +432,17 @@
 "CI-wifi":
   - "drivers/wifi/**/*"
   - "samples/wifi/**/*"
+
+"CI-test_sdk_hcs":
+  - any:
+    - "!doc/*"
+    - "!applications/*"
+    - "!samples/*"
+    - "!tests/*"
+
+"CI-test_sdk_sysctrl":
+  - any:
+    - "!doc/*"
+    - "!applications/*"
+    - "!samples/*"
+    - "!tests/*"
