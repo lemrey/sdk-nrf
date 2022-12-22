@@ -7,7 +7,7 @@
 / {
 	rng_sim: rng_sim {
 		status = "okay";
-		compatible = "zephyr,native-posix-rng";
+		compatible = "nordic,entropy-prng";
 		label = "ENTROPY_0";
 	};
 
