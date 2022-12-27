@@ -269,6 +269,10 @@ See `Bluetooth mesh samples`_ for the list of changes for the Bluetooth mesh sam
   * Fixed a possible out-of-bounds memory access issue in the :c:func:`hids_protocol_mode_write` and :c:func:`bt_hids_boot_kb_inp_rep_send` functions.
   * Fixed the :c:func:`hids_ctrl_point_write` function behavior.
 
+* :ref:`bt_le_adv_prov_readme` library:
+
+  * Changed the :kconfig:option:`CONFIG_BT_ADV_PROV_FAST_PAIR_BATTERY_DATA_MODE` Kconfig option (default value) to not include Fast Pair battery data in the Fast Pair advertising payload by default.
+
 Bootloader libraries
 --------------------
 
