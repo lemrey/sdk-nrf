@@ -21,7 +21,7 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		ram30_app_uart_mem: memory@2fc00000 {
+		ram3x_app_uart_mem: memory@2fc00000 {
 			compatible = "nordic,allocatable-ram";
 			reg = <0x2fc00000 DT_SIZE_K(16)>;
 			perm-read;

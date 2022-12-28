@@ -37,19 +37,19 @@
 	};
 
 	reserved-memory {
-		ram30_shared_tx: memory@2fc07000 {
+		ram3x_shared_tx: memory@2fc07000 {
 			reg = <0x2fc07000 0x0800>;
 		};
 
-		ram30_shared_rx: memory@2fc07800 {
+		ram3x_shared_rx: memory@2fc07800 {
 			reg = <0x2fc07800 0x0800>;
 		};
 	};
 
 	ipc0: ipc0 {
 		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&ram30_shared_tx>;
-		rx-region = <&ram30_shared_rx>;
+		tx-region = <&ram3x_shared_tx>;
+		rx-region = <&ram3x_shared_rx>;
 		mboxes = <&mbox_remote 12>,
 			 <&bellboard_cpuapp 12>;
 		mbox-names = "tx", "rx";

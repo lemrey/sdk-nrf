@@ -11,23 +11,25 @@
 /*
  * Chosen dts configs description:
  * - Console and shell-uart connected to the uart-bellboard to get output on server.
- * - SRAM set to ram00 due to its big size and speed.
+ * - SRAM partition placed in ram0x due to its big size and speed.
  * - - Current flash layout does not allow the application domain to use both mram10 and mram11 in one continuous block. mram11 is selected due to its available size.
- * - IPC0 is used to connect Appcore and Netcore - it MUST be set to the same value in NetCore dts.
+ * - IPC0 is used to connect App and Radio - it MUST be set to the same value in Radio's dts.
  * - flash_controller2 is defined to allow using RAM as a FLASH simulator - it is required to store Zephyr's settings in RAM.
  */
 
 / {
     chosen {
         zephyr,console = &uart136;
-        zephyr,sram = &ram00;
+        zephyr,sram = &cpuapp_sram;
         zephyr,flash = &mram11;
         zephyr,shell-uart = &uart136;
         zephyr,bt-hci-rpmsg-ipc = &ipc0;
     };
+
+    /* TODO: remove and use ipc_cpurad instead */
     ipc0: ipc_host {
         compatible = "zephyr,ipc-openamp-static-vrings";
-        memory-region = <&ram30>;
+        memory-region = <&ram3x_shm_cpuapp_cpurad>;
         mboxes = <&bellboard_cpurad 29>,
              <&bellboard_cpuapp 29>;
         mbox-names = "tx", "rx";
@@ -37,17 +39,30 @@
     };
 };
 
-&ram30 {
-    compatible = "nordic,allocatable-ram";
-    perm-read;
-    perm-write;
-    owner-id = <0>;
+&ram0x {
+    cpuapp_sram: memory@0 {
+        compatible = "nordic,allocatable-ram", "mmio-sram";
+        reg = <0x1000 DT_SIZE_K(512)>;
+        ranges = <0x0 0x1000 DT_SIZE_K(512)>;
+        #address-cells = <1>;
+        #size-cells = <1>;
+        perm-read;
+        perm-write;
+    };
 };
 
-&ram00 {
-    compatible = "nordic,allocatable-ram";
-    perm-read;
-    perm-write;
+&ram3x {
+	ram3x_shm_cpuapp_cpurad: memory@0 {
+		compatible = "nordic,allocatable-ram", "mmio-sram";
+		reg = <0x0 DT_SIZE_K(16)>;
+		ranges = <0x0 0x0 DT_SIZE_K(16)>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		perm-read;
+		perm-write;
+		/* TODO: This region should be described in both app and radio instead of setting owner-id=0 */
+		owner-id = <0>;
+	};
 };
 
 &ipc0 {

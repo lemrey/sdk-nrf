@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-&ram01 {
-	ipc_shm_ram: memory@5F000 {
+&ram0x {
+	ipc_shm_ram: memory@DF000 {
 		compatible = "nordic,allocatable-ram";
-		reg = <0x5F000 DT_SIZE_K(4)>;
-		ranges = <0x0 0x5F000 DT_SIZE_K(4)>;
+		reg = <0xDF000 DT_SIZE_K(4)>;
+		ranges = <0x0 0xDF000 DT_SIZE_K(4)>;
 		#address-cells = <1>;
 		#size-cells = <1>;
 		perm-write;

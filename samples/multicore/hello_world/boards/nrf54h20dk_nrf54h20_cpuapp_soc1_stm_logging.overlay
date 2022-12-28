@@ -22,19 +22,9 @@
 		/* Configure PPR memory region. Allow to use defined RAM
 		 * region by App and cores owned by App.
 		 */
-		ram30_app_ppr: memory@2fc00000 {
+		ram3x_app_ppr: memory@2fc00000 {
 			compatible = "nordic,allocatable-ram";
-			reg = <0x2fc00000 DT_SIZE_K(16)>;
-			perm-read;
-			perm-write;
-		};
-
-		/* Configure PPR memory region. Allow to use defined RAM
-		 * region by App and cores owned by App.
-		 */
-		ram31_app_ppr: memory@2fc04000 {
-			compatible = "nordic,allocatable-ram";
-			reg = <0x2fc04000 DT_SIZE_K(16)>;
+			reg = <0x2fc00000 DT_SIZE_K(32)>;
 			perm-read;
 			perm-write;
 		};

@@ -12,14 +12,27 @@
 		/delete-property/ nordic,bellboard-cpurad;
 	};
 
+	/* TODO: remove and use ipc_cpuapp instead */
 	ipc0: ipc_remote {
 		compatible = "zephyr,ipc-openamp-static-vrings";
-		memory-region = <&ram30>;
+		memory-region = <&ram3x_shm_cpuapp_cpurad>;
 		mboxes = <&bellboard_cpuapp 29>,
 			 <&bellboard_cpurad 29>;
 		mbox-names = "tx", "rx";
 		role = "remote";
 		status = "okay";
+	};
+};
+
+&ram3x {
+	ram3x_shm_cpuapp_cpurad: memory@0 {
+		compatible = "nordic,allocatable-ram", "mmio-sram";
+		reg = <0x0 DT_SIZE_K(16)>;
+		ranges = <0x0 0x0 DT_SIZE_K(16)>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		perm-read;
+		perm-write;
 	};
 };
 
