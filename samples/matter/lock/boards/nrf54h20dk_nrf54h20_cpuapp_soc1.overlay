@@ -29,7 +29,7 @@
     /* TODO: remove and use ipc_cpurad instead */
     ipc0: ipc_host {
         compatible = "zephyr,ipc-openamp-static-vrings";
-        memory-region = <&ram3x_shm_cpuapp_cpurad>;
+        memory-region = <&shm_cpuapp_cpurad>;
         mboxes = <&bellboard_cpurad 29>,
              <&bellboard_cpuapp 29>;
         mbox-names = "tx", "rx";
@@ -40,7 +40,7 @@
 };
 
 &ram0x {
-    cpuapp_sram: memory@0 {
+    cpuapp_sram: memory@1000 {
         compatible = "nordic,allocatable-ram", "mmio-sram";
         reg = <0x1000 DT_SIZE_K(512)>;
         ranges = <0x0 0x1000 DT_SIZE_K(512)>;
@@ -49,20 +49,6 @@
         perm-read;
         perm-write;
     };
-};
-
-&ram3x {
-	ram3x_shm_cpuapp_cpurad: memory@0 {
-		compatible = "nordic,allocatable-ram", "mmio-sram";
-		reg = <0x0 DT_SIZE_K(16)>;
-		ranges = <0x0 0x0 DT_SIZE_K(16)>;
-		#address-cells = <1>;
-		#size-cells = <1>;
-		perm-read;
-		perm-write;
-		/* TODO: This region should be described in both app and radio instead of setting owner-id=0 */
-		owner-id = <0>;
-	};
 };
 
 &ipc0 {

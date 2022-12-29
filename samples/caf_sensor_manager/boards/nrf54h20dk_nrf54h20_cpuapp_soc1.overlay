@@ -36,12 +36,12 @@
 	};
 
 	reserved-memory {
-		ram3x_shared_tx: memory@2fc07000 {
-			reg = <0x2fc07000 0x0800>;
+		ram3x_shared_tx: memory@2fc06000 {
+			reg = <0x2fc06000 0x0800>;
 		};
 
-		ram3x_shared_rx: memory@2fc07800 {
-			reg = <0x2fc07800 0x0800>;
+		ram3x_shared_rx: memory@2fc06800 {
+			reg = <0x2fc06800 0x0800>;
 		};
 	};
 

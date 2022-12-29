@@ -13,23 +13,13 @@
 		zephyr,console = &uart135;
 	};
 
-	easydma_buffers {
-		ram3x_cpuppr: memory@2fc03700 {
-			status = "okay";
-			compatible = "zephyr,memory-region", "mmio-sram";
-			zephyr,memory-region = "DMA_RAM3x_PPR";
-			#memory-region-cells = < 0x0 >;
-			reg = <0x2fc03700 0x80>;
-		};
-	};
-
 	reserved-memory {
-		ram3x_shared_rx: memory@2fc07000 {
-			reg = <0x2fc07000 0x0800>;
+		ram3x_shared_rx: memory@2fc06000 {
+			reg = <0x2fc06000 0x0800>;
 		};
 
-		ram3x_shared_tx: memory@2fc07800 {
-			reg = <0x2fc07800 0x0800>;
+		ram3x_shared_tx: memory@2fc06800 {
+			reg = <0x2fc06800 0x0800>;
 		};
 	};
 
@@ -41,6 +31,15 @@
 			 <&mbox_local  12>;
 		mbox-names = "tx", "rx";
 		status = "okay";
+	};
+};
+
+&ram3x {
+	ram3x_cpuppr: memory@7c80 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		zephyr,memory-region = "DMA_RAM3x_PPR";
+		#memory-region-cells = < 0x0 >;
+		reg = <0x7c80 0x80>;
 	};
 };
 
