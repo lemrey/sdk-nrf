@@ -10,14 +10,22 @@
 #include <psa/crypto.h>
 #include <stdbool.h>
 #include <suit.h>
+#include <suit_platform.h>
 #include <suit_storage.h>
 
 LOG_MODULE_REGISTER(suit, CONFIG_SUIT_LOG_LEVEL);
 
 #define SUIT_ORCHESTRATOR_MANIFEST_INDEX_ROOT 0
 
-static uint8_t *installed_envelope_address = NULL;
-static size_t installed_envelope_size = 0;
+#ifdef CONFIG_SDFW_MRAM_ERASE_VALUE
+#define EMPTY_STORAGE_VALUE ((((uint32_t)(CONFIG_SDFW_MRAM_ERASE_VALUE)) << 24) |\
+			     (((uint32_t)(CONFIG_SDFW_MRAM_ERASE_VALUE)) << 16) |\
+			     (((uint32_t)(CONFIG_SDFW_MRAM_ERASE_VALUE)) << 8)  |\
+			     (((uint32_t)(CONFIG_SDFW_MRAM_ERASE_VALUE))))
+#else
+#define EMPTY_STORAGE_VALUE 0xFFFFFFFF
+#endif
+
 static struct suit_processor_state state;
 
 static int load_keys(void)
@@ -63,49 +71,159 @@ static int enter_emergency_recovery(void)
 	return 0;
 }
 
-static int update_path(void)
+static int validate_update_candidate_address_and_size(void *addr, size_t size)
 {
-	LOG_WRN("TODO: Implement update path");
+	if (addr == NULL || addr == (void*)EMPTY_STORAGE_VALUE) {
+		LOG_DBG("Invalid update candidate address: %p", addr);
+		return EFAULT;
+	}
+
+	if (size == 0 || size == EMPTY_STORAGE_VALUE) {
+		LOG_DBG("Invalid update candidate size: %d", size);
+		return EFAULT;
+	}
+
 	return 0;
 }
 
-static int validate_installed_root_manifest(void)
+/* Common for installed manifest and update candidate */
+static int validate_manifest(void *addr, size_t size)
 {
-	int err = suit_decode_envelope(installed_envelope_address, installed_envelope_size, &state);
+	int err = suit_decode_envelope(addr, size, &state);
 
 	if (err) {
-		LOG_ERR("Failed to decode SUIT envelope: %d", err);
+		LOG_ERR("Failed to decode envelope: %d", err);
 		return err;
 	}
-	LOG_DBG("SUIT envelope decoded");
+	LOG_DBG("Envelope decoded");
 
 	err = suit_validate_envelope(&state);
 	if (err) {
-		LOG_ERR("Failed to validate SUIT envelope: %d", err);
+		LOG_ERR("Failed to validate envelope: %d", err);
 		return err;
 	}
-	LOG_DBG("SUIT envelope validated");
+	LOG_DBG("Envelope validated");
 
 	err = suit_decode_manifest(&state);
 	if (err) {
-		LOG_ERR("Failed to decode SUIT manifest: %d", err);
+		LOG_ERR("Failed to decode manifest: %d", err);
 		return err;
 	}
-	LOG_DBG("SUIT manifest decoded");
+	LOG_DBG("Manifest decoded");
 
 	err = suit_validate_manifest(&state);
 	if (err) {
-		LOG_ERR("Failed to validate SUIT manifest: %d", err);
+		LOG_ERR("Failed to validate manifest: %d", err);
 		return err;
 	}
 
-	LOG_DBG("SUIT manifest validated");
+	LOG_DBG("Manifest validated");
+
+	return 0;
+}
+
+static bool update_candidate_applicable(void)
+{
+	LOG_WRN("TODO: Implement update candidate applicability check");
+	return true;
+}
+
+static int validate_update_candidate_manifest(void *manifest_address, size_t manifest_size)
+{
+	int err = validate_manifest(manifest_address, manifest_size);
+
+	if (err) {
+		LOG_ERR("Failed to validate update candidate manifest: %d", err);
+		return err;
+	}
+
+	if (update_candidate_applicable()) {
+		LOG_INF("Update candidate applicable");
+	} else {
+		LOG_INF("Update candidate not applicable");
+		return ENOTSUP;
+	}
+
+	return 0;
+}
+
+static int update_path(void)
+{
+	void *update_candidate_address = NULL;
+	size_t update_candidate_size = 0;
+
+	int err = suit_storage_update_get(&update_candidate_address, &update_candidate_size);
+	if (err) {
+		LOG_ERR("Failed to get update candidate data: %d", err);
+		return err;
+	}
+
+	LOG_DBG("Update candidate address: %p", update_candidate_address);
+	LOG_DBG("Update candidate size: %d", update_candidate_size);
+
+	err = validate_update_candidate_address_and_size(update_candidate_address, update_candidate_size);
+	if (err) {
+		LOG_INF("Invalid update candidate: %d", err);
+
+		err = suit_storage_update_clear();
+		if (err) {
+			LOG_ERR("Failed to clear update candidate");
+			return err;
+		}
+
+		LOG_DBG("Update candidate cleared");
+
+		/* Do not return error if candidate is invalid - this can happen */
+		return 0;
+	}
+
+	err = validate_update_candidate_manifest(update_candidate_address, update_candidate_size);
+	if (err) {
+		LOG_ERR("Failed to validate update candidate manifest: %d", err);
+		err = suit_storage_update_clear();
+		if (err) {
+			LOG_ERR("Failed to clear update candidate");
+			return err;
+		}
+
+		LOG_DBG("Update candidate cleared");
+		/* Do not return error if candidate is invalid - this can happen */
+		return 0;
+	}
+	LOG_DBG("Manifest validated");
+
+	err = suit_process_manifest(&state, SUIT_INSTALL);
+	if (err) {
+		LOG_ERR("Failed to execute suit-install: %d", err);
+		return err;
+	}
+
+	LOG_DBG("suit-install successful");
+
+	err = suit_storage_install_envelope(SUIT_ORCHESTRATOR_MANIFEST_INDEX_ROOT, update_candidate_address, update_candidate_size);
+	if (err) {
+		LOG_ERR("Failed to install envelope: %d", err);
+	}
+
+	LOG_DBG("Envelope installed");
+
+	err = suit_storage_update_clear();
+	if (err) {
+		LOG_ERR("Failed to clear update candidate");
+		return err;
+	}
+
+	LOG_DBG("Update candidate cleared");
+
 	return 0;
 }
 
 static int boot_path(void)
 {
-	int err = suit_storage_installed_envelope_get(SUIT_ORCHESTRATOR_MANIFEST_INDEX_ROOT, (void **)(&installed_envelope_address), &installed_envelope_size);
+	void *installed_envelope_address = NULL;
+	size_t installed_envelope_size = 0;
+
+	int err = suit_storage_installed_envelope_get(SUIT_ORCHESTRATOR_MANIFEST_INDEX_ROOT, &installed_envelope_address, &installed_envelope_size);
 
 	if (err) {
 		LOG_ERR("Failed to get installed envelope data: %d", err);
@@ -121,7 +239,7 @@ static int boot_path(void)
 	}
 	LOG_DBG("Found installed envelope");
 
-	err = validate_installed_root_manifest();
+	err = validate_manifest(installed_envelope_address, installed_envelope_size);
 	if (err) {
 		LOG_ERR("Failed to validate installed root manifest: %d", err);
 		return enter_emergency_recovery();
@@ -160,9 +278,6 @@ static int boot_path(void)
 
 int suit_orchestrator_init(void)
 {
-	installed_envelope_address = NULL;
-	installed_envelope_size = 0;
-
 	suit_reset_state(&state);
 
 	int err = load_keys();
@@ -188,10 +303,6 @@ int suit_orchestrator_entry(void)
 		return update_path();
 	}
 	else {
-		/* TODO: Remove when update path is implemented */
-		LOG_WRN("Simulating installation of envelope as current one");
-		suit_storage_install_envelope(SUIT_ORCHESTRATOR_MANIFEST_INDEX_ROOT, (void *)0x1e100000, 2048);
-
 		LOG_INF("Boot path");
 		return boot_path();
 	}
