@@ -10,7 +10,9 @@
 #include <zephyr/init.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/types.h>
+#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 #include <hal/nrf_power.h>
+#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 #if CONFIG_FEM
 #include "fem.h"
@@ -477,6 +479,22 @@ static int cmd_print(const struct shell *shell, size_t argc, char **argv)
 	}
 
 	switch (config.txpower) {
+#if defined(RADIO_TXPOWER_TXPOWER_Pos10dBm)
+	case RADIO_TXPOWER_TXPOWER_Pos10dBm:
+		shell_print(shell,
+			    "TX power: %s",
+			    Z_STRINGIFY(RADIO_TXPOWER_TXPOWER_Pos10dBm));
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos10dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Pos9dBm)
+	case RADIO_TXPOWER_TXPOWER_Pos9dBm:
+		shell_print(shell,
+			    "TX power: %s",
+			    Z_STRINGIFY(RADIO_TXPOWER_TXPOWER_Pos9dBm));
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos9dBm) */
+
 #if defined(RADIO_TXPOWER_TXPOWER_Pos8dBm)
 	case RADIO_TXPOWER_TXPOWER_Pos8dBm:
 		shell_print(shell,
@@ -739,6 +757,24 @@ static int cmd_rx_start(const struct shell *shell, size_t argc, char **argv)
 
 	return 0;
 }
+
+#if defined(RADIO_TXPOWER_TXPOWER_Pos10dBm)
+static void cmd_pos10dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = RADIO_TXPOWER_TXPOWER_Pos10dBm;
+	shell_print(shell, "TX power: %s",
+		    Z_STRINGIFY(RADIO_TXPOWER_TXPOWER_Pos10dBm));
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos10dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Pos9dBm)
+static void cmd_pos9dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = RADIO_TXPOWER_TXPOWER_Pos9dBm;
+	shell_print(shell, "TX power: %s",
+		    Z_STRINGIFY(RADIO_TXPOWER_TXPOWER_Pos9dBm));
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos9dBm) */
 
 #if defined(RADIO_TXPOWER_TXPOWER_Pos8dBm)
 static void cmd_pos8dbm(const struct shell *shell, size_t argc, char **argv)
@@ -1189,6 +1225,12 @@ static int cmd_fem_ramp_up_set(const struct shell *shell, size_t argc, char **ar
 #endif /* CONFIG_FEM */
 
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_output_power,
+#if defined(RADIO_TXPOWER_TXPOWER_Pos10dBm)
+	SHELL_CMD(pos10dBm, NULL, "TX power: +10 dBm", cmd_pos10dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos10dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos9dBm)
+	SHELL_CMD(pos9dBm, NULL, "TX power: +8 dBm", cmd_pos9dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos9dBm) */
 #if defined(RADIO_TXPOWER_TXPOWER_Pos8dBm)
 	SHELL_CMD(pos8dBm, NULL, "TX power: +8 dBm", cmd_pos8dbm),
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos8dBm) */
