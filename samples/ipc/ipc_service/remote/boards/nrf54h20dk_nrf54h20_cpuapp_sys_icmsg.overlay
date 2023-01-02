@@ -10,7 +10,6 @@
 
 / {
 	chosen {
-		/delete-property/ nordic,bellboard-cpuapp;
 		 zephyr,console = &uart135;
 	};
 
@@ -18,7 +17,7 @@
 		compatible = "zephyr,ipc-icmsg";
 		tx-region = <&ipc_shm_local>;
 		rx-region = <&ipc_shm_remote>;
-		mboxes = <&mbox_remote 6>,
+		mboxes = <&bellboard_cpuapp 6>,
 			 <&mbox_local 12>;
 		mbox-names = "tx", "rx";
 		status = "okay";
@@ -39,7 +38,6 @@
 };
 
 &global_peripherals {
-	/delete-node/ bellboard@9a000;
 	/delete-node/ vevif@8c8000;
 	/delete-node/ vevif@8d4000;
 	/delete-node/ vevif@908000;
@@ -81,14 +79,6 @@
 			     <31 NRF_DEFAULT_IRQ_PRIORITY>;
 		interrupt-parent = <&clic>;
 		instance = <0>;
-		status = "okay";
-		#mbox-cells = <1>;
-	};
-
-	mbox_remote: bellboard0@9a000 {
-		compatible = "nordic,mbox-nrf-ids";
-		reg = <0x9a000 0x1000>;
-		domain = <NRF_IDS_DOMAIN_APP>;
 		status = "okay";
 		#mbox-cells = <1>;
 	};

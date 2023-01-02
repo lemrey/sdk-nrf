@@ -8,12 +8,8 @@
 #include "shared/nrf54_ipc_shm_ram0.dtsi"
 #include "shared/nrf54_uart_pinout.dtsi"
 
-/delete-node/ &ipc_cpurad;
-
 / {
 	chosen {
-		/delete-property/ nordic,bellboard-cpuapp;
-		/delete-property/ nordic,bellboard-cpurad;
 		zephyr,console = &uart136;
 	};
 
@@ -22,26 +18,16 @@
 		tx-region = <&ipc_shm_remote>;
 		rx-region = <&ipc_shm_local>;
 		mboxes = <&mbox_remote 12>,
-			 <&mbox_local 6>;
+			 <&bellboard_cpuapp 6>;
 		mbox-names = "tx", "rx";
 		status = "okay";
 	};
 };
 
 &global_peripherals {
-	/delete-node/ bellboard@9a000;
 	/delete-node/ vevif@8c8000;
 	/delete-node/ vevif@8d4000;
 	/delete-node/ vevif@908000;
-
-	mbox_local: bellboard0@9a000 {
-		compatible = "nordic,mbox-nrf-ids";
-		reg = <0x9a000 0x1000>;
-		interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
-		instance = <0>;
-		status = "okay";
-		#mbox-cells = <1>;
-	};
 
 	mbox_remote: vevif@8c8000 {
 		compatible = "nordic,mbox-nrf-ids";
