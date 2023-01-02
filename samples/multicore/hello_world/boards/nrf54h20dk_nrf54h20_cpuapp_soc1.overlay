@@ -12,9 +12,9 @@
 		/* Configure PPR code region. Allow to execute from defined
 		 * region by App and cores owned by App.
 		 */
-		ppr_code: memory@1e09a000 {
+		ppr_code: memory@1e0f0000 {
 			compatible = "nordic,allocatable-mram";
-			reg = <0x1e09a000 DT_SIZE_K(64)>;
+			reg = <0x1e0f0000 DT_SIZE_K(64)>;
 			perm-read;
 			perm-execute;
 		};

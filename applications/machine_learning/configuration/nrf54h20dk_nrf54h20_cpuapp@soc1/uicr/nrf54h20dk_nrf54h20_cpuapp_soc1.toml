@@ -8,4 +8,4 @@
 # unable to be set through devicetree.
 
 [initnsvtor_0]
-INITNSVTOR = 0x0e054000
+INITNSVTOR = 0x0e099000
