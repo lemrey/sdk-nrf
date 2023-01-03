@@ -57,8 +57,14 @@ const uint32_t nrf_power_value[] = {
 	RADIO_TXPOWER_TXPOWER_Pos7dBm,
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos7dBm) */
 #if defined(RADIO_TXPOWER_TXPOWER_Pos8dBm)
-	RADIO_TXPOWER_TXPOWER_Pos8dBm
+	RADIO_TXPOWER_TXPOWER_Pos8dBm,
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos8dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos9dBm)
+	RADIO_TXPOWER_TXPOWER_Pos9dBm,
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos9dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos10dBm)
+	RADIO_TXPOWER_TXPOWER_Pos10dBm
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos10dBm) */
 };
 
 #if DIRECTION_FINDING_SUPPORTED

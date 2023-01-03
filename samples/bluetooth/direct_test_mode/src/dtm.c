@@ -17,10 +17,12 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/clock_control.h>
+#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 #include <zephyr/drivers/clock_control/nrf_clock_control.h>
+#include <hal/nrf_nvmc.h>
+#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 #include <hal/nrf_egu.h>
-#include <hal/nrf_nvmc.h>
 #include <hal/nrf_radio.h>
 #include <helpers/nrfx_gppi.h>
 #include <nrfx_timer.h>
@@ -31,7 +33,6 @@
 #if DT_NODE_HAS_PROP(DTM_UART, current_speed)
 /* UART Baudrate used to communicate with the DTM library. */
 #define DTM_UART_BAUDRATE DT_PROP(DTM_UART, current_speed)
-
 /* The UART poll cycle in micro seconds.
  * A baud rate of e.g. 19200 bits / second, and 8 data bits, 1 start/stop bit,
  * no flow control, give the time to transmit a byte:
@@ -43,8 +44,25 @@
 #error "DTM UART node not found"
 #endif /* DT_NODE_HAS_PROP(DTM_UART, currrent_speed) */
 
+#if defined(CONFIG_SOC_SERIES_NRF54HX)
+	#define DEFAULT_TIMER_INSTANCE     020
+	#define WAIT_TIMER_INSTANCE        021
+	#define RADIO_IRQn                 RADIO_0_IRQn
+	#define DTM_EGU                    NRF_EGU020
+	/* The radio peripheral for Haltium has a different
+	 * offset of the SUBSCRIBE registers to nrf52 and nrf53.
+	 * A temporary solution until nrfx is adapted.
+	 */
+	#define SUBSCRIBE_EXTRA_OFFSET     0x80
+#else
+	#define DEFAULT_TIMER_INSTANCE     0
+	#define WAIT_TIMER_INSTANCE        1
+	#define RADIO_IRQn                 RADIO_IRQn
+	#define DTM_EGU                    NRF_EGU0
+	#define SUBSCRIBE_EXTRA_OFFSET     0x00
+#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
+
 /* Default timer used for timing. */
-#define DEFAULT_TIMER_INSTANCE     0
 #define DEFAULT_TIMER_IRQ          NRFX_CONCAT_3(TIMER,			 \
 						 DEFAULT_TIMER_INSTANCE, \
 						 _IRQn)
@@ -52,7 +70,6 @@
 						 DEFAULT_TIMER_INSTANCE, \
 						 _irq_handler)
 /* Timer used for measuring UART poll cycle wait time. */
-#define WAIT_TIMER_INSTANCE        1
 #define WAIT_TIMER_IRQ             NRFX_CONCAT_3(TIMER,			 \
 						 WAIT_TIMER_INSTANCE,    \
 						 _IRQn)
@@ -84,9 +101,13 @@ BUILD_ASSERT(NRFX_TIMER_CONFIG_LABEL(ANOMALY_172_TIMER_INSTANCE) == 1,
 	     "Anomaly DTM timer needs additional KConfig configuration");
 #endif
 
-#define DTM_EGU       NRF_EGU0
 #define DTM_EGU_EVENT NRF_EGU_EVENT_TRIGGERED0
 #define DTM_EGU_TASK  NRF_EGU_TASK_TRIGGER0
+
+#define ENDPOINT_EGU_RADIO_TX    BIT(1)
+#define ENDPOINT_EGU_RADIO_RX    BIT(2)
+#define ENDPOINT_TIMER_RADIO_TX  BIT(3)
+#define ENDPOINT_FORK_EGU_TIMER  BIT(4)
 
 /* Values that for now are "constants" - they could be configured by a function
  * setting them, but most of these are set by the BLE DTM standard, so changing
@@ -380,6 +401,9 @@ static struct dtm_instance {
 
 	/* Radio Enable PPI channel. */
 	uint8_t ppi_radio_start;
+
+	/* PPI endpoint status.*/
+	atomic_t endpoint_state;
 } dtm_inst = {
 	.state = STATE_UNINITIALIZED,
 	.packet_hdr_plen = NRF_RADIO_PREAMBLE_LENGTH_8BIT,
@@ -436,10 +460,9 @@ static uint8_t const dtm_prbs_content[] = {
 };
 
 #if DIRECTION_FINDING_SUPPORTED
-
 static void radio_gpio_pattern_clear(void)
 {
-	NRF_RADIO->CLEARPATTERN = RADIO_CLEARPATTERN_CLEARPATTERN_Clear;
+	nrf_radio_dfe_pattern_clear(NRF_RADIO);
 }
 
 static void antenna_radio_pin_config(void)
@@ -559,6 +582,7 @@ static void wait_timer_handler(nrf_timer_event_t event_type, void *context);
 static void dtm_timer_handler(nrf_timer_event_t event_type, void *context);
 static void radio_handler(const void *context);
 
+#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 static int clock_init(void)
 {
 	int err;
@@ -590,13 +614,19 @@ static int clock_init(void)
 
 	return err;
 }
+#else
+static int clock_init(void)
+{
+	return 0;
+}
+#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 static int timer_init(void)
 {
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
 		.frequency = NRFX_MHZ_TO_HZ(1),
-		.mode = NRF_TIMER_MODE_TIMER,
+		.mode      = NRF_TIMER_MODE_TIMER,
 		.bit_width = NRF_TIMER_BIT_WIDTH_16,
 	};
 
@@ -617,7 +647,7 @@ static int wait_timer_init(void)
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
 		.frequency = NRFX_MHZ_TO_HZ(1),
-		.mode = NRF_TIMER_MODE_TIMER,
+		.mode      = NRF_TIMER_MODE_TIMER,
 		.bit_width = NRF_TIMER_BIT_WIDTH_16,
 	};
 
@@ -644,7 +674,7 @@ static int anomaly_timer_init(void)
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
 		.frequency = NRFX_KHZ_TO_HZ(125),
-		.mode = NRF_TIMER_MODE_TIMER,
+		.mode      = NRF_TIMER_MODE_TIMER,
 		.bit_width = NRF_TIMER_BIT_WIDTH_16,
 	};
 
@@ -685,6 +715,11 @@ static int gppi_init(void)
 
 static void radio_reset(void)
 {
+	if (nrfx_gppi_channel_check(dtm_inst.ppi_radio_start))
+	{
+		nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
+	}
+
 	nrf_radio_shorts_set(NRF_RADIO, 0);
 	nrf_radio_event_clear(NRF_RADIO, NRF_RADIO_EVENT_DISABLED);
 
@@ -1007,13 +1042,53 @@ static void anomaly_172_strict_mode_set(bool enable)
 }
 #endif
 
+#if defined(CONFIG_SOC_SERIES_NRF54HX)
+static void endpoints_clear(void)
+{
+	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_FORK_EGU_TIMER)) {
+		nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
+			nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
+	}
+	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_EGU_RADIO_TX)) {
+		nrfx_gppi_channel_endpoints_clear(
+			dtm_inst.ppi_radio_start,
+			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT),
+			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
+							    SUBSCRIBE_EXTRA_OFFSET);
+	} 
+	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_EGU_RADIO_RX)) {
+		nrfx_gppi_channel_endpoints_clear(
+			dtm_inst.ppi_radio_start,
+			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT),
+			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_RXEN) +
+							    SUBSCRIBE_EXTRA_OFFSET);
+	}
+	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_TIMER_RADIO_TX)) {
+		nrfx_gppi_channel_endpoints_clear(
+			dtm_inst.ppi_radio_start,
+			nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0),
+			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
+							    SUBSCRIBE_EXTRA_OFFSET);
+	}
+}
+#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
+
 static void radio_ppi_clear(void)
 {
-	nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
+	if (nrfx_gppi_channel_check(dtm_inst.ppi_radio_start)) {
+		nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
+	}
+
 	nrf_egu_event_clear(DTM_EGU,
-			    nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
+			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
 
 	/* Break connection from timer to radio to stop transmit loop */
+#if defined(CONFIG_SOC_SERIES_NRF54HX)
+	endpoints_clear();
+#else 
+	nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
+			nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
+
 	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
 		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0));
 
@@ -1027,8 +1102,7 @@ static void radio_ppi_clear(void)
 
 	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
 			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
-	nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
-			nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
+#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 }
 
 static void radio_ppi_configure(bool rx, uint32_t timer_short_mask)
@@ -1037,9 +1111,16 @@ static void radio_ppi_configure(bool rx, uint32_t timer_short_mask)
 		dtm_inst.ppi_radio_start,
 		nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT),
 		nrf_radio_task_address_get(NRF_RADIO,
-					   rx ? NRF_RADIO_TASK_RXEN : NRF_RADIO_TASK_TXEN));
+					   rx ? NRF_RADIO_TASK_RXEN : NRF_RADIO_TASK_TXEN) +
+					   SUBSCRIBE_EXTRA_OFFSET);
+
+	atomic_set_bit(&dtm_inst.endpoint_state,
+		       (rx ? ENDPOINT_EGU_RADIO_RX : ENDPOINT_EGU_RADIO_TX));
+
 	nrfx_gppi_fork_endpoint_setup(dtm_inst.ppi_radio_start,
 		nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
+	atomic_set_bit(&dtm_inst.endpoint_state, ENDPOINT_FORK_EGU_TIMER);
+
 	nrfx_gppi_channels_enable(BIT(dtm_inst.ppi_radio_start));
 
 	if (timer_short_mask) {
@@ -1049,18 +1130,27 @@ static void radio_ppi_configure(bool rx, uint32_t timer_short_mask)
 
 static void radio_tx_ppi_reconfigure(void)
 {
-	nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
+	if (nrfx_gppi_channel_check(dtm_inst.ppi_radio_start)) {
+		nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
+	}
+
+#if defined(CONFIG_SOC_SERIES_NRF54HX)
+	endpoints_clear();
+#else
 	nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
 		nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
 	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
 		nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
 	nrfx_gppi_event_endpoint_setup(dtm_inst.ppi_radio_start,
 		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0));
+#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 	nrfx_gppi_channel_endpoints_setup(
 		dtm_inst.ppi_radio_start,
 		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0),
-		nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN));
+		nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
+						    SUBSCRIBE_EXTRA_OFFSET);
+	atomic_set_bit(&dtm_inst.endpoint_state, ENDPOINT_TIMER_RADIO_TX);
 	nrfx_gppi_channels_enable(BIT(dtm_inst.ppi_radio_start));
 }
 
@@ -1235,9 +1325,12 @@ static enum dtm_err_code  dtm_vendor_specific_pkt(uint32_t vendor_cmd,
 		 * carrier signal should be transmitted by the radio.
 		 */
 		radio_prepare(TX_MODE);
-
+#if defined(CONFIG_SOC_SERIES_NRF54HX)
+		nrf_radio_fast_ramp_up_enable_set(NRF_RADIO, false);
+#else
 		nrf_radio_modecnf0_set(NRF_RADIO, false,
 				       RADIO_MODECNF0_DTX_Center);
+#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 		/* Shortcut between READY event and START task */
 		nrf_radio_shorts_set(NRF_RADIO,
