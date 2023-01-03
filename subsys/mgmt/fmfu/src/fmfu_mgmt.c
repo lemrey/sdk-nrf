@@ -116,8 +116,7 @@ static int fmfu_firmware_upload(struct smp_streamer *ctx)
 
 	if (packet.data_len > 0) {
 		if (bootloader) {
-			rc = nrf_modem_bootloader_bl_write(packet.data_len,
-					packet.data);
+			rc = nrf_modem_bootloader_bl_write(packet.data, packet.data_len);
 			if (rc != 0) {
 				LOG_ERR("Error in starting transfer");
 				return MGMT_ERR_EBADSTATE;
@@ -129,8 +128,8 @@ static int fmfu_firmware_upload(struct smp_streamer *ctx)
 						  packet.data_len);
 
 			rc = nrf_modem_bootloader_fw_write(packet.target_address,
-							 packet.data_len,
-							 packet.data);
+							   packet.data,
+							   packet.data_len);
 			if (rc != 0) {
 				LOG_ERR("Error in writing data, err: %d", rc);
 				return MGMT_ERR_EBADSTATE;

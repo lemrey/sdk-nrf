@@ -62,13 +62,13 @@ static int write_chunk(uint8_t *buf, size_t buf_len, uint32_t address,
 	int err;
 
 	if (is_bootloader) {
-		err = nrf_modem_bootloader_bl_write(buf_len, buf);
+		err = nrf_modem_bootloader_bl_write(buf, buf_len);
 		if (err != 0) {
 			LOG_ERR("nrf_modem_bootloader_bl_write failed, err: %d", err);
 			return err;
 		}
 	} else {
-		err = nrf_modem_bootloader_fw_write(address, buf_len, buf);
+		err = nrf_modem_bootloader_fw_write(address, buf, buf_len);
 		if (err != 0) {
 			LOG_ERR("nrf_modem_bootloader_fw_write failed, err: %d", err);
 			return err;
@@ -155,8 +155,7 @@ static int load_segments(const struct device *fdev, uint8_t *meta_buf,
 			 * perform the prevalidation.
 			 */
 			LOG_INF("Running prevalidation (can take minutes)");
-			err = nrf_modem_bootloader_verify(wrapper_len,
-							(void *)meta_buf);
+			err = nrf_modem_bootloader_verify((void *)meta_buf, wrapper_len);
 			if (err != 0) {
 				LOG_ERR("nrf_fmfu_verify_signature failed, err: %d", err);
 				return err;
