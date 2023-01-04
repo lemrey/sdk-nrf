@@ -112,7 +112,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: a2876abe5fa0566f341ea515bdc9ea1975fcc7bf
+      revision: 9f548160fa8f71eb771da131c50f8b599715bf07
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
@@ -153,7 +153,7 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: 70563427a8e064101afbc94b7c40b9a7a55d7cef
+      revision: 486966780540a472181fb6b95ec53cb303bd8993
       groups:
       - nrf-802154
     - name: cjson
