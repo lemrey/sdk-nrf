@@ -106,7 +106,7 @@
 
 .. _`Matter GitHub repository`: https://github.com/project-chip/connectedhomeip
 .. _`dedicated Matter fork`: https://github.com/nrfconnect/sdk-connectedhomeip
-.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/bc6b4388/src/controller
+.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/c9ba5705/src/controller
 .. _`ZCL Advanced Platform`: https://github.com/project-chip/zap
 .. _`Matter nRF Connect releases`: https://github.com/nrfconnect/sdk-connectedhomeip/releases
 .. _`Matter Certification Policy`: https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/policies/matter_certificate_policy.adoc
@@ -146,6 +146,11 @@
 
 .. _`pc-ble-driver-py`: https://github.com/NordicSemiconductor/pc-ble-driver-py
 
+.. _`Threads`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/kernel/services/threads/index.html#threads
+
+.. _`Network Traffic Generator`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/connectivity/networking/api/zperf.html#zperf-network-traffic-generator
+
+
 .. ### Source: github.io
 
 .. _`TinyCBOR`: https://intel.github.io/tinycbor/current/
@@ -168,6 +173,7 @@
 .. _`west module management`: https://nrfconnect.github.io/vscode-nrf-connect/guides/west_module_management.html
 .. _`Custom launch and debug configurations`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_advanced.html#custom-launch-and-debug-configurations
 .. _`Application-specific flash options`: https://nrfconnect.github.io/vscode-nrf-connect/guides/build_customize_config.html#application-specific-flash-options
+.. _`How to work with build configurations`: https://nrfconnect.github.io/vscode-nrf-connect/guides/build_config.html
 
 .. _`Azure SDK for Embedded C`: https://azure.github.io/azure-sdk-for-c/
 
@@ -444,6 +450,10 @@
 .. _`nRF21540`: https://infocenter.nordicsemi.com/topic/struct_fem/struct/nrf21540.html
 .. _`nRF21540 Product Specification`: https://infocenter.nordicsemi.com/topic/struct_fem/struct/nrf21540_ps.html
 
+.. _`Product specification for nRF70 Series devices`: https://infocenter.nordicsemi.com/topic/ps_nrf7002/keyfeatures_html5.html
+
+.. _`Guidelines and application notes for nRF70 Series devices`: https://infocenter.nordicsemi.com/topic/struct_nrf70/struct/nrf70_guidelines.html
+
 .. _`Programming SoCs with nrfjprog`: https://infocenter.nordicsemi.com/topic/ug_nrf_cltools/UG/cltools/nrf_nrfjprogexe.html
 
 .. _`Nordic Thingy:53 Hardware`: https://infocenter.nordicsemi.com/topic/ug_thingy53/UG/thingy53/intro/frontpage.html
@@ -493,7 +503,6 @@
 .. _`nRF9160 SiP revisions and variants`: https://infocenter.nordicsemi.com/topic/comp_matrix_nrf9160/COMP/nrf9160/nrf9160_ic_revision_overview.html
 
 .. _`SWD Select`: https://infocenter.nordicsemi.com/topic/ug_thingy91/UG/thingy91/hw_description/programming_debugging_interface.html
-
 
 .. ### Source: academy.nordicsemi.com
 
@@ -1065,6 +1074,12 @@
 .. _`GNU Project Debugger`: https://www.sourceware.org/gdb/
 
 .. _`SIGMA`: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
+
+_`WPA Supplicant`: https://w1.fi/wpa_supplicant/
+
+.. _`Wi-Fi Alliance`: https://www.wi-fi.org/
+
+.. _`IEEE 802.11 Working Group`: https://www.ieee802.org/11/
 
 .. ### Source: res.developer.nordicsemi.com
 
