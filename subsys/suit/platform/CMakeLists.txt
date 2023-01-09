@@ -10,8 +10,11 @@ target_include_directories(suit_platform_interface INTERFACE include)
 
 # SUIT Platform implementation for SDFW
 zephyr_library()
+
 zephyr_library_sources(src/suit_plat_state.c)
+zephyr_library_sources(src/suit_plat_envelope_ref.c)
 zephyr_library_sources(src/suit_plat_component_impl_selector.c)
+
 
 zephyr_library_sources_ifdef(CONFIG_SUIT_COMPONENT_RAMBUF src/suit_plat_rambuf.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_COMPONENT_MRAM src/suit_plat_mram.c)

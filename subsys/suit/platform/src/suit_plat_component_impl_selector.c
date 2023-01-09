@@ -15,6 +15,8 @@ struct suit_component_impl *suit_component_rambuf_impl(void);
 struct suit_component_impl *suit_component_mram_impl(void);
 #endif
 
+struct suit_component_impl *suit_component_envelope_reference_impl(void);
+
 struct suit_component_impl *
 suit_component_select_impl(struct zcbor_string *component_id,
 			   struct zcbor_string *key_ids[SUIT_MAX_NUM_SIGNERS], size_t num_key_ids,
@@ -41,7 +43,8 @@ suit_component_select_impl(struct zcbor_string *component_id,
 #else
 		#error "Configuration invalid no implementation selected for 'M'"
 #endif
-
+	case 'D':
+		return suit_component_envelope_reference_impl();
 	default:
 		break;
 	}

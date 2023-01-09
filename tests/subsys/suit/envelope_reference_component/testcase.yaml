@@ -1,0 +1,4 @@
+tests:
+  suit-processor.integration.envelope_reference_component:
+    platform_allow: nrf52840dk_nrf52840
+    tags: suit-processor envelope reference component

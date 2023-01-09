@@ -30,6 +30,23 @@ config SUIT_PARTITION_ENVELOPE_SIZE
 	int "The maximum size of envelope that can be stored on SUIT partition"
 	default 2048
 
+config SUIT_MAX_ENVELOPE_REF_COMPONENTS
+	int "The maximum number of envelope reference components that will be handled"
+	range 1 255	
+	help
+	  Index is of type uint8_t, which restricts number of components of this type to 255.
+	  Default value is 8 and minimal 1.
+	default 8
+
+config SUIT_MAX_MRAM_COMPONENTS
+	int "The maximum number of flash (MRAM) components that will be handled"
+	range 1 255	
+	help
+	  Index is of type uint8_t, which restricts number of components of this type to 255.
+	  Default value is 8 and minimal 1.
+	default 8
+	depends on SUIT_COMPONENT_MRAM
+
 endmenu
 
 config APP_LINK_WITH_SUIT_ORCHESTRATOR_INTERFACE
