@@ -208,6 +208,14 @@
   - "subsys/caf/**/*"
   - "subsys/partition_manager/**/*"
 
+"CI-apps-fpga-test":
+  - "applications/machine_learning/**/*"
+  - "samples/caf_sensor_manager/**/*"
+  - "samples/event_manager_proxy/**/*"
+  - "samples/ipc/ipc_service/**/*"
+  - "samples/multicore/hello_world/**/*"
+  - "tests/subsys/event_manager_proxy/**/*"
+
 "CI-desktop-test":
   - "applications/nrf_desktop/**/*"
   - "boards/arm/*dmouse*/**/*"
