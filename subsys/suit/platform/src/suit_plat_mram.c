@@ -12,11 +12,15 @@
 #ifdef CONFIG_FLASH_SIMULATOR
 #include <zephyr/drivers/flash/flash_simulator.h>
 #endif /* CONFIG_FLASH_SIMULATOR */
+#ifdef CONFIG_SDFW_RESET_HANDLING_ENABLED
+#include <reset_mgr.h>
+#endif /* CONFIG_SDFW_RESET_HANDLING_ENABLED */
 
 /* Convert absolute address into an offset, reachable through the flash API. */
 #define FLASH_OFFSET(address)                                                                      \
 	(COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mram10)),                                         \
 		     ((address) - (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)), (address)))
+#define SECURE_BIT 0x10000000UL
 
 struct component_instance_meta {
 	suit_component_t handle;
@@ -148,12 +152,12 @@ static int write(suit_component_t handle, size_t offset, uint8_t *buf, size_t le
 	}
 
 	if (buf != NULL) {
-#ifndef SOC_FLASH_NRF_MRAM_ONE_BYTE_WRITE_ACCESS
-		/* Check if len is multiple of write_blck size */
-		if (len % write_block_size) {
-			return SUIT_ERR_CRASH;
+		if(!IS_ENABLED(CONFIG_SOC_FLASH_NRF_MRAM_ONE_BYTE_WRITE_ACCESS)) {
+			/* Check if len is multiple of write_blck size */
+			if (len % write_block_size) {
+				return SUIT_ERR_CRASH;
+			}
 		}
-#endif
 
 		return (flash_write(fdev, FLASH_OFFSET(offset), buf, len) == 0) ? SUIT_SUCCESS :
 										  SUIT_ERR_CRASH;
@@ -168,7 +172,24 @@ static int write(suit_component_t handle, size_t offset, uint8_t *buf, size_t le
 
 static int invoke(suit_component_t handle, struct zcbor_string *run_args)
 {
-	return SUIT_SUCCESS;
+#ifdef CONFIG_SDFW_RESET_HANDLING_ENABLED
+		struct zcbor_string *component_id;
+		uint8_t cpu_id;
+		intptr_t run_address;
+		size_t size;
+
+		if (suit_plat_component_id_get(handle, &component_id) != SUIT_SUCCESS) {
+			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+		}
+
+		if (!plat_com_decode_component_id(component_id, &cpu_id, &run_address, &size)) {
+			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+		}
+
+		return reset_mgr_start_cpu(cpu_id, run_address | SECURE_BIT, run_address);
+#else
+		return SUIT_SUCCESS;
+#endif /* CONFIG_SDFW_RESET_HANDLING_ENABLED */
 }
 
 static size_t read_address(suit_component_t handle, uint8_t **read_address)
