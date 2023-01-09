@@ -30,16 +30,16 @@
 	/* Configure PPR code region. Allow to execute from defined
 	 * region by App and cores owned by App.
 	 */
-	ppr_code: memory@1e0f0000 {
+	ppr_code: memory@1e12a000 {
 		compatible = "zephyr,memory-region", "mmio-sram";
-		reg = <0x1e0f0000 DT_SIZE_K(64)>;
+		reg = <0x1e12a000 DT_SIZE_K(64)>;
 		zephyr,memory-region = "PPR_CODE";
 	};
 };
 
 &mram0 {
 	/* Expand to include PPR */
-	reg = <0x1e0aa000 DT_SIZE_K(344)>;
+	reg = <0x1e0aa000 DT_SIZE_K(576)>;
 };
 
 &grtc {
