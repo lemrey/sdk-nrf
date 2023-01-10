@@ -257,8 +257,8 @@ Following are the various LwM2M carrier library events that are also listed in :
 * :c:macro:`LWM2M_CARRIER_EVENT_ERROR`:
 
   * This event indicates an error.
-  * The event data struct :c:type:`lwm2m_carrier_event_error_t` contains the information about the error (:c:member:`code` and :c:member:`value`).
-  * Following are the valid error codes:
+  * The event data struct :c:type:`lwm2m_carrier_event_error_t` contains the information about the error (:c:member:`type` and :c:member:`value`).
+  * Following are the valid error types:
 
     * :c:macro:`LWM2M_CARRIER_ERROR_CONNECT_FAIL` - This error is generated from the :c:func:`lte_lc_init_and_connect` function. It indicates possible problems with the SIM card, or insufficient network coverage. See :c:member:`value` field of the event.
 
@@ -284,13 +284,11 @@ Following are the various LwM2M carrier library events that are also listed in :
 
     * :c:macro:`LWM2M_CARRIER_ERROR_FOTA_PKG` - This error indicates that the update package has been rejected. The integrity check has failed because of a wrong package sent from the server, or a wrong package received by client. The :c:member:`value` field will have an error of type :c:type:`nrf_dfu_err_t` from the file :file:`nrfxlib/nrf_modem/include/nrf_socket.h`.
 
-    * :c:macro:`LWM2M_CARRIER_ERROR_FOTA_PROTO` - This error indicates a protocol error. There might be unexpected HTTP header contents. The server might not support partial content requests.
+    * :c:macro:`LWM2M_CARRIER_ERROR_FOTA_FAIL` - This error indicates a failure to update the device. If this error persists, create a ticket in `DevZone`_ with the modem trace. The following error values may apply:
 
-    * :c:macro:`LWM2M_CARRIER_ERROR_FOTA_CONN` - This error indicates a connection problem. Either the server host name could not be resolved, or the remote server refused the connection.
-
-    * :c:macro:`LWM2M_CARRIER_ERROR_FOTA_CONN_LOST` - This error indicates a loss of connection, or an unexpected closure of connection by the server.
-
-    * :c:macro:`LWM2M_CARRIER_ERROR_FOTA_FAIL` - This error indicates a failure in applying a valid update. If this error persists, create a ticket in `DevZone`_ with the modem trace.
+      * ``EPERM`` - No valid security tag found. The security tag contains the certificate needed to secure the connection to the repository server. Check with your operator which certificates are needed for the firmware update, and check that you have provisioned these to the device.
+      * ``ENOMEM`` - Too many open connections to connect to the firmware repository. Pay special attention :c:macro:`LWM2M_CARRIER_EVENT_FOTA_START` which promts you to close any TLS socket.
+      * ``EBADF`` - Incorrect firmware update version. The Firmware could not be applied to the device. Check that you are providing the correct FOTA and that it's compatible with the current Firmware.
 
     * :c:macro:`LWM2M_CARRIER_ERROR_CONFIGURATION` - This error indicates that an illegal object configuration was detected.
 

@@ -150,15 +150,12 @@ typedef struct {
 #define LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL	2
 /** LwM2M carrier bootstrap failed. */
 #define LWM2M_CARRIER_ERROR_BOOTSTRAP		3
-/** Update package rejected. */
-#define LWM2M_CARRIER_ERROR_FOTA_PKG		4
-/** Protocol error. */
-#define LWM2M_CARRIER_ERROR_FOTA_PROTO		5
-/** Connection error. */
-#define LWM2M_CARRIER_ERROR_FOTA_CONN		6
-/** Connection lost. */
-#define LWM2M_CARRIER_ERROR_FOTA_CONN_LOST	7
-/** Update failed. */
+/**
+ * Firmware update failed. value:
+ * -EPERM   No valid security tag found.
+ * -ENOMEM  Too many open connections.
+ * -EBADF   Incorrect firmware update version.
+ */
 #define LWM2M_CARRIER_ERROR_FOTA_FAIL		8
 /** Illegal object configuration detected. */
 #define LWM2M_CARRIER_ERROR_CONFIGURATION	9

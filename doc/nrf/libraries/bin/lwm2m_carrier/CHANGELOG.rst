@@ -9,8 +9,45 @@ Changelog
 
 All notable changes to this project are documented in this file.
 
+liblwm2m_carrier 3.2.0
+**********************
+
+Release for modem firmware version 1.3.5.
+
+Certification status
+====================
+
+For certification status, see `Mobile network operator certifications`_.
+
+Size
+====
+
+See :ref:`lwm2m_lib_size` for an explanation of the library size in different scenarios.
+
++-------------------------+---------------+------------+
+|                         | Flash (Bytes) | RAM (Bytes)|
++-------------------------+---------------+------------+
+| Library size            |               |            |
+| (binary)                |               |            |
++-------------------------+---------------+------------+
+| Library size            |               |            |
+| (reference application) |               |            |
++-------------------------+---------------+------------+
+
+Changes
+=======
+
+* Removed the events event ``LWM2M_CARRIER_ERROR_FOTA_PKG`` ``LWM2M_CARRIER_ERROR_FOTA_PROTO``, ``LWM2M_CARRIER_ERROR_FOTA_CONN``, ``LWM2M_CARRIER_ERROR_FOTA_CONN_LOST``
+
+  * Instead, the ``LWM2M_CARRIER_ERROR_FOTA_FAIL`` events indicate an error code :c:member:`error.value` in  :c:struct:`lwm2m_carrier_event_t` (when ``LWM2M_CARRIER_ERROR_FOTA_FAIL`` is received).
+
+* Removed the dependency on the :ref:`lte_lc_readme` library.
+
+    * This was primarily done to save space in the :ref:`serial_lte_modem` application.
+    * All other relevant samples and applications use the :ref:`lte_lc_readme` library. We highly recommend that you include it in your applications.
+
 liblwm2m_carrier 3.1.0
-***********************
+**********************
 
 Release for modem firmware version 1.3.3 and 1.3.4.
 

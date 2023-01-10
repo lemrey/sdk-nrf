@@ -825,7 +825,8 @@ static char *carriers_enabled_str(void)
 	}
 
 	for (int i = 0; i < ARRAY_SIZE(carriers_enabled_map); i++) {
-		if (carriers_enabled & carriers_enabled_map[i].bit_num) {
+		if ((carriers_enabled & carriers_enabled_map[i].bit_num) &&
+		    (offset < sizeof(oper_str))) {
 			offset += snprintf(&oper_str[offset], sizeof(oper_str) - offset,
 					   "%s%s (%u)", (offset == 0) ? "" : ", ",
 					   carriers_enabled_map[i].name, i);

@@ -450,11 +450,19 @@ bool lwm2m_os_timer_is_pending(lwm2m_os_timer_t *timer);
 int lwm2m_os_thread_start(int index, lwm2m_os_thread_entry_t entry, const char *name);
 
 /**
+ * @brief  LwM2M OS modem init responses.
+ */
+#define LWM2M_OS_NRF_MODEM_INIT_SUCCESS        0
+#define LWM2M_OS_NRF_MODEM_INIT_UPDATED        1
+#define LWM2M_OS_NRF_MODEM_INIT_UPDATE_FAILED  2
+
+/**
  * @brief Initialize modem library.
  *
- * @retval  0      If success.
+ * @retval  LWM2M_OS_NRF_MODEM_INIT_SUCCESS        If the modem was initialized successfully.
+ * @retval  LWM2M_OS_NRF_MODEM_INIT_UPDATED	   If the modem firmware was updated.
+ * @retval  LWM2M_OS_NRF_MODEM_INIT_UPDATE_FAILED  If the modem failed to update the firmware.
  * @retval -EIO    If modem initialization failed.
- * @return  A positive number @em nrf_modem_dfu in case of modem firmware update.
  */
 int lwm2m_os_nrf_modem_init(void);
 

@@ -374,6 +374,7 @@ int lwm2m_os_nrf_modem_init(void)
 
 	switch (nrf_err) {
 	case 0:
+<<<<<<< HEAD
 		break;
 	case NRF_MODEM_DFU_RESULT_OK:
 		LOG_INF("Modem firmware update successful.");
@@ -393,13 +394,28 @@ int lwm2m_os_nrf_modem_init(void)
 		LOG_ERR("Modem firmware update cancelled.");
 		LOG_ERR("Please reboot once you have sufficient power for the DFU.");
 		break;
+=======
+		return LWM2M_OS_NRF_MODEM_INIT_SUCCESS;
+	case MODEM_DFU_RESULT_OK:
+		LOG_INF("Modem firmware update successful.");
+		LOG_INF("Modem will run the new firmware after reboot.");
+		return LWM2M_OS_NRF_MODEM_INIT_UPDATED;
+	case MODEM_DFU_RESULT_UUID_ERROR:
+	case MODEM_DFU_RESULT_AUTH_ERROR:
+		LOG_ERR("Modem firmware update failed.");
+		LOG_ERR("Modem will run non-updated firmware on reboot.");
+		return LWM2M_OS_NRF_MODEM_INIT_UPDATE_FAILED;
+	case MODEM_DFU_RESULT_HARDWARE_ERROR:
+	case MODEM_DFU_RESULT_INTERNAL_ERROR:
+		LOG_ERR("Modem firmware update failed.");
+		LOG_ERR("Fatal error.");
+		return LWM2M_OS_NRF_MODEM_INIT_UPDATE_FAILED;
+>>>>>>> 0d8be6327 (lib: bin: lwm2m_carrier: update to latest version)
 	default:
 		LOG_ERR("Could not initialize modem library.");
 		LOG_ERR("Fatal error.");
 		return -EIO;
 	}
-
-	return nrf_err;
 }
 
 int lwm2m_os_nrf_modem_shutdown(void)
