@@ -35,7 +35,7 @@ config CHIP_ENABLE_SLEEPY_END_DEVICE_SUPPORT
 
 endif # NET_L2_OPENTHREAD
 
-if !(EMULATOR_FPGA)
+if !(SOC_SERIES_NRF54HX) && !(CONFIG_EMULATOR_FPGA)
 
 config STATE_LEDS
 	bool "Use LEDs to indicate the device state"
@@ -64,16 +64,56 @@ config MPSL_FEM_NRF21540_TX_GAIN_DB
 
 endif # MPSL_FEM
 
+
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
 
-endif # !(EMULATOR_FPGA)
+endif # !(SOC_SERIES_NRF54HX) && !(CONFIG_EMULATOR_FPGA)
 
-if EMULATOR_FPGA
+if (CONFIG_EMULATOR_FPGA || SOC_SERIES_NRF54HX)
 
-source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.fpga"
+config MBEDTLS_USER_CONFIG_ENABLE
+	default y
+
+config MBEDTLS_USER_CONFIG_FILE
+	default "${ZEPHYR_BASE}/../nrf/samples/matter/lock/mbedtls_config.h"
+
+config GPIO_NRFX
+	default n
+
+config CHIP_LIB_SHELL
+	default y
+
+config MATTER_LOCK_MRAM_SETTINGS
+	bool "Enable MRAM as settings backend"
+	help
+	  Use this settings to enable MRAM as settings backend for Matter Lock sample,
+	  If that config is disabled Zephyr's settings will be stored in ram using Flash Simulator.
+
+if !(MATTER_LOCK_MRAM_SETTINGS)
+
+	# simulate flash to store settings in RAM
+	config SOC_FLASH_NRF
+		bool
+		default n
+
+	config FLASH_SIMULATOR
+		bool
+		default y
+
+	config FLASH_SIMULATOR_UNALIGNED_READ
+		bool
+		default y
+
+	config FLASH_SIMULATOR_DOUBLE_WRITES
+		bool
+		default y
+
+endif # MATTER_LOCK_MRAM_SETTINGS
+
+source "${ZEPHYR_BASE}/../nrf/samples/matter/lock/configuration/next/Kconfig.next"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 
-endif
+endif # SOC_SERIES_NRF54HX
 
 source "Kconfig.zephyr"

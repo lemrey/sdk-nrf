@@ -39,6 +39,9 @@ private:
 	void FunctionPressHandler(uint8_t buttonNumber);
 	void FunctionReleaseHandler(uint8_t buttonNumber);
 	void FunctionTimerEventHandler();
+#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
+	void StartThreadHandler();
+#endif
 	void StartBLEAdvertisingHandler();
 
 	static void LockStateChanged(BoltLockManager::State state, BoltLockManager::OperationSource source);

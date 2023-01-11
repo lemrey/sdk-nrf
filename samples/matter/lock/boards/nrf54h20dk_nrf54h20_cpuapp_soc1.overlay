@@ -18,7 +18,6 @@
     chosen {
         zephyr,console = &uart136;
         zephyr,sram = &cpuapp_sram;
-        zephyr,flash = &mram11;
         zephyr,shell-uart = &uart136;
     };
 };
@@ -39,36 +38,31 @@
     zephyr,priority = <0 PRIO_COOP>;
 };
 
-&uart136 {
-	status = "okay";
-};
-
 ipc0: &ipc_cpurad { };
 
-/delete-node/ &slot0_partition;
+/delete-node/ &mram0;
 
-/ {
-	soc {
-		mram11: mram@e100000 {
-			compatible = "nordic,allocatable-mram";
-			erase-block-size = <4096>;
-			write-block-size = <4>;
-            label = "ram_flash";
-			reg = <0x0e100000 DT_SIZE_K(1024)>;
-            owner-id = <2>;
-            perm-read;
-            perm-execute;
-            partitions {
-				compatible = "fixed-partitions";
-				#address-cells = < 0x1 >;
-				#size-cells = < 0x1 >;
-				slot0_partition: partition@0 {
-					label = "image-0";
-					reg = < 0x0 0x10000 >;
-				};
-			};
-		};
-	};
+&mram_controller{
+	label = "mram_controller";
+    mram0: mram@1e100000 {
+        compatible = "nordic,allocatable-mram", "soc-nv-flash";
+        reg = < 0x1e100000 DT_SIZE_K(1000) >;
+        erase-block-size = < 0x1000 >;
+        write-block-size = < 0x1 >;
+        owner-id = <2>;
+        perm-read;
+        perm-execute;
+		label = "code_mram";
+        partitions {
+            compatible = "fixed-partitions";
+            #address-cells = < 0x1 >;
+            #size-cells = < 0x1 >;
+            slot0_partition: partition@100000 {
+                label = "image-0";
+                reg = < 0x100000 DT_SIZE_K(1000) >;
+            };
+        };
+    };
 };
 
 / {

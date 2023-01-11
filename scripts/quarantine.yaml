@@ -400,9 +400,3 @@
   platforms:
     - nrf5340dk_nrf5340_cpuapp
   comment: "TO BE invastigated under NCSDK-18845"
-
-- scenarios:
-    - sample.matter.lock.fpga
-  platforms:
-    - nrf54h20dk_nrf54h20_cpuapp@soc1
-  comment: "TO BE invastigated under NCSDK-18848"

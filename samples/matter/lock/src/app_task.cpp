@@ -13,8 +13,8 @@
 #include "thread_util.h"
 #endif
 
-#if CONFIG_EMULATOR_FPGA
-#include "fpga_shell_commands.h"
+#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
+#include "debug_helpers.h"
 #endif
 
 #include <platform/CHIPDeviceLayer.h>
@@ -148,12 +148,12 @@ CHIP_ERROR AppTask::Init()
 
 	UpdateStatusLED();
 
-#if CONFIG_EMULATOR_FPGA
-	RegisterFpgaCommands();
+#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
+	RegisterDebugCommands();
 #endif
 
 	/* Initialize buttons */
-#if !(defined(CONFIG_EMULATOR_FPGA))
+#if !(defined(CONFIG_EMULATOR_FPGA) || defined(CONFIG_SOC_SERIES_NRF54HX))
 	int ret = dk_buttons_init(ButtonEventHandler);
 	if (ret) {
 		LOG_ERR("dk_buttons_init() failed");
@@ -298,6 +298,11 @@ void AppTask::DispatchEvent(const AppEvent &event)
 	case AppEvent::StartBleAdvertising:
 		StartBLEAdvertisingHandler();
 		break;
+#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
+	case AppEvent::StartThread:
+		StartThreadHandler();
+		break;
+#endif
 	case AppEvent::UpdateLedState:
 		event.UpdateLedStateEvent.LedWidget->UpdateState();
 		break;
@@ -311,6 +316,18 @@ void AppTask::DispatchEvent(const AppEvent &event)
 		break;
 	}
 }
+
+#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
+void AppTask::StartThreadHandler()
+{
+	if (!ConnectivityMgr().IsThreadProvisioned()) {
+		StartDefaultThreadNetwork(0);
+		LOG_INF("Device is not commissioned to a Thread network. Starting with the default configuration.");
+	} else {
+		LOG_INF("Device is commissioned to a Thread network.");
+	}
+}
+#endif /* CONFIG_EMULATOR_FPGA */
 
 void AppTask::FunctionPressHandler(uint8_t buttonNumber)
 {

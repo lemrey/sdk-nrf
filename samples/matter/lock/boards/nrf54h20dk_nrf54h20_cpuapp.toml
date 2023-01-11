@@ -1,2 +1,0 @@
-[initsvtor_0] # (Required) Start address of Trustzone Secure Firmware image
-INITSVTOR = 0x0e099000

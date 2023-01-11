@@ -6,7 +6,7 @@
 
 #pragma once
 
-#if !defined(CONFIG_EMULATOR_FPGA)
+#if (!defined(CONFIG_EMULATOR_FPGA) && !defined(CONFIG_SOC_SERIES_NRF54HX))
 
 #include <zephyr/devicetree.h>
 

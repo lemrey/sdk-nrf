@@ -6,11 +6,16 @@
 
 #pragma once
 
-#if defined(CONFIG_EMULATOR_FPGA)
+#include <lib/core/CHIPError.h>
+#include <lib/shell/Engine.h>
+#include <lib/shell/commands/Help.h>
 
 #include "bolt_lock_manager.h"
 
-class FPGA_NRF54 {
+void RegisterDebugCommands();
+void StartDefaultThreadNetwork(uint64_t datasetTimestamp);
+
+class LockSampleHelpers {
     public:
 
     constexpr static size_t sMaxThreadNetworkName = 15;
@@ -20,11 +25,7 @@ class FPGA_NRF54 {
         BoltLockManager::State mState;
     };
     
-    static void FpgaLockUnlockHandler(intptr_t aContext);
+    static void LockUnlockHandler(intptr_t aContext);
     static void BleAdvertisementStartHandler(intptr_t aContext);
-    static void FpgaCommissionHandler(intptr_t aContext);
-
-
+    static void CommissionHandler(intptr_t aContext);
 };
-
-#endif

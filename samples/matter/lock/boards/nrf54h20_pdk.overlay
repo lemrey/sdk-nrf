@@ -1,0 +1,10 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+ &uart136{
+    tx-pin = < 68 >; // P2.04
+    rx-pin = < 69 >; // P2.05
+ };

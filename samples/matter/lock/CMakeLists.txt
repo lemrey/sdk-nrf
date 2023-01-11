@@ -48,7 +48,7 @@ set(app_sources src/bolt_lock_manager.cpp
                 src/app_task.cpp
                 )
 
-if(CONFIG_EMULATOR_FPGA)
+if(CONFIG_EMULATOR_FPGA OR CONFIG_SOC_SERIES_NRF54HX)
 
     # FIXME Disabled -Werror due to warning in zephyr/subsys/net/lib/openthread/platform/entropy.c
     # Which warns that OpenThread uses NOT SAFE random generator due to lack of the Entropy Driver on FPGA board.
@@ -56,8 +56,7 @@ if(CONFIG_EMULATOR_FPGA)
     zephyr_compile_options(-Wno-error)
 
     set(app_sources ${app_sources} 
-                    ${COMMON_ROOT}/src/fpga_shell_commands.cpp
-                    ${COMMON_ROOT}/src/fpga_target.cpp
+                    ${COMMON_ROOT}/src/debug_helpers.cpp
                     )
 endif()
 
