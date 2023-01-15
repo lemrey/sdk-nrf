@@ -568,8 +568,6 @@ The nRF Machine Learning application also uses the following dedicated applicati
 ``ml_runner``
   The module uses :ref:`ei_wrapper` API to control running the machine learning model.
   It provides the prediction results using :c:struct:`ml_result_event`.
-  The module runs the machine learning model and provides results only if there is an active subsriber.
-  An application module can inform that it is actively listening for results using :c:struct:`ml_result_signin_event`.
 
 ``ml_app_mode``
   The module controls Application mode. It switches between running the machine learning model and forwarding the data.
