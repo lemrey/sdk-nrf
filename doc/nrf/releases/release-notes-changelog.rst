@@ -526,6 +526,11 @@ Common Application Framework (CAF)
 
 |no_changes_yet_note|
 
+* :ref:`caf_sensor_manager`:
+
+  * Clean up :file:`sensor_event.h` and :file:`sensor_manager.h` files.
+    Move unrelated declarations to a separate :file:`caf_sensor_common.h` file.
+
 Shell libraries
 ---------------
 
