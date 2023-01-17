@@ -14,7 +14,7 @@ target_sources(app PRIVATE src/main.c)
 # NORDIC SDK APP END
 
 target_sources_ifdef(CONFIG_BT app PRIVATE src/ble.c)
-
+target_sources_ifdef(CONFIG_CLI_SAMPLE_LOW_POWER app PRIVATE src/low_power.c)
 
 if(CONFIG_SOC_SERIES_NRF54HX)
     # Workaround due to lack of entropy driver.
