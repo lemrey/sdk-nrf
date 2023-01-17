@@ -20,14 +20,15 @@ The application supports the following development kits:
 
 .. table-from-sample-yaml::
 
-The available configurations use the built-in sensors, sensors connected with additional shield, or the simulated sensor signal.
+The available configurations use only built-in sensors or the simulated sensor signal.
+You do not need to connect any additional components to the board.
 
 .. include:: /includes/tfm.txt
 
 Overview
 ********
 
-To perform its tasks, the nRF Machine Learning application uses components available in Zephyr and the |NCS|, namely the :ref:`lib_caf` modules and :ref:`zephyr:sensor_api` for sampling sensors, :ref:`zephyr:uart_api` or :ref:`nus_service_readme` for forwarding data, and :ref:`peripheral_status` for presenting gesture detection results over Bluetooth® LE.
+To perform its tasks, the nRF Machine Learning application uses components available in Zephyr and the |NCS|, namely the :ref:`lib_caf` modules and :ref:`zephyr:sensor_api` for sampling sensors, and :ref:`zephyr:uart_api` or :ref:`nus_service_readme` for forwarding data.
 It also uses the `Edge Impulse's data forwarder`_ protocol.
 
 Sampling sensors
@@ -121,7 +122,7 @@ The labels that are assigned by the machine learning model are specific to the g
 
 By default, the application uses pretrained machine leaning models deployed in `Edge Impulse studio`_:
 
-* Both Thingy:53 and the nRF54H20 PDK use the `NCS hardware accelerometer machine learning model`_.
+* Both Thingy:53 and the nRF54H20 PDK use the `nRF Connect SDK hardware accelerometer machine learning model`_.
   The model uses the data from the accelerometer to recognize the following gestures:
 
   * ``idle`` - The device is placed on a flat surface.
@@ -130,7 +131,7 @@ By default, the application uses pretrained machine leaning models deployed in `
   * ``tap`` - The device is tapped while placed on a flat surface.
 
   Unknown gestures, such as shaking the device, are recognized as anomaly.
-* Both the nRF52840 Development Kit and nRF5340 Development Kit use the `NCS simulated sensor machine learning model`_.
+* Both the nRF52840 Development Kit and nRF5340 Development Kit use the `nRF Connect SDK simulated sensor machine learning model`_.
   The model uses simulated sensor data to recognize the following simulated wave types:
 
   * ``sine``
@@ -353,10 +354,10 @@ By default, the application uses the following LED effects:
 
   * If the device is returning the machine learning prediction results, the LED uses following predefined colors:
 
-    * Red - ``rotate``
-    * Green - ``updown``
-    * Blue - ``tap``
-    * Purple - Anomaly
+    * ``rotate`` - Red
+    * ``updown`` - Green
+    * ``tap`` - Blue
+    * Anomaly - Purple
 
     If the machine learning model is running, but it has not detected anything yet or the ``idle`` state is detected, the LED is blinking.
     After a successful detection, the LED is set to the predefined color.
@@ -374,10 +375,10 @@ By default, the application uses the following LED effects:
     Then the sequence is repeated.
     The machine learning result is represented by the number of blinks:
 
-    * 1 blink - ``sine``
-    * 2 blinks - ``triangle``
-    * 3 blinks - ``square``
-    * 4 blinks - ``idle``
+    * ``sine`` - 1 blink
+    * ``triangle`` - 2 blinks
+    * ``square`` - 3 blinks
+    * ``idle`` - 4 blinks
 
     If the machine learning model is running, but it has not detected anything yet or it has detected an anomaly, the **LED1** is breathing.
   * If the device forwards data, the **LED1** uses the following blinking patterns:
