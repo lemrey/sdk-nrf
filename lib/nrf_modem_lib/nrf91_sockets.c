@@ -44,6 +44,7 @@
 static struct nrf_sock_ctx {
 	int nrf_fd; /* nRF socket descriptior. */
 	struct k_mutex *lock; /* Mutex associated with the socket. */
+	struct k_poll_signal poll; /* poll() signal. */
 } offload_ctx[NRF_MODEM_MAX_SOCKET_COUNT];
 
 static K_MUTEX_DEFINE(ctx_lock);
@@ -848,29 +849,141 @@ static int nrf91_socket_offload_fcntl(int fd, int cmd, va_list args)
 	return retval;
 }
 
+static struct nrf_sock_ctx *find_ctx(int fd)
+{
+	for (size_t i = 0; i < ARRAY_SIZE(offload_ctx); i++) {
+		if (offload_ctx[i].nrf_fd == fd) {
+			return &offload_ctx[i];
+		}
+	}
+
+	return NULL;
+}
+
+static void pollcb(struct nrf_pollfd *pollfd)
+{
+	int flags;
+	unsigned int signaled;
+	struct nrf_sock_ctx *ctx;
+
+	ctx = find_ctx(pollfd->fd);
+	if (!ctx) {
+		return;
+	}
+
+	k_poll_signal_check(&ctx->poll, &signaled, &flags);
+	if (!signaled) {
+		flags = 0;
+	}
+
+	// LOG_DBG("poll() fd 0x%x has revents 0x%x\n", pollfd->fd, pollfd->revents);
+
+	if (pollfd->events & NRF_POLLIN && pollfd->revents & NRF_POLLIN) {
+		k_poll_signal_raise(&ctx->poll, flags |= ZSOCK_POLLIN);
+	}
+	if (pollfd->events & NRF_POLLOUT && pollfd->revents & NRF_POLLOUT) {
+		k_poll_signal_raise(&ctx->poll, flags |= ZSOCK_POLLOUT);
+	}
+
+	if (pollfd->revents & NRF_POLLHUP) {
+		k_poll_signal_raise(&ctx->poll, flags |= ZSOCK_POLLHUP);
+	}
+	if (pollfd->revents & NRF_POLLERR) {
+		k_poll_signal_raise(&ctx->poll, flags |= ZSOCK_POLLERR);
+	}
+}
+
+static int nrf91_poll_prepare(struct nrf_sock_ctx *ctx, struct zsock_pollfd *pfd,
+			      struct k_poll_event **pev, struct k_poll_event *pev_end)
+{
+	int err;
+	int fd = OBJ_TO_SD(ctx);
+	struct nrf_modem_pollcb pcb = {
+		.callback = pollcb,
+		.events = pfd->events,
+		.oneshot = true,
+	};
+
+	if (*pev == pev_end) {
+		errno = ENOMEM;
+		return -1;
+	}
+
+	k_poll_signal_init(&ctx->poll);
+	k_poll_event_init(*pev, K_POLL_TYPE_SIGNAL, K_POLL_MODE_NOTIFY_ONLY, &ctx->poll);
+
+	err = nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_POLLCB, &pcb, sizeof(pcb));
+	if (err) {
+		// LOG_ERR("Failed to set SO_POLLCB, err %d\n", errno);
+		return -1;
+	}
+
+	/* Let other sockets use another k_poll_event */
+	(*pev)++;
+
+	return 0;
+}
+
+static int nrf91_poll_update(struct nrf_sock_ctx *ctx, struct zsock_pollfd *pfd,
+			     struct k_poll_event **pev)
+{
+	int flags;
+	unsigned int signaled;
+
+	flags = 0;
+	k_poll_signal_check(&ctx->poll, &signaled, &flags);
+	if (!signaled) {
+		/* Let next polled socket use next k_poll_event */
+		(*pev)++;
+		return 0;
+	}
+
+	if (pfd->events & ZSOCK_POLLIN && flags & ZSOCK_POLLIN) {
+		pfd->revents |= ZSOCK_POLLIN;
+	}
+	if (pfd->events & ZSOCK_POLLOUT && flags & ZSOCK_POLLOUT) {
+		pfd->revents |= ZSOCK_POLLOUT;
+	}
+	if (flags & ZSOCK_POLLHUP) {
+		pfd->revents |= ZSOCK_POLLHUP;
+	}
+	if (flags & ZSOCK_POLLERR) {
+		pfd->revents |= ZSOCK_POLLERR;
+	}
+
+	return 0;
+}
+
 static int nrf91_socket_offload_ioctl(void *obj, unsigned int request,
 				      va_list args)
 {
 	int sd = OBJ_TO_SD(obj);
 
 	switch (request) {
-	case ZFD_IOCTL_POLL_PREPARE:
-		return -EXDEV;
+	case ZFD_IOCTL_POLL_PREPARE: {
+		struct zsock_pollfd *pfd;
+		struct k_poll_event **pev;
+		struct k_poll_event *pev_end;
 
-	case ZFD_IOCTL_POLL_UPDATE:
-		return -EOPNOTSUPP;
+		pfd = va_arg(args, struct zsock_pollfd *);
+		pev = va_arg(args, struct k_poll_event **);
+		pev_end = va_arg(args, struct k_poll_event *);
 
-	case ZFD_IOCTL_POLL_OFFLOAD: {
-		struct zsock_pollfd *fds;
-		int nfds;
-		int timeout;
-
-		fds = va_arg(args, struct zsock_pollfd *);
-		nfds = va_arg(args, int);
-		timeout = va_arg(args, int);
-
-		return nrf91_socket_offload_poll(fds, nfds, timeout);
+		return nrf91_poll_prepare(obj, pfd, pev, pev_end);
 	}
+
+	case ZFD_IOCTL_POLL_UPDATE: {
+		struct zsock_pollfd *pfd;
+		struct k_poll_event **pev;
+
+		pfd = va_arg(args, struct zsock_pollfd *);
+		pev = va_arg(args, struct k_poll_event **);
+
+		return nrf91_poll_update(obj, pfd, pev);
+	}
+
+	case ZFD_IOCTL_POLL_OFFLOAD:
+		return -EOPNOTSUPP;
 
 	case ZFD_IOCTL_SET_LOCK: {
 		struct nrf_sock_ctx *ctx = OBJ_TO_CTX(obj);
