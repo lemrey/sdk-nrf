@@ -9,16 +9,6 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		/* Configure PPR code region. Allow to execute from defined
-		 * region by App and cores owned by App.
-		 */
-		ppr_code: memory@1e0f0000 {
-			compatible = "nordic,allocatable-mram";
-			reg = <0x1e0f0000 DT_SIZE_K(64)>;
-			perm-read;
-			perm-execute;
-		};
-
 		/* Configure PPR memory region. Allow to use defined RAM3x
 		 * region by App and cores owned by App.
 		 */
@@ -30,9 +20,23 @@
 		};
 	};
 
+	/* Configure PPR code region. Allow to execute from defined
+	 * region by App and cores owned by App.
+	 */
+	ppr_code: memory@1e0f0000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x1e0f0000 DT_SIZE_K(64)>;
+		zephyr,memory-region = "PPR_CODE";
+	};
+
 	chosen {
 		zephyr,console = &uart136;
 	};
+};
+
+&mram0 {
+	/* Expand to include PPR */
+	reg = <0x1e0aa000 DT_SIZE_K(344)>;
 };
 
 /* ram3x_cpuapp buffer is used by App core UART driver. */
