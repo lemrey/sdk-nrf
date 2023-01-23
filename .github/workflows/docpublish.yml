@@ -1,0 +1,82 @@
+name: Documentation Publish
+
+on:
+  workflow_run:
+    workflows: ["Documentation Build"]
+    types:
+      - completed
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Download artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: docbuild.yml
+          run_id: ${{ github.event.workflow_run.id }}
+          github_token: ${{secrets.NCS_GITHUB_TOKEN}}
+          name: cache
+          path: cache
+
+      - name: Install azcopy
+        run: |
+          sudo apt update
+          wget -P azcopy/bin https://azcopyvnext.azureedge.net/release20221108/azcopy_linux_amd64_10.16.2.tar.gz
+          cd azcopy/bin && tar --strip-components=1 -xzf azcopy_linux_amd64_10.16.2.tar.gz
+          echo "${PWD}/azcopy/bin >> $GITHUB_PATH"
+          azcopy -v
+
+      - name: AzCopy login
+        env:
+          AZCOPY_SPA_APPLICATION_ID: ${{ secrets.AZCOPY_SPA_APPLICATION_ID }}
+          AZCOPY_SPA_TENANT_ID: ${{ secrets.AZCOPY_SPA_TENANT_ID }}
+          AZCOPY_SPA_CLIENT_SECRET: ${{ secrets.AZCOPY_SPA_CLIENT_SECRET }}
+        run: azcopy login --service-principal --application-id ${AZCOPY_SPA_APPLICATION_ID} --tenant-id ${AZCOPY_SPA_TENANT_ID}
+
+      - name: Upload documentation
+        working-directory: cache
+        run: |
+          # don't do anything if monitor.txt doesn't exist (no publish)
+          if [[ ! -f "extra/monitor.txt" ]]; then
+            exit 0
+          fi
+
+          unzip -q html.zip
+
+          # download .htaccess file
+          azcopy copy "https://ncsdocsa.blob.core.windows.net/ncs-doc-authorization/template.htaccess" html/.htaccess
+          sed -i "s/__PASSWORD__/${{ secrets.DOC_ID_PASSWORD }}/g" html/.htaccess
+          sed -i "s/__DOCSET__/nrf-next/g" html/.htaccess
+
+          # prepare upload
+          read -a strarr <<< $(cat extra/monitor.txt)
+          category=${strarr[1]}
+          name=${strarr[2]}
+          if [[ "$category" == "dev" ]]; then
+            destination="ncs-documentation-dev"
+          elif [[ "$category" == "main" ]]; then
+            destination="ncs-documentation-prod"
+          else
+            echo "No target set for publish category '$category'"
+            exit 1
+          fi
+          mkdir -p $GITHUB_WORKSPACE/azcopy_logs
+          export AZCOPY_LOG_LOCATION="${GITHUB_WORKSPACE}/azcopy_logs/docsync.log"
+          azcopy sync html "https://ncsdocsa.blob.core.windows.net/$destination/$name/" --delete-destination=true --from-to=LocalBlob --put-md5 --recursive --log-level=WARNING
+
+          if [[ -f "$GITHUB_WORKSPACE/azcopy_logs/docsync.log" ]]; then
+            cat $GITHUB_WORKSPACE/azcopy_logs/docsync.log
+          fi
+
+      - name: Add preview URL comment for PRs
+        uses: carlescufi/action-doc-url@main
+        with:
+          github-token: ${{ secrets.NCS_GITHUB_TOKEN }}
+          urlroot: ${{ vars.DOC_PR_URL_ROOT }}
+          pr-prefix: "PR-"
+          pr-file: cache/extra/pr.txt
