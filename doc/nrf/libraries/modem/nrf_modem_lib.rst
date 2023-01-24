@@ -314,6 +314,10 @@ Partition manager also generates the following additional parameters:
 
 These parameters will have identical values as the ``CONFIG_NRF_MODEM_LIB_SHMEM_*_SIZE`` configuration options.
 
+.. note::
+   The OS implementation of :c:func:`nrf_modem_os_shm_tx_alloc` in |NCS| reserves up to 128 bytes of the ``PM_NRF_MODEM_LIB_TX`` partition for internal use.
+   The ``PM_NRF_MODEM_LIB_TX_SIZE`` therefore has to be 128 bytes larger than the largest payload that can be sent at once, and the largest AT command that can be sent.
+
 When the Modem library is initialized by the integration layer in |NCS|, the integration layer automatically passes the boundaries of each shared memory region to the Modem library during the :c:func:`nrf_modem_lib_init` call.
 
 Diagnostic functionality

@@ -27,6 +27,11 @@ LOG_MODULE_DECLARE(nrf_modem, CONFIG_NRF_MODEM_LIB_LOG_LEVEL);
 #define NRF_MODEM_IPC_IRQ DT_IRQ_BY_IDX(DT_NODELABEL(ipc), 0, irq)
 BUILD_ASSERT(IPC_IRQn == NRF_MODEM_IPC_IRQ, "NRF_MODEM_IPC_IRQ mismatch");
 
+/* The heap implementation in `nrf_modem_os.c` require some overhead to allow allocating up to
+ * `NRF_MODEM_LIB_SHMEM_TX_SIZE` bytes.
+ */
+#define NRF_MODEM_LIB_SHMEM_TX_HEAP_OVERHEAD_SIZE 128
+
 struct shutdown_thread {
 	sys_snode_t node;
 	struct k_sem sem;
@@ -39,6 +44,13 @@ static struct k_mutex slist_mutex;
 static int init_ret;
 static enum nrf_modem_mode init_mode;
 
+BUILD_ASSERT(PM_NRF_MODEM_LIB_CTRL_ADDRESS % 4 == 0, "Modem CTRL region must be word aligned");
+BUILD_ASSERT(PM_NRF_MODEM_LIB_TX_ADDRESS % 4 == 0, "Modem TX region must be word aligned");
+BUILD_ASSERT(PM_NRF_MODEM_LIB_RX_ADDRESS % 4 == 0, "Modem RX region must be word aligned");
+#if CONFIG_NRF_MODEM_LIB_TRACE
+BUILD_ASSERT(PM_NRF_MODEM_LIB_TRACE_ADDRESS % 4 == 0, "Modem RX region must be word aligned");
+#endif
+
 static const struct nrf_modem_init_params init_params = {
 	.ipc_irq_prio = CONFIG_NRF_MODEM_LIB_IPC_IRQ_PRIO,
 	.shmem.ctrl = {
@@ -47,7 +59,8 @@ static const struct nrf_modem_init_params init_params = {
 	},
 	.shmem.tx = {
 		.base = PM_NRF_MODEM_LIB_TX_ADDRESS,
-		.size = CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE,
+		.size = CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE -
+			NRF_MODEM_LIB_SHMEM_TX_HEAP_OVERHEAD_SIZE,
 	},
 	.shmem.rx = {
 		.base = PM_NRF_MODEM_LIB_RX_ADDRESS,
