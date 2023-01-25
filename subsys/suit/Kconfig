@@ -1,0 +1,73 @@
+#
+# Copyright (c) 2020 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig SUIT
+	bool "Enable SUIT processor"
+	select SUIT_PROCESSOR
+	imply NRF_SECURITY if SOC_FAMILY_NRF
+	imply MBEDTLS if !SOC_FAMILY_NRF
+	select FLASH
+	select FLASH_SIMULATOR if BOARD_NATIVE_POSIX
+
+if SUIT
+
+menu "SUIT component implementations"
+
+config SUIT_COMPONENT_RAMBUF
+	bool "Include RAM buffer as MRAM suit component implementation"
+	depends on !SUIT_COMPONENT_MRAM
+
+config SUIT_COMPONENT_MRAM
+	bool "Include MRAM/Flash suit component implementation"
+	select FLASH
+
+config SUIT_PARTITION_N_ENVELOPES
+	int "Number of envelopes, possible to store on SUIT partition"
+	default 1
+
+config SUIT_PARTITION_ENVELOPE_SIZE
+	int "The maximum size of envelope that can be stored on SUIT partition"
+	default 2048
+
+config SUIT_MAX_ENVELOPE_REF_COMPONENTS
+	int "The maximum number of envelope reference components that will be handled"
+	range 1 255	
+	help
+	  Index is of type uint8_t, which restricts number of components of this type to 255.
+	  Default value is 8 and minimal 1.
+	default 8
+
+config SUIT_MAX_MRAM_COMPONENTS
+	int "The maximum number of flash (MRAM) components that will be handled"
+	range 1 255	
+	help
+	  Index is of type uint8_t, which restricts number of components of this type to 255.
+	  Default value is 8 and minimal 1.
+	default 8
+	depends on SUIT_COMPONENT_MRAM
+
+if MBEDTLS
+config SUIT_DEFAULT_MBEDTLS_CONFIG
+	bool "Use default mbedTLS configuration file"
+	default y
+	select MBEDTLS_USER_CONFIG_ENABLE
+
+config MBEDTLS_USER_CONFIG_FILE
+	default "user-tls-conf.h" if SUIT_DEFAULT_MBEDTLS_CONFIG
+endif
+
+endmenu
+
+config APP_LINK_WITH_SUIT_ORCHESTRATOR_INTERFACE
+	bool
+	default y
+
+# Configure SUIT_LOG_LEVEL
+module = SUIT
+module-str = Software Updates for Internet of Things
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+endif #SUIT

@@ -1,0 +1,12 @@
+tests:
+  suit-processor.integration.fetch_integrated_payload:
+    platform_allow: nrf52840dk_nrf52840 native_posix native_posix_64
+    tags: suit-processor integrated-payload fetch
+    integration_platforms:
+      - nrf52840dk_nrf52840
+      - native_posix
+
+  suit-processor.integration.fetch_integrated_payload.fpga:
+    extra_args: CONFIG_EMULATOR_FPGA=y
+    platform_allow: nrf54h20dk_nrf54h20_cpusec
+    tags: suit-processor integrated-payload fetch fpga
