@@ -7,12 +7,7 @@
 / {
 	chosen {
 		zephyr,console = &uart136;
-	};
-
-	sensor_sim: sensor-sim {
-		compatible = "nordic,sensor-sim";
-		label = "SENSOR_SIM";
-		acc-signal = "wave";
+		zephyr,sram = &sram_cpuapp;
 	};
 
 	allocatable_ram {
@@ -28,6 +23,22 @@
 			perm-read;
 			perm-write;
 		};
+	};
+
+	sensor_sim: sensor-sim {
+		compatible = "nordic,sensor-sim";
+		label = "SENSOR_SIM";
+		acc-signal = "wave";
+	};
+};
+
+&ram0x {
+	sram_cpuapp: memory@1000 {
+		compatible = "nordic,allocatable-ram";
+		reg = <0x1000 DT_SIZE_K(60)>;
+		perm-write;
+		perm-read;
+		perm-execute;
 	};
 };
 
