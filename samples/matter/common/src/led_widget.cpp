@@ -6,16 +6,14 @@
 
 #include "led_widget.h"
 
-#if !defined(CONFIG_EMULATOR_FPGA)
 #include <dk_buttons_and_leds.h>
-#endif
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 static LEDWidget::LEDWidgetStateUpdateHandler sStateUpdateCallback;
 
 void LEDWidget::InitGpio()
 {
-#if !defined(CONFIG_EMULATOR_FPGA)
+#if !(defined(CONFIG_EMULATOR_FPGA) || defined(CONFIG_SOC_SERIES_NRF54HX))
 	dk_leds_init();
 #endif
 }
@@ -77,7 +75,7 @@ void LEDWidget::ScheduleStateChange()
 void LEDWidget::DoSet(bool state)
 {
 	mState = state;
-#if !defined(CONFIG_EMULATOR_FPGA)
+#if !(defined(CONFIG_EMULATOR_FPGA) || defined(CONFIG_SOC_SERIES_NRF54HX))
 	dk_set_led(mGPIONum, state);
 #endif
 }

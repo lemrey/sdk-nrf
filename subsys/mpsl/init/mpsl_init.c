@@ -30,30 +30,7 @@ const uint32_t z_mpsl_used_nrf_ppi_groups;
 	#define MPSL_LOW_PRIO_IRQn SWI5_IRQn
 #elif IS_ENABLED(CONFIG_SOC_SERIES_NRF53X)
 	#define MPSL_LOW_PRIO_IRQn SWI0_IRQn
-#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
-#define MPSL_LOW_PRIO_IRQn QDEC130_IRQn
-#elif IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
-#define MPSL_LOW_PRIO_IRQn SWI00_IRQn
 #endif
-
-#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) && !IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
-#define MPSL_TIMER_IRQn TIMER0_IRQn
-#define MPSL_RTC_IRQn RTC0_IRQn
-#define MPSL_RADIO_IRQn RADIO_IRQn
-#elif IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
-#define MPSL_TIMER_IRQn TIMER10_IRQn
-#define MPSL_RTC_IRQn RTC10_IRQn
-#define MPSL_RADIO_IRQn RADIO_0_IRQn
-#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) && IS_ENABLED(CONFIG_EMULATOR_FPGA)
-#define MPSL_TIMER_IRQn TIMER020_IRQn
-#define MPSL_RTC_IRQn TIMER021_IRQn
-#define MPSL_RADIO_IRQn RADIO_0_IRQn
-#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
-#define MPSL_TIMER_IRQn TIMER020_IRQn
-#define MPSL_RTC_IRQn RTC_IRQn
-#define MPSL_RADIO_IRQn RADIO_0_IRQn
-#endif
-
 #define MPSL_LOW_PRIO (4)
 
 #if IS_ENABLED(CONFIG_ZERO_LATENCY_IRQS)
@@ -126,9 +103,9 @@ static void mpsl_radio_isr_wrapper(const void *args)
 
 static void mpsl_lib_irq_disable(void)
 {
-	irq_disable(MPSL_TIMER_IRQn);
-	irq_disable(MPSL_RTC_IRQn);
-	irq_disable(MPSL_RADIO_IRQn);
+	irq_disable(TIMER0_IRQn);
+	irq_disable(RTC0_IRQn);
+	irq_disable(RADIO_IRQn);
 }
 
 static void mpsl_lib_irq_connect(void)
@@ -136,16 +113,16 @@ static void mpsl_lib_irq_connect(void)
 	/* Ensure IRQs are disabled before attaching. */
 	mpsl_lib_irq_disable();
 
-	irq_connect_dynamic(MPSL_TIMER_IRQn, MPSL_HIGH_IRQ_PRIORITY, mpsl_timer0_isr_wrapper, NULL,
-			    IRQ_CONNECT_FLAGS);
-	irq_connect_dynamic(MPSL_RTC_IRQn, MPSL_HIGH_IRQ_PRIORITY, mpsl_rtc0_isr_wrapper, NULL,
-			    IRQ_CONNECT_FLAGS);
-	irq_connect_dynamic(MPSL_RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY, mpsl_radio_isr_wrapper, NULL,
-			    IRQ_CONNECT_FLAGS);
+	irq_connect_dynamic(TIMER0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			mpsl_timer0_isr_wrapper, NULL, IRQ_CONNECT_FLAGS);
+	irq_connect_dynamic(RTC0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			mpsl_rtc0_isr_wrapper, NULL, IRQ_CONNECT_FLAGS);
+	irq_connect_dynamic(RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			mpsl_radio_isr_wrapper, NULL, IRQ_CONNECT_FLAGS);
 
-	irq_enable(MPSL_TIMER_IRQn);
-	irq_enable(MPSL_RTC_IRQn);
-	irq_enable(MPSL_RADIO_IRQn);
+	irq_enable(TIMER0_IRQn);
+	irq_enable(RTC0_IRQn);
+	irq_enable(RADIO_IRQn);
 }
 #else /* !IS_ENABLED(CONFIG_MPSL_DYNAMIC_INTERRUPTS) */
 ISR_DIRECT_DECLARE(mpsl_timer0_isr_wrapper)
@@ -199,7 +176,6 @@ static void m_assert_handler(const char *const file, const uint32_t line)
 }
 #endif /* IS_ENABLED(CONFIG_MPSL_ASSERT_HANDLER) */
 
-#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) && !IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
 static uint8_t m_config_clock_source_get(void)
 {
 #ifdef CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC
@@ -212,22 +188,17 @@ static uint8_t m_config_clock_source_get(void)
 	return MPSL_CLOCK_LF_SRC_EXT_LOW_SWING;
 #elif CONFIG_CLOCK_CONTROL_NRF_K32SRC_EXT_FULL_SWING
 	return MPSL_CLOCK_LF_SRC_EXT_FULL_SWING;
-#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) || IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
-	return 0;
 #else
 	#error "Clock source is not supported or not defined"
 	return 0;
 #endif
 }
-#endif /* !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) */
 
 static int32_t mpsl_lib_init_internal(void)
 {
 	int err = 0;
 	mpsl_clock_lfclk_cfg_t clock_cfg;
 
-	/* TODO: Clock config should be adapted in the future to new architecture. */
-#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) && !IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
 	clock_cfg.source = m_config_clock_source_get();
 	clock_cfg.accuracy_ppm = CONFIG_CLOCK_CONTROL_NRF_ACCURACY;
 	clock_cfg.skip_wait_lfclk_started =
@@ -246,13 +217,6 @@ static int32_t mpsl_lib_init_internal(void)
 #else
 	clock_cfg.rc_ctiv = 0;
 	clock_cfg.rc_temp_ctiv = 0;
-#endif
-#else
-	/* For now just set the values to 0 to avoid "use of uninitialized variable" warnings.
-	   MPSL assumes the clocks are always available and does currently not implement
-	   clock handling on these platforms. The LFCLK is expected to have an accuracy of
-	   500ppm or better regardless of the value passed in clock_cfg. */
-	memset(&clock_cfg, 0, sizeof(clock_cfg));
 #endif
 
 	err = mpsl_init(&clock_cfg, MPSL_LOW_PRIO_IRQn, m_assert_handler);
@@ -291,21 +255,21 @@ static int mpsl_lib_init_sys(const struct device *dev)
 	 * however, as this decision needs to be made during build-time,
 	 * rescheduling is performed to account for user-provided handlers.
 	 */
-	ARM_IRQ_DIRECT_DYNAMIC_CONNECT(MPSL_TIMER_IRQn, MPSL_HIGH_IRQ_PRIORITY, IRQ_CONNECT_FLAGS,
-				       reschedule);
-	ARM_IRQ_DIRECT_DYNAMIC_CONNECT(MPSL_RTC_IRQn, MPSL_HIGH_IRQ_PRIORITY, IRQ_CONNECT_FLAGS,
-				       reschedule);
-	ARM_IRQ_DIRECT_DYNAMIC_CONNECT(MPSL_RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY, IRQ_CONNECT_FLAGS,
-				       reschedule);
+	ARM_IRQ_DIRECT_DYNAMIC_CONNECT(TIMER0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			IRQ_CONNECT_FLAGS, reschedule);
+	ARM_IRQ_DIRECT_DYNAMIC_CONNECT(RTC0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			IRQ_CONNECT_FLAGS, reschedule);
+	ARM_IRQ_DIRECT_DYNAMIC_CONNECT(RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			IRQ_CONNECT_FLAGS, reschedule);
 
 	mpsl_lib_irq_connect();
 #else /* !IS_ENABLED(CONFIG_MPSL_DYNAMIC_INTERRUPTS) */
-	IRQ_DIRECT_CONNECT(MPSL_TIMER_IRQn, MPSL_HIGH_IRQ_PRIORITY, mpsl_timer0_isr_wrapper,
-			   IRQ_CONNECT_FLAGS);
-	IRQ_DIRECT_CONNECT(MPSL_RTC_IRQn, MPSL_HIGH_IRQ_PRIORITY, mpsl_rtc0_isr_wrapper,
-			   IRQ_CONNECT_FLAGS);
-	IRQ_DIRECT_CONNECT(MPSL_RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY, mpsl_radio_isr_wrapper,
-			   IRQ_CONNECT_FLAGS);
+	IRQ_DIRECT_CONNECT(TIMER0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			   mpsl_timer0_isr_wrapper, IRQ_CONNECT_FLAGS);
+	IRQ_DIRECT_CONNECT(RTC0_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			   mpsl_rtc0_isr_wrapper, IRQ_CONNECT_FLAGS);
+	IRQ_DIRECT_CONNECT(RADIO_IRQn, MPSL_HIGH_IRQ_PRIORITY,
+			   mpsl_radio_isr_wrapper, IRQ_CONNECT_FLAGS);
 #endif /* IS_ENABLED(CONFIG_MPSL_DYNAMIC_INTERRUPTS) */
 
 	return 0;

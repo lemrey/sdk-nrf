@@ -37,7 +37,7 @@ manifest:
   defaults:
     remote: ncs
 
-  group-filter: [-homekit, -nrf-802154, -find-my, -doc-internal]
+  group-filter: [-homekit, -nrf-802154, -find-my, -ant]
 
   # "projects" is a list of git repositories which make up the NCS
   # source code.
@@ -49,8 +49,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/introduction/index.html
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
-      repo-path: sdk-zephyr-next
-      revision: 089b2289e1717080707876ed702e24fc601556a9
+      repo-path: sdk-zephyr
+      revision: eff20cfb43eb888511eb13b37cc131150cf5919c
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -68,12 +68,13 @@ manifest:
           - canopennode
           - chre
           - cmsis
-          - coremark
           - edtt
           - fatfs
           - fff
-          - hal_st
-          - liblc3codec
+          - hal_nordic
+          - hal_st # required for ST sensors (unrelated to STM32 MCUs)
+          - hal_wurthelektronik
+          - liblc3
           - libmetal
           - littlefs
           - loramac-node
@@ -113,29 +114,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 146cc3ae2cb2622f41021327327a1095178e3a88
-    - name: doc-internal
-      repo-path: doc-internal
-      path: modules/doc-internal
-      revision: 847c13b4f61753f8c5162b94c5e7628632a1fe74
-      groups:
-      - doc-internal
-    - name: ic-next
-      repo-path: sdk-ic-next
-      path: modules/ic-next
-      revision: acf2008a579ea6b085d7d4cba3f7a3798f81f5dd
-    - name: sdk-secdom
-      revision: cb90df546f2fef2d584351db5a4c31d758234eee
-      path: core_fw/secdom
-    - name: nrf-regtool
-      revision: 9b97025076ec0188be9e95fbe47b41e5f8e75e33
-      path: modules/lib/nrf-regtool
-    - name: nrfs
-      path: modules/lib/nrfs
-      revision: b4ae806d5ec4e5bffeca0a91b38c8ee742b0b497
-    - name: sdk-sysctrl
-      revision: 0fc6e23f2e0f5b24b45b792b7f2a0e5d3f4d644d
-      path: core_fw/sysctrl
+      revision: f5abba8a9bd3571e8b79b89a48360d7e5f32f21d
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
@@ -147,7 +126,7 @@ manifest:
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: 84bb9ce7bfa41c25a0a57b3f38ebefdd3ed3fb57
+      revision: a374cc0d2234e9d2c7bc0b3f8e63b14aff8b5367
       submodules:
         - name: nlio
           path: third_party/nlio/repo
@@ -183,7 +162,7 @@ manifest:
       revision: 308c171cb4b5eed266649012a68406487ec81fb2
     - name: suit-processor
       remote: nordicsemi
-      revision: f98aacffd3834bcaba66811f532c270c0f4de2d5
+      revision: 77b45d6c1bada96313149f372e61ac95a471a123
       path: modules/lib/suit-processor
     # Other third-party repositories.
     - name: cmock
@@ -202,7 +181,13 @@ manifest:
     - name: openthread
       repo-path: sdk-openthread
       path: modules/lib/openthread
-      revision: 488ee63b4c170cb5d1789258a69f27aba19c3720
+      revision: 48c0582e4e0abbdfa6470de90cad5a2e07e1a3b5
+    - name: ant
+      repo-path: sdk-ant
+      revision: 8f6e2b0470d11b5c1a97c92df35eb1350e84c5f8
+      remote: ant-nrfconnect
+      groups:
+        - ant
 
   # West-related configuration for the nrf repository.
   self:

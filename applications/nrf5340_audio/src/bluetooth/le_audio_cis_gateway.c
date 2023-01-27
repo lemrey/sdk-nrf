@@ -8,6 +8,7 @@
 
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/audio/audio.h>
+#include <zephyr/bluetooth/hci.h>
 #include <../subsys/bluetooth/audio/endpoint.h>
 
 #include "macros_common.h"
@@ -17,16 +18,7 @@
 #include "channel_assignment.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(cis_gateway, CONFIG_LOG_BLE_LEVEL);
-
-#define BT_AUDIO_LC3_UNICAST_PRESET_NRF5340_AUDIO                                                  \
-	BT_AUDIO_LC3_PRESET(                                                                       \
-		BT_CODEC_LC3_CONFIG(BT_CODEC_CONFIG_LC3_FREQ_48KHZ,                                \
-				    BT_CODEC_CONFIG_LC3_DURATION_10, BT_AUDIO_LOCATION_FRONT_LEFT, \
-				    LE_AUDIO_SDU_SIZE_OCTETS(CONFIG_LC3_BITRATE), 1,               \
-				    BT_AUDIO_CONTEXT_TYPE_MEDIA),                                  \
-		BT_CODEC_LC3_QOS_10_UNFRAMED(LE_AUDIO_SDU_SIZE_OCTETS(CONFIG_LC3_BITRATE), 2u,     \
-					     20u, LE_AUDIO_PRES_DELAY_US))
+LOG_MODULE_REGISTER(cis_gateway, CONFIG_BLE_LOG_LEVEL);
 
 #define HCI_ISO_BUF_ALLOC_PER_CHAN 2
 /* For being able to dynamically define iso_tx_pools */

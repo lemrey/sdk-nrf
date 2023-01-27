@@ -44,7 +44,6 @@
 
 #include <dk_buttons_and_leds.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/kernel.h>
 
 #include <algorithm>
 
@@ -269,67 +268,19 @@ void AppTask::RequestSMPAdvertisingStart(void)
 
 void AppTask::DispatchEvent(const AppEvent &event)
 {
-	switch (event.Type) {
-	case AppEvent::Lock:
-		BoltLockMgr().Lock(event.LockEvent.Source);
-		break;
-	case AppEvent::Unlock:
-		BoltLockMgr().Unlock(event.LockEvent.Source);
-		break;
-	case AppEvent::Toggle:
-		if (BoltLockMgr().IsLocked()) {
-			BoltLockMgr().Unlock(event.LockEvent.Source);
-		} else {
-			BoltLockMgr().Lock(event.LockEvent.Source);
-		}
-		break;
-	case AppEvent::CompleteLockAction:
-		BoltLockMgr().CompleteLockAction();
-		break;
-	case AppEvent::FunctionPress:
-		FunctionPressHandler(event.FunctionEvent.ButtonNumber);
-		break;
-	case AppEvent::FunctionRelease:
-		FunctionReleaseHandler(event.FunctionEvent.ButtonNumber);
-		break;
-	case AppEvent::FunctionTimer:
-		FunctionTimerEventHandler();
-		break;
-	case AppEvent::StartBleAdvertising:
-		StartBLEAdvertisingHandler();
-		break;
-#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
-	case AppEvent::StartThread:
-		StartThreadHandler();
-		break;
-#endif
-	case AppEvent::UpdateLedState:
-		event.UpdateLedStateEvent.LedWidget->UpdateState();
-		break;
-#ifdef CONFIG_MCUMGR_SMP_BT
-	case AppEvent::StartSMPAdvertising:
-		GetDFUOverSMP().StartBLEAdvertising();
-		break;
-#endif
-	default:
-		LOG_INF("Unknown event received");
-		break;
+	if (!timer) {
+		return;
 	}
+
+	Instance().mSwitchImagesTimerActive = false;
+
+	AppEvent event;
+	event.Type = AppEventType::Timer;
+	event.Handler = SwitchImagesEventHandler;
+	PostEvent(event);
 }
 
-#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
-void AppTask::StartThreadHandler()
-{
-	if (!ConnectivityMgr().IsThreadProvisioned()) {
-		StartDefaultThreadNetwork(0);
-		LOG_INF("Device is not commissioned to a Thread network. Starting with the default configuration.");
-	} else {
-		LOG_INF("Device is commissioned to a Thread network.");
-	}
-}
-#endif /* CONFIG_EMULATOR_FPGA */
-
-void AppTask::FunctionPressHandler(uint8_t buttonNumber)
+void AppTask::SwitchImagesTriggerHandler(const AppEvent &event)
 {
 	if (buttonNumber == DK_BTN1) {
 		sAppTask.StartFunctionTimer(kFactoryResetTriggerTimeout);

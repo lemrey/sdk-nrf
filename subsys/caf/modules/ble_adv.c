@@ -172,14 +172,6 @@ static int ble_adv_start_directed(const bt_addr_le_t *addr, bool fast_adv)
 
 static int update_undirected_advertising(struct bt_le_adv_param *adv_param, bool in_grace_period)
 {
-	struct bond_find_data bond_find_data = {
-		.peer_id = 0,
-		.peer_count = 0,
-	};
-
-	bt_addr_le_copy(&bond_find_data.peer_address, BT_ADDR_LE_ANY);
-	bt_foreach_bond(cur_identity, bond_find, &bond_find_data);
-
 	size_t ad_len = bt_le_adv_prov_get_ad_prov_cnt();
 	size_t sd_len = bt_le_adv_prov_get_sd_prov_cnt();
 	struct bt_data ad[ad_len];
@@ -188,13 +180,8 @@ static int update_undirected_advertising(struct bt_le_adv_param *adv_param, bool
 	struct bt_le_adv_prov_adv_state state;
 	struct bt_le_adv_prov_feedback fb;
 
-	if (bt_addr_le_cmp(&bond_find_data.peer_address, BT_ADDR_LE_ANY)) {
-		state.pairing_mode = false;
-	} else {
-		state.pairing_mode = true;
-	}
-
-	state.in_grace_period = in_grace_period;
+	adv_state.pairing_mode = (bond_cnt(cur_identity) == 0);
+	adv_state.in_grace_period = (state == STATE_GRACE_PERIOD);
 	req_grace_period_s = 0;
 
 	int err = bt_le_adv_prov_get_ad(ad, &ad_len, &state, &fb);

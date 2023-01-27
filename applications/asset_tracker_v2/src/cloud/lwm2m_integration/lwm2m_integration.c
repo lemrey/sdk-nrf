@@ -11,6 +11,7 @@
 #include <lwm2m_rd_client.h>
 #include <nrf_modem_at.h>
 #include <zephyr/net/socket.h>
+#include <hw_id.h>
 
 #include "cloud/cloud_wrapper.h"
 

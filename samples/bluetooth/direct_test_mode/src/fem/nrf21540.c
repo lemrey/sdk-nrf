@@ -395,17 +395,6 @@ static int nrf21540_init(void)
 {
 	int err;
 
-	/* Configure timer to 1 us resolution. */
-	nrf_timer_mode_set(nrf21540_cfg.timer.p_reg, NRF_TIMER_MODE_TIMER);
-	nrf_timer_bit_width_set(nrf21540_cfg.timer.p_reg,
-				NRF_TIMER_BIT_WIDTH_16);
-#if defined(NRF52_SERIES) || defined(NRF53_SERIES)
-	/* 16MHz/2^4 = 1MHz */
-	nrf_timer_prescaler_set(nrf21540_cfg.timer.p_reg, 4);
-#else
-#error Unknown device, set correct prescaler
-#endif
-
 	err = gpio_configure();
 	if (err) {
 		return err;

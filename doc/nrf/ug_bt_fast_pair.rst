@@ -18,6 +18,8 @@ For detailed information about supported functionalities, see the official `Fast
    The implementation does not pass end-to-end integration tests in the Fast Pair Validator.
    The procedure triggered in Android settings is successful (tested with Android 10).
 
+.. _ug_integrating_fast_pair:
+
 Integrating Fast Pair
 *********************
 
@@ -73,6 +75,11 @@ Setting up Bluetooth LE advertising
 ***********************************
 
 The Fast Pair Provider must include Fast Pair service advertising data in the advertising payload.
+The Fast Pair Seeker must also know the Provider's transmit power to determine proximity.
+
+Advertising data and parameters
+===============================
+
 The Fast Pair service implementation provides API to generate the advertising data for both discoverable and not discoverable advertising:
 
 :c:func:`bt_fast_pair_adv_data_size`, :c:func:`bt_fast_pair_adv_data_fill`
@@ -80,6 +87,13 @@ The Fast Pair service implementation provides API to generate the advertising da
   Managing memory used for the advertising packets is a responsibility of the application.
   Make sure that these functions are called by the application from the cooperative context to ensure that not discoverable advertising data generation is not preempted by an Account Key write operation from a connected Fast Pair Seeker.
   Account Keys are used to generate not discoverable advertising data.
+  Special battery data can be included in not discoverable advertising packet using the Fast Pair Battery Notification extension.
+  To use this extension, you have to:
+
+  #. Call :c:func:`bt_fast_pair_battery_set` to provide battery information.
+  #. Set :c:member:`bt_fast_pair_adv_config.adv_battery_mode` to either :c:enum:`BT_FAST_PAIR_ADV_BATTERY_MODE_SHOW_UI_IND` or :c:enum:`BT_FAST_PAIR_ADV_BATTERY_MODE_HIDE_UI_IND` to include the battery notification in the generated advertising payload.
+
+  See the `Fast Pair Battery Notification extension`_ documentation for more details about this extension.
 
 :c:func:`bt_fast_pair_set_pairing_mode`
   This function is to be used to set pairing mode before the advertising is started.
@@ -98,6 +112,33 @@ Fast Pair advertising data provider
 The Fast Pair :ref:`advertising data provider <bt_le_adv_prov_readme>` (:kconfig:option:`CONFIG_BT_ADV_PROV_FAST_PAIR`) can be used to manage the Fast Pair advertising data.
 See :ref:`peripheral_fast_pair` for an example of using the provider in a sample.
 See :file:`subsys/bluetooth/adv_prov/providers/fast_pair.c` for provider implementation.
+
+Advertising TX power
+====================
+
+The Fast Pair Seeker must know the TX power of the Provider to determine proximity.
+The TX power can be provided in one of the following ways:
+
+* Defined during model registration
+* Included in the advertising payload
+
+See the `Fast Pair TX power`_ documentation for more information.
+
+Advertising data provider
+-------------------------
+
+If your application uses :ref:`bt_le_adv_prov_readme`, you can use the TX power advertising data provider (:kconfig:option:`CONFIG_BT_ADV_PROV_TX_POWER`) to read the advertising TX power from Bluetooth controller and add it to the generated advertising data.
+The :kconfig:option:`CONFIG_BT_ADV_PROV_TX_POWER_CORRECTION_VAL` option can be used to define a TX power correction value that is added to the TX power readout included in the advertising data.
+The option can be used to take into account hardware configuration, for example, used antenna and device casing.
+See :ref:`peripheral_fast_pair` sample for an example of how to use the TX power advertising provider.
+
+Multiprotocol Service Layer front-end module (MPSL FEM)
+-------------------------------------------------------
+
+If your application uses MPSL :ref:`nrfxlib:mpsl_fem`, you can use a front-end module power model.
+The power model allows you to control the TX power more accurately and compensate, for example, for external conditions.
+See the TX power split using models section of the :ref:`nrfxlib:mpsl_fem` documentation for more details.
+See the MPSL FEM power model section in :ref:`nrfxlib:mpsl_api` for API documentation.
 
 .. rst-class:: numbered-step
 

@@ -8,36 +8,25 @@
 
 #include <cstdint>
 
-#include <lib/support/ThreadOperationalDataset.h>
+#include "event_types.h"
 
-#include "bolt_lock_manager.h"
-#include "led_widget.h"
+class LEDWidget;
+
+enum class AppEventType : uint8_t {
+	None = 0,
+	Button,
+	ButtonPushed,
+	ButtonReleased,
+	Timer,
+	UpdateLedState,
+	IdentifyStart,
+	IdentifyStop,
+	StartSMPAdvertising
+};
+
+enum class FunctionEvent : uint8_t { NoneSelected = 0, SoftwareUpdate = 0, FactoryReset, AdvertisingStart };
 
 struct AppEvent {
-	enum LockEventType : uint8_t { Lock, Unlock, Toggle, CompleteLockAction };
-
-	enum FunctionEventType : uint8_t { FunctionPress = CompleteLockAction + 1, FunctionRelease, FunctionTimer };
-
-	enum UpdateLedStateEventType : uint8_t { UpdateLedState = FunctionTimer + 1 };
-
-	enum OtherEventType : uint8_t {
-		StartBleAdvertising = UpdateLedState + 1,
-#ifdef CONFIG_MCUMGR_SMP_BT
-		StartSMPAdvertising,
-#endif
-#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
-		StartThread
-#endif
-	};
-
-	AppEvent() = default;
-	AppEvent(LockEventType type, BoltLockManager::OperationSource source) : Type(type), LockEvent{ source } {}
-	AppEvent(FunctionEventType type, uint8_t buttonNumber) : Type(type), FunctionEvent{ buttonNumber } {}
-	AppEvent(UpdateLedStateEventType type, LEDWidget *ledWidget) : Type(type), UpdateLedStateEvent{ ledWidget } {}
-	explicit AppEvent(OtherEventType type) : Type(type) {}
-
-	uint8_t Type;
-
 	union {
 		struct {
 			BoltLockManager::OperationSource Source;

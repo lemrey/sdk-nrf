@@ -8,7 +8,6 @@
 
 	sensor_stub: sensor_stub {
 		compatible = "nordic,sensor-stub";
-		label = "SENSOR_STUB";
 		generator = "sensor_stub_gen";
 		status = "okay";
 	};
@@ -17,7 +16,7 @@
 		compatible = "caf,aggregator";
 		sensor_descr = "accel_sim_xyz";
 		buf_data_length = <240>;
-		sample_size = <3>;
+		sensor_data_size = <24>;
 		status = "okay";
 	};
 };

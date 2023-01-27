@@ -198,7 +198,6 @@ Kconfig*                                  @tejlmand
 /subsys/pcd/                              @hakonfam
 /subsys/nrf_profiler/                     @pdunaj
 /subsys/shell/                            @nordic-krch
-/subsys/spm/                              @SebastianBoe
 /subsys/nonsecure/                        @SebastianBoe
 /modules/                                 @tejlmand
 /modules/tfm/                             @SebastianBoe @joerchan
@@ -246,7 +245,6 @@ Kconfig*                                  @tejlmand
 /tests/subsys/partition_manager/region/   @hakonfam @sigvartmh
 /tests/subsys/pcd/                        @hakonfam @sigvartmh
 /tests/subsys/nrf_profiler/               @pdunaj @MarekPieta
-/tests/subsys/spm/                        @oyvindronningstad @SebastianBoe
 /tests/subsys/zigbee/                     @tomchy @sebastiandraus
 /tests/unity/                             @nordic-krch
 /zephyr/                                  @carlescufi

@@ -15,11 +15,12 @@
 #include <stdio.h>
 
 #include <zephyr/kernel.h>
+#ifndef CONFIG_NRF700X_RADIO_TEST
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/ethernet.h>
-
-#include "fmac_api.h"
-#include "host_rpu_umac_if.h"
+#ifdef CONFIG_NETWORKING
+#include <zephyr_net_if.h>
+#endif /* CONFIG_NETWORKING */
 #ifdef CONFIG_WPA_SUPP
 #include "drivers/driver_zephyr.h"
 #endif /* CONFIG_WPA_SUPP */

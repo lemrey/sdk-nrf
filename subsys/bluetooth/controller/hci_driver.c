@@ -142,9 +142,9 @@ BUILD_ASSERT(!IS_ENABLED(CONFIG_BT_PERIPHERAL) ||
 		      (SDC_EXTRA_MEMORY))
 
 #if CONFIG_BT_SDC_ADDITIONAL_MEMORY
-__aligned(8) uint8_t sdc_mempool[MEMPOOL_SIZE];
+uint8_t sdc_mempool[MEMPOOL_SIZE];
 #else
-static __aligned(8) uint8_t sdc_mempool[MEMPOOL_SIZE];
+static uint8_t sdc_mempool[MEMPOOL_SIZE];
 #endif
 
 #if IS_ENABLED(CONFIG_BT_CTLR_ASSERT_HANDLER)
@@ -378,7 +378,7 @@ static bool fetch_and_process_hci_msg(uint8_t *p_hci_buffer)
 	} else if (msg_type == SDC_HCI_MSG_TYPE_DATA) {
 		data_packet_process(p_hci_buffer);
 	} else {
-		BT_ERR("Unexpected msg_type: %u. This if-else needs a new branch", msg_type);
+		LOG_ERR("Unexpected msg_type: %u. This if-else needs a new branch", msg_type);
 	}
 
 	return true;
@@ -691,7 +691,7 @@ static int configure_memory_usage(void)
 		return required_memory;
 	}
 
-#if defined(CONFIG_BT_BROADCASTER) || defined(CONFIG_BT_LL_SOFTDEVICE_MULTIROLE)
+#if defined(CONFIG_BT_BROADCASTER)
 	cfg.adv_count.count = SDC_ADV_SET_COUNT;
 
 	required_memory =

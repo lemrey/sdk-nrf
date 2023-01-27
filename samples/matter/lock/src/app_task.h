@@ -35,14 +35,13 @@ private:
 	void CancelFunctionTimer();
 	void StartFunctionTimer(uint32_t timeoutInMs);
 
-	void DispatchEvent(const AppEvent &event);
-	void FunctionPressHandler(uint8_t buttonNumber);
-	void FunctionReleaseHandler(uint8_t buttonNumber);
-	void FunctionTimerEventHandler();
-#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
-	void StartThreadHandler();
-#endif
-	void StartBLEAdvertisingHandler();
+	static void DispatchEvent(const AppEvent &event);
+	static void FunctionTimerEventHandler(const AppEvent &event);
+	static void FunctionHandler(const AppEvent &event);
+	static void StartBLEAdvertisementAndLockActionEventHandler(const AppEvent &event);
+	static void LockActionEventHandler(const AppEvent &event);
+	static void StartBLEAdvertisementHandler(const AppEvent &event);
+	static void UpdateLedStateEventHandler(const AppEvent &event);
 
 	static void LockStateChanged(BoltLockManager::State state, BoltLockManager::OperationSource source);
 	static void UpdateStatusLED();
@@ -56,12 +55,7 @@ private:
 
 	friend AppTask &GetAppTask();
 
-	enum class TimerFunction {
-		NoneSelected = 0,
-		SoftwareUpdate,
-		FactoryReset,
-#if CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP || CONFIG_SOC_SERIES_NRF54HX
-		AdvertisingStart,
+	bool mSwitchImagesTimerActive = false;
 #endif
 	};
 

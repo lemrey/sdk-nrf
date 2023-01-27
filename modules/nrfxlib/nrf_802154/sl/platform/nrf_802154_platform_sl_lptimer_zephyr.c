@@ -11,7 +11,6 @@
 #include <zephyr/kernel.h>
 
 #include <zephyr/drivers/timer/nrf_rtc_timer.h>
-#include <helpers/nrfx_gppi.h>
 
 #include "platform/nrf_802154_clock.h"
 #include "nrf_802154_sl_utils.h"
