@@ -45,13 +45,14 @@ private:
 	void CancelTimer();
 	void StartTimer(uint32_t timeoutInMs);
 
-	static void DispatchEvent(const AppEvent &event);
-	static void FunctionTimerEventHandler(const AppEvent &event);
-	static void FunctionHandler(const AppEvent &event);
-	static void StartBLEAdvertisementAndLockActionEventHandler(const AppEvent &event);
-	static void LockActionEventHandler(const AppEvent &event);
-	static void StartBLEAdvertisementHandler(const AppEvent &event);
-	static void UpdateLedStateEventHandler(const AppEvent &event);
+	void DispatchEvent(const AppEvent &event);
+	void FunctionPressHandler(uint8_t buttonNumber);
+	void FunctionReleaseHandler(uint8_t buttonNumber);
+	void FunctionTimerEventHandler();
+#if CONFIG_EMULATOR_FPGA || CONFIG_SOC_SERIES_NRF54HX
+	void StartThreadHandler();
+#endif
+	void StartBLEAdvertisingHandler();
 
 	static void ChipEventHandler(const chip::DeviceLayer::ChipDeviceEvent *event, intptr_t arg);
 	static void ButtonEventHandler(uint32_t buttonState, uint32_t hasChanged);
@@ -73,6 +74,15 @@ private:
 
 	bool mSwitchImagesTimerActive = false;
 #endif
+
+	enum class TimerFunction {
+		NoneSelected = 0,
+		SoftwareUpdate,
+		FactoryReset,
+#if CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP || CONFIG_SOC_SERIES_NRF54HX
+		AdvertisingStart,
+#endif
+	};
 
 	FunctionEvent mFunction = FunctionEvent::NoneSelected;
 	bool mFunctionTimerActive = false;

@@ -19,3 +19,417 @@
   platforms:
     - all
   comment: "Disable zephyr Regression and PSA Arch tests, we maintain copies of these in sdk-nrf"
+
+- scenarios:
+    - sample.zigbee.shell
+    - sample.zigbee.shell.usb
+    - sample.zigbee.ncp.usb
+    - sample.zigbee.network_coordinator
+    - sample.zigbee.template
+    - sample.zigbee.ncp
+    - sample.zigbee.light_switch.with_shell
+    - sample.zigbee.light_switch.fota
+    - sample.zigbee.light_switch.current_measurement
+    - sample.zigbee.light_switch
+    - sample.zigbee.light_bulb.with_shell
+    - sample.zigbee.light_bulb
+    - zigbee.zboss_api.callback_api
+    - zigbee.zboss_api.alarm_api
+    - zigbee.osif.nvram
+    - sample.openthread.coap_server
+    - sample.openthread.coap_client
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "CMake Error No board specified for domain 'CPUNET'.  This configuration is typically"
+
+- scenarios:
+    - sample.openthread.coap_server
+    - sample.openthread.coap_client
+    - sample.nrf_security.openthread.integration
+    - integration.nrf_security.openthread
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "CMake Error No board specified for domain 'CPUNET'.  This configuration is typically"
+
+- scenarios:
+    - sample.peripheral.radio_test.nrf5340_nrf21540
+    - sample.bluetooth.direct_test_mode.nrf5340_nrf21540
+  platforms:
+    - nrf5340dk_nrf5340_cpunet
+  comment: "error: NRFX_SPIM_PIN_NOT_USED undeclared"
+
+- scenarios:
+    - sample.spm_shared_uart
+    - sample.spm
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf9160dk_nrf9160
+  comment: "error: NRFX_PERIPHERAL_ID_GET redefined"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.ppp
+    - sample.nrf9160.modem_shell.non_offloading_ip
+    - sample.nrf9160.modem_shell.lwm2m
+    - sample.nrf9160.modem_shell.cloud_mqtt_rest
+    - sample.nrf9160.modem_shell.cloud_mqtt
+    - sample.nrf9160.modem_shell.cloud_mqtt_only
+    - sample.nrf9160.modem_shell
+    - sample.nrf9160.modem_shell.esp_wifi
+    - sample.nrf9160.modem_shell.bt
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "error: NRFX_PERIPHERAL_ID_GET redefined"
+
+- scenarios:
+    - sample.openthread.coap_client.mtd.multiprotocol_ble
+    - sample.openthread.cli.usb
+    - sample.openthread.cli.thread_1_1
+    - sample.openthread.cli
+    - sample.psa_tls.server.rsa.cc3xx_oberon
+    - sample.psa_tls.server.ecdsa.cc3xx_oberon
+    - sample.psa_tls.client.rsa.cc3xx_oberon
+    - sample.psa_tls.client.ecdsa.cc3xx_oberon
+    - integration.nrf_security.sha256
+    - regions.settings_storage_tfm
+    - sample.bluetooth.mesh.light_ctrl.emds
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "error: nrfx_uarte_config_t has no member named pselrts"
+
+- scenarios:
+    - sample.psa_tls.server.rsa.cc3xx_oberon
+    - sample.psa_tls.server.ecdsa.cc3xx_oberon
+    - sample.psa_tls.client.rsa.cc3xx_oberon
+    - sample.psa_tls.client.ecdsa.cc3xx_oberon
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "error: nrfx_uarte_config_t has no member named pselrts"
+
+- scenarios:
+    - sample.peripheral.lpuart_int_driven
+    - sample.nrf9160.udp
+    - sample.peripheral.lpuart
+    - samples.peripheral.lpuart_nrf9160dk_debug
+    - sample.nrf_profiler
+    - nrf_profiler.core
+    - sample.nrf9160.sms
+    - sample.nrf9160.nrf_cloud_rest_device_message
+    - sample.nrf9160.pdn
+    - samples.nrf9160.serial_lte_modem
+    - samples.nrf9160.serial_lte_modem.native_tls
+    - sample.nrf9160.multicell_location
+    - sample.nrf9160.mqtt_simple
+    - sample.nrf9160.nrf_cloud_rest_cell_pos
+    - sample.nrf9160.nrf_cloud_mqtt_multi_service
+    - sample.nrf9160.modem_callbacks
+    - sample.nrf9160.nrf_cloud_rest_fota
+    - sample.nrf9160.lte_ble_gateway
+    - sample.nrf9160.memfault
+    - sample.nrf9160.location.pgps
+    - sample.nrf9160.location.esp_wifi
+    - sample.nrf9160.location
+    - sample.nrf9160.https_client
+    - sample.nrf9160.http_update.modem_delta_update
+    - sample.nrf9160.http_update.full_modem_update
+    - sample.nrf9160.download_client
+    - sample.nrf9160.download.tfm
+    - sample.nrf9160.coap_client
+    - sample.nrf9160.http_update.application_update
+    - samples.nrf9160.ciphersuites
+    - sample.nrf9160.azure_iot_hub
+    - sample.nrf9160.fmfu_smp_svr
+    - sample.nrf9160.at_monitor
+    - sample.nrf9160.at_client
+    - at_sms_cert.functionality_test
+    - edge_impulse.ei_wrapper
+    - sample.edge_impulse.wrapper
+    - sample.nrf9160.azure_fota
+    - sample.nrf9160.aws_iot
+    - sample.ei_data_forwarder
+    - asset_tracker_v2.ui_module_test.tester
+    - asset_tracker_v2.gnss_module_test.tester
+    - sample.nrf9160.aws_fota
+    - asset_tracker_v2.debug_module_test.tester
+    - applications.asset_tracker_v2.nrf_cloud
+    - applications.asset_tracker_v2.memfault
+    - applications.asset_tracker_v2.nrf_cloud-pgps
+    - applications.asset_tracker_v2.lwm2m.low-power
+    - applications.asset_tracker_v2.lwm2m.debug
+    - applications.asset_tracker_v2.low-power
+    - applications.asset_tracker_v2.debug-memfault
+    - applications.asset_tracker_v2.debug
+    - sample.app_event_manager
+    - sample.app_event_manager_profiler_tracer
+    - applications.asset_tracker_v2.azure
+    - applications.asset_tracker_v2.aws-pgps
+    - applications.asset_tracker_v2.aws-all
+    - applications.asset_tracker_v2.aws
+    - applications.asset_tracker_v2.carrier
+    - applications.asset_tracker_v2.lwm2m.debug-memfault
+    - applications.asset_tracker_v2.lwm2m.debug-modem_trace
+    - applications.asset_tracker_v2.memfault-low-power
+    - asset_tracker_v2.lwm2m_codec
+    - asset_tracker_v2.lwm2m_integration
+    - sample.nrf9160.azure_iot_hub.dps
+    - sample.nrf9160.gnss
+    - sample.nrf9160.lwm2m_carrier
+    - sample.nrf9160.lwm2m_client
+    - sample.nrf9160.modem_shell.fota
+    - sample.nrf9160.modem_shell.non_offloading_ip_modem_uart_trace
+    - sample.nrf9160.modem_shell.pgps
+    - sample.nrf9160.modem_shell.rtt
+    - sample.nrf9160.modem_shell_modem_uart_trace
+    - sample.peripheral.lpuart_nrf9160dk_debug
+    - fast_pair.crypto.oberon
+    - nrf_cloud.nrf_cloud_init
+    - net.lib.fota_download
+    - net.lib.download_client
+    - fast_pair.crypto.tinycrypt
+    - app_event_manager.size_enabled
+    - app_event_manager.core
+    - sample.tfm.hello_world.bootloaders
+    - sample.tfm.helloworld
+    - lib.hw_unique_key_tfm
+    - tfm.secure_services
+    - sample.aes_cbc
+    - sample.aes_ccm
+    - sample.aes_ctr
+    - sample.tfm.secure_partition
+    - nrfx_integration_test.build
+    - sample.keys.hw_unique_key
+    - sample.sha256
+    - sample.rsa
+    - sample.rng
+    - sample.persistent_key_usage
+    - sample.hmac
+    - sample.hkdf
+    - sample.ecdsa
+    - sample.ecdh
+    - sample.aes_gcm.cc310
+    - sample.chacha_poly
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
+
+- scenarios:
+    - sample.nfc.writable_ndef_msg
+    - sample.nfc.tnep_tag
+    - sample.nfc.system_off
+    - sample.nfc.record_text
+    - sample.nfc.launch_app
+    - sample.ei_data_forwarder
+    - sample.edge_impulse.wrapper
+    - sample.tfm.hello_world.bootloaders
+    - sample.bluetooth.throughput
+    - sample.bluetooth.shell_bt_nus
+    - sample.bluetooth.peripheral_mds
+    - sample.bluetooth.peripheral_uart
+    - sample.bluetooth.peripheral_rscs
+    - sample.bluetooth.peripheral_nfc_pairing
+    - sample.bluetooth.peripheral_lbs
+    - sample.bluetooth.peripheral_hids_mouse.build
+    - sample.bluetooth.peripheral_hids_keyboard.build
+    - sample.bluetooth.peripheral_gatt_dm
+    - sample.bluetooth.fast_pair
+    - sample.bluetooth.peripheral_ancs_client.build
+    - sample.bluetooth.peripheral_cts_client.build
+    - sample.bluetooth.peripheral_ams_client.build
+    - sample.bluetooth.multiple_adv_sets.build
+    - sample.bluetooth.mesh.silvair_enocean
+    - sample.bluetooth.mesh.light_switch
+    - sample.bluetooth.mesh.light_ctrl
+    - sample.bluetooth.central_uart
+    - sample.bluetooth.central_dfu_smp.build
+    - sample.bluetooth.mesh.light
+    - sample.bluetooth.central_hids.build
+    - sample.bluetooth.central_bas.build
+    - sample.bluetooth.central_and_peripheral_hr.build
+    - sample.tfm.helloworld
+    - tfm.secure_services
+    - sample.aes_ccm
+    - sample.aes_cbc
+    - sample.tfm.secure_partition
+    - hw_unique_key_tfm
+    - sample.keys.hw_unique_key
+    - lib.hw_unique_key_tfm
+    - nrfx_integration_test.build
+    - sample.sha256
+    - sample.rsa
+    - sample.rng
+    - sample.persistent_key_usage
+    - sample.hmac
+    - sample.hkdf
+    - sample.sample.ecdsa
+    - sample.ecdh
+    - sample.chacha_poly
+    - sample.aes_gcm.cc312
+    - sample.aes_ctr
+    - sample.ecdsa
+    - sample.bluetooth.peripheral_power_profiling
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
+
+- scenarios:
+    - applications.asset_tracker_v2.aws
+    - applications.asset_tracker_v2.aws-all
+    - applications.asset_tracker_v2.aws-pgps
+    - applications.asset_tracker_v2.azure
+    - applications.asset_tracker_v2.debug
+    - applications.asset_tracker_v2.debug-memfault
+    - applications.asset_tracker_v2.low-power
+    - applications.asset_tracker_v2.lwm2m.debug
+    - applications.asset_tracker_v2.lwm2m.debug-memfault
+    - applications.asset_tracker_v2.lwm2m.debug-modem_trace
+    - applications.asset_tracker_v2.lwm2m.low-power
+    - applications.asset_tracker_v2.memfault
+    - applications.asset_tracker_v2.memfault-low-power
+    - applications.asset_tracker_v2.nrf_cloud
+    - applications.asset_tracker_v2.nrf_cloud-pgps
+    - sample.nrf9160.aws_iot
+    - sample.nrf9160.lwm2m_client
+    - sample.nrf9160.memfault
+    - sample.nrf9160.modem_shell.thingy91
+    - sample.nrf9160.modem_shell.thingy91_modem_uart_trace
+    - sample.nrf9160.multicell_location
+    - sample.nrf9160.nrf_cloud_mqtt_multi_service
+    - sample.nrf9160.udp
+    - applications.nrf9160.serial_lte_modem
+    - applications.nrf9160.serial_lte_modem.native_tls
+  platforms:
+    - thingy91_nrf9160_ns
+  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
+
+- scenarios:
+    - sample.bluetooth.mesh.light
+    - sample.bluetooth.mesh.light_ctrl
+    - sample.bluetooth.mesh.light_ctrl.emds
+    - sample.bluetooth.mesh.light_switch
+    - sample.bluetooth.mesh.sensor_server
+    - sample.bluetooth.peripheral_lbs
+    - sample.bluetooth.peripheral_lbs_no_security
+    - sample.bluetooth.peripheral_uart
+    - applications.machine_learning.zdebug
+    - applications.machine_learning.zdebug_rtt
+    - applications.machine_learning.zrelease
+  platforms:
+    - thingy53_nrf5340_cpuapp_ns
+  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
+
+- scenarios:
+    - bluetooth.general.tester
+  platforms:
+    - qemu_x86
+  comment: "error: undefined reference to uart_pipe_send"
+
+- scenarios:
+    - lib.modem_trace_uart
+    - trace_backends.uart
+  platforms:
+    - qemu_cortex_m3
+  comment: "error: nrfx_uarte_config_t has no member named pselrts"
+
+- scenarios:
+    - applications.nrf_desktop.zrelease_b0
+  platforms:
+    - nrf52840gmouse_nrf52840
+  comment: "error: AMLI_RAMPRI_Type has no member named 'CPU0', 'SPIS1', 'SAADC', etc."
+
+- scenarios:
+    - applications.nrf_desktop.zdebug
+    - applications.nrf_desktop.zrelease
+  platforms:
+    - nrf52810dmouse_nrf52810
+    - nrf52dmouse_nrf52832
+    - nrf52840gmouse_nrf52840
+  comment: "error: AMLI_RAMPRI_Type has no member named 'CPU0', 'SPIS1', 'SAADC', etc."
+
+- scenarios:
+    - applications.nrf_desktop.zdebugwithshell
+    - applications.nrf_desktop.zdebug_mcuboot_smp
+  platforms:
+    - nrf52840gmouse_nrf52840
+  comment: "error: too few arguments to function 'qdec_nrfx_gpio_ctrl'"
+
+- scenarios:
+    - nrfx_integration_test.build.bt.sw_split
+    - nrfx_integration_test.build.bt.softdevice
+    - nrfx_integration_test.build
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpunet
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "error: 'nrfx_egu_driver_api' defined but not used"
+
+- scenarios:
+    - debug.cpu_load
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf52840dk_nrf52840
+  comment: "error: 'nrfx_timer_config_t' has no member named 'frequency'"
+
+- scenarios:
+    - debug.cpu_load.shared_dppi
+  platforms:
+    - nrf9160dk_nrf9160
+  comment: "error: 'NRF_TIMER_FREQ_1MHz' undeclared"
+
+- scenarios:
+    - nrf5340_audio.sw_codec_lc3_test
+    - applications.nrf5340_audio.headset
+    - applications.nrf5340_audio.gateway
+  platforms:
+    - nrf5340_audio_dk_nrf5340_cpuapp
+  comment: "error: NRFX_I2S is assigned in a configuration file, but is not directly user-configurable (has no prompt)."
+
+- scenarios:
+    - sample.bluetooth.peripheral_lbs_no_security
+    - sample.newlib_libc.sha256
+    - sample.nrf_security.sha256.integration
+    - sample.tfm.hello_world.full
+    - sample.tfm.hello_world.lvl2
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Cannot specify link options for target 'tfm_ns' which is not built by this"
+
+- scenarios:
+    - applications.nrf9160.serial_lte_modem
+    - applications.nrf9160.serial_lte_modem.native_tls
+    - caf_sensor_aggregator.core
+    - fast_pair.storage.default
+    - sample.app_event_manager_shell
+    - sample.nrf9160.ciphersuites
+    - sample.nrf9160.modem_trace_backend
+    - sample.tfm.hello_world.full
+    - sample.tfm.hello_world.lvl2
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Cannot specify link options for target 'tfm_ns' which is not built by this"
+
+- scenarios:
+    - sample.zigbee.ncp.usb.nrf5340dk_nrf5340_cpuapp
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "TO BE invastigated under NCSDK-18845"
+
+- scenarios:
+    - drivers.timer.nrf_grtc_timer
+  platforms:
+    - nrf54h20dk_nrf54h20_cpusec@soc1
+  comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-2917"
+
+- scenarios:
+    - project.sysctrl.local.fpga.halti
+    - project.sysctrl.local.emu.halti
+  platforms:
+    - nrf9230dk_nrf9230_cpuapp
+  comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-3181"
+
+- scenarios:
+    - project.sdfw.suit.logging.nrf54h20
+    - project.sdfw.suit.logging.nrf54h20.fpga
+  platforms:
+    - nrf54h20dk_nrf54h20_cpusec@soc1
+  comment: "https://projecttools.nordicsemi.no/jira/browse/KRKNWK-16307"

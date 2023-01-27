@@ -3,23 +3,23 @@ name: Documentation Build
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - main
-      - 'v*-branch'
-    paths:
-      - '.github/workflows/docbuild.yml'
-      - '**.rst'
-      - '**/Kconfig'
-      - 'doc/**'
-      - 'include/**'
-      - 'scripts/requirements-doc.txt'
-      - 'west.yml'
+  branches:
+    - haltium-ncs
+  paths:
+    - '.github/workflows/docbuild.yml'
+    - '**.rst'
+    - '**/Kconfig'
+    - 'doc/**'
+    - 'include/**'
+    - 'scripts/requirements-doc.txt'
+    - 'west.yml'
   push:
     branches:
-      - main
-      - 'v*-branch'
-    tags:
-      - v*
+      - haltium-ncs
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/haltium-ncs' }}
 
 jobs:
   build:

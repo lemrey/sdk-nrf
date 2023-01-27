@@ -15,11 +15,4 @@
   - "**/*.rst"
 
 "changelog-entry-required":
-  - all: ["!doc/nrf/releases/release-notes-changelog.rst"]
-
-"ble mesh":
-  - "subsys/bluetooth/mesh/*"
-  - "include/bluetooth/mesh/*"
-  - "samples/bluetooth/mesh/*"
-  - "doc/nrf/libraries/bluetooth_services/mesh/*"
-  - "doc/nrf/ug_bt_mesh*"
+  - all: ["!doc/nrf/releases/release-notes-changelog_hcs.rst"]

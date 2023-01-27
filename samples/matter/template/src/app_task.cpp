@@ -36,8 +36,6 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 
-LOG_MODULE_DECLARE(app, CONFIG_MATTER_LOG_LEVEL);
-
 using namespace ::chip;
 using namespace ::chip::app;
 using namespace ::chip::Credentials;

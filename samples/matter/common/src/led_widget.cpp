@@ -6,7 +6,9 @@
 
 #include "led_widget.h"
 
+#if !defined(CONFIG_EMULATOR_FPGA)
 #include <dk_buttons_and_leds.h>
+#endif
 #include <zephyr/kernel.h>
 
 static LEDWidget::LEDWidgetStateUpdateHandler sStateUpdateCallback;

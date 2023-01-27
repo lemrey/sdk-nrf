@@ -18,48 +18,6 @@ config LOCK_NUM_CREDENTIALS_PER_USER
 	int "Maximum number of credentials per user supported by lock"
 	default 3
 
-config STATE_LEDS
-	bool "Use LEDs to indicate the device state"
-	default y
-	help
-	  Use LEDs to render the current state of the device such as the progress of commissioning of
-	  the device into a network or the factory reset initiation. Note that setting this option to
-	  'n' does not disable the LED indicating the state of the simulated bolt.
-
-config THREAD_WIFI_SWITCHING
-	bool "Switching between Thread and Wi-Fi network support"
-	depends on SOC_SERIES_NRF53X
-	depends on NET_L2_OPENTHREAD || CHIP_WIFI
-	select EXPERIMENTAL
-	help
-	  Enable the functionality that allows a user to switch between Matter over Thread and Matter
-	  over Wi-Fi variants of the application, stored in the respective partitions in the external
-	  flash memory.
-
-if THREAD_WIFI_SWITCHING
-
-config APPLICATION_IDX
-	int
-	default 1 if NET_L2_OPENTHREAD
-	default 2 if CHIP_WIFI
-
-config APPLICATION_OTHER_IDX
-	int
-	default 2 if NET_L2_OPENTHREAD
-	default 1 if CHIP_WIFI
-
-config APPLICATION_LABEL
-	string
-	default "Thread" if NET_L2_OPENTHREAD
-	default "Wi-Fi" if CHIP_WIFI
-
-config APPLICATION_OTHER_LABEL
-	string
-	default "Wi-Fi" if NET_L2_OPENTHREAD
-	default "Thread" if CHIP_WIFI
-
-endif
-
 # Sample configuration used for Thread networking
 if NET_L2_OPENTHREAD
 

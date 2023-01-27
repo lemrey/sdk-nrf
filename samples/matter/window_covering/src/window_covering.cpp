@@ -13,7 +13,6 @@
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/util/af.h>
 #include <platform/CHIPDeviceLayer.h>
-#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 
 LOG_MODULE_DECLARE(app, CONFIG_MATTER_LOG_LEVEL);

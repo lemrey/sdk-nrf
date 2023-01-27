@@ -100,7 +100,7 @@ struct bt_cgms_init_param {
 	struct bt_cgms_cb *cb;
 };
 
-/** @brief Submit glucose concentration measurement to CGM service.
+/** @brief Submit glucose concentration measurement to CGMS service.
  *
  * This will add the new glucose measurement into the database.
  *
@@ -115,7 +115,7 @@ int bt_cgms_measurement_add(struct bt_cgms_measurement measurement);
  * This will initialize components used in CGMS.
  *
  *  @param[in] init_params The parameter used to initialize the corresponding
- *             values of CGMS module.
+ *             values of CGMS monule.
  *
  *  @return Zero in case of success and error code in case of error.
  */

@@ -175,14 +175,8 @@ int bt_mesh_dm_cli_config(struct bt_mesh_dm_cli *cli,
 		net_buf_simple_add_u8(&msg, set->delay);
 	}
 
-	struct bt_mesh_msg_rsp_ctx rsp_ctx = {
-		.ack = &cli->ack_ctx,
-		.op = BT_MESH_DM_CONFIG_STATUS_OP,
-		.user_data = rsp,
-		.timeout = model_ackd_timeout_get(cli->model, ctx),
-	};
-
-	return bt_mesh_msg_ackd_send(cli->model, ctx, &msg, rsp ? &rsp_ctx : NULL);
+	return model_ackd_send(cli->model, ctx, &msg, rsp ? &cli->ack_ctx : NULL,
+			       BT_MESH_DM_CONFIG_STATUS_OP, rsp);
 }
 
 int bt_mesh_dm_cli_measurement_start(struct bt_mesh_dm_cli *cli,
@@ -210,14 +204,8 @@ int bt_mesh_dm_cli_measurement_start(struct bt_mesh_dm_cli *cli,
 		net_buf_simple_add_u8(&msg, start->cfg->delay);
 	}
 
-	struct bt_mesh_msg_rsp_ctx rsp_ctx = {
-		.ack = &cli->ack_ctx,
-		.op = BT_MESH_DM_RESULT_STATUS_OP,
-		.user_data = rsp,
-		.timeout = model_ackd_timeout_get(cli->model, ctx),
-	};
-
-	return bt_mesh_msg_ackd_send(cli->model, ctx, &msg, rsp ? &rsp_ctx : NULL);
+	return model_ackd_send(cli->model, ctx, &msg, rsp ? &cli->ack_ctx : NULL,
+			       BT_MESH_DM_RESULT_STATUS_OP, rsp);
 }
 
 int bt_mesh_dm_cli_results_get(struct bt_mesh_dm_cli *cli,
@@ -235,12 +223,6 @@ int bt_mesh_dm_cli_results_get(struct bt_mesh_dm_cli *cli,
 	net_buf_simple_add_u8(&msg, BT_MESH_DM_RESULT_GET_OP);
 	net_buf_simple_add_u8(&msg, entry_cnt);
 
-	struct bt_mesh_msg_rsp_ctx rsp_ctx = {
-		.ack = &cli->ack_ctx,
-		.op = BT_MESH_DM_RESULT_STATUS_OP,
-		.user_data = rsp,
-		.timeout = model_ackd_timeout_get(cli->model, ctx),
-	};
-
-	return bt_mesh_msg_ackd_send(cli->model, ctx, &msg, rsp ? &rsp_ctx : NULL);
+	return model_ackd_send(cli->model, ctx, &msg, rsp ? &cli->ack_ctx : NULL,
+			       BT_MESH_DM_RESULT_STATUS_OP, rsp);
 }

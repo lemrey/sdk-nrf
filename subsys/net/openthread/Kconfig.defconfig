@@ -30,6 +30,35 @@ choice OPENTHREAD_IMPLEMENTATION
 	default OPENTHREAD_LIBRARY if OPENTHREAD_LIBRARY_AVAILABLE
 endchoice
 
+if SOC_NRF54H20_CPUAPP
+
+#To be removed after RNG is available in NCS
+choice RNG_GENERATOR_CHOICE
+	default TIMER_RANDOM_GENERATOR
+endchoice
+
+config TEST_RANDOM_GENERATOR
+	bool
+	default y
+
+#To be removed
+config IPC_SERVICE_BACKEND_RPMSG_SHMEM_RESET
+	bool
+    default y
+
+#To be removed
+config MBOX
+	bool
+	default y
+
+#To be removed
+config MBOX_NRFX_IDS
+	bool
+	default y
+
+endif
+
+
 choice LIBC_IMPLEMENTATION
 	default NEWLIB_LIBC
 endchoice

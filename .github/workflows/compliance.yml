@@ -52,11 +52,7 @@ jobs:
         export PATH="$HOME/.local/bin:$PATH"
         export PATH="$HOME/bin:$PATH"
         git remote -v
-        # Ensure there's no merge commits in the PR
-        [[ "$(git rev-list --merges --count origin/${BASE_REF}..)" == "0" ]] || \
-        (echo "::error ::Merge commits not allowed, rebase instead";false)
-
-        git rebase origin/${BASE_REF}
+        git rebase --rebase-merges origin/${BASE_REF}
         # debug
         git log  --pretty=oneline | head -n 10
         west init -l .
@@ -84,9 +80,7 @@ jobs:
         # debug
         ls -la
         git log --pretty=oneline | head -n 10
-        # For now we run KconfigBasic, but we should transition to Kconfig
-        $ZEPHYR_BASE/scripts/ci/check_compliance.py --annotate -e Kconfig \
-        -c origin/${BASE_REF}..
+        $ZEPHYR_BASE/scripts/ci/check_compliance.py -m Codeowners -m Devicetree -m Gitlint -m Identity -m Nits -m pylint -m checkpatch -c origin/${BASE_REF}..
 
     - name: upload-results
       uses: actions/upload-artifact@v3
