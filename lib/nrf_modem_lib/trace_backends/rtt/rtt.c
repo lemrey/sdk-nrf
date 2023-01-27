@@ -66,3 +66,12 @@ int trace_backend_write(const void *data, size_t len)
 
 	return (int)len;
 }
+
+struct trace_backend trace_backend = {
+	.init = trace_backend_init,
+	.deinit = trace_backend_deinit,
+	.write = trace_backend_write,
+	.read = NULL,
+	.read_last = NULL,
+	.clear = NULL,
+};

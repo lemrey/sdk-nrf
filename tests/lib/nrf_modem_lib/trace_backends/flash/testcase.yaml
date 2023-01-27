@@ -1,0 +1,6 @@
+tests:
+  trace_backends.flash:
+    platform_allow: nrf9160dk_nrf9160_ns
+    integration_platforms:
+      - nrf9160dk_nrf9160_ns
+    tags: nrf_modem_lib modem_trace

@@ -3,7 +3,8 @@
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
-
+#include <stdbool.h>
+#include <sys/types.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <modem/nrf_modem_lib.h>
@@ -20,7 +21,12 @@ LOG_MODULE_REGISTER(nrf_modem_lib_trace, CONFIG_NRF_MODEM_LIB_LOG_LEVEL);
 NRF_MODEM_LIB_ON_INIT(trace_init, trace_init_callback, NULL);
 
 K_SEM_DEFINE(trace_sem, 0, 1);
+K_SEM_DEFINE(trace_clear_sem, 0, 1);
 K_SEM_DEFINE(trace_done_sem, 1, 1);
+
+extern struct trace_backend trace_backend;
+static bool is_initialized;
+static bool is_space;
 
 #define TRACE_THREAD_PRIORITY                                                                      \
 	COND_CODE_1(CONFIG_NRF_MODEM_LIB_TRACE_THREAD_PRIO_OVERRIDE,                               \
@@ -28,6 +34,11 @@ K_SEM_DEFINE(trace_done_sem, 1, 1);
 
 static int trace_init(void);
 static int trace_deinit(void);
+
+static ssize_t bytes_unhandled;
+
+void nrf_modem_lib_trace_callback(int err);
+nrf_modem_lib_trace_callback_t trace_callback = nrf_modem_lib_trace_callback;
 
 #if CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_BITRATE
 static uint32_t backend_bps_avg;
@@ -116,13 +127,21 @@ static void backend_bps_log(struct k_work *item)
 #define BPS_LOG_PERIOD_MS CONFIG_NRF_MODEM_LIB_TRACE_BITRATE_LOG_PERIOD_MS
 #define BPS_LOG_PERIOD K_MSEC(BPS_LOG_PERIOD_MS)
 
-static uint32_t trace_bytes_received;
+static size_t trace_bytes_received;
+static size_t trace_bytes_received_total;
+static size_t trace_bytes_read_total;
 
 static void update_trace_bytes_received(struct nrf_modem_trace_data *frags, size_t n_frags)
 {
 	for (size_t i = 0; i < n_frags; i++) {
 		trace_bytes_received += frags[i].len;
+		trace_bytes_received_total += frags[i].len;
 	}
+}
+
+static void update_trace_bytes_read(size_t bytes)
+{
+	trace_bytes_read_total += bytes;
 }
 
 static void bps_log(struct k_work *item);
@@ -136,19 +155,41 @@ static void bps_log(struct k_work *item)
 
 	trace_bytes_received = 0;
 
+	LOG_INF("Written: %d, read: %d", trace_bytes_received_total, trace_bytes_read_total);
 	LOG_INF("Trace bitrate (bps): %u", trace_data_bps_avg);
 
 	k_work_schedule(&bps_log_work, BPS_LOG_PERIOD);
 }
 
 #define UPDATE_TRACE_BYTES_RECEIVED(frags, n_frags) update_trace_bytes_received(frags, n_frags)
+#define UPDATE_TRACE_BYTES_READ(bytes) update_trace_bytes_read(bytes)
 #else
 #define UPDATE_TRACE_BYTES_RECEIVED(...)
+#define UPDATE_TRACE_BYTES_READ(...)
 #endif
+
+__weak void nrf_modem_lib_trace_callback(int err)
+{
+	LOG_ERR("%s was called with err %d but no callback is set", __func__, err);
+}
+
+void nrf_modem_lib_trace_callback_set(nrf_modem_lib_trace_callback_t callback)
+{
+	if (!callback) {
+		trace_callback = nrf_modem_lib_trace_callback;
+		return;
+	}
+
+	trace_callback = callback;
+}
 
 int nrf_modem_lib_trace_processing_done_wait(k_timeout_t timeout)
 {
 	int err;
+
+	if (!is_space) {
+		return 0;
+	}
 
 	err = k_sem_take(&trace_done_sem, timeout);
 	if (err) {
@@ -156,7 +197,6 @@ int nrf_modem_lib_trace_processing_done_wait(k_timeout_t timeout)
 	}
 
 	k_sem_give(&trace_done_sem);
-
 	return 0;
 }
 
@@ -168,19 +208,19 @@ static int trace_fragment_write(struct nrf_modem_trace_data *frag)
 	while (remaining) {
 		PERF_START();
 
-		ret = trace_backend_write((void *)((uint8_t *)frag->data + frag->len - remaining),
+		ret = trace_backend.write((void *)((uint8_t *)frag->data + frag->len - remaining),
 					  remaining);
 
 		PERF_END(ret);
 
 		if (ret < 0) {
-			LOG_ERR("trace_backend_write failed with err: %d", ret);
+			LOG_ERR("trace_backend: write failed with err: %d", ret);
 
 			return ret;
 		}
 
 		if (ret == 0) {
-			LOG_WRN("trace_backend_write wrote 0 bytes.");
+			LOG_WRN("trace_backend: write wrote 0 bytes.");
 		}
 
 		remaining -= ret;
@@ -207,27 +247,47 @@ trace_reset:
 			break;
 		case -NRF_ESHUTDOWN:
 			LOG_INF("Modem was turned off, no more traces");
-			goto out;
+			goto deinit;
 		case -NRF_ENODATA:
 			LOG_INF("No more trace data");
-			goto out;
+			goto deinit;
 		case -NRF_EINPROGRESS:
 			__ASSERT(0, "Error in transport backend");
-			goto out;
+			goto deinit;
 		default:
 			__ASSERT(0, "Unhandled err %d", err);
-			goto out;
+			goto deinit;
 		}
 
-		for (size_t i = 0; i < n_frags; i++) {
+		for (int i = 0; i < n_frags; i++) {
 			err = trace_fragment_write(&frags[i]);
-			if (err) {
-				goto out;
+printk("write ret: %d\n", err);
+			switch (err) {
+			case 0:
+				break;
+			case -ENOSPC:
+printk("trace callback sent\n");
+				trace_callback(-ENOSPC);
+				if (!trace_backend.clear) {
+					goto deinit;
+				}
+
+				is_space = false;
+				k_sem_give(&trace_done_sem);
+				k_sem_take(&trace_clear_sem, K_FOREVER);
+				/* Try the same fragment again */
+				i--;
+				continue;
+			default:
+				/* Irrecoverable error */
+				goto deinit;
 			}
+
+			bytes_unhandled += frags[i].len;
 		}
 	}
 
-out:
+deinit:
 	err = trace_deinit();
 	if (err) {
 		LOG_ERR("trace_deinit failed with err: %d", err);
@@ -242,13 +302,14 @@ static int trace_init(void)
 
 	k_sem_take(&trace_done_sem, K_FOREVER);
 
-	err = trace_backend_init(nrf_modem_trace_processed);
+	err = trace_backend.init(nrf_modem_trace_processed);
 	if (err) {
-		LOG_ERR("trace_backend_init failed with err: %d", err);
-
+		LOG_ERR("trace_backend: init failed with err: %d", err);
 		return err;
 	}
 
+	is_initialized = true;
+	is_space = true;
 	LOG_INF("Trace thread ready");
 	k_sem_give(&trace_sem);
 
@@ -294,9 +355,11 @@ static int trace_deinit(void)
 {
 	int err;
 
-	err = trace_backend_deinit();
+	is_initialized = false;
+
+	err = trace_backend.deinit();
 	if (err) {
-		LOG_ERR("trace_backend_deinit failed with err: %d", err);
+		LOG_ERR("trace_backend: deinit failed with err: %d", err);
 
 		return err;
 	}
@@ -323,6 +386,47 @@ int nrf_modem_lib_trace_level_set(enum nrf_modem_lib_trace_level trace_level)
 	if (err) {
 		LOG_ERR("Failed to set trace level, err: %d", err);
 		return -ENOEXEC;
+	}
+
+	return 0;
+}
+
+int nrf_modem_lib_trace_read(uint8_t *buf, size_t len)
+{
+	int read;
+
+	if (!trace_backend.read) {
+		return -ENOTSUP;
+	}
+
+	read = trace_backend.read(buf, len);
+	if (read > 0) {
+		bytes_unhandled -= read;
+		UPDATE_TRACE_BYTES_READ(read);
+	}
+
+	return read;
+}
+
+int nrf_modem_lib_trace_clear(void)
+{
+	int err;
+
+	if (!trace_backend.clear) {
+		return -ENOTSUP;
+	}
+
+	err = trace_backend.clear();
+	if (err) {
+		return err;
+	}
+
+	bytes_unhandled = 0;
+
+	if (!is_space) {
+		k_sem_take(&trace_done_sem, K_FOREVER);
+		is_space = true;
+		k_sem_give(&trace_clear_sem);
 	}
 
 	return 0;

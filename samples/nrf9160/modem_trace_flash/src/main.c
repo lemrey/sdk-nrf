@@ -15,7 +15,7 @@
 #include <nrf_modem_at.h>
 #include <dk_buttons_and_leds.h>
 
-#include "trace_storage.h"
+#include <zephyr/sys/reboot.h>
 
 LOG_MODULE_REGISTER(modem_trace_flash_sample, CONFIG_MODEM_TRACE_FLASH_SAMPLE_LOG_LEVEL);
 
@@ -44,18 +44,26 @@ static void print_uart1(char *buf, int len)
 
 static void print_traces(void)
 {
-	const size_t READ_BUF_SIZE = 1024;
+	const size_t READ_BUF_SIZE = 2048;
 	uint8_t read_buf[READ_BUF_SIZE];
 	int ret = READ_BUF_SIZE;
 	size_t read_offset = 0;
 
 	/* Read out the trace data from flash */
-	while (ret == READ_BUF_SIZE) {
-		ret = trace_storage_read(read_buf, READ_BUF_SIZE, read_offset);
+	while (ret > 0) {
+		ret = nrf_modem_lib_trace_read(read_buf, READ_BUF_SIZE);
 		if (ret < 0) {
+			if (ret == -ENODATA) {
+				break;
+			}
 			LOG_ERR("Error reading modem traces: %d", ret);
 			break;
 		}
+		if (ret == 0) {
+			LOG_DBG("No more traces to read from flash");
+			break;
+		}
+		//printk("r: %d", ret);
 		read_offset += ret;
 		print_uart1(read_buf, ret);
 	}
@@ -67,6 +75,11 @@ static void button_handler(uint32_t button_states, uint32_t has_changed)
 	if (has_changed & button_states & DK_BTN1_MSK) {
 		printk("Button 1 pressed - dumping traces to uart1\n");
 		print_traces();
+	}
+
+	if (has_changed & button_states & DK_BTN2_MSK) {
+		printk("Button 2 pressed - restarting application\n");
+		sys_reboot(SYS_REBOOT_WARM);
 	}
 }
 
@@ -124,11 +137,7 @@ void main(void)
 	 */
 	k_sleep(K_SECONDS(1));
 
-	err = trace_storage_flush();
-	if (err) {
-		LOG_ERR("Flushing modem traces to flash failed %d\n", err);
-	} else {
-		LOG_INF("Flushed modem traces to flash\n");
-	}
+	LOG_INF("Press button 1 or enter 'read' to print traces to UART");
 
+	k_sleep(K_FOREVER);
 }

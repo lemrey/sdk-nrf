@@ -7,6 +7,7 @@ choice NRF_MODEM_LIB_TRACE_BACKEND
 	prompt "Trace backend"
 endchoice
 
+rsource "flash/Kconfig"
 rsource "uart/Kconfig"
 rsource "rtt/Kconfig"
 

@@ -32,6 +32,26 @@ enum nrf_modem_lib_trace_level {
 	NRF_MODEM_LIB_TRACE_LEVEL_LTE_AND_IP = 5,	/**< LTE and IP. */
 };
 
+
+/** @brief Trace callback that is called by the trace library when an error occour.
+ *
+ * @param err Reason for failure
+ *
+ * @return Zero on success, non-zero otherwise.
+ */
+typedef void (*nrf_modem_lib_trace_callback_t)(int err);
+
+/** @brief Set trace callback
+ *
+ * @note The default callback @c nrf_modem_lib_trace_callback has a __weak implementation that can
+ *       be overwritten by the application instead of setting the trace callback by calling
+ *       @c nrf_modem_lib_trace_callback_set . This is beneficial for applications using the
+ *       `NRF_MODEM_LIB_SYS_INIT` Kconfig option.
+ *
+ * @param callback Callback to set.
+ */
+void nrf_modem_lib_trace_callback_set(nrf_modem_lib_trace_callback_t callback);
+
 /** @brief Wait for trace to have finished processing after coredump or shutdown.
  *
  * This function blocks until the trace module has finished processing data after
@@ -50,6 +70,33 @@ int nrf_modem_lib_trace_processing_done_wait(k_timeout_t timeout);
  * @return Zero on success, non-zero otherwise.
  */
 int nrf_modem_lib_trace_level_set(enum nrf_modem_lib_trace_level trace_level);
+
+
+/**
+ * @brief Read trace data from backend
+ *
+ * @details Read out the trace data from backend.
+ *
+ * @note This operation is only supported with some trace backends.
+ *
+ * @param buf Output buffer
+ * @param len Size of output buffer
+ * @param offset Read offset
+ *
+ * @return read number of bytes, negative errno on failure.
+ */
+int nrf_modem_lib_trace_read(uint8_t *buf, size_t len);
+
+/**
+ * @brief Clear captured trace data
+ *
+ * @details Clear all captured trace data and prepare the backend for capturing new traces.
+ *
+ * @note This operation is only supported with some trace backends.
+ *
+ * @return 0 on success, negative errno on failure.
+ */
+int nrf_modem_lib_trace_clear(void);
 
 #if defined(CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_BITRATE) || defined(__DOXYGEN__)
 /** @brief Get the last measured rolling average bitrate of the trace backend.

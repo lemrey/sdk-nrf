@@ -4,5 +4,6 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+add_subdirectory(flash)
 add_subdirectory(rtt)
 add_subdirectory(uart)
