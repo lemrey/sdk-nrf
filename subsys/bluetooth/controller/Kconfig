@@ -30,7 +30,8 @@ config BT_LL_SOFTDEVICE
 	select BT_CTLR_PHY_CODED_SUPPORT if HAS_HW_NRF_RADIO_BLE_CODED
 	select BT_HAS_HCI_VS
 	select BT_CTLR_DF_CTE_TX_SUPPORT if HAS_HW_NRF_RADIO_DFE
-	depends on (SOC_SERIES_NRF52X || SOC_NRF5340_CPUNET || SOC_NRF54H20_CPURAD)
+	depends on (SOC_SERIES_NRF52X || SOC_NRF5340_CPUNET ||\
+			    SOC_NRF54H20_CPURAD || SOC_SERIES_NRF54LX || SOC_SERIES_NRF54HX)
 	help
 	  Use SoftDevice Link Layer implementation.
 
@@ -88,7 +89,7 @@ config SYSTEM_WORKQUEUE_STACK_SIZE
 
 config BT_CTLR_SDC_LLPM
 	bool "Enable Low Latency Packet Mode support"
-	depends on SOC_SERIES_NRF52X
+	depends on (SOC_SERIES_NRF52X || SOC_SERIES_NRF54LX || SOC_SERIES_NRF54HX)
 	help
 	  Low Latency Packet Mode (LLPM) is a Nordic proprietary addition
 	  which lets the application use connection intervals down to 1 ms.

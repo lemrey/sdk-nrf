@@ -247,6 +247,9 @@ static int32_t mpsl_lib_init_internal(void)
 	clock_cfg.rc_ctiv = 0;
 	clock_cfg.rc_temp_ctiv = 0;
 #endif
+#else
+	clock_cfg.rc_ctiv = 0;
+	clock_cfg.rc_temp_ctiv = 0;
 #endif
 
 	err = mpsl_init(&clock_cfg, MPSL_LOW_PRIO_IRQn, m_assert_handler);
