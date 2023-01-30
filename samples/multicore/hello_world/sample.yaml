@@ -24,14 +24,13 @@ tests:
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
-    extra_args: OVERLAY_CONFIG="stm_logging.conf"
+    extra_args:
       DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuapp_soc1_stm_logging.overlay"
       remote_DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuppr_soc1_stm_logging.overlay"
-      remote_CONFIG_LOG=y remote_CONFIG_LOG_PRINTK=y remote_CONFIG_LOG_FRONTEND_CORESIGHT_STM=y
-      remote_CONFIG_LOG_FRONTEND_CORESIGHT_STM_FSC=y remote_CONFIG_LOG_FRONTEND=y
-      remote_CONFIG_LOG_FRONTEND_ONLY=y remote_CONFIG_LOG_BACKEND_UART=n
-      remote_CONFIG_UART_CONSOLE=n remote_CONFIG_CONSOLE=n remote_CONFIG_EMULATOR_FPGA=y
+      remote_CONFIG_LOG_STM=y remote_CONFIG_UART_CONSOLE=n remote_CONFIG_CONSOLE=n remote_CONFIG_EMULATOR_FPGA=y
     extra_configs:
-      - CONFIG_APP_STM_LOGGING=y
-      - CONFIG_APP_STM_LOGGING_FSC_FRONTEND=y
+      - CONFIG_LOG_STM=y
       - CONFIG_EMULATOR_FPGA=y
+      - CONFIG_SECDOM_STM_LOGGING_SUPPORT=y
+      - CONFIG_SERIAL=n
+      - CONFIG_CONSOLE=n
