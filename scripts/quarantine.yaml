@@ -406,3 +406,10 @@
   platforms:
     - nrf54h20dk_nrf54h20_cpusec@soc1
   comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-2917"
+
+- scenarios:
+    - project.sysctrl.local.fpga.halti
+    - project.sysctrl.local.emu.halti
+  platforms:
+    - nrf9230dk_nrf9230_cpuapp
+  comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-3181"
