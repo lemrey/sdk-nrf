@@ -421,13 +421,6 @@
   comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-2917"
 
 - scenarios:
-    - project.sysctrl.local.fpga.halti
-    - project.sysctrl.local.emu.halti
-  platforms:
-    - nrf9230dk_nrf9230_cpuapp
-  comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-3181"
-
-- scenarios:
     - project.sdfw.suit.logging.nrf54h20
     - project.sdfw.suit.logging.nrf54h20.fpga
   platforms:
