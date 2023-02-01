@@ -71,33 +71,6 @@ endif # !(SOC_SERIES_NRF54HX)
 
 if SOC_SERIES_NRF54HX
 
-config MATTER_LOCK_MRAM_SETTINGS
-	bool "Enable MRAM as settings backend"
-	help
-	  Use this settings to enable MRAM as settings backend for Matter Lock sample,
-	  If that config is disabled Zephyr's settings will be stored in ram using Flash Simulator.
-
-if !(MATTER_LOCK_MRAM_SETTINGS)
-
-	# simulate flash to store settings in RAM
-	config SOC_FLASH_NRF
-		bool
-		default n
-
-	config FLASH_SIMULATOR
-		bool
-		default y
-
-	config FLASH_SIMULATOR_UNALIGNED_READ
-		bool
-		default y
-
-	config FLASH_SIMULATOR_DOUBLE_WRITES
-		bool
-		default y
-
-endif # MATTER_LOCK_MRAM_SETTINGS
-
 source "${ZEPHYR_BASE}/../nrf/samples/matter/lock/configuration/next/Kconfig.next"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 

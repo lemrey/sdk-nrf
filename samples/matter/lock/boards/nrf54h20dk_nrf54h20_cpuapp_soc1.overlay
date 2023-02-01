@@ -27,62 +27,17 @@
 
 ipc0: &ipc_cpurad { };
 
-/delete-node/ &mram0;
+/delete-node/ &slot0_partition;
 
-&mram_controller{
-	label = "mram_controller";
-    mram0: mram@1e100000 {
-        compatible = "nordic,allocatable-mram", "soc-nv-flash";
-        reg = < 0x1e100000 DT_SIZE_K(1000) >;
-        erase-block-size = < 0x1000 >;
-        write-block-size = < 0x1 >;
-        owner-id = <2>;
-        perm-read;
-        perm-execute;
-		label = "code_mram";
-        partitions {
-            compatible = "fixed-partitions";
-            #address-cells = < 0x1 >;
-            #size-cells = < 0x1 >;
-            slot0_partition: partition@100000 {
-                label = "image-0";
-                reg = < 0x100000 DT_SIZE_K(1000) >;
-            };
+&mram0 {
+    reg = <0x1e0aa000 DT_SIZE_K(1000)>;
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = < 0x1 >;
+        #size-cells = < 0x1 >;
+        slot0_partition: partition@aa000 {
+            label = "image-0";
+            reg = < 0xaa000 DT_SIZE_K(1000) >;
         };
     };
-};
-
-/ {
-	soc {
-		flash_controller2: flash-controller@0 {
-			compatible = "zephyr,sim-flash";
-			reg = <0x00000000 DT_SIZE_K(40)>;
-
-			#address-cells = <1>;
-			#size-cells = <1>;
-			erase-value = <0xff>;
-
-			label = "flash_ctrl";
-
-			flash_sim0: flash_sim@0 {
-				status = "okay";
-				compatible = "soc-nv-flash";
-				label = "simulated_flash";
-				erase-block-size = <4096>;
-				write-block-size = <1>;
-				reg = <0x00000000 DT_SIZE_K(40)>;
-
-				partitions {
-					compatible = "fixed-partitions";
-					#address-cells = <1>;
-					#size-cells = <1>;
-
-					storage_partition: partition@0 {
-						label = "storage";
-						reg = <0x00000000 0x00000A000>;
-					};
-				};
-			};
-		};
-	};
 };
