@@ -153,7 +153,7 @@ CHIP_ERROR AppTask::Init()
 #endif
 
 	/* Initialize buttons */
-#if !(defined(CONFIG_EMULATOR_FPGA) || defined(CONFIG_SOC_SERIES_NRF54HX))
+#if !defined(CONFIG_EMULATOR_FPGA)
 	int ret = dk_buttons_init(ButtonEventHandler);
 	if (ret) {
 		LOG_ERR("dk_buttons_init() failed");

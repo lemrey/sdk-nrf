@@ -60,7 +60,7 @@ private:
 		NoneSelected = 0,
 		SoftwareUpdate,
 		FactoryReset,
-#if CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP
+#if CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP || CONFIG_SOC_SERIES_NRF54HX
 		AdvertisingStart,
 #endif
 	};

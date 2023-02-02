@@ -35,8 +35,6 @@ config CHIP_ENABLE_SLEEPY_END_DEVICE_SUPPORT
 
 endif # NET_L2_OPENTHREAD
 
-if !(SOC_SERIES_NRF54HX) && !(CONFIG_EMULATOR_FPGA)
-
 config STATE_LEDS
 	bool "Use LEDs to indicate the device state"
 	default y
@@ -64,25 +62,14 @@ config MPSL_FEM_NRF21540_TX_GAIN_DB
 
 endif # MPSL_FEM
 
+if !(SOC_SERIES_NRF54HX)
 
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
 
-endif # !(SOC_SERIES_NRF54HX) && !(CONFIG_EMULATOR_FPGA)
+endif # !(SOC_SERIES_NRF54HX)
 
-if (CONFIG_EMULATOR_FPGA || SOC_SERIES_NRF54HX)
-
-config MBEDTLS_USER_CONFIG_ENABLE
-	default y
-
-config MBEDTLS_USER_CONFIG_FILE
-	default "${ZEPHYR_BASE}/../nrf/samples/matter/lock/mbedtls_config.h"
-
-config GPIO_NRFX
-	default n
-
-config CHIP_LIB_SHELL
-	default y
+if SOC_SERIES_NRF54HX
 
 config MATTER_LOCK_MRAM_SETTINGS
 	bool "Enable MRAM as settings backend"

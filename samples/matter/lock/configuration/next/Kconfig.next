@@ -115,6 +115,12 @@ endchoice
 config ASSERT
     default y
 
+config MBEDTLS_USER_CONFIG_ENABLE
+	default y
+
+config MBEDTLS_USER_CONFIG_FILE
+	default "${ZEPHYR_BASE}/../nrf/samples/matter/lock/mbedtls_config.h"
+
 # Bluetooth settings should be moved out of this section
 # when Moonlight will support BLE
 config BT
@@ -172,6 +178,13 @@ config MBOX_NRFX_IDS
 config NRF_REGTOOL_GENERATE_TOML_CONFIG
     default y
 
+config CHIP_LIB_SHELL
+	default y
+
+# Temporary workaround for LEDS until nrfjprog does not support adding gpio to UICR
+config NRF_REGTOOL_TOML_CONFIG_FILES
+	default "boards/nrf54h20_pdk.toml"
+
 if EMULATOR_FPGA
 
 # TODO to check if it is still needed here
@@ -184,6 +197,9 @@ config BT_L2CAP_TX_MTU
 # TODO to check if it is still needed here
 config HEAP_MEM_POOL_SIZE
     default 12288
+
+config GPIO_NRFX
+	default n
 
 endif # EMULATOR_FPGA
 endif #BOARD_NRF54H20DK_NRF54H20_CPUAPP
