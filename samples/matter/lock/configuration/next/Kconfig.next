@@ -130,6 +130,9 @@ config BT_PERIPHERAL
 config BT_GATT_DYNAMIC_DB
     default y
 
+config BT_GAP_AUTO_UPDATE_CONN_PARAMS
+    default y
+
 config BT_DEVICE_NAME_DYNAMIC
     default n
 
@@ -137,13 +140,22 @@ config BT_MAX_CONN
     default 1
 
 config BT_L2CAP_TX_MTU
-    default 41
+    default 247
+
+config BT_PERIPHERAL_PREF_MIN_INT
+    default 36
+
+config BT_PERIPHERAL_PREF_MAX_INT
+    default 36
 
 config BT_BUF_ACL_RX_SIZE
     default 251
 
 config BT_BUF_ACL_TX_SIZE
     default 251
+
+config MAIN_STACK_SIZE
+    default 12288
 
 # Settings needed to handle IPC service and
 # communication between domains
@@ -166,9 +178,8 @@ if EMULATOR_FPGA
 config NRF_802154_SER_DEFAULT_RESPONSE_TIMEOUT
     default 100000
 
-# TODO to check if it is still needed here
-config MAIN_STACK_SIZE
-    default 12288
+config BT_L2CAP_TX_MTU
+    default 41
 
 # TODO to check if it is still needed here
 config HEAP_MEM_POOL_SIZE
