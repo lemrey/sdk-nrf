@@ -14,3 +14,9 @@ target_sources(app PRIVATE src/main.c)
 # NORDIC SDK APP END
 
 target_sources_ifdef(CONFIG_BT app PRIVATE src/ble.c)
+
+
+if(CONFIG_SOC_SERIES_NRF54HX)
+    # Workaround due to lack of entropy driver.
+    zephyr_compile_options(-Wno-error)
+endif()

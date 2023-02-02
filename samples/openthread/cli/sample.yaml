@@ -42,6 +42,14 @@ tests:
       - nrf52840dk_nrf52840
       - nrf52840dongle_nrf52840
       - nrf21540dk_nrf52840
+  sample.openthread.cli_nrf54h20:
+    build_only: true
+    extra_args: DTC_OVERLAY_FILE='serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay;flash_nrf54h20_cpuapp.overlay'
+                OVERLAY_CONFIG=overlay-ci.conf
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ci_build
   # Build integration regression protection.
   sample.nrf_security.openthread.integration:
       build_only: True
