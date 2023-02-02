@@ -248,8 +248,11 @@ static int32_t mpsl_lib_init_internal(void)
 	clock_cfg.rc_temp_ctiv = 0;
 #endif
 #else
-	clock_cfg.rc_ctiv = 0;
-	clock_cfg.rc_temp_ctiv = 0;
+	/* For now just set the values to 0 to avoid "use of uninitialized variable" warnings.
+	   MPSL assumes the clocks are always available and does currently not implement
+	   clock handling on these platforms. The LFCLK is expected to have an accuracy of
+	   500ppm or better regardless of the value passed in clock_cfg. */
+	memset(&clock_cfg, 0, sizeof(clock_cfg));
 #endif
 
 	err = mpsl_init(&clock_cfg, MPSL_LOW_PRIO_IRQn, m_assert_handler);
