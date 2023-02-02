@@ -3,6 +3,16 @@ name: Documentation Build
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    branches:
+      - haltium-ncs
+    paths:
+      - '.github/workflows/docbuild.yml'
+      - '**.rst'
+      - '**/Kconfig'
+      - 'doc/**'
+      - 'include/**'
+      - 'scripts/requirements-doc.txt'
+      - 'west.yml'
   push:
     branches:
       - haltium-ncs
