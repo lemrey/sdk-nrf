@@ -100,7 +100,7 @@ To build and flash the :ref:`multicore_hello_world` sample on the nRF54H20-PDK, 
 
 #. Flash the sample using the stardard |NCS| flash command::
 
-   west flash
+      west flash
 
 The sample will be automatically built and programmed on both the application and the ultra-low-power core of the nRF54H20.
 
