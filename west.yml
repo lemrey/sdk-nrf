@@ -52,7 +52,7 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr-next
-      revision: a575ab56e156f3211a9a999e559c290522b13b01
+      revision: ccb11aff1f5d77dd6c56ecbe1225236675d8c96e
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -114,28 +114,28 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: f0aaa7643e6f2c796bb5fb980f82f6e65bbc8089
+      revision: 7ebb0554793741d3ec6bebecd6863ddea06a40f3
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
-      revision: 0b3f11a6cac684e2383deabaa9857269e335b36e
+      revision: 847c13b4f61753f8c5162b94c5e7628632a1fe74
       groups:
       - doc-internal
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: e911cad90d653f72f30b47becdf627873c8ebc58
+      revision: 09b8a438f5ca4d982a59337f9d12ce632e7306d9
     - name: sdk-secdom
-      revision: d37ccd561a7f553a964e08875c923551b1a6918f
+      revision: 8808b4e0bbe6a39dddbdfab7f6ab395be70000d2
       path: core_fw/secdom
     - name: nrf-regtool
-      revision: c5d464268b0fe3657028c9994516979fbcbf3885
+      revision: 9b97025076ec0188be9e95fbe47b41e5f8e75e33
       path: modules/lib/nrf-regtool
     - name: nrfs
       path: modules/lib/nrfs
-      revision: 2437a2ed460394dd8247f5aae2890ba9ebc0a012
+      revision: b4ae806d5ec4e5bffeca0a91b38c8ee742b0b497
     - name: sdk-sysctrl
-      revision: 32d00848167c0c76aa52231af5e01a8c683c4280
+      revision: fc106f7e6849e7a09b9067151e4bf2f5f55e5133
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
@@ -144,7 +144,7 @@ manifest:
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: 84bb9ce7bfa41c25a0a57b3f38ebefdd3ed3fb57
+      revision: 2af145846ab2208b4cdbaefc61132ae315a54152
       submodules:
         - name: nlio
           path: third_party/nlio/repo
@@ -180,7 +180,7 @@ manifest:
       revision: 308c171cb4b5eed266649012a68406487ec81fb2
     - name: suit-processor
       remote: nordicsemi
-      revision: 77b45d6c1bada96313149f372e61ac95a471a123
+      revision: f98aacffd3834bcaba66811f532c270c0f4de2d5
       path: modules/lib/suit-processor
     # Other third-party repositories.
     - name: cmock
