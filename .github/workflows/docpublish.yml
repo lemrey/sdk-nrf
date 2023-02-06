@@ -72,3 +72,11 @@ jobs:
           if [[ -f "$GITHUB_WORKSPACE/azcopy_logs/docsync.log" ]]; then
             cat $GITHUB_WORKSPACE/azcopy_logs/docsync.log
           fi
+
+      - name: Add preview URL comment for PRs
+        uses: carlescufi/action-doc-url@main
+        with:
+          github-token: ${{ secrets.NCS_GITHUB_TOKEN }}
+          urlroot: ${{ vars.DOC_PR_URL_ROOT }}
+          pr-prefix: "PR-"
+          pr-file: cache/extra/pr.txt
