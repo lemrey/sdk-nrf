@@ -7,7 +7,7 @@
 #include "platform/nrf_802154_platform_sl_lptimer.h"
 
 #include <assert.h>
-#include <sys/atomic.h>
+#include <zephyr/sys/atomic.h>
 #include <zephyr/kernel.h>
 
 #include <zephyr/drivers/timer/nrf_rtc_timer.h>
