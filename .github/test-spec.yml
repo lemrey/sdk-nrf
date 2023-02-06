@@ -27,7 +27,6 @@
 "CI-sdk-nrf-next-doc":
   - "doc/**/*"
   - "**/*.rst"
-  - "west.yml"
 
 "CI-iot-zephyr-lwm2m-test":
   - "lib/nrf_modem_lib/**/*"
