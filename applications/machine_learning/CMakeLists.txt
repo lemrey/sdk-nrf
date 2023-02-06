@@ -54,8 +54,3 @@ add_subdirectory(src/util)
 if(CONFIG_BT_RPMSG)
   assert_exists(hci_rpmsg_CONF_FILE)
 endif()
-
-if (CONFIG_SOC_SERIES_NRF54HX)
-  build_secdom()
-  build_sysctrl()
-endif()

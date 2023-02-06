@@ -34,6 +34,7 @@ config APP_STM_LOGGING_OFF
 
 config APP_STM_LOGGING_FSC_FRONTEND
 	bool "Human-readable"
+	select SECDOM_STM_LOGGING_SUPPORT
 	help
 	  Logging to STM frontend is enabled on secure domain, application core
 	  and PPR. Human readable logs are printed on UART owned by the secure domain.

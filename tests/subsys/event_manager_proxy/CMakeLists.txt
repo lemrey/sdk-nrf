@@ -37,8 +37,3 @@ target_sources(app PRIVATE
   src/data.c
   src/simple.c
 )
-
-if (CONFIG_SOC_PLATFORM_HALTIUM)
-  build_secdom()
-  build_sysctrl()
-endif()

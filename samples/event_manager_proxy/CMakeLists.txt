@@ -32,8 +32,3 @@ add_subdirectory(common_events)
 add_subdirectory(modules)
 
 target_sources(app PRIVATE src/main.c)
-
-if (CONFIG_SOC_PLATFORM_HALTIUM)
-  build_secdom()
-  build_sysctrl()
-endif()
