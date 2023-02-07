@@ -129,7 +129,22 @@ void nrf_802154_platform_sl_lp_timer_deinit(void)
 
 uint64_t nrf_802154_platform_sl_lptimer_current_lpticks_get(void)
 {
-    return nrfy_grtc_sys_counter_get(NRF_GRTC) << HALTIUM_FPGA_CLOCKS_DOWNSCALING_BITSHIFT;
+#if NRFY_GRTC_HAS_SYSCOUNTER_ARRAY
+    nrfy_grtc_sys_counter_active_set(NRF_GRTC, true);
+
+    while (!nrfy_grtc_sys_conter_ready_check(NRF_GRTC))
+    {
+        // Intentionally empty.
+    }
+#endif
+
+    uint64_t counter = nrfy_grtc_sys_counter_get(NRF_GRTC);
+
+#if NRFY_GRTC_HAS_SYSCOUNTER_ARRAY
+    nrfy_grtc_sys_counter_active_set(NRF_GRTC, false);
+#endif
+
+    return counter << HALTIUM_FPGA_CLOCKS_DOWNSCALING_BITSHIFT;
 }
 
 uint64_t nrf_802154_platform_sl_lptimer_us_to_lpticks_convert(uint64_t us, bool round_up)
