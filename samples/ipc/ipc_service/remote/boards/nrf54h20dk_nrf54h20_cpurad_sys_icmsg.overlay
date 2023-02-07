@@ -18,7 +18,7 @@
 		tx-region = <&ipc_shm_local>;
 		rx-region = <&ipc_shm_remote>;
 		mboxes = <&bellboard_cpurad 6>,
-			 <&mbox_local 18>;
+			 <&vevif_cpusys 18>;
 		mbox-names = "tx", "rx";
 		status = "okay";
 	};
@@ -35,51 +35,4 @@
 &uart135 {
 	status = "okay";
 	memory-regions = <&ram3x_cpusys>;
-};
-
-&global_peripherals {
-	/delete-node/ vevif@8c8000;
-	/delete-node/ vevif@8d4000;
-	/delete-node/ vevif@908000;
-
-	mbox_local: vevif@8c8000 {
-		compatible = "nordic,mbox-nrf-ids";
-		reg = <0x8c8000 0x1000>;
-		interrupts = <0 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <1 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <2 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <3 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <4 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <5 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <6 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <7 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <8 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <9 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <10 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <11 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <12 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <13 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <14 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <15 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <16 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <17 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <18 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <19 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <20 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <21 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <22 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <23 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <24 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <25 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <26 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <27 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <28 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <29 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <30 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <31 NRF_DEFAULT_IRQ_PRIORITY>;
-		interrupt-parent = <&clic>;
-		instance = <0>;
-		status = "okay";
-		#mbox-cells = <1>;
-	};
 };

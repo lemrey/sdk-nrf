@@ -25,7 +25,7 @@
 		tx-region = <&ram3x_shared_tx>;
 		rx-region = <&ram3x_shared_rx>;
 		mboxes = <&bellboard_cpuapp 12>,
-			 <&mbox_local 12>;
+			 <&vevif_cpuppr 12>;
 		mbox-names = "tx", "rx";
 		status = "okay";
 	};
@@ -37,38 +37,6 @@
 		zephyr,memory-region = "DMA_RAM3x_PPR";
 		#memory-region-cells = < 0x0 >;
 		reg = <0x7c80 0x80>;
-	};
-};
-
-&global_peripherals {
-	/* Delete and redefine nodes with custom compatible. */
-	/delete-node/ vevif@8c8000; // SYSCtrl
-	/delete-node/ vevif@8d4000; // FLPR
-	/delete-node/ vevif@908000; // PPR
-
-	mbox_local: vevif@908000 {
-		compatible = "nordic,mbox-nrf-ids";
-		reg = <0x908000 0x1000>;
-		interrupts = <0 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <1 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <2 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <3 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <4 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <5 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <6 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <7 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <8 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <9 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <10 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <11 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <12 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <13 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <14 NRF_DEFAULT_IRQ_PRIORITY>,
-			     <15 NRF_DEFAULT_IRQ_PRIORITY>;
-		interrupt-parent = <&clic>;
-		instance = <0>;
-		status = "okay";
-		#mbox-cells = <1>;
 	};
 };
 

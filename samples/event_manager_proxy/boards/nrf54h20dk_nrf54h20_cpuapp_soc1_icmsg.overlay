@@ -40,7 +40,7 @@
 		compatible = "zephyr,ipc-icmsg";
 		tx-region = <&ram3x_shared_tx>;
 		rx-region = <&ram3x_shared_rx>;
-		mboxes = <&mbox_remote 12>,
+		mboxes = <&vevif_cpuppr 12>,
 			 <&bellboard_cpuapp 12>;
 		mbox-names = "tx", "rx";
 		status = "okay";
@@ -61,19 +61,8 @@
 	reg = <0x1e0aa000 DT_SIZE_K(576)>;
 };
 
-&global_peripherals {
-	/* Delete and redefine nodes with custom compatible. */
-	/delete-node/ vevif@8c8000; /* SYSCtrl */
-	/delete-node/ vevif@8d4000; /* FLPR */
-	/delete-node/ vevif@908000; /* PPR */
-
-	mbox_remote: vevif@908000 {
-		compatible = "nordic,mbox-nrf-ids";
-		status = "okay";
-		reg = <0x908000 0x1000>;
-		domain = <NRF_IDS_DOMAIN_PPR>; /* Remote vevif belong to CPU PPR */
-		#mbox-cells = <1>;
-	};
+&vevif_cpuppr {
+	status = "okay";
 };
 
 /* ram3x_cpuapp buffer is used by App core UART driver. */
