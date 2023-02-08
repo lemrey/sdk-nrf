@@ -19,9 +19,9 @@
 #include "hci_internal.h"
 #include "ecdh.h"
 
-#define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_DEBUG_HCI_DRIVER)
-#define LOG_MODULE_NAME sdc_hci_internal
-#include "common/log.h"
+#define LOG_LEVEL CONFIG_BT_HCI_DRIVER_LOG_LEVEL
+#include "zephyr/logging/log.h"
+LOG_MODULE_REGISTER(sdc_hci_internal);
 
 #define CMD_COMPLETE_MIN_SIZE (BT_HCI_EVT_HDR_SIZE \
 				+ sizeof(struct bt_hci_evt_cmd_complete) \
