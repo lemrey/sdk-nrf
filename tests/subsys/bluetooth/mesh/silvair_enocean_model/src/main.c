@@ -72,7 +72,7 @@ void bt_enocean_decommission(struct bt_enocean_device *device)
 	ztest_check_expected_value(device);
 }
 
-int bt_enocean_commission(const bt_addr_le_t *addr, const uint8_t *key,
+int bt_enocean_commission(const bt_addr_le_t *addr, const uint8_t key[16],
 			  uint32_t seq)
 {
 	ztest_check_expected_data(key, 16);
@@ -174,7 +174,7 @@ int bt_mesh_model_data_store(struct bt_mesh_model *model, bool vnd,
 	return 0;
 }
 
-int model_send(struct bt_mesh_model *model, struct bt_mesh_msg_ctx *ctx,
+int bt_mesh_msg_send(struct bt_mesh_model *model, struct bt_mesh_msg_ctx *ctx,
 	       struct net_buf_simple *buf)
 {
 	ztest_check_expected_value(model);
@@ -251,7 +251,7 @@ enum bt_mesh_silvair_enocean_status {
 
 static void expect_status(struct bt_mesh_msg_ctx *ctx,
 			  enum bt_mesh_silvair_enocean_status status,
-			  uint8_t *addr)
+			  const uint8_t *addr)
 {
 	static uint8_t expected_msg[11] = {0xF4, 0x36, 0x01, 0x03};
 	size_t len = 4;
@@ -264,10 +264,10 @@ static void expect_status(struct bt_mesh_msg_ctx *ctx,
 
 	ztest_expect_value(bt_mesh_model_msg_init, opcode,
 			   BT_MESH_SILVAIR_ENOCEAN_PROXY_OP);
-	ztest_expect_value(model_send, model, &mock_model);
-	ztest_expect_value(model_send, ctx, ctx);
-	ztest_expect_value(model_send, buf->len, len);
-	ztest_expect_data(model_send, buf->data, expected_msg);
+	ztest_expect_value(bt_mesh_msg_send, model, &mock_model);
+	ztest_expect_value(bt_mesh_msg_send, ctx, ctx);
+	ztest_expect_value(bt_mesh_msg_send, buf->len, len);
+	ztest_expect_data(bt_mesh_msg_send, buf->data, expected_msg);
 }
 
 static void mock_button_action(uint8_t changed,

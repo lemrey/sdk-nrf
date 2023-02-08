@@ -1,45 +1,7 @@
-/*************************************************************************************************/
 /*
  *  Copyright (c) 2021, PACKETCRAFT, INC.
- *  All rights reserved.
- */
-/*************************************************************************************************/
-
-/*
- * Redistribution and use of the Audio subsystem for nRF5340 Software, in binary
- * and source code forms, with or without modification, are permitted provided
- * that the following conditions are met:
  *
- * 1. Redistributions of source code form must retain the above copyright
- *    notice, this list of conditions, and the following disclaimer.
- *
- * 2. Redistributions in binary code form, except as embedded into a Nordic
- *    Semiconductor ASA nRF53 chip or a software update for such product,
- *    must reproduce the above copyright notice, this list of conditions
- *    and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of Packetcraft, Inc. nor Nordic Semiconductor ASA nor
- *    the names of its contributors may be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * 4. This software, with or without modification, must only be used with a
- *    Nordic Semiconductor ASA nRF53 chip.
- *
- * 5. Any software provided in binary or source code form under this license
- *    must not be reverse engineered, decompiled, modified and/or disassembled.
- *
- * THIS SOFTWARE IS PROVIDED BY PACKETCRAFT, INC. AND NORDIC SEMICONDUCTOR ASA
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE HEREBY DISCLAIMED. IN NO EVENT SHALL PACKETCRAFT, INC.,
- * NORDIC SEMICONDUCTOR ASA, OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ *  SPDX-License-Identifier: LicenseRef-PCFT
  */
 
 #include "audio_datapath.h"
@@ -64,7 +26,7 @@
 #include "streamctrl.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(audio_datapath, CONFIG_LOG_AUDIO_DATAPATH_LEVEL);
+LOG_MODULE_REGISTER(audio_datapath, CONFIG_AUDIO_DATAPATH_LOG_LEVEL);
 
 /*
  * Terminology
@@ -685,8 +647,7 @@ static void audio_datapath_i2s_blk_complete(uint32_t frame_start_ts, uint32_t *r
 		ret = data_fifo_pointer_last_filled_get(ctrl_blk.in.fifo, &data, &size, K_NO_WAIT);
 		ERR_CHK(ret);
 
-		ret = data_fifo_block_free(ctrl_blk.in.fifo, &data);
-		ERR_CHK(ret);
+		data_fifo_block_free(ctrl_blk.in.fifo, &data);
 
 		ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf,
 							 K_NO_WAIT);
@@ -769,6 +730,7 @@ void audio_datapath_pres_delay_us_get(uint32_t *delay_us)
 void audio_datapath_just_in_time_check_and_adjust(uint32_t sdu_ref_us)
 {
 	static int32_t count;
+	int ret;
 
 	uint32_t curr_frame_ts = audio_sync_timer_curr_time_get();
 	int diff = curr_frame_ts - sdu_ref_us;
@@ -779,7 +741,12 @@ void audio_datapath_just_in_time_check_and_adjust(uint32_t sdu_ref_us)
 
 	if (diff < JUST_IN_TIME_US - JUST_IN_TIME_THRESHOLD_US ||
 	    diff > JUST_IN_TIME_US + JUST_IN_TIME_THRESHOLD_US) {
-		audio_system_fifo_rx_block_drop();
+		ret = audio_system_fifo_rx_block_drop();
+		if (ret) {
+			LOG_WRN("Not able to drop FIFO RX block");
+			return;
+		}
+
 		count = 0;
 	}
 }

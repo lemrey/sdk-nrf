@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net/lwm2m.h>
 #include <net/lwm2m_client_utils.h>
+#include <net/lwm2m_client_utils_location.h>
 #include <lwm2m_resource_ids.h>
 #include <lwm2m_rd_client.h>
 #include <nrf_modem_at.h>
@@ -26,13 +27,9 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_CLOUD_INTEGRATION_LOG_LEVEL);
 #define LWM2M_INTEGRATION_CLIENT_ID_LEN (sizeof(CONFIG_CLOUD_CLIENT_ID) - 1)
 #endif
 
-#if defined(CONFIG_LWM2M_INTEGRATION)
-BUILD_ASSERT(!IS_ENABLED(CONFIG_NRF_CLOUD_PGPS),
-	     "P-GPS is not supported when building for LwM2M");
-#endif
-
 /* Resource ID used to register a reboot callback. */
 #define DEVICE_OBJECT_REBOOT_RID 4
+#define FIRMWARE_UPDATE_RESULT_PATH "5/0/5"
 #define MAX_RESOURCE_LEN 20
 
 /* Internal states. */
@@ -121,7 +118,6 @@ static void rd_client_event(struct lwm2m_ctx *client, enum lwm2m_rd_client_event
 		LOG_WRN("LWM2M_RD_CLIENT_EVENT_BOOTSTRAP_REG_FAILURE");
 		cloud_wrap_evt.type = CLOUD_WRAP_EVT_DISCONNECTED;
 		notify = true;
-		state = DISCONNECTED;
 		break;
 	case LWM2M_RD_CLIENT_EVENT_BOOTSTRAP_REG_COMPLETE:
 		LOG_DBG("LWM2M_RD_CLIENT_EVENT_BOOTSTRAP_REG_COMPLETE");
@@ -141,7 +137,6 @@ static void rd_client_event(struct lwm2m_ctx *client, enum lwm2m_rd_client_event
 		LOG_WRN("LWM2M_RD_CLIENT_EVENT_REGISTRATION_FAILURE");
 		cloud_wrap_evt.type = CLOUD_WRAP_EVT_DISCONNECTED;
 		notify = true;
-		state = DISCONNECTED;
 		break;
 	case LWM2M_RD_CLIENT_EVENT_REGISTRATION_COMPLETE:
 		LOG_DBG("LWM2M_RD_CLIENT_EVENT_REGISTRATION_COMPLETE");
@@ -155,20 +150,24 @@ static void rd_client_event(struct lwm2m_ctx *client, enum lwm2m_rd_client_event
 		notify = true;
 		state = CONNECTED;
 		break;
-	case LWM2M_RD_CLIENT_EVENT_REG_UPDATE_FAILURE:
-		LOG_WRN("LWM2M_RD_CLIENT_EVENT_REG_UPDATE_FAILURE");
-		cloud_wrap_evt.type = CLOUD_WRAP_EVT_DISCONNECTED;
+	case LWM2M_RD_CLIENT_EVENT_REG_TIMEOUT:
+		LOG_WRN("LWM2M_RD_CLIENT_EVENT_REG_TIMEOUT");
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_CONNECTING;
+		state = CONNECTING;
 		notify = true;
-		state = DISCONNECTED;
 		break;
 	case LWM2M_RD_CLIENT_EVENT_REG_UPDATE_COMPLETE:
 		LOG_DBG("LWM2M_RD_CLIENT_EVENT_REG_UPDATE_COMPLETE");
+		if (state == CONNECTING) {
+			cloud_wrap_evt.type = CLOUD_WRAP_EVT_CONNECTED;
+			notify = true;
+			state = CONNECTED;
+		}
 		break;
 	case LWM2M_RD_CLIENT_EVENT_DEREGISTER_FAILURE:
 		LOG_WRN("LWM2M_RD_CLIENT_EVENT_DEREGISTER_FAILURE");
-		cloud_wrap_evt.type = CLOUD_WRAP_EVT_DISCONNECTED;
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_ERROR;
 		notify = true;
-		state = DISCONNECTED;
 		break;
 	case LWM2M_RD_CLIENT_EVENT_DISCONNECT:
 		LOG_DBG("LWM2M_RD_CLIENT_EVENT_DISCONNECT");
@@ -178,13 +177,25 @@ static void rd_client_event(struct lwm2m_ctx *client, enum lwm2m_rd_client_event
 		break;
 	case LWM2M_RD_CLIENT_EVENT_NETWORK_ERROR:
 		LOG_ERR("LWM2M_RD_CLIENT_EVENT_NETWORK_ERROR");
-		cloud_wrap_evt.type = CLOUD_WRAP_EVT_DISCONNECTED;
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_ERROR;
 		notify = true;
-		state = DISCONNECTED;
 		break;
 	default:
 		LOG_ERR("Unknown event: %d", client_event);
 		break;
+	}
+
+	/* If a LwM2M failure has occurred, we explicitly stop the engine before the cloud module
+	 * is notified with the CLOUD_WRAP_EVT_DISCONNECTED event. This is to clear up any
+	 * LwM2M engine state to ensure that we are able to perform a clean restart of the engine.
+	 */
+	if (notify && cloud_wrap_evt.type == CLOUD_WRAP_EVT_DISCONNECTED) {
+		int err = cloud_wrap_disconnect();
+
+		if (err) {
+			LOG_ERR("cloud_wrap_disconnect, error: %d", err);
+			cloud_wrap_evt.type = CLOUD_WRAP_EVT_ERROR;
+		}
 	}
 
 	if (notify) {
@@ -252,6 +263,50 @@ static int modem_mode_request_cb(enum lte_lc_func_mode new_mode, void *user_data
 	return CONFIG_LWM2M_INTEGRATION_MODEM_MODE_REQUEST_RETRY_SECONDS;
 }
 
+static int firmware_update_state_cb(uint8_t update_state)
+{
+	int err;
+	uint8_t update_result;
+	struct cloud_wrap_event cloud_wrap_evt = { 0 };
+
+	/* Get the firmware object update result code */
+	err = lwm2m_engine_get_u8(FIRMWARE_UPDATE_RESULT_PATH, &update_result);
+	if (err) {
+		LOG_ERR("Failed getting firmware result resource value");
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_ERROR;
+		cloud_wrap_evt.err = err;
+		cloud_wrapper_notify_event(&cloud_wrap_evt);
+		return 0;
+	}
+
+	switch (update_state) {
+	case STATE_IDLE:
+		LOG_DBG("STATE_IDLE, result: %d", update_result);
+
+		/* If the FOTA state returns to its base state STATE_IDLE, the FOTA failed. */
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_FOTA_ERROR;
+		break;
+	case STATE_DOWNLOADING:
+		LOG_DBG("STATE_DOWNLOADING, result: %d", update_result);
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_FOTA_START;
+		break;
+	case STATE_DOWNLOADED:
+		LOG_DBG("STATE_DOWNLOADED, result: %d", update_result);
+		return 0;
+	case STATE_UPDATING:
+		LOG_DBG("STATE_UPDATING, result: %d", update_result);
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_FOTA_DONE;
+		break;
+	default:
+		LOG_ERR("Unknown state: %d", update_state);
+		cloud_wrap_evt.type = CLOUD_WRAP_EVT_FOTA_ERROR;
+		break;
+	}
+
+	cloud_wrapper_notify_event(&cloud_wrap_evt);
+	return 0;
+}
+
 int cloud_wrap_init(cloud_wrap_evt_handler_t event_handler)
 {
 	int err, len;
@@ -261,16 +316,16 @@ int cloud_wrap_init(cloud_wrap_evt_handler_t event_handler)
 	};
 
 #if !defined(CONFIG_CLOUD_CLIENT_ID_USE_CUSTOM)
-	char imei_buf[20 + sizeof("OK\r\n")];
+	char hw_id_buf[HW_ID_LEN];
 
-	/* Retrieve device IMEI from modem. */
-	err = nrf_modem_at_cmd(imei_buf, sizeof(imei_buf), "AT+CGSN");
+	err = hw_id_get(hw_id_buf, ARRAY_SIZE(hw_id_buf));
+
 	if (err) {
-		LOG_ERR("Not able to retrieve device IMEI from modem");
+		LOG_ERR("Failed to retrieve device ID");
 		return err;
 	}
 
-	strncpy(client_id_buf, imei_buf, sizeof(client_id_buf) - 1);
+	strncpy(client_id_buf, hw_id_buf, sizeof(client_id_buf) - 1);
 
 	/* Explicitly null terminate client_id_buf to be sure that we carry a
 	 * null terminated buffer after strncpy().
@@ -366,6 +421,8 @@ int cloud_wrap_init(cloud_wrap_evt_handler_t event_handler)
 		return err;
 	}
 
+	lwm2m_firmware_set_update_state_cb(firmware_update_state_cb);
+
 	wrapper_evt_handler = event_handler;
 	state = DISCONNECTED;
 	return 0;
@@ -459,43 +516,31 @@ int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id, char *path_
 	return 0;
 }
 
-int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id)
 {
 	ARG_UNUSED(buf);
 	ARG_UNUSED(len);
 	ARG_UNUSED(id);
 
-	int err;
-
-	err = lwm2m_engine_send(&client, (const char **)path_list, len, ack);
-	if (err) {
-		LOG_ERR("lwm2m_engine_send, error: %d", err);
-		return err;
-	}
-
-	return 0;
+	return location_assistance_ground_fix_request_send(&client, ack);
 }
 
-int cloud_wrap_agps_request_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_agps_request_send(char *buf, size_t len, bool ack, uint32_t id)
 {
 	ARG_UNUSED(buf);
 	ARG_UNUSED(len);
 	ARG_UNUSED(id);
 
-	int err;
-
-	err = lwm2m_engine_send(&client, (const char **)path_list, len, ack);
-	if (err) {
-		LOG_ERR("lwm2m_engine_send, error: %d", err);
-		return err;
-	}
-
-	return 0;
+	return location_assistance_agps_request_send(&client, ack);
 }
 
 int cloud_wrap_pgps_request_send(char *buf, size_t len, bool ack, uint32_t id)
 {
-	return -ENOTSUP;
+	ARG_UNUSED(buf);
+	ARG_UNUSED(len);
+	ARG_UNUSED(id);
+
+	return location_assistance_pgps_request_send(&client, ack);
 }
 
 int cloud_wrap_memfault_data_send(char *buf, size_t len, bool ack, uint32_t id)

@@ -58,7 +58,7 @@ IDE and tool support
 `nRF Connect extension for Visual Studio Code <nRF Connect for Visual Studio Code_>`_ is the only officially supported IDE for |NCS| v2.1.0.
 SEGGER Embedded Studio Nordic Edition is no longer tested or recommended for new projects.
 
-:ref:`gs_app_tcm`, used to install the |NCS| automatically from `nRF Connect for Desktop`_, is available for Windows, Linux, and macOS.
+:ref:`Toolchain Manager <gs_app_tcm>`, used to install the |NCS| automatically from `nRF Connect for Desktop`_, is available for Windows, Linux, and macOS.
 
 Supported modem firmware
 ************************
@@ -261,7 +261,7 @@ nRF9160: Asset Tracker v2
   * ``CONFIG_MODEM_NEIGHBOR_SEARCH_TYPE`` Kconfig option.
   * Publishing method for GNSS fixes.
     GNSS fixes are now published in the PVT format instead of NMEA for nRF Cloud builds.
-    To revert to NMEA, set the :ref:`CONFIG_GNSS_MODULE_NMEA <CONFIG_GNSS_MODULE_NMEA>` Kconfig option.
+    To revert to NMEA, set the ``CONFIG_GNSS_MODULE_NMEA`` Kconfig option.
   * Forwarding of :c:enum:`SENSOR_EVT_MOVEMENT_ACTIVITY_DETECTED` and :c:enum:`SENSOR_EVT_MOVEMENT_INACTIVITY_DETECTED` events by the sensor module.
   * :ref:`Real-time configurations <real_time_configs>`, which can now configure the upper and lower thresholds for motion detection.
     You can also configure the timeout after which the sensor reports inactivity.
@@ -622,7 +622,7 @@ Other samples
 
 * :ref:`caf_sensor_manager_sample` sample:
 
-  * Added :ref:`configuration<sensor_stub_config>` for the Sensor stub driver.
+  * Added configuration for the Sensor stub driver.
 
 Drivers
 =======
@@ -912,9 +912,9 @@ Other libraries
 
   * Added default metrics for Bluetooth.
 
-* :ref:`lib_spm`:
+* Secure Partition Manager (SPM):
 
-  * Deprecated Secure Partition Manager (SPM) and the Kconfig option :kconfig:option:`CONFIG_SPM`.
+  * Deprecated Secure Partition Manager (SPM) and the Kconfig option ``CONFIG_SPM``.
     It is replaced by the Trusted Firmware-M (TF-M) as the supported trusted execution solution.
     See :ref:`ug_tfm` for more information about the TF-M.
 

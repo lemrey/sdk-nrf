@@ -46,7 +46,6 @@ int rpu_sleep(void);
 int rpu_wakeup(void);
 int rpu_sleep_status(void);
 void rpu_get_sleep_stats(uint32_t addr, uint32_t *buff, uint32_t wrd_len);
-int rpu_qspi_config(uint32_t freq, uint32_t latency, uint32_t mem_block);
 int rpu_irq_config(struct gpio_callback *irq_callback_data, void (*irq_handler)());
 
 int rpu_wrsr2(uint8_t data);
@@ -57,4 +56,7 @@ int rpu_clks_on(void);
 int rpu_enable(void);
 int rpu_disable(void);
 
+#ifdef CONFIG_BOARD_NRF7002DK_NRF5340
+int ble_ant_switch(unsigned int ant_switch);
+#endif /* CONFIG_BOARD_NRF7002DK_NRF5340 */
 #endif /* __RPU_HW_IF_H_ */

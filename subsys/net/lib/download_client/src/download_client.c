@@ -420,7 +420,7 @@ static int reconnect(struct download_client *dl)
 	return 0;
 }
 
-static size_t socket_recv(struct download_client *dl)
+static ssize_t socket_recv(struct download_client *dl)
 {
 	int err, timeout = 0;
 
@@ -477,13 +477,13 @@ void download_thread(void *client, void *a, void *b)
 {
 	int rc = 0;
 	int error_cause;
-	size_t len;
+	ssize_t len;
 	struct download_client *const dl = client;
 
-restart_and_suspend:
-	k_thread_suspend(dl->tid);
+wait_for_download:
+	k_sem_take(&dl->wait_for_download, K_FOREVER);
 
-	while (true) {
+	while (dl->fd != -1) {
 		__ASSERT(dl->offset < sizeof(dl->buf), "Buffer overflow");
 
 		if (sizeof(dl->buf) - dl->offset == 0) {
@@ -500,6 +500,11 @@ restart_and_suspend:
 
 		if ((len == 0) || (len == -1)) {
 			/* We just had an unexpected socket error or closure */
+
+			if (dl->fd == -1) {
+				/* download was aborted */
+				break;
+			}
 
 			/* If there is a partial data payload in our buffer,
 			 * and it has been accounted in our progress, we have
@@ -562,7 +567,7 @@ restart_and_suspend:
 				continue;
 			}
 		} else if (IS_ENABLED(CONFIG_COAP)) {
-			rc = coap_parse(client, len);
+			rc = coap_parse(client, (size_t)len);
 			if (rc == 1) {
 				/* Duplicate packet received */
 				continue;
@@ -620,6 +625,11 @@ send_again:
 
 			rc = request_send(dl);
 			if (rc) {
+				if (dl->fd == -1) {
+					/* download was aborted */
+					break;
+				}
+
 				rc = error_evt_send(dl, ECONNRESET);
 				if (rc) {
 					/* Restart and suspend */
@@ -638,7 +648,7 @@ send_again:
 	}
 
 	/* Do not let the thread return, since it can't be restarted */
-	goto restart_and_suspend;
+	goto wait_for_download;
 }
 
 int download_client_init(struct download_client *const client,
@@ -650,6 +660,7 @@ int download_client_init(struct download_client *const client,
 
 	client->fd = -1;
 	client->callback = callback;
+	k_sem_init(&client->wait_for_download, 0, 1);
 
 	/* The thread is spawned now, but it will suspend itself;
 	 * it is resumed when the download is started via the API.
@@ -761,7 +772,7 @@ int download_client_start(struct download_client *client, const char *file,
 	LOG_INF("Downloading: %s [%u]", client->file, client->progress);
 
 	/* Let the thread run */
-	k_thread_resume(client->tid);
+	k_sem_give(&client->wait_for_download);
 
 	return 0;
 }

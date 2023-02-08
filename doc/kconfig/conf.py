@@ -17,7 +17,7 @@ ZEPHYR_BASE = utils.get_projdir("zephyr")
 # General configuration --------------------------------------------------------
 
 project = "Kconfig reference"
-copyright = "2019-2022, Nordic Semiconductor"
+copyright = "2019-2023, Nordic Semiconductor"
 author = "Nordic Semiconductor"
 # NOTE: use blank space as version to preserve space
 version = "&nbsp;"
@@ -36,7 +36,10 @@ html_last_updated_fmt = "%b %d, %Y"
 html_show_sourcelink = True
 html_show_sphinx = False
 
-html_theme_options = {"docset": "kconfig", "docsets": utils.ALL_DOCSETS}
+html_theme_options = {
+    "docset": "kconfig", "docsets": utils.ALL_DOCSETS,
+    "prev_next_buttons_location": None
+}
 
 # Options for ncs_cache --------------------------------------------------------
 

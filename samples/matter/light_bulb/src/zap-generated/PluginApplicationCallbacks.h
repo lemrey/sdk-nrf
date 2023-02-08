@@ -27,7 +27,6 @@
 	MatterOnOffPluginServerInitCallback();                                                                         \
 	MatterLevelControlPluginServerInitCallback();                                                                  \
 	MatterDescriptorPluginServerInitCallback();                                                                    \
-	MatterBindingPluginClientInitCallback();                                                                       \
 	MatterAccessControlPluginServerInitCallback();                                                                 \
 	MatterBasicPluginServerInitCallback();                                                                         \
 	MatterOtaSoftwareUpdateProviderPluginClientInitCallback();                                                     \
@@ -37,6 +36,7 @@
 	MatterGeneralDiagnosticsPluginServerInitCallback();                                                            \
 	MatterSoftwareDiagnosticsPluginServerInitCallback();                                                           \
 	MatterThreadNetworkDiagnosticsPluginServerInitCallback();                                                      \
+	MatterWiFiNetworkDiagnosticsPluginServerInitCallback();                                                        \
 	MatterAdministratorCommissioningPluginServerInitCallback();                                                    \
 	MatterOperationalCredentialsPluginServerInitCallback();                                                        \
 	MatterGroupKeyManagementPluginServerInitCallback();

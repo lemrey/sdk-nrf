@@ -6,12 +6,20 @@
 
 menu "Application modules"
 
-rsource "Kconfig.hid"
+rsource "Kconfig.caf_ble_adv.default"
+rsource "Kconfig.caf_power_manager.default"
+rsource "Kconfig.caf_settings_loader.default"
+
 rsource "Kconfig.hid_state"
 rsource "Kconfig.led_state"
 rsource "Kconfig.led_stream"
 rsource "Kconfig.usb_state"
 rsource "Kconfig.ble"
+rsource "Kconfig.ble_passkey"
+rsource "Kconfig.ble_discovery"
+rsource "Kconfig.ble_scan"
+rsource "Kconfig.ble_qos"
+rsource "Kconfig.fast_pair"
 rsource "Kconfig.hids"
 rsource "Kconfig.hid_forward"
 rsource "Kconfig.bas"

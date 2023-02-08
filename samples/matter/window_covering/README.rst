@@ -84,9 +84,9 @@ Matter window covering build types
 Device Firmware Upgrade support
 ===============================
 
-.. include:: ../light_bulb/README.rst
-    :start-after: matter_light_bulb_sample_build_with_dfu_start
-    :end-before: matter_light_bulb_sample_build_with_dfu_end
+.. include:: ../lock/README.rst
+    :start-after: matter_door_lock_sample_build_with_dfu_start
+    :end-before: matter_door_lock_sample_build_with_dfu_end
 
 FEM support
 ===========
@@ -103,6 +103,9 @@ User interface
 LED 2:
     Indicates the lift position of the window cover, which is represented by the brightness of the LED.
     The brightness level ranges from ``0`` to ``255``, where the brightness level set to ``0`` (switched off LED) indicates a fully opened window cover (lifted) and the brightness level set to ``255`` indicates a fully closed window cover (lowered).
+
+    Additionally, the LED starts blinking evenly (500 ms on/500 ms off) when the Identify command of the Identify cluster is received on the endpoint ``1``.
+    The command's argument can be used to specify the duration of the effect.
 
 LED 3:
     Indicates the tilt position of the window cover, which is represented by the brightness of the LED.
@@ -139,7 +142,7 @@ Button 4:
     :end-before: matter_door_lock_sample_jlink_end
 
 NFC port with antenna attached:
-    Optionally used for obtaining the commissioning information from the Matter accessory device to start the :ref:`commissioning procedure <matter_window_cover_sample_remote_control_commissioning>`.
+    Optionally used for obtaining the `Onboarding information`_ from the Matter accessory device to start the :ref:`commissioning procedure <matter_window_cover_sample_remote_control_commissioning>`.
 
 Building and running
 ********************
@@ -227,9 +230,28 @@ Commissioning the device
 Before starting the commissioning procedure, the device must be made discoverable over Bluetooth LE.
 Press **Button 4** to enable the Bluetooth LE advertising.
 
-When you start the commissioning procedure, the controller must get the commissioning information from the Matter accessory device.
-The data payload includes the device discriminator and setup PIN code.
-It is encoded within a QR code printed to the UART console and can be shared using an NFC tag.
+Onboarding information
+++++++++++++++++++++++
+
+When you start the commissioning procedure, the controller must get the onboarding information from the Matter accessory device.
+The onboarding information representation depends on your commissioner setup.
+
+For this sample, you can use one of the following :ref:`onboarding information formats <ug_matter_network_topologies_commissioning_onboarding_formats>` to provide the commissioner with the data payload that includes the device discriminator and the setup PIN code:
+
+  .. list-table:: Window covering sample onboarding information
+     :header-rows: 1
+
+     * - QR Code
+       - QR Code Payload
+       - Manual pairing code
+     * - Scan the following QR code with the app for your ecosystem:
+
+         .. figure:: ../../../doc/nrf/images/matter_qr_code_window_covering.png
+            :width: 200px
+            :alt: QR code for commissioning the window covering device
+
+       - MT:SAGA442C00KA0648G00
+       - 34970112332
 
 Upgrading the device firmware
 =============================

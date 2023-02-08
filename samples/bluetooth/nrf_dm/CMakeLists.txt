@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
-cmake_minimum_required(VERSION 3.13.1)
+cmake_minimum_required(VERSION 3.20)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(nrf_dm)
@@ -18,5 +18,3 @@ target_sources(app PRIVATE
 # NORDIC SDK APP END
 
 zephyr_library_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_options(app PUBLIC "-Wl,--no-wchar-size-warning")

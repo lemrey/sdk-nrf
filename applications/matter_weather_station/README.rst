@@ -13,7 +13,8 @@ The device works as a Matter accessory device, meaning it can be paired and cont
 You can use this application as a reference for creating your own application.
 
 .. note::
-    The Matter protocol is in an early development stage and must be treated as an :ref:`experimental <software_maturity>` feature.
+   The `Matter weather station application from the v2.1.1`_ |NCS| release participated in Matter Specification Validation Event (SVE) and successfully passed all required test cases to be considered as a device compliant with Matter 1.0.
+   You can use the |NCS| v2.1.1 release to see the application configuration and the files that were originally used in Matter 1.0 certification.
 
 Requirements
 ************
@@ -65,7 +66,7 @@ To do this, the device must be made discoverable over Bluetooth LE.
 The Bluetooth LE advertising starts automatically upon the device startup, but only for a predefined period of time (15 minutes by default).
 If the Bluetooth LE advertising times out, you can re-enable it manually using **Button (SW3)**.
 
-Additionally, the controller must get the commissioning information from the Matter accessory device and provision the device into the network.
+Additionally, the controller must get the onboarding information from the Matter accessory device and provision the device into the network.
 For details, see the `Testing`_ section.
 
 .. _matter_weather_station_app_build_types:
@@ -90,6 +91,11 @@ This application supports the following build types:
 
 * ``debug`` - Debug version of the application. You can use this version to enable additional features for verifying the application behavior, such as logs or command-line shell.
 * ``release`` - Release version of the application. You can use this version to enable only the necessary application functionalities to optimize its performance.
+* ``factory_data`` - Release version of the application that has factory data storage enabled.
+  You can use this version to enable reading factory data necessary from a separate partition in the device non-volatile memory.
+  This way, you can read information such as product information, keys, and certificates, useful for example for Matter certification.
+  See `Generating factory data`_ to learn how to put factory data into device's storage.
+  To learn more about factory data, read the :doc:`matter:nrfconnect_factory_data_configuration` page in the Matter documentation.
 
 .. note::
     `Selecting a build type`_ is optional.
@@ -125,7 +131,7 @@ USB port:
     See the `Selecting a build type`_ section to learn how to select the debug configuration.
 
 NFC port with antenna attached:
-    Used for obtaining the commissioning information from the Matter accessory device to start the commissioning procedure.
+    Used for obtaining the `Onboarding information`_ from the Matter accessory device to start the commissioning procedure.
 
 Configuration
 *************
@@ -175,6 +181,24 @@ The ``build_thingy53_nrf5340_cpuapp`` parameter specifies the output directory f
 
       File not found: ./ncs/nrf/applications/matter_weather_station/configuration/thingy53_nrf5340_cpuapp/prj_shell.conf
 
+Generating factory data
+=======================
+
+To enable factory data support, you need to select the ``factory_data`` build type from the available application :ref:`build types <matter_weather_station_app_build_types>`.
+You can generate new factory data set when building for the target board by invoking the following command:
+
+.. parsed-literal::
+   :class: highlight
+
+   west build -b thingy53_nrf5340_cpuapp -- -DCONF_FILE=prj_factory_data.conf -DOVERLAY_CONFIG="../../overlay-factory_data_build.conf"
+
+After building the target, the generated :file:`factory_data.hex` file will be merged with the application target HEX file, so you can use the regular command to flash it to the device:
+
+.. parsed-literal::
+   :class: highlight
+
+   west flash --erase
+
 Testing
 =======
 
@@ -195,9 +219,7 @@ After programming the application, perform the following steps to test the Matte
    This indicates that the device is connected over Bluetooth LE, but does not yet have full Thread network connectivity.
 
    .. note::
-        To start commissioning, the controller must get the commissioning information from the Matter accessory device.
-        The data payload, which includes the device discriminator and setup PIN code, is encoded and shared using an NFC tag.
-        When using the debug configuration, you can also get this type of information from the USB interface logs.
+        To start commissioning, the controller must get the `Onboarding information`_ from the Matter accessory device.
 
    Once the commissioning is complete and the device has full Thread connectivity, **LED (LD1)** starts blinking purple (short flash on).
 #. Read sensor measurements in CHIP Tool for Android:
@@ -239,6 +261,51 @@ After programming the application, perform the following steps to test the Matte
          :alt: Relative humidity measurement type selection
 
          Relative humidity measurement type selection
+
+Onboarding information
+----------------------
+
+When you start the commissioning procedure, the controller must get the onboarding information from the Matter accessory device.
+The onboarding information representation depends on your commissioner setup.
+
+For this application, the data payload, which includes the device discriminator and setup PIN code, is encoded and shared using an NFC tag.
+When using the debug configuration, you can also get this type of information from the USB interface logs.
+
+Alternatively, depending on your build type, you can also use one of the following :ref:`onboarding information formats <ug_matter_network_topologies_commissioning_onboarding_formats>` to provide the commissioner with the data required:
+
+* For the debug and release build types:
+
+  .. list-table:: Weather station application onboarding information for the debug build type
+     :header-rows: 1
+
+     * - QR Code
+       - QR Code Payload
+       - Manual pairing code
+     * - Scan the following QR code with the app for your ecosystem:
+
+         .. figure:: ../../doc/nrf/images/matter_qr_code_weather_station_default.png
+            :width: 200px
+            :alt: QR code for commissioning the weather station device (debug build type)
+
+       - MT:M1TJ342C00KA0648G00
+       - 34970112332
+
+* For the factory data build type:
+
+  .. list-table:: Weather station application onboarding information for the factory data build type
+     :header-rows: 1
+
+     * - QR Code
+       - QR Code Payload
+       - Manual pairing code
+     * - Scan the following QR code with the app for your ecosystem:
+
+         .. figure:: ../../doc/nrf/images/matter_qr_code_weather_station_factory_data.png
+            :width: 200px
+            :alt: QR code for commissioning the weather station device (factory data build type)
+
+       - MT:KAYA36PF1509673GE10
+       - 14575339844
 
 .. _matter_weather_station_app_dfu:
 

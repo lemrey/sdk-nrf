@@ -71,11 +71,13 @@ struct wifi_nrf_hal_cfg_params {
 	unsigned int max_cmd_size;
 	unsigned int max_event_size;
 
+#ifndef CONFIG_NRF700X_RADIO_TEST
 	unsigned char rx_buf_headroom_sz;
 	unsigned char tx_buf_headroom_sz;
 	unsigned int max_tx_frms;
 	struct rx_buf_pool_params rx_buf_pool[MAX_NUM_OF_RX_QUEUES];
 	unsigned int max_tx_frm_sz;
+#endif /* !CONFIG_NRF700X_RADIO_TEST */
 };
 
 
@@ -184,7 +186,6 @@ struct wifi_nrf_hal_dev_ctx {
 	unsigned char idx;
 
 	struct wifi_nrf_hal_info rpu_info;
-	struct host_rpu_umac_info umac_info;
 
 	unsigned int num_cmds;
 

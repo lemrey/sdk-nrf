@@ -129,7 +129,6 @@ choice NRF_CLOUD_PGPS_STORAGE
 
 config NRF_CLOUD_PGPS_STORAGE_PARTITION
 	bool "Define P-GPS subsystem flash partition"
-	select PM_SINGLE_IMAGE if !SPM
 	help
 	  If set, allocates flash for storing predictions.
 
@@ -158,11 +157,13 @@ endchoice # NRF_CLOUD_PGPS_STORAGE
 if NRF_CLOUD_PGPS_STORAGE_PARTITION
 
 config NRF_CLOUD_PGPS_PARTITION_SIZE
-	int "Size of flash partition for P-GPS data storage"
-	default 86016
+	hex "Size of flash partition for P-GPS data storage"
+	# Workaround for known issue NCSDK-16916.
+	# Set the size of the storage partition to a multiple of CONFIG_NRF_SPU_FLASH_REGION_SIZE.
+	default 0x18000 if BUILD_WITH_TFM
+	default 0x15000
 	help
-	  This must be >= NRF_CLOUD_PGPS_NUM_PREDICTIONS times 2048, which is
-	  the nRF9160 flash page size.
+	  This must be at least 2048 bytes times NRF_COUND_PGPS_NUM_PREDICTIONS.
 
 config NRF_CLOUD_PGPS_PARTITION_ALIGN
 	hex "Align P-GPS partition to flash block boundary"

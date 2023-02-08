@@ -11,14 +11,19 @@ DT_COMPAT_NORDIC_NRF7002_SPI := nordic,nrf7002-spi
 config WIFI_NRF700X
 	bool "nRF700x driver"
 	depends on WIFI
-	select WIFI_USE_NATIVE_NETWORKING
+	select NET_L2_WIFI_MGMT if NETWORKING
+	select WIFI_USE_NATIVE_NETWORKING if NETWORKING
 	help
 	  Nordic Wi-Fi Driver
 
 config NRF_WIFI_LOW_POWER
 	bool "Enable low power mode in nRF Wi-Fi chipsets"
+	default y
 
 if WIFI_NRF700X
+
+config NRF700X_REV_A
+	bool "nRF7002 Rev A"
 
 config NRF700X_ON_QSPI
 	def_bool $(dt_compat_enabled,$(DT_COMPAT_NORDIC_NRF7002_QSPI))
@@ -38,6 +43,47 @@ config NRF700X_WORKQ_MAX_ITEMS
 
 config NRF700x_MAX_TX_PENDING_QLEN
 	int "Maximum number of pending TX packets"
-	default 1024
+	default 48
+
+config NRF700X_RADIO_TEST
+	bool "Radio test mode of the nRF700x driver"
+	depends on !NRF700X_AP_MODE && !NRF700X_P2P_MODE && !NRF700X_DATA_TX
+
+config NRF700X_AP_MODE
+	bool "Enable Access point mode"
+	select WPA_SUPP
+
+config NRF700X_P2P_MODE
+	bool "Enable P2P support in driver"
+	select WPA_SUPP
+
+config NRF700X_DATA_TX
+	bool "Enable TX data path in the driver"
+	default y if WPA_SUPP || NRF700X_AP_MODE || NRF700X_P2P_MODE
+
+config NRF700X_WIFI_UTIL
+	bool "Enable Utility shell in nRF700x driver"
+
+# Performance fine tuning options
+
+config RX_NUM_BUFS
+	int "Number of RX buffers"
+	default 63
+
+config MAX_TX_AGGREGATION
+	int "Maximum number of TX packets to aggregate"
+	default 9
+
+config MAX_TX_TOKENS
+	int "Maximum number of TX tokens"
+	default 5
+
+config TX_MAX_DATA_SIZE
+	int "Maximum size of TX data"
+	default 1600
+
+config RX_MAX_DATA_SIZE
+	int "Maximum size of RX data"
+	default 1600
 
 endif

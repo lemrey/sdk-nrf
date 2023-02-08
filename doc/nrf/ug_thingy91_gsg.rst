@@ -16,6 +16,8 @@ If you have already set up your Thingy:91 and want to learn more, see the follow
 * :ref:`ug_thingy91` for more advanced topics related to the Thingy:91.
 * The :ref:`introductory documentation <getting_started>` for more information on the |NCS| and the development environment.
 
+If you want to go through a hands-on online training to familiarize yourself with cellular IoT technologies and development of cellular applications, enroll in the `Cellular IoT Fundamentals course`_ in the `Nordic Developer Academy`_.
+
 Requirements for setting up the Thingy:91
 *****************************************
 
@@ -25,8 +27,18 @@ Hardware
 ========
 
 * nano-Subscriber Identity Module (SIM) card that supports LTE-M or Narrowband Internet of Things (NB-IoT) (The Thingy:91 comes shipped with an iBasis SIM card.)
-* Micro-USB 2.0 cable
 * Computer
+* For firmware updates through USB:
+
+  * Micro-USB 2.0 cable
+
+* For firmware updates through an external debug probe:
+
+  * 10-pin JTAG cable
+  * External debug probe supporting Arm Cortex-M33 (for example, nRF9160 DK)
+
+.. note::
+   It is recommended to use an external debug probe when you start developing with your Thingy:91.
 
 Software
 ========
@@ -85,17 +97,24 @@ The data is transmitted to nRF Cloud.
 
 Before you start using the Thingy:91, it is recommended that you update the application firmware to :ref:`asset_tracker_v2`.
 You must also update the modem firmware.
-You can do this through :term:`Universal Serial Bus (USB)` (MCUboot) or an external debug probe by using the Programmer application.
+You can update the application and modem firmware on a Thingy:91 through a :term:`Universal Serial Bus (USB)` cable using MCUboot.
+MCUboot is a secure bootloader that is used to update applications if you do not have an external debugger.
 
 .. note::
    To update the Thingy:91 through USB, the nRF9160 SiP and nRF52840 SoC bootloaders must be factory-compatible.
    The bootloaders might not be factory-compatible if the nRF9160 SiP or nRF52840 SoC has been updated with an external debug probe.
    To restore the bootloaders, program the nRF9160 SiP or nRF52840 SoC with the Thingy:91 firmware files through an external debug probe.
 
+Alternatively, you can use an external debug probe.
 
 .. note::
    The external debug probe must support Arm Cortex-M33, such as the nRF9160 DK.
    You need a 10-pin 2x5 socket-socket 1.27 mm IDC (:term:`Serial Wire Debug (SWD)`) JTAG cable to connect to the external debug probe.
+
+The board enters bootloader mode if any of the following buttons are pressed while the Thingy:91 is being powered on (using **SW1**):
+
+* **SW3** - The main button used to flash the nRF9160 SiP.
+* **SW4** - The button used to update the nRF52840 SoC.
 
 Following are the three recommended steps when you start to program a Thingy:91:
 
@@ -568,3 +587,4 @@ See the following links for where to go next:
 
 * :ref:`ug_thingy91` for more advanced topics related to the Thingy:91.
 * The :ref:`introductory documentation <getting_started>` for more information on the |NCS| and the development environment.
+* :ref:`connectivity_bridge` about using the nRF UART Service with Thingy:91.

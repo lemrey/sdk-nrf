@@ -11,26 +11,18 @@
 #include <zephyr/shell/shell.h>
 #include "mosh_print.h"
 
-#if defined(CONFIG_NRF_CLOUD_AGPS)
-#include <net/nrf_cloud_agps.h>
-#endif
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-#include <net/nrf_cloud_pgps.h>
-#endif
-
 #define CLOUD_CMD_MAX_LENGTH 150
 
 BUILD_ASSERT(
 	IS_ENABLED(CONFIG_NRF_CLOUD_MQTT) &&
 	IS_ENABLED(CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD));
 
+BUILD_ASSERT(!IS_ENABLED(CONFIG_MOSH_CLOUD_LWM2M));
+
 extern struct k_work_q mosh_common_work_q;
 extern const struct shell *mosh_shell;
 
 static struct k_work_delayable cloud_reconnect_work;
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-static struct k_work notify_pgps_work;
-#endif
 static struct k_work cloud_cmd_work;
 static struct k_work shadow_update_work;
 
@@ -52,7 +44,7 @@ static int cloud_shell_print_usage(const struct shell *shell, size_t argc, char 
 
 static void cloud_reconnect_work_fn(struct k_work *work)
 {
-	int err = nrf_cloud_connect(NULL);
+	int err = nrf_cloud_connect();
 
 	if (err == NRF_CLOUD_CONNECT_RES_SUCCESS) {
 		mosh_print("Connecting to nRF Cloud...");
@@ -62,19 +54,6 @@ static void cloud_reconnect_work_fn(struct k_work *work)
 		mosh_error("nrf_cloud_connect, error: %d", err);
 	}
 }
-
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-static void notify_pgps(struct k_work *work)
-{
-	ARG_UNUSED(work);
-	int err;
-
-	err = nrf_cloud_pgps_notify_prediction();
-	if (err) {
-		mosh_error("Error requesting notification of prediction availability: %d", err);
-	}
-}
-#endif /* defined(CONFIG_NRF_CLOUD_PGPS) */
 
 static void cloud_cmd_execute(struct k_work *work)
 {
@@ -136,11 +115,7 @@ static void nrf_cloud_update_shadow(struct k_work *work)
 {
 	int err;
 	struct nrf_cloud_svc_info_ui ui_info = {
-#if defined(CONFIG_MOSH_LOCATION)
-		.gps = true, /* Show map on nrf cloud */
-#else
-		.gps = false,
-#endif
+		.gnss = IS_ENABLED(CONFIG_MOSH_LOCATION), /* Show map on nrf cloud */
 	};
 	struct nrf_cloud_svc_info service_info = {
 		.ui = &ui_info
@@ -165,7 +140,6 @@ static void nrf_cloud_update_shadow(struct k_work *work)
 
 static void nrf_cloud_event_handler(const struct nrf_cloud_evt *evt)
 {
-	int err = 0;
 	const int reconnection_delay = 10;
 
 	switch (evt->type) {
@@ -189,7 +163,7 @@ static void nrf_cloud_event_handler(const struct nrf_cloud_evt *evt)
 		}
 		break;
 	case NRF_CLOUD_EVT_ERROR:
-		mosh_print("NRF_CLOUD_EVT_ERROR");
+		mosh_print("NRF_CLOUD_EVT_ERROR: %d", evt->status);
 		break;
 	case NRF_CLOUD_EVT_SENSOR_DATA_ACK:
 		mosh_print("NRF_CLOUD_EVT_SENSOR_DATA_ACK");
@@ -203,56 +177,20 @@ static void nrf_cloud_event_handler(const struct nrf_cloud_evt *evt)
 	case NRF_CLOUD_EVT_FOTA_ERROR:
 		mosh_print("NRF_CLOUD_EVT_FOTA_ERROR");
 		break;
-	case NRF_CLOUD_EVT_RX_DATA:
-		mosh_print("NRF_CLOUD_EVT_RX_DATA");
+	case NRF_CLOUD_EVT_RX_DATA_GENERAL:
+		mosh_print("NRF_CLOUD_EVT_RX_DATA_GENERAL");
 		if (((char *)evt->data.ptr)[0] == '{') {
 			/* Check if it's a MoSh command sent from the cloud */
-			bool cmd_found = cloud_shell_parse_mosh_cmd(evt->data.ptr);
-
-			if (cmd_found) {
+			if (cloud_shell_parse_mosh_cmd(evt->data.ptr)) {
 				k_work_submit_to_queue(&mosh_common_work_q, &cloud_cmd_work);
-				break;
 			}
 		}
-#if defined(CONFIG_NRF_CLOUD_AGPS)
-		err = nrf_cloud_agps_process((char *)evt->data.ptr, evt->data.len);
-		if (!err) {
-			mosh_print("A-GPS data processed");
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-			/* call us back when prediction is ready */
-			k_work_submit_to_queue(&mosh_common_work_q, &notify_pgps_work);
-#endif
-			/* data was valid; no need to pass to other handlers */
-			break;
-		} else if (err == -EFAULT) {
-			/* data were an A-GPS error; no need to pass to other handlers */
-			break;
-		}
-#endif
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-		/* Check if we are waiting for P-GPS data in order to avoid parsing other data as
-		 * P-GPS data and showing irrelevant error messages.
-		 */
-		if (nrf_cloud_pgps_loading()) {
-			err = nrf_cloud_pgps_process(evt->data.ptr, evt->data.len);
-			if (err == -EFAULT) {
-				/* P-GPS error code from nRF Cloud was received */
-			} else if (err) {
-				mosh_error("Error processing P-GPS packet: %d", err);
-			}
-			break;
-		}
-#endif
-		/* P-GPS is not compiled in or we are not expecting P-GPS data,
-		 * finish A-GPS error handling
-		 */
-		if (err == -ENOMSG) {
-			/* JSON data received that were not an A-GPS error either.
-			 * This message was likely just not AGPS-related so don't print an error.
-			 */
-		} else if (err) {
-			mosh_print("Unable to process A-GPS data, error: %d", err);
-		}
+		break;
+	case NRF_CLOUD_EVT_RX_DATA_SHADOW:
+		mosh_print("NRF_CLOUD_EVT_RX_DATA_SHADOW");
+		break;
+	case NRF_CLOUD_EVT_RX_DATA_LOCATION:
+		mosh_print("NRF_CLOUD_EVT_RX_DATA_LOCATION");
 		break;
 	case NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST:
 		mosh_print("NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST");
@@ -292,9 +230,6 @@ static void cmd_cloud_connect(const struct shell *shell, size_t argc, char **arg
 
 		k_work_init(&cloud_cmd_work, cloud_cmd_execute);
 		k_work_init(&shadow_update_work, nrf_cloud_update_shadow);
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-		k_work_init(&notify_pgps_work, notify_pgps);
-#endif
 		k_work_init_delayable(&cloud_reconnect_work, cloud_reconnect_work_fn);
 	}
 

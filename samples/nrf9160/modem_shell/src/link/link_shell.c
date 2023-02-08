@@ -233,7 +233,13 @@ static const char link_ncellmeas_usage_str[] =
 	"                      New cell measurement is done everytime when current cell changes.\n"
 	"   --cancel,          Cancel/Stop neighbor cell measurement if still ongoing\n"
 	"   --search_type,     Used search type:\n"
-	"                      'default', 'ext_light' or 'ext_comp.'\n"
+	"                      'default', 'ext_light', 'ext_comp', 'gci_default', 'gci_ext_light'\n"
+	"                      and 'gci_ext_comp'.\n"
+	"Options for GCI search_types:\n"
+	"   --gci_count, [int] Result notification for GCI (Global Cell Id) search types from\n"
+	"                      gci_default to gci_ext_comp include Cell ID, PLMN and TAC for\n"
+	"                      up to <gci_count> cells, and optionally list of neighbor cell\n"
+	"                      measurement results related to current cell. Default 5. Range 2-15.\n"
 	"Options for continuous mode:\n"
 	"   --interval, [int]  Interval can be given in seconds. In addition to continuous mode\n"
 	"                      functionality, new cell measurement is done in every interval.\n"
@@ -251,7 +257,24 @@ static const char link_ncellmeas_usage_str[] =
 	"                      Extended complete: the modem follows the same\n"
 	"                      procedure as for type_ext_light, but will continue to perform\n"
 	"                      a complete search instead of a light search, and the search is\n"
-	"                      performed for all supported bands.\n";
+	"                      performed for all supported bands.\n"
+	"\n"
+	"                      GCI search, default. Modem searches EARFCNs\n"
+	"                      based on previous cell history. Supported with modem firmware\n"
+	"                      versions >= 1.3.4.\n"
+	"\n"
+	"                      GCI search, extended light. Modem starts with the same search\n"
+	"                      method than in search_type gci_default.\n"
+	"                      If less than <gci_count> cells were found, modem continues by\n"
+	"                      performing light search on bands that are valid for the area of\n"
+	"                      the current ITU-T region. Supported with modem firmware versions\n"
+	"                      >= 1.3.4.\n"
+	"\n"
+	"                      GCI search, extended complete. Modem starts with the same search\n"
+	"                      method than in search_type gci_default.\n"
+	"                      If less than <gci_count> cells were found, modem performs complete\n"
+	"                      search on all supported bands. Supported with modem firmware\n"
+	"                      versions >= 1.3.4.\n";
 
 static const char link_msleep_usage_str[] =
 	"Usage: link msleep --subscribe [options] | --unsubscribe\n"
@@ -331,6 +354,7 @@ enum {
 	LINK_SHELL_OPT_CONTINUOUS,
 	LINK_SHELL_OPT_NCELLMEAS_SEARCH_TYPE,
 	LINK_SHELL_OPT_NCELLMEAS_CONTINUOUS_INTERVAL_TIME,
+	LINK_SHELL_OPT_NCELLMEAS_GCI_COUNT,
 	LINK_SHELL_OPT_SEARCH_CFG,
 	LINK_SHELL_OPT_SEARCH_PATTERN_RANGE,
 	LINK_SHELL_OPT_SEARCH_PATTERN_TABLE,
@@ -396,6 +420,7 @@ static struct option long_options[] = {
 	{ "continuous", no_argument, 0, LINK_SHELL_OPT_CONTINUOUS },
 	{ "threshold", required_argument, 0, LINK_SHELL_OPT_THRESHOLD_TIME },
 	{ "interval", required_argument, 0, LINK_SHELL_OPT_NCELLMEAS_CONTINUOUS_INTERVAL_TIME },
+	{ "gci_count", required_argument, 0, LINK_SHELL_OPT_NCELLMEAS_GCI_COUNT },
 	{ "search_type", required_argument, 0, LINK_SHELL_OPT_NCELLMEAS_SEARCH_TYPE },
 	{ "search_cfg", required_argument, 0, LINK_SHELL_OPT_SEARCH_CFG },
 	{ "search_pattern_range", required_argument, 0, LINK_SHELL_OPT_SEARCH_PATTERN_RANGE },
@@ -533,6 +558,12 @@ static enum lte_lc_neighbor_search_type
 		search_type = LTE_LC_NEIGHBOR_SEARCH_TYPE_EXTENDED_LIGHT;
 	} else if (strcmp(search_type_str, "ext_comp") == 0) {
 		search_type = LTE_LC_NEIGHBOR_SEARCH_TYPE_EXTENDED_COMPLETE;
+	} else if (strcmp(search_type_str, "gci_default") == 0) {
+		search_type = LTE_LC_NEIGHBOR_SEARCH_TYPE_GCI_DEFAULT;
+	} else if (strcmp(search_type_str, "gci_ext_light") == 0) {
+		search_type = LTE_LC_NEIGHBOR_SEARCH_TYPE_GCI_EXTENDED_LIGHT;
+	} else if (strcmp(search_type_str, "gci_ext_comp") == 0) {
+		search_type = LTE_LC_NEIGHBOR_SEARCH_TYPE_GCI_EXTENDED_COMPLETE;
 	}
 
 	return search_type;
@@ -1183,11 +1214,17 @@ static int link_shell_msleep(const struct shell *shell, size_t argc, char **argv
 
 static int link_shell_ncellmeas(const struct shell *shell, size_t argc, char **argv)
 {
+	struct lte_lc_ncellmeas_params ncellmeas_params = {
+		.gci_count = 5,
+		.search_type = LTE_LC_NEIGHBOR_SEARCH_TYPE_DEFAULT,
+	};
 	enum link_shell_common_options common_option = LINK_COMMON_NONE;
 	enum link_ncellmeas_modes ncellmeasmode = LINK_NCELLMEAS_MODE_NONE;
 	enum lte_lc_neighbor_search_type ncellmeas_search_type =
 		LTE_LC_NEIGHBOR_SEARCH_TYPE_DEFAULT;
 	int periodic_time = 0;
+	bool periodic_time_given = false;
+	int gci_count;
 
 	int long_index = 0;
 	int opt;
@@ -1211,25 +1248,37 @@ static int link_shell_ncellmeas(const struct shell *shell, size_t argc, char **a
 				link_shell_print_usage(LINK_CMD_NCELLMEAS);
 			}
 			break;
-		case LINK_SHELL_OPT_NCELLMEAS_CONTINUOUS_INTERVAL_TIME:
-			periodic_time = atoi(optarg);
-			if (periodic_time <= 0) {
+		case LINK_SHELL_OPT_NCELLMEAS_GCI_COUNT:
+			gci_count = atoi(optarg);
+			if (gci_count <= 0) {
+				mosh_error("Not a valid number for --gci_count.");
+				return -EINVAL;
+			}
+			ncellmeas_params.gci_count = gci_count;
+			break;
+		case LINK_SHELL_OPT_NCELLMEAS_CONTINUOUS_INTERVAL_TIME: {
+			char *end_ptr;
+
+			periodic_time = strtol(optarg, &end_ptr, 10);
+			if (end_ptr == optarg || periodic_time < 0) {
 				mosh_error("Not a valid number for --interval (seconds).");
 				return -EINVAL;
 			}
+			periodic_time_given = true;
 			break;
+		}
 		default:
 			break;
 		}
 	}
 
 	if (common_option == LINK_COMMON_STOP) {
-		link_ncellmeas_start(
-			false, LINK_NCELLMEAS_MODE_NONE, LTE_LC_NEIGHBOR_SEARCH_TYPE_DEFAULT, 0);
-
+		link_ncellmeas_start(false, LINK_NCELLMEAS_MODE_NONE, ncellmeas_params, 0, false);
 	} else if (ncellmeasmode != LINK_NCELLMEAS_MODE_NONE) {
 		mosh_print("Neighbor cell measurements and reporting starting");
-		link_ncellmeas_start(true, ncellmeasmode, ncellmeas_search_type, periodic_time);
+		ncellmeas_params.search_type = ncellmeas_search_type;
+		link_ncellmeas_start(
+			true, ncellmeasmode, ncellmeas_params, periodic_time, periodic_time_given);
 	} else {
 		link_shell_print_usage(LINK_CMD_NCELLMEAS);
 	}

@@ -21,6 +21,8 @@ static void send_led_event(size_t led_id, const struct led_effect *led_effect)
 
 	struct led_event *event = new_led_event();
 
+	__ASSERT(event, "Not enough heap left to allocate event");
+
 	event->led_id = led_id;
 	event->led_effect = led_effect;
 	APP_EVENT_SUBMIT(event);
@@ -36,9 +38,9 @@ static void update_led(enum led_state state)
 				&asset_tracker_led_effect[LED_STATE_LTE_CONNECTING]);
 		led_bm |= BIT(LED_ID_CONNECTING);
 		break;
-	case LED_STATE_GNSS_SEARCHING:
+	case LED_STATE_LOCATION_SEARCHING:
 		send_led_event(LED_ID_SEARCHING,
-				&asset_tracker_led_effect[LED_STATE_GNSS_SEARCHING]);
+				&asset_tracker_led_effect[LED_STATE_LOCATION_SEARCHING]);
 		led_bm |= BIT(LED_ID_SEARCHING);
 		break;
 	case LED_STATE_CLOUD_PUBLISHING:
@@ -98,7 +100,7 @@ static void update_led(enum led_state state)
 		/* Do nothing. */
 		break;
 	default:
-		LOG_WRN("Unrecognized LED state event send");
+		LOG_ERR("Unrecognized LED state event send");
 		break;
 	}
 

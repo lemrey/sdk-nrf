@@ -180,7 +180,7 @@ nRF9160: Asset Tracker v2
     * :ref:`asset_tracker_v2_cloud_module`
     * :ref:`api_cloud_wrapper`
     * :ref:`asset_tracker_v2_data_module`
-    * :ref:`asset_tracker_v2_gnss_module`
+    * GNSS module (removed in NCS 2.2.0)
     * :ref:`asset_tracker_v2_modem_module`
     * :ref:`api_modules_common`
     * :ref:`asset_tracker_v2_sensor_module`
@@ -373,7 +373,7 @@ nRF9160 samples
 
     * Added support for triggering neighbor cell measurements.
 
-  * :ref:`secure_partition_manager` sample:
+  * Secure Partition Manager sample:
 
     * Updated the sample by reducing the amount of RAM reserved in the default configuration of the sample for nRF9160, freeing up 32 Kb of RAM for the application.
 
@@ -396,7 +396,7 @@ Other samples
 
     * Added support for front-end module devices that support 2-pin PA/LNA interface with additional support for the Skyworks SKY66114-11 and the Skyworks SKY66403-11. See the section Skyworks front-end module in the sample documentation for more information.
 
-  * :ref:`secure_partition_manager` sample:
+  * Secure Partition Manager sample:
 
     * Fixed:
 

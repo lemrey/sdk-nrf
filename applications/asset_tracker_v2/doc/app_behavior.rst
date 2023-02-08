@@ -16,7 +16,7 @@ The data types that are collected by the application are listed in the following
 +----------------+----------------------------+-----------------------------------------------+--------------------------------+
 | Data type      | Description                | Identifiers                                   | String identifier for NOD list |
 +================+============================+===============================================+================================+
-| Location       | GNSS coordinates           | APP_DATA_GNSS                                 |``gnss``                        |
+| Location       | Position coordinates       | APP_DATA_LOCATION                             |``gnss``, ``ncell``, ``wifi``   |
 +----------------+----------------------------+-----------------------------------------------+--------------------------------+
 | Environmental  | Temperature, humidity      | APP_DATA_ENVIRONMENTAL                        | NA                             |
 +----------------+----------------------------+-----------------------------------------------+--------------------------------+
@@ -25,8 +25,6 @@ The data types that are collected by the application are listed in the following
 | Modem          | LTE link data, device data | APP_DATA_MODEM_DYNAMIC, APP_DATA_MODEM_STATIC | NA                             |
 +----------------+----------------------------+-----------------------------------------------+--------------------------------+
 | Battery        | Voltage                    | APP_DATA_BATTERY                              | NA                             |
-+----------------+----------------------------+-----------------------------------------------+--------------------------------+
-| Neighbor cells | Neighbor cell measurements | APP_DATA_NEIGHBOR_CELLS                       |``ncell``                       |
 +----------------+----------------------------+-----------------------------------------------+--------------------------------+
 
 Additionally, the following data types are supported that provide some asynchronous data:
@@ -62,11 +60,14 @@ The real-time configurations supported by the application are listed in the foll
 |          +-------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
 |          | Movement timeout        | Number of seconds between each cloud update in passive mode, regardless of movement.                                                 | 3600 seconds   |
 +----------+-------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
-| GNSS timeout                       | Timeout for acquiring a GNSS fix during data sampling.                                                                               | 30 seconds     |
+| Location timeout                   | Timeout for location retrieval during data sampling.                                                                                 | 300 seconds    |
+|                                    | This value should be large enough so that the location can be retrieved in different conditions.                                     |                |
+|                                    | This can be considered more of a safeguard rather than the deadline when the operation must be completed.                            |                |
+|                                    | Hence, this value can be larger than the sampling interval.                                                                          |                |
 +------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
-| Accelerometer activity threshold   | Accelerometer activity threshold in m/s². Minimal absolute value for accelerometer readings to be considered valid movement.         | 10 m/s²        |
+| Accelerometer activity threshold   | Accelerometer activity threshold in m/s². Minimal absolute value for accelerometer readings to be considered valid movement.         | 4 m/s²         |
 +------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
-| Accelerometer inactivity threshold | Accelerometer inactivity threshold in m/s². Maximal absolute value for accelerometer readings to be considered stillness.            | 5 m/s²         |
+| Accelerometer inactivity threshold | Accelerometer inactivity threshold in m/s². Maximal absolute value for accelerometer readings to be considered stillness.            | 4 m/s²         |
 +------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
 | Accelerometer inactivity timeout   | Accelerometer inactivity timeout in seconds. Minimum time for lack of movement to be considered stillness.                           | 1 second       |
 +------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------+
@@ -125,6 +126,11 @@ The application supports processing of incoming A-GPS and P-GPS data to reduce t
 Requesting and processing of A-GPS data is a default feature of the application.
 See :ref:`nRF Cloud A-GPS and P-GPS <nrfcloud_agps_pgps>` for further details.
 To enable support for P-GPS, add the parameter ``-DOVERLAY_CONFIG=overlay-pgps.conf`` to your build command.
+
+.. note::
+   Enabling support for P-GPS creates a new flash partition in the image for storing P-GPS data.
+   To ensure that the resulting binary can be deployed using FOTA, you must make sure that the new partition layout is compatible with layout of the old image.
+   See :ref:`static partitioning <ug_pm_static_providing>` for more details.
 
 .. note::
    |gps_tradeoffs|

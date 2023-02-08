@@ -41,15 +41,6 @@ BUILD_ASSERT((sizeof(CONFIG_NRF_CLOUD_CLIENT_ID) - 1) <= NRF_CLOUD_CLIENT_ID_MAX
 	"CONFIG_NRF_CLOUD_CLIENT_ID must not exceed NRF_CLOUD_CLIENT_ID_MAX_LEN");
 #endif
 
-#if defined(CONFIG_NRF_CLOUD_CLIENT_ID_SRC_IMEI)
-#define CGSN_RESPONSE_LENGTH 19
-#define NRF_IMEI_LEN 15
-#define IMEI_CLIENT_ID_LEN (sizeof(CONFIG_NRF_CLOUD_CLIENT_ID_PREFIX) \
-			    - 1 + NRF_IMEI_LEN)
-BUILD_ASSERT(IMEI_CLIENT_ID_LEN <= NRF_CLOUD_CLIENT_ID_MAX_LEN,
-	"NRF_CLOUD_CLIENT_ID_PREFIX plus IMEI must not exceed NRF_CLOUD_CLIENT_ID_MAX_LEN");
-#endif
-
 #define NRF_CLOUD_HOSTNAME CONFIG_NRF_CLOUD_HOST_NAME
 #define NRF_CLOUD_PORT CONFIG_NRF_CLOUD_PORT
 
@@ -853,6 +844,39 @@ static int publish_get_payload(struct mqtt_client *client, size_t length)
 	return ret;
 }
 
+static int translate_mqtt_connack_result(const int mqtt_result)
+{
+	switch (mqtt_result) {
+	case MQTT_CONNECTION_ACCEPTED:
+		return NRF_CLOUD_ERR_STATUS_NONE;
+	case MQTT_UNACCEPTABLE_PROTOCOL_VERSION:
+		return NRF_CLOUD_ERR_STATUS_MQTT_CONN_BAD_PROT_VER;
+	case MQTT_IDENTIFIER_REJECTED:
+		return NRF_CLOUD_ERR_STATUS_MQTT_CONN_ID_REJECTED;
+	case MQTT_SERVER_UNAVAILABLE:
+		return NRF_CLOUD_ERR_STATUS_MQTT_CONN_SERVER_UNAVAIL;
+	case MQTT_BAD_USER_NAME_OR_PASSWORD:
+		return NRF_CLOUD_ERR_STATUS_MQTT_CONN_BAD_USR_PWD;
+	case MQTT_NOT_AUTHORIZED:
+		return NRF_CLOUD_ERR_STATUS_MQTT_CONN_NOT_AUTH;
+	default:
+		return NRF_CLOUD_ERR_STATUS_MQTT_CONN_FAIL;
+	}
+}
+
+static int translate_mqtt_suback_result(const int mqtt_result)
+{
+	switch (mqtt_result) {
+	case MQTT_SUBACK_SUCCESS_QoS_0:
+	case MQTT_SUBACK_SUCCESS_QoS_1:
+	case MQTT_SUBACK_SUCCESS_QoS_2:
+		return NRF_CLOUD_ERR_STATUS_NONE;
+	case MQTT_SUBACK_FAILURE:
+	default:
+		return NRF_CLOUD_ERR_STATUS_MQTT_SUB_FAIL;
+	}
+}
+
 /* Handle MQTT events. */
 static void nct_mqtt_evt_handler(struct mqtt_client *const mqtt_client,
 				 const struct mqtt_evt *_mqtt_evt)
@@ -887,6 +911,7 @@ static void nct_mqtt_evt_handler(struct mqtt_client *const mqtt_client,
 			nct_save_session_state(0);
 		}
 
+		evt.status = translate_mqtt_connack_result(_mqtt_evt->result);
 		evt.type = NCT_EVT_CONNECTED;
 		event_notify = true;
 		break;
@@ -894,16 +919,18 @@ static void nct_mqtt_evt_handler(struct mqtt_client *const mqtt_client,
 	case MQTT_EVT_PUBLISH: {
 		const struct mqtt_publish_param *p = &_mqtt_evt->param.publish;
 
-		LOG_DBG("MQTT_EVT_PUBLISH: id = %d len = %d",
+		LOG_DBG("MQTT_EVT_PUBLISH: id = %d len = %d, topic = %.*s",
 			p->message_id,
-			p->message.payload.len);
+			p->message.payload.len,
+			p->message.topic.topic.size,
+			p->message.topic.topic.utf8);
 
 		int err = publish_get_payload(mqtt_client,
 					      p->message.payload.len);
 
 		if (err < 0) {
 			LOG_ERR("publish_get_payload: failed %d", err);
-			nrf_cloud_disconnect();
+			(void)nrf_cloud_disconnect();
 			event_notify = false;
 			break;
 		}
@@ -948,6 +975,8 @@ static void nct_mqtt_evt_handler(struct mqtt_client *const mqtt_client,
 	case MQTT_EVT_SUBACK: {
 		LOG_DBG("MQTT_EVT_SUBACK: id = %d result = %d",
 			_mqtt_evt->param.suback.message_id, _mqtt_evt->result);
+
+		evt.status = translate_mqtt_suback_result(_mqtt_evt->result);
 
 		if (_mqtt_evt->param.suback.message_id == NCT_MSG_ID_CC_SUB) {
 			evt.type = NCT_EVT_CC_CONNECTED;
@@ -1331,8 +1360,16 @@ int nct_dc_disconnect(void)
 
 	LOG_DBG("nct_dc_disconnect");
 
+	struct mqtt_topic subscribe_topic = {
+		.topic = {
+			.utf8 = nct.dc_rx_endp.utf8,
+			.size = nct.dc_rx_endp.size
+		},
+		.qos = MQTT_QOS_1_AT_LEAST_ONCE
+	};
+
 	const struct mqtt_subscription_list subscription_list = {
-		.list = (struct mqtt_topic *)&nct.dc_rx_endp,
+		.list = &subscribe_topic,
 		.list_count = 1,
 		.message_id = NCT_MSG_ID_DC_UNSUB
 	};

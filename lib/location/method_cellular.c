@@ -9,18 +9,13 @@
 #include <zephyr/logging/log.h>
 #include <modem/location.h>
 #include <modem/lte_lc.h>
-#include <net/multicell_location.h>
 
 #include "location_core.h"
 #include "location_utils.h"
+#include "location_service_utils.h"
+#include "cellular/cellular_service.h"
 
 LOG_MODULE_DECLARE(location, CONFIG_LOCATION_LOG_LEVEL);
-
-BUILD_ASSERT(
-	(int)LOCATION_SERVICE_ANY == (int)MULTICELL_SERVICE_ANY &&
-	(int)LOCATION_SERVICE_NRF_CLOUD == (int)MULTICELL_SERVICE_NRF_CLOUD &&
-	(int)LOCATION_SERVICE_HERE == (int)MULTICELL_SERVICE_HERE,
-	"Incompatible enums location_service and multicell_service");
 
 struct method_cellular_positioning_work_args {
 	struct k_work work_item;
@@ -31,7 +26,7 @@ static struct method_cellular_positioning_work_args method_cellular_positioning_
 
 static K_SEM_DEFINE(cellmeas_data_ready, 0, 1);
 
-static struct lte_lc_ncell neighbor_cells[CONFIG_MULTICELL_LOCATION_MAX_NEIGHBORS];
+static struct lte_lc_ncell neighbor_cells[CONFIG_LTE_NEIGHBOR_CELLS_MAX];
 static struct lte_lc_cells_info cell_data = {
 	.neighbor_cells = neighbor_cells,
 };
@@ -41,6 +36,9 @@ void method_cellular_lte_ind_handler(const struct lte_lc_evt *const evt)
 {
 	switch (evt->type) {
 	case LTE_LC_EVT_NEIGHBOR_CELL_MEAS: {
+		if (!running) {
+			return;
+		}
 		LOG_DBG("Cell measurements results received");
 
 		/* Copy current cell information. */
@@ -57,7 +55,7 @@ void method_cellular_lte_ind_handler(const struct lte_lc_evt *const evt)
 			cell_data.ncells_count = evt->cells_info.ncells_count;
 		} else {
 			cell_data.ncells_count = 0;
-			LOG_INF("No neighbor cell information from modem.");
+			LOG_DBG("No neighbor cell information from modem.");
 		}
 		k_sem_give(&cellmeas_data_ready);
 	} break;
@@ -73,7 +71,8 @@ static int method_cellular_ncellmeas_start(void)
 
 	LOG_DBG("Triggering cell measurements");
 
-	err = lte_lc_neighbor_cell_measurement(LTE_LC_NEIGHBOR_SEARCH_TYPE_DEFAULT);
+	/* Starting measurements with lte_lc default parameters */
+	err = lte_lc_neighbor_cell_measurement(NULL);
 	if (err) {
 		LOG_WRN("Failed to initiate neighbor cell measurements: %d, "
 			"next: fallback to get modem parameters",
@@ -102,11 +101,7 @@ static int method_cellular_ncellmeas_start(void)
 
 static void method_cellular_positioning_work_fn(struct k_work *work)
 {
-	struct multicell_location_params params = { 0 };
-	struct multicell_location location;
-	struct location_data location_result = { 0 };
 	int64_t ncellmeas_start_time;
-	int64_t ncellmeas_time;
 	int ret;
 	struct method_cellular_positioning_work_args *work_data =
 		CONTAINER_OF(work, struct method_cellular_positioning_work_args, work_item);
@@ -132,6 +127,14 @@ static void method_cellular_positioning_work_fn(struct k_work *work)
 
 	/* Stop the timer and let rest_client timer handle the request */
 	location_core_timer_stop();
+
+#if defined(CONFIG_LOCATION_SERVICE_EXTERNAL)
+	location_core_event_cb_cellular_request(&cell_data);
+#else
+	struct location_cellular_serv_pos_req params = { 0 };
+	struct location_data location;
+	struct location_data location_result = { 0 };
+	int64_t ncellmeas_time;
 
 	if (cell_data.current_cell.id == LTE_LC_CELL_EUTRAN_ID_INVALID) {
 		LOG_WRN("Current cell ID not valid");
@@ -160,19 +163,17 @@ static void method_cellular_positioning_work_fn(struct k_work *work)
 		params.timeout = cellular_config.timeout - ncellmeas_time;
 	}
 
-	/* enum multicell_service can be used directly because of BUILD_ASSERT */
 	params.service = cellular_config.service;
 	params.cell_data = &cell_data;
-	ret = multicell_location_get(&params, &location);
+	ret = cellular_service_location_get(&params, &location);
 	if (ret) {
-		LOG_ERR("Failed to acquire location from multicell_location lib, error: %d", ret);
+		LOG_ERR("Failed to acquire location using cellular positioning, error: %d", ret);
 		if (ret == -ETIMEDOUT) {
 			location_core_event_cb_timeout();
 		} else {
 			location_core_event_cb_error();
 		}
 	} else {
-		location_result.method = LOCATION_METHOD_CELLULAR;
 		location_result.latitude = location.latitude;
 		location_result.longitude = location.longitude;
 		location_result.accuracy = location.accuracy;
@@ -181,6 +182,7 @@ static void method_cellular_positioning_work_fn(struct k_work *work)
 			location_core_event_cb(&location_result);
 		}
 	}
+#endif /* defined(CONFIG_LOCATION_SERVICE_EXTERNAL) */
 }
 
 int method_cellular_location_get(const struct location_method_config *config)
@@ -199,9 +201,11 @@ int method_cellular_location_get(const struct location_method_config *config)
 int method_cellular_cancel(void)
 {
 	if (running) {
+		running = false;
+
+		/* Cancel/stopping might trigger a NCELLMEAS notification */
 		(void)lte_lc_neighbor_cell_measurement_cancel();
 		(void)k_work_cancel(&method_cellular_positioning_work.work_item);
-		running = false;
 		k_sem_reset(&cellmeas_data_ready);
 	} else {
 		return -EPERM;
@@ -212,23 +216,23 @@ int method_cellular_cancel(void)
 
 int method_cellular_init(void)
 {
-	int ret;
-
 	running = false;
 
 	k_work_init(&method_cellular_positioning_work.work_item,
 		    method_cellular_positioning_work_fn);
 	lte_lc_register_handler(method_cellular_lte_ind_handler);
 
-	ret = multicell_location_provision_certificate(false);
+#if defined(CONFIG_LOCATION_SERVICE_HERE)
+	int ret = location_service_utils_provision_ca_certificates();
+
 	if (ret) {
 		LOG_ERR("Certificate provisioning failed, ret %d", ret);
 		if (ret == -EACCES) {
-			LOG_WRN("err: -EACCESS, that might indicate that modem is in state where "
+			LOG_WRN("err: -EACCES, that might indicate that modem is in state where "
 				"cert cannot be written, i.e. not in pwroff or offline");
 		}
 		return ret;
 	}
-
+#endif
 	return 0;
 }

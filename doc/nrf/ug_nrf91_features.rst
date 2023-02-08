@@ -22,8 +22,6 @@ The following figure illustrates the conceptual layout when targeting an nRF9160
 
    Overview of nRF91 application architecture
 
-
-
 Supported boards
 ================
 
@@ -52,9 +50,14 @@ Devices in the nRF91 Series are supported by the following boards in the `Zephyr
 Application MCU
 ===============
 
-The M33 TrustZone divides the application MCU into secure and non-secure domains.
+The application core is a full-featured Arm Cortex-M33 processor including DSP instructions and FPU.
+Use this core for tasks that require high performance and for application-level logic.
+
+The M33 TrustZone, one of Cortex-M Security Extensions (CMSE), divides the application MCU into Secure Processing Environment (SPE) and Non-Secure Processing Environment (NSPE).
 When the MCU boots, it always starts executing from the secure area.
-The secure bootloader chain starts the :ref:`Trusted Firmware-M (TF-M) <ug_tfm>`, which configures a part of memory and peripherals to be non-secure, and then jumps to the main application located in the non-secure area.
+The secure bootloader chain starts the :ref:`Trusted Firmware-M (TF-M) <ug_tfm>`, which configures a part of memory and peripherals to be non-secure, and then jumps to the user application located in the non-secure area.
+
+For information about CMSE and the difference between the two environments, see :ref:`app_boards_spe_nspe`.
 
 Secure bootloader chain
 -----------------------
@@ -79,7 +82,7 @@ See also :ref:`tfm_hello_world` for a sample that demonstrates how to add TF-M t
 Application
 -----------
 
-The user application runs in the non-secure domain.
+The user application runs in NSPE.
 Therefore, it must be built for the ``nrf9160dk_nrf9160_ns`` or ``thingy91_nrf9160_ns`` build target.
 
 The application image might require other images to be present.
@@ -187,7 +190,7 @@ To perform a FOTA upgrade, complete the following steps:
 
       In addition, the following requirements apply:
 
-      * |fota_upgrades_req_mcuboot|
+      * To upgrade the application, you must use :doc:`mcuboot:index-ncs` as the upgradable bootloader (:kconfig:option:`CONFIG_BOOTLOADER_MCUBOOT` must be enabled).
       * If you want to upgrade the upgradable bootloader, the :ref:`bootloader` must be used (:kconfig:option:`CONFIG_SECURE_BOOT`).
       * If you want to upgrade the modem firmware through modem delta updates, neither MCUboot nor the immutable bootloader are required, because the modem firmware upgrade is handled by the modem itself.
       * If you want to perform a full modem firmware upgrade, an |external_flash_size| is required.

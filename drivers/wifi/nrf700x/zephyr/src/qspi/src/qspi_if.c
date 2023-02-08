@@ -111,6 +111,18 @@ struct qspi_nor_data {
 #endif /* CONFIG_MULTITHREADING */
 };
 
+static inline int qspi_freq_to_sckfreq(int freq)
+{
+#if defined(CONFIG_SOC_SERIES_NRF53X)
+	/* QSPIM (6-96MHz) : 192MHz / (2*(SCKFREQ + 1)) */
+	return ((192 / freq) / 2) - 1;
+#else
+	/* QSPIM (2-32MHz): 32 MHz / (SCKFREQ + 1) */
+	return (32 / freq) - 1;
+#endif
+}
+
+
 static inline int qspi_get_mode(bool cpol, bool cpha)
 {
 	register int ret = -EINVAL;
@@ -228,10 +240,6 @@ nrfx_err_t _nrfx_qspi_init(nrfx_qspi_config_t const *p_config, nrfx_qspi_handler
 	return NRFX_SUCCESS;
 }
 
-nrf_qspi_frequency_t _qspi_get_sckfreq(void)
-{
-	return qspi_config->sckfreq;
-}
 
 /**
  * @brief Main configuration structure
@@ -577,6 +585,10 @@ static inline void qspi_fill_init_struct(nrfx_qspi_config_t *initstruct)
 	initstruct->phy_if.sck_freq = (INST_0_SCK_FREQUENCY > NRF_QSPI_BASE_CLOCK_FREQ) ?
 					      NRF_QSPI_FREQ_DIV1 :
 					      (NRF_QSPI_BASE_CLOCK_FREQ / INST_0_SCK_FREQUENCY) - 1;
+	/* Using MHZ fails checkpatch constant check */
+	if (INST_0_SCK_FREQUENCY >= 16000000) {
+		qspi_config->qspi_slave_latency = 1;
+	}
 	initstruct->phy_if.sck_delay = QSPI_SCK_DELAY;
 	initstruct->phy_if.spi_mode = qspi_get_mode(DT_INST_PROP(0, cpol), DT_INST_PROP(0, cpha));
 
@@ -588,8 +600,6 @@ static inline void qspi_fill_init_struct(nrfx_qspi_config_t *initstruct)
 		initstruct->prot_if.readoc = NRF_QSPI_READOC_FASTREAD;
 		initstruct->prot_if.writeoc = NRF_QSPI_WRITEOC_PP;
 	}
-
-	initstruct->phy_if.sck_freq = _qspi_get_sckfreq();
 
 	initstruct->phy_if.dpmen = false;
 }
@@ -980,6 +990,11 @@ int qspi_wait_while_rpu_awake(const struct device *dev)
 		k_msleep(1);
 	}
 
+	/* Configure DTS settings */
+	if (val & RPU_AWAKE_BIT) {
+		nrf_qspi_ifconfig1_set(NRF_QSPI, &QSPIconfig.phy_if);
+	}
+
 	return val;
 }
 
@@ -1046,7 +1061,19 @@ int qspi_WRSR2(const struct device *dev, uint8_t data)
 
 int qspi_cmd_wakeup_rpu(const struct device *dev, uint8_t data)
 {
-	return qspi_WRSR2(dev, data);
+	int ret;
+	/* Use lowest 8MHz for waking up RPU */
+	const nrf_qspi_phy_conf_t qspi_phy_8mhz = {
+		.sck_freq = qspi_freq_to_sckfreq(8),
+		.sck_delay = QSPI_SCK_DELAY,
+		.spi_mode = NRF_QSPI_MODE_0
+	};
+
+	nrf_qspi_ifconfig1_set(NRF_QSPI, &qspi_phy_8mhz);
+
+	ret = qspi_WRSR2(dev, data);
+
+	return ret;
 }
 
 struct device qspi_perip = {
@@ -1065,14 +1092,6 @@ int qspi_init(struct qspi_config *config)
 	unsigned int rc;
 
 	qspi_config = config;
-
-#if defined(CONFIG_SOC_SERIES_NRF53X)
-	/* QSPIM (6-96Mhz) : 192Mhz / (2*(SCKFREQ + 1)) */
-	config->sckfreq = ((192 / config->freq) / 2) - 1;
-#else
-	/* QSPIM (2-32Mhz): 32 MHz / (SCKFREQ + 1) */
-	config->sckfreq = (32 / config->freq) - 1;
-#endif
 
 	config->readoc = config->quad_spi ? NRF_QSPI_READOC_READ4IO : NRF_QSPI_READOC_FASTREAD;
 	config->writeoc = config->quad_spi ? NRF_QSPI_WRITEOC_PP4IO : NRF_QSPI_WRITEOC_PP;
@@ -1094,7 +1113,8 @@ int qspi_init(struct qspi_config *config)
 			config->enc_enabled = true;
 	}
 #endif
-	LOG_DBG("exiting %s\n", __func__);
+	LOG_INF("QSPI freq = %d MHz\n", INST_0_SCK_FREQUENCY/MHZ(1));
+	LOG_INF("QSPI latency = %d\n", qspi_config->qspi_slave_latency);
 	return rc;
 }
 

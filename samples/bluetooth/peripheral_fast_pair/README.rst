@@ -41,6 +41,10 @@ The device can be used to bond with the following devices:
   The device is linked with the user's Google account.
 * Bluetooth Central that is not a Fast Pair Seeker - Normal Bluetooth LE bonding is used in this scenario and there is no Bluetooth MITM protection.
 
+.. note::
+   The normal Bluetooth LE bonding can be used only if the Fast Pair discoverable advertising mode is selected.
+   In other Fast Pair advertising modes, the device rejects the normal Bluetooth LE bonding.
+
 The sample supports only one simultaneous Bluetooth connection, but it can be bonded with multiple Bluetooth Centrals.
 
 The sample supports both the discoverable and not discoverable Fast Pair advertising.
@@ -94,6 +98,8 @@ Button 1:
    * Fast Pair not discoverable advertising (with the show UI indication).
    * Fast Pair not discoverable advertising (with the hide UI indication).
 
+   The advertising pairing mode (:c:member:`bt_le_adv_prov_adv_state.pairing_mode`) is enabled only if the Fast Pair discoverable advertising mode is selected.
+
    .. note::
        The Bluetooth advertising is active only until the Fast Pair Provider connects to a Bluetooth Central.
        After the connection, you can still switch the advertising modes, but the switch will come into effect only after disconnection.
@@ -102,8 +108,16 @@ Button 1:
        * After 10 minutes of active advertising.
        * After a Bluetooth Central successfully pairs.
 
+       After the device reaches the maximum number of paired devices (:kconfig:option:`CONFIG_BT_MAX_PAIRED`), the device stops looking for new peers.
+       Therefore, the device no longer advertises in the pairing mode (:c:member:`bt_le_adv_prov_adv_state.pairing_mode`), and only the Fast Pair not discoverable advertising with hide UI indication mode includes the Fast Pair payload.
+
 Button 2:
    Increases audio volume of the connected Bluetooth Central.
+
+Button 3:
+   Removes the Bluetooth bonds.
+   This operation does not clear Fast Pair storage data.
+   The stored Account Keys are not removed.
 
 Button 4:
    Decreases audio volume of the connected Bluetooth Central.
@@ -233,13 +247,63 @@ Test not discoverable advertising by completing `Testing`_ and the following add
 #. Press **Button 2** to increase the audio volume.
 #. Press **Button 4** to decrease the audio volume.
 
+Personalized Name extension
+----------------------------
+
+Testing Personalized Name extension is described in `Fast Pair Certification Guidelines for Personalized Name`_.
+
+.. note::
+   To mitigate Android Personalized Name write issues, whenever you change the Personalized Name on an Android phone, perform the following:
+
+   * Write the new Personalized Name.
+   * Disconnect the phone from the Fast Pair Provider.
+   * Put the Fast Pair Provider in not discoverable advertising mode.
+   * The phone reconnects and sends new Personalized Name to the Fast Pair Provider.
+
+Battery Notification extension
+------------------------------
+
+Test `Fast Pair Battery Notification extension`_ by completing the following steps:
+
+#. Pair the Fast Pair Provider with at least one Fast Pair Seeker.
+#. Put the Fast Pair Provider in not discoverable advertising mode.
+#. Verify that the Provider is advertising sample battery data using the `nRF Connect for Mobile`_ application.
+
+.. note::
+   Currently, Android phones have trouble with the Battery Notification extension and sometimes do not display battery information as a user indication.
+
 Dependencies
 ************
+
+The sample uses subsystems and firmware components available in the |NCS|.
+For details, see the sections below.
+
+Fast Pair GATT Service
+======================
 
 This sample uses the :ref:`bt_fast_pair_readme` and its dependencies and is configured to meet the requirements of the Fast Pair standard.
 See :ref:`ug_bt_fast_pair` for details about integrating Fast Pair in the |NCS|.
 
 The :ref:`bt_fast_pair_provision_script` is used by the build system to automatically generate the hexadecimal file that contains Fast Pair Model ID and Anti Spoofing Private Key.
+
+Bluetooth LE advertising data providers
+=======================================
+
+The :ref:`bt_le_adv_prov_readme` are used to generate Bluetooth advertising and scan response data.
+The sample uses the following providers to generate the advertising packet payload:
+
+* Advertising flags provider (:kconfig:option:`CONFIG_BT_ADV_PROV_FLAGS`)
+* TX power provider (:kconfig:option:`CONFIG_BT_ADV_PROV_TX_POWER`)
+* Google Fast Pair provider (:kconfig:option:`CONFIG_BT_ADV_PROV_FAST_PAIR`)
+* Sample-specific provider that appends UUID16 values of GATT Human Interface Device Service (HIDS) and GATT Battery Service (BAS)
+
+The sample uses the following providers to generate the scan response data:
+
+* Bluetooth device name provider (:kconfig:option:`CONFIG_BT_ADV_PROV_DEVICE_NAME`)
+* Generic Access Profile (GAP) appearance provider (:kconfig:option:`CONFIG_BT_ADV_PROV_GAP_APPEARANCE`)
+
+Other
+=====
 
 The sample also uses the following secure firmware component:
 

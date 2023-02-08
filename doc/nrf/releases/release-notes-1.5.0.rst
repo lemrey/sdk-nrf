@@ -152,7 +152,7 @@ nRF5340 SoC
 
 
   * :ref:`esb_readme` subsystem - Added support for nRF5340 (CPUNET) in the ESB subsystem.
-  * :ref:`lib_spm` subsystem - Added support for nRF5340 peripherals in non-secure applications.
+  * Secure Partition Manager (SPM) subsystem - Added support for nRF5340 peripherals in non-secure applications.
   * :ref:`ble_samples` - Added configuration overlays for child image to the required Bluetooth LE samples so that no Kconfig updates in the :ref:`zephyr:bluetooth-hci-rpmsg-sample` sample are needed by default.
   * :ref:`nrf5340_empty_app_core` sample - Disabled the kernel memory pool option :kconfig:option:`CONFIG_KERNEL_MEM_POOL` to reduce the memory footprint.
   * ``bl_boot`` library - Disabled clock interrupts before booting the application. This change fixes an issue where the :ref:`bootloader` sample would not be able to boot a Zephyr application on the nRF5340 SoC.
@@ -1038,7 +1038,7 @@ nrfxlib
 * :ref:`nrf_modem`:
 
   * :ref:`architecture` - Added information on shared memory configuration.
-  * :ref:`tls_dtls_configuration` - Added information on supported cipher suites.
+  * ``tls_dtls_configuration`` - Added information on supported cipher suites.
   * :ref:`nrf_modem_ug_porting` - Added information about the modem functions.
 * :ref:`mpsl` - Added :ref:`mpsl_fem`.
 * :ref:`nrf_802154_sl` - Added.

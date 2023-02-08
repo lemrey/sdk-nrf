@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2021, Nordic Semiconductor ASA.
 #
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 #-------------------------------------------------------------------------------
 
@@ -32,16 +32,38 @@ target_compile_definitions(platform_s
   )
 
 target_include_directories(platform_s
-  PUBLIC ${partition_includes} ${board_includes}
+  PUBLIC
+  ${partition_includes}
+  ${board_includes}
+  services/include
   ${NRF_DIR}/include
   )
 
 target_sources(platform_s
   PRIVATE
   common/tfm_hal_platform.c
+  common/attest_hal.c
   $<$<NOT:$<BOOL:${PLATFORM_DEFAULT_OTP}>>:${CMAKE_CURRENT_SOURCE_DIR}/common/dummy_otp.c>
-  $<$<NOT:$<BOOL:${PLATFORM_DEFAULT_PROVISIONING}>>:${CMAKE_CURRENT_SOURCE_DIR}/common/dummy_provisioning.c>
   )
+
+target_link_libraries(platform_s
+  PRIVATE
+  tfm_sprt
+ )
+
+if (NOT ${PLATFORM_DEFAULT_PROVISIONING})
+  if(NRF_PROVISIONING)
+    target_compile_definitions(platform_s PUBLIC NRF_PROVISIONING)
+    set(provisioning_source nrf_provisioning.c)
+  else()
+    set(provisioning_source dummy_provisioning.c)
+  endif()
+
+  target_sources(platform_s
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common/${provisioning_source}
+    )
+endif()
 
 # Disabling UART stdout not supported in NS Image, which is always built even when not needed.
 target_sources(platform_ns
@@ -69,6 +91,10 @@ endif()
 
 if (NRF_ALLOW_NON_SECURE_RESET)
   target_compile_definitions(platform_s PUBLIC NRF_ALLOW_NON_SECURE_RESET)
+endif()
+
+if (CONFIG_NFCT_PINS_AS_GPIOS)
+  target_compile_definitions(platform_s PUBLIC CONFIG_NFCT_PINS_AS_GPIOS)
 endif()
 
 target_compile_definitions(platform_s PUBLIC CONFIG_HW_UNIQUE_KEY CONFIG_HW_UNIQUE_KEY_RANDOM)

@@ -15,6 +15,8 @@ If you have already set up your nRF9160 DK and want to learn more, see the follo
 * :ref:`ug_nrf9160` for more advanced topics related to the nRF9160 DK if you are already familiar with the |NCS|.
 * The :ref:`introductory documentation <getting_started>` for more information on the |NCS| and the development environment.
 
+If you want to go through a hands-on online training to familiarize yourself with cellular IoT technologies and development of cellular applications, enroll in the `Cellular IoT Fundamentals course`_ in the `Nordic Developer Academy`_.
+
 .. _nrf9160_gs_requirements:
 
 Minimum requirements
@@ -288,8 +290,6 @@ To activate the iBasis Subscriber Identity Module (SIM) card that comes shipped 
 .. nrf_cloud_connection_end
 
 5. Punch out the nano-SIM from the SIM card and plug it into the SIM card holder on the nRF9160 DK.
-#. **Optional:** If you want to test the optional GPS functionality and you have an external GPS antenna for your nRF9160 DK, attach it to connector **J2** to the left of the LTE antenna.
-   See `nRF9160 DK GPS`_ for more information.
 #. Connect the nRF9160 DK to the computer with a USB cable and turn it on, or reset the device if it is already turned on.
 #. Wait up to three minutes for the device to find the cellular network and connect to the nRF Cloud server.
 

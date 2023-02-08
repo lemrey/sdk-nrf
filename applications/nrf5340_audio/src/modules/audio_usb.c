@@ -14,7 +14,7 @@
 #include "data_fifo.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(audio_usb, CONFIG_LOG_AUDIO_USB_LEVEL);
+LOG_MODULE_REGISTER(audio_usb, CONFIG_MODULE_AUDIO_USB_LOG_LEVEL);
 
 #define USB_FRAME_SIZE_STEREO                                                                      \
 	(((CONFIG_AUDIO_SAMPLE_RATE_HZ * CONFIG_AUDIO_BIT_DEPTH_OCTETS) / 1000) * 2)
@@ -98,8 +98,7 @@ static void data_received(const struct device *dev, struct net_buf *buffer, size
 		ret = data_fifo_pointer_last_filled_get(fifo_rx, &temp, &temp_size, K_NO_WAIT);
 		ERR_CHK(ret);
 
-		ret = data_fifo_block_free(fifo_rx, &temp);
-		ERR_CHK(ret);
+		data_fifo_block_free(fifo_rx, &temp);
 
 		ret = data_fifo_pointer_first_vacant_get(fifo_rx, &data_in, K_NO_WAIT);
 	}

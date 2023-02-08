@@ -1,12 +1,14 @@
 /*
  * Copyright (c) 2022 Nordic Semiconductor ASA.
  *
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/init.h>
 #include <zephyr/logging/log.h>
+
+#include <soc.h>
 
 LOG_MODULE_REGISTER(nrf7002dk_nrf5340_cpuapp, CONFIG_LOG_DEFAULT_LEVEL);
 

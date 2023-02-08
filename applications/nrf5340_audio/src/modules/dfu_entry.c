@@ -19,20 +19,20 @@
 #include "channel_assignment.h"
 
 #ifdef CONFIG_MCUMGR_CMD_OS_MGMT
-#include <os_mgmt/os_mgmt.h>
+#include <zephyr/mgmt/mcumgr/grp/os_mgmt/os_mgmt.h>
 #endif
 #ifdef CONFIG_MCUMGR_CMD_IMG_MGMT
-#include <img_mgmt/img_mgmt.h>
+#include <zephyr/mgmt/mcumgr/grp/img_mgmt/img_mgmt.h>
 #endif
 #ifdef CONFIG_MCUMGR_CMD_STAT_MGMT
-#include <stat_mgmt/stat_mgmt.h>
+#include <zephyr/mgmt/mcumgr/grp/stat_mgmt/stat_mgmt.h>
 #endif
 #ifdef CONFIG_MCUMGR_SMP_BT
-#include <zephyr/mgmt/mcumgr/smp_bt.h>
+#include <zephyr/mgmt/mcumgr/transport/smp_bt.h>
 #endif
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(dfu, CONFIG_LOG_DFU_ENTRY_LEVEL);
+LOG_MODULE_REGISTER(dfu, CONFIG_MODULE_DFU_ENTRY_LOG_LEVEL);
 
 /* These defined name only used by DFU */
 #define DEVICE_NAME_DFU CONFIG_BT_DFU_DEVICE_NAME
@@ -42,27 +42,26 @@ LOG_MODULE_REGISTER(dfu, CONFIG_LOG_DFU_ENTRY_LEVEL);
 static struct bt_le_adv_param adv_param;
 static const struct bt_data ad_peer[] = {
 	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
-	BT_DATA_BYTES(BT_DATA_UUID128_ALL,
-		      0x84, 0xaa, 0x60, 0x74, 0x52, 0x8a, 0x8b, 0x86,
-		      0xd3, 0x4c, 0xb7, 0x1d, 0x1d, 0xdc, 0x53, 0x8d),
+	BT_DATA_BYTES(BT_DATA_UUID128_ALL, 0x84, 0xaa, 0x60, 0x74, 0x52, 0x8a, 0x8b, 0x86, 0xd3,
+		      0x4c, 0xb7, 0x1d, 0x1d, 0xdc, 0x53, 0x8d),
 };
 
 /* MCUMGR related functions */
 static void mcumgr_register(void)
 {
-	/* Enable MCUMGR */
-	#ifdef CONFIG_MCUMGR_CMD_OS_MGMT
-		os_mgmt_register_group();
-	#endif
-	#ifdef CONFIG_MCUMGR_CMD_IMG_MGMT
-		img_mgmt_register_group();
-	#endif
-	#ifdef CONFIG_MCUMGR_CMD_STAT_MGMT
-		stat_mgmt_register_group();
-	#endif
-	#ifdef CONFIG_MCUMGR_SMP_BT
-		smp_bt_register();
-	#endif
+/* Enable MCUMGR */
+#ifdef CONFIG_MCUMGR_CMD_OS_MGMT
+	os_mgmt_register_group();
+#endif
+#ifdef CONFIG_MCUMGR_CMD_IMG_MGMT
+	img_mgmt_register_group();
+#endif
+#ifdef CONFIG_MCUMGR_CMD_STAT_MGMT
+	stat_mgmt_register_group();
+#endif
+#ifdef CONFIG_MCUMGR_SMP_BT
+	smp_bt_register();
+#endif
 }
 
 static void smp_adv(void)
@@ -86,7 +85,7 @@ static void dfu_connected_cb(struct bt_conn *conn, uint8_t err)
 
 static void dfu_disconnected_cb(struct bt_conn *conn, uint8_t reason)
 {
-	LOG_INF("SMP disconnected %d\n", reason);
+	LOG_INF("SMP disconnected 0x%02x\n", reason);
 }
 
 static struct bt_conn_cb dfu_conn_callbacks = {
@@ -96,21 +95,16 @@ static struct bt_conn_cb dfu_conn_callbacks = {
 
 static void dfu_set_bt_name(void)
 {
-	char name[CONFIG_BT_DEVICE_NAME_MAX] = {0};
+	char name[CONFIG_BT_DEVICE_NAME_MAX] = { 0 };
 
 	strlcpy(name, CONFIG_BT_DEVICE_NAME, CONFIG_BT_DEVICE_NAME_MAX);
 	strlcat(name, "_", CONFIG_BT_DEVICE_NAME_MAX);
 #if (CONFIG_AUDIO_DEV == GATEWAY)
 	strlcat(name, GW_TAG, CONFIG_BT_DEVICE_NAME_MAX);
 #else
-	int ret;
 	enum audio_channel channel;
 
-	ret = channel_assignment_get(&channel);
-	if (ret) {
-		/* Channel is not assigned yet: use default */
-		channel = AUDIO_CHANNEL_DEFAULT;
-	}
+	channel_assignment_get(&channel);
 
 	if (channel == AUDIO_CH_L) {
 		strlcat(name, CH_L_TAG, CONFIG_BT_DEVICE_NAME_MAX);
@@ -125,6 +119,10 @@ static void dfu_set_bt_name(void)
 
 static void on_ble_core_ready_dfu_entry(void)
 {
+	if (IS_ENABLED(CONFIG_SETTINGS)) {
+		settings_load();
+	}
+
 	bt_conn_cb_register(&dfu_conn_callbacks);
 	adv_param = *BT_LE_ADV_CONN_NAME;
 	dfu_set_bt_name();
@@ -137,7 +135,7 @@ void dfu_entry_check(void)
 	int ret;
 	bool pressed;
 
-	ret = button_pressed(BUTTON_TEST_TONE, &pressed);
+	ret = button_pressed(BUTTON_4, &pressed);
 	if (ret) {
 		return;
 	}

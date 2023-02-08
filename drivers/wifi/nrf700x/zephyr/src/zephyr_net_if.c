@@ -20,6 +20,7 @@
 
 LOG_MODULE_DECLARE(wifi_nrf, CONFIG_WIFI_LOG_LEVEL);
 
+#ifdef CONFIG_NRF700X_DATA_TX
 void wifi_nrf_if_rx_frm(void *os_vif_ctx, void *frm)
 {
 	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep;
@@ -41,16 +42,74 @@ void wifi_nrf_if_rx_frm(void *os_vif_ctx, void *frm)
 	}
 }
 
-enum wifi_nrf_status wifi_nrf_if_state_chg(void *os_vif_ctx, enum wifi_nrf_fmac_if_state if_state)
+enum wifi_nrf_status wifi_nrf_if_carr_state_chg(void *os_vif_ctx,
+						enum wifi_nrf_fmac_if_carr_state carr_state)
 {
-	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep;
+	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
+	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+
+	if (!os_vif_ctx) {
+		LOG_ERR("%s: Invalid parameters\n",
+			__func__);
+		goto out;
+	}
 
 	vif_ctx_zep = os_vif_ctx;
 
-	vif_ctx_zep->if_state = if_state;
+	vif_ctx_zep->if_carr_state = carr_state;
 
-	return WIFI_NRF_STATUS_SUCCESS;
+	status = WIFI_NRF_STATUS_SUCCESS;
+
+out:
+	return status;
 }
+#endif /* CONFIG_NRF700X_DATA_TX */
+
+enum ethernet_hw_caps wifi_nrf_if_caps_get(const struct device *dev)
+{
+	return (ETHERNET_LINK_10BASE_T | ETHERNET_LINK_100BASE_T | ETHERNET_LINK_1000BASE_T);
+}
+
+int wifi_nrf_if_send(const struct device *dev,
+		     struct net_pkt *pkt)
+{
+	int ret = -1;
+#ifdef CONFIG_NRF700X_DATA_TX
+	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+	struct wifi_nrf_ctx_zep *rpu_ctx_zep = NULL;
+
+	if (!dev || !pkt) {
+		LOG_ERR("%s: vif_ctx_zep is NULL\n", __func__);
+		goto out;
+	}
+
+	vif_ctx_zep = dev->data;
+
+	if (!vif_ctx_zep) {
+		LOG_ERR("%s: vif_ctx_zep is NULL\n", __func__);
+		net_pkt_unref(pkt);
+		goto out;
+	}
+
+	rpu_ctx_zep = vif_ctx_zep->rpu_ctx_zep;
+
+	if (vif_ctx_zep->if_carr_state != WIFI_NRF_FMAC_IF_CARR_STATE_ON) {
+		ret = 0;
+		goto out;
+	}
+
+	ret = wifi_nrf_fmac_start_xmit(rpu_ctx_zep->rpu_ctx,
+				       vif_ctx_zep->vif_idx,
+				       net_pkt_to_nbuf(pkt));
+#else
+	net_pkt_unref(pkt);
+	goto out;
+#endif /* CONFIG_NRF700X_DATA_TX */
+
+out:
+	return ret;
+}
+
 
 void wifi_nrf_if_init(struct net_if *iface)
 {
@@ -69,36 +128,69 @@ void wifi_nrf_if_init(struct net_if *iface)
 	}
 
 	vif_ctx_zep->zep_net_if_ctx = iface;
-
 	ethernet_init(iface);
 
-	net_if_set_link_addr(iface, (unsigned char *)&rpu_ctx_zep->mac_addr,
-			     sizeof(rpu_ctx_zep->mac_addr), NET_LINK_ETHERNET);
+	net_if_set_link_addr(iface,
+			     (unsigned char *)&vif_ctx_zep->mac_addr,
+			     sizeof(vif_ctx_zep->mac_addr),
+			     NET_LINK_ETHERNET);
 }
 
-enum ethernet_hw_caps wifi_nrf_if_caps_get(const struct device *dev)
+#ifdef CONFIG_NET_STATISTICS_WIFI
+int wifi_nrf_stats_get(const struct device *dev, struct net_stats_wifi *zstats)
 {
-	return (ETHERNET_LINK_10BASE_T | ETHERNET_LINK_100BASE_T | ETHERNET_LINK_1000BASE_T);
-}
-
-int wifi_nrf_if_send(const struct device *dev, struct net_pkt *pkt)
-{
-	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct wifi_nrf_ctx_zep *rpu_ctx_zep = NULL;
+	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+	struct rpu_op_stats stats;
+	int ret = -1;
+
+	if (!dev) {
+		LOG_ERR("%s Device not found\n", __func__);
+		goto out;
+	}
+
+	if (!zstats) {
+		LOG_ERR("%s Stats buffer not allocated\n", __func__);
+		goto out;
+	}
 
 	vif_ctx_zep = dev->data;
-	rpu_ctx_zep = vif_ctx_zep->rpu_ctx_zep;
 
 	if (!vif_ctx_zep) {
 		LOG_ERR("%s: vif_ctx_zep is NULL\n", __func__);
-		net_pkt_unref(pkt);
-		return -1;
+		goto out;
 	}
 
-	if (vif_ctx_zep->if_state != WIFI_NRF_FMAC_IF_STATE_UP) {
-		return 0;
+	rpu_ctx_zep = vif_ctx_zep->rpu_ctx_zep;
+
+	if (!rpu_ctx_zep) {
+		LOG_ERR("%s: rpu_ctx_zep is NULL\n", __func__);
+		goto out;
 	}
 
-	return wifi_nrf_fmac_start_xmit(rpu_ctx_zep->rpu_ctx, vif_ctx_zep->vif_idx,
-					net_pkt_to_nbuf(pkt));
+	memset(&stats, 0, sizeof(struct rpu_op_stats));
+	status = wifi_nrf_fmac_stats_get(rpu_ctx_zep->rpu_ctx, &stats);
+
+	if (status != WIFI_NRF_STATUS_SUCCESS) {
+		LOG_ERR("%s: wifi_nrf_fmac_stats_get failed\n", __func__);
+		goto out;
+	}
+
+	zstats->pkts.tx = stats.host.total_tx_pkts;
+	zstats->pkts.rx = stats.host.total_rx_pkts;
+	zstats->bytes.received = stats.fw.umac.interface_data_stats.rx_bytes;
+	zstats->bytes.sent = stats.fw.umac.interface_data_stats.tx_bytes;
+	zstats->sta_mgmt.beacons_rx = stats.fw.umac.interface_data_stats.rx_beacon_success_count;
+	zstats->sta_mgmt.beacons_miss = stats.fw.umac.interface_data_stats.rx_beacon_miss_count;
+	zstats->broadcast.rx = stats.fw.umac.interface_data_stats.rx_broadcast_pkt_count;
+	zstats->broadcast.tx = stats.fw.umac.interface_data_stats.tx_broadcast_pkt_count;
+	zstats->multicast.rx = stats.fw.umac.interface_data_stats.rx_multicast_pkt_count;
+	zstats->multicast.tx = stats.fw.umac.interface_data_stats.tx_multicast_pkt_count;
+
+	ret = 0;
+
+out:
+	return ret;
 }
+#endif /* CONFIG_NET_STATISTICS_WIFI */

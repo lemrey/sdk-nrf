@@ -38,7 +38,7 @@ It accepts the following integer values:
 * ``0`` - Single-fix navigation mode.
 * ``1`` - Continuous navigation mode.
   The fix interval is set to 1 second
-* Ranging from ``10`` to ``1800`` - Periodic navigation mode.
+* Ranging from ``10`` to ``65535`` - Periodic navigation mode.
   The fix interval is set to the specified value.
 
 In periodic navigation mode, the ``<timeout>`` parameter controls the maximum time in seconds that the GNSS receiver is allowed to run while trying to produce a valid PVT estimate.
@@ -208,6 +208,28 @@ When the ``<signify>`` parameter is not specified, it does not signify the locat
    The application signifies the location info to nRF Cloud in a best-effort way.
    The minimal report interval is 5 seconds.
 
+.. note::
+   The application supports nRF Cloud cloud2device appId ``MODEM`` to send AT command from cloud:
+
+   * cloud2device schema::
+
+       {"appId":"MODEM", "messageType":"CMD", "data":"<AT_command>"}.
+
+   * device2cloud schema::
+
+       {"appId":"MODEM", "messageType":"RSP", "data":"<AT_response>"}.
+
+   The application executes the AT command in a best-effort way.
+
+.. note::
+   The application supports nRF Cloud cloud2device appId ``DEVICE`` to gracefully disconnect from cloud:
+
+   * cloud2device schema::
+
+       {"appId":"DEVICE", "messageType":"DISCON"}.
+
+   There is no response sending to nRF Cloud for this appId.
+
 Unsolicited notification
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -235,8 +257,9 @@ Example
   #XNRFCLOUD: 1,0
 
   AT#XNRFCLOUD=2
-  {"msg":"Hello, nRF Cloud"}
   OK
+  {"msg":"Hello, nRF Cloud"}+++
+  #XDATAMODE: 0
 
   #XNRFCLOUD: {"msg":"Hello"}
 

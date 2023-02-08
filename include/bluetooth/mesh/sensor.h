@@ -4,6 +4,13 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+/*
+ * The RST file for this library can be found in
+ * doc/nrf/libraries/bluetooth_services/mesh/sensor.rst.
+ * Rendered documentation is available at
+ * https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/libraries/bluetooth_services/mesh/sensor.html.
+ */
+
 /** @file
  *  @defgroup bt_mesh_sensor Bluetooth mesh Sensors
  *  @{
@@ -179,7 +186,7 @@ struct bt_mesh_sensor_format {
 			    struct net_buf_simple *buf,
 			    struct sensor_value *val);
 
-	/** User data pointer. */
+	/** User data pointer. Used internally by the sensor types. */
 	void *user_data;
 	/** Size of the encoded data in bytes. */
 	size_t size;

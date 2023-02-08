@@ -46,12 +46,19 @@ ncs_file(CONF_FILES ${BOARD_DIR}
          BUILD ${CONF_FILE_BUILD_TYPE}
 )
 
+ncs_file(CONF_FILES ${BOARD_DIR}
+         PM board_dir_pm_static_common
+         DOMAIN ${DOMAIN}
+)
+
 if(EXISTS "${user_def_pm_static}" AND NOT IS_DIRECTORY "${user_def_pm_static}")
   set(static_configuration_file ${user_def_pm_static})
 elseif (EXISTS ${conf_dir_pm_static})
   set(static_configuration_file ${conf_dir_pm_static})
 elseif (EXISTS ${board_dir_pm_static})
   set(static_configuration_file ${board_dir_pm_static})
+elseif (EXISTS ${board_dir_pm_static_common})
+  set(static_configuration_file ${board_dir_pm_static_common})
 endif()
 
 if (EXISTS ${static_configuration_file})
@@ -122,16 +129,27 @@ else()
     )
 endif()
 
-# Add the dynamic partition as an image partition.
-set_property(GLOBAL PROPERTY
+# Check if the dynamic partition image hex has already been defined
+get_property(DYNAMIC_PARTITION_HEX GLOBAL PROPERTY
   ${dynamic_partition}_PM_HEX_FILE
-  ${PROJECT_BINARY_DIR}/${KERNEL_HEX_NAME}
   )
+if (NOT DYNAMIC_PARTITION_HEX)
+  # Add the dynamic partition as an image partition.
+  set_property(GLOBAL PROPERTY
+    ${dynamic_partition}_PM_HEX_FILE
+    ${PROJECT_BINARY_DIR}/${KERNEL_HEX_NAME}
+    )
+endif()
 
-set_property(GLOBAL PROPERTY
+get_property(DYNAMIC_PARTITION_TARGET GLOBAL PROPERTY
   ${dynamic_partition}_PM_TARGET
-  ${logical_target_for_zephyr_elf}
   )
+if (NOT DYNAMIC_PARTITION_TARGET)
+  set_property(GLOBAL PROPERTY
+    ${dynamic_partition}_PM_TARGET
+    ${logical_target_for_zephyr_elf}
+    )
+endif()
 
 # Prepare the input_files, header_files, and images lists
 set(generated_path include/generated)
@@ -206,18 +224,14 @@ if (DEFINED ext_flash_dev)
   dt_prop(num_bits PATH ${ext_flash_dev} PROPERTY size)
   math(EXPR num_bytes "${num_bits} / 8")
 
-  if (CONFIG_PM_OVERRIDE_EXTERNAL_DRIVER_CHECK)
-    set(external_flash_driver_kconfig CONFIG_PM_OVERRIDE_EXTERNAL_DRIVER_CHECK)
-  else()
-    set(external_flash_driver_kconfig CONFIG_NORDIC_QSPI_NOR)
-  endif()
+  set(external_flash_driver_kconfig CONFIG_PM_EXTERNAL_FLASH_HAS_DRIVER)
 
   add_region(
     NAME external_flash
     SIZE ${num_bytes}
     BASE ${CONFIG_PM_EXTERNAL_FLASH_BASE}
     PLACEMENT start_to_end
-    DEVICE ${ext_flash_dev}
+    DEVICE "DT_CHOSEN(nordic_pm_ext_flash)"
     DEFAULT_DRIVER_KCONFIG ${external_flash_driver_kconfig}
     )
 endif()

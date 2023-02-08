@@ -6,6 +6,7 @@
 zephyr_library()
 zephyr_library_sources(
 	src/nrf_cloud_codec.c
+	src/nrf_cloud_mem.c
 	src/nrf_cloud_client_id.c
 	src/nrf_cloud_fota_common.c)
 zephyr_library_sources_ifdef(
@@ -27,8 +28,8 @@ zephyr_library_sources_ifdef(
 	src/nrf_cloud_pgps.c
 	src/nrf_cloud_pgps_utils.c)
 zephyr_library_sources_ifdef(
-	CONFIG_NRF_CLOUD_CELL_POS
-	src/nrf_cloud_cell_pos.c)
+	CONFIG_NRF_CLOUD_LOCATION
+	src/nrf_cloud_location.c)
 zephyr_library_sources_ifdef(
 	CONFIG_NRF_CLOUD_FOTA
 	src/nrf_cloud_fota.c)

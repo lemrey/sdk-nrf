@@ -34,17 +34,29 @@ Currently, the following configurations are supported:
 
 * 7002 DK + QSPI
 * 7002 EK + SPIM
+* 9160 DK + SPIM
 
 
 To build for the nRF7002 DK, use the ``nrf7002dk_nrf5340_cpuapp`` build target.
-The following is an example of the CLI command::
+The following is an example of the CLI command:
+
+.. code-block:: console
 
    west build -b nrf7002dk_nrf5340_cpuapp
 
 To build for the nRF7002 EK, use the ``nrf7002dk_nrf5340_cpuapp`` build target with the ``SHIELD`` CMake option set to ``nrf7002_ek``.
-The following is an example of the CLI command::
+The following is an example of the CLI command:
+
+.. code-block:: console
 
    west build -b nrf5340dk_nrf5340_cpuapp -- -DSHIELD=nrf7002_ek
+
+To build for the nRF9160 DK, use the ``nrf9160dk_nrf9160_ns`` build target with the ``SHIELD`` CMake option set to ``nrf7002_ek`` and scan-only overlay configuration.
+The following is an example of the CLI command:
+
+.. code-block:: console
+
+   west build -b nrf9160dk_nrf9160_ns -- -DOVERLAY_CONFIG=overlay-scan-only.conf -DSHIELD=nrf7002_ek
 
 See also :ref:`cmake_options` for instructions on how to provide CMake options.
 
@@ -61,10 +73,12 @@ Supported CLI commands
    * - scan
      - Scan for access points in the vicinity
    * - connect
-     - | Connect to an access point with below parameters
+     - | Connect to an access point with below parameters:
        | <SSID>
+       | <Channel number> (optional: 0 means all)
        | <Passphrase> (optional: valid only for secured SSIDs)
        | <KEY_MGMT> (optional: 0-None, 1-WPA2, 2-WPA2-256, 3-WPA3)
+       | <MFP> (optional: 0-Disable, 1-Optional, 2-Required)
    * - disconnect
      - Disconnect from the current access point
    * - status
@@ -75,6 +89,26 @@ Supported CLI commands
      - Configure the Wi-Fi interface as access point mode
    * - ap_disable
      - Configure the Wi-Fi interface as station mode
+   * - ps
+     - | Configure power save
+       | No argument - Prints current configuration
+       | on - Turns on power save feature
+       | off - Turns off power save feature
+   * - twt
+     - | Manage Target Wake Time (TWT) flows with below subcommands:
+       |
+       | setup - Start a TWT flow:
+       | <negotiation_type: 0 - Individual, 1 - Broadcast, 2 - Wake TBTT>
+       | <setup_cmd: 0 - Request, 1 - Suggest, 2 - Demand>
+       | <dialog_token> <flow_id> <responder> <trigger> <implicit>
+       | <announce> <twt_wake_interval_ms> <twt_interval_ms>
+       |
+       | teardown - Teardown a TWT flow:
+       | <negotiation_type: 0 - Individual, 1 - Broadcast, 2 - Wake TBTT>
+       | <setup_cmd: 0 - Request, 1 - Suggest, 2 - Demand>
+       | <dialog_token> <flow_id>
+       |
+       | teardown_all - Teardown all TWT flows
 
 Testing
 =======
@@ -91,9 +125,9 @@ Testing
 
       Scan requested
 
-      Num  | SSID                             (len) | Chan | RSSI | Security        | BSSID
-      1    | xyza                             4     | 1    | -27  | WPA2-PSK        | xx:xx:xx:xx:xx:xx
-      2    | abcd                             4     | 1    | -28  | WPA2-PSK        | yy:yy:yy:yy:yy:yy
+      Num  | SSID                             (len) | Chan (Band)    | RSSI | Security        | BSSID
+      1    | xyza                             4     | 1    (2.4GHz)  | -27  | WPA2-PSK        | xx:xx:xx:xx:xx:xx
+      2    | abcd                             4     | 149  (5GHz  )  | -28  | WPA2-PSK        | yy:yy:yy:yy:yy:yy
 
 
 

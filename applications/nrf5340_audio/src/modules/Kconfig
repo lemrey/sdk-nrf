@@ -15,17 +15,21 @@ config BUTTON_DEBOUNCE_MS
 #----------------------------------------------------------------------------#
 menu "Power measurement"
 
-config POWER_MODULE_MIN_MEAS_TIME_MS
+config POWER_MEAS_INTERVAL_MS
 	int "Power measurement interval in milliseconds"
-	default 200
-
-config POWER_MODULE_MEAS_START_ON_BOOT
-	bool "Start power measurements for all rails on boot"
-	default n
+	default 8500
 	help
-		This option will automatically start and periodically print
-		the voltage, current consumption, and power usage for the
-		following rails: VBAT, VDD1_CODEC, VDD2_CODEC, and VDD2_NRF
+	  Power measurement runs continuously, this option just establishes the
+	  results polling period. Note that this value needs to be >= the configured
+	  sampling interval on the current sensor. When below, repeated measurements
+	  will be observed.
+
+config POWER_MEAS_START_ON_BOOT
+	bool "Start power measurements for all rails on boot"
+	help
+	  This option will automatically start and periodically print
+	  the voltage, current consumption, and power usage for the
+	  following rails: VBAT, VDD1_CODEC, VDD2_CODEC, and VDD2_NRF
 
 endmenu # Power measurement
 
@@ -52,56 +56,52 @@ endmenu # I2S
 #----------------------------------------------------------------------------#
 menu "Log levels"
 
-config LOG_I2S_LEVEL
-	int "Log level for audio_i2s"
-	default 2
+module = MODULE_AUDIO_USB
+module-str = module-audio-usb
+source "subsys/logging/Kconfig.template.log_config"
 
-config LOG_LED_LEVEL
-	int "Log level for LED"
-	default 2
+module = MODULE_BUTTON_HANDLER
+module-str = module-button-handler
+source "subsys/logging/Kconfig.template.log_config"
 
-config LOG_AUDIO_USB_LEVEL
-	int "Log level for USB audio"
-	default 2
+module = MODULE_DFU_ENTRY
+module-str = module-dfu-entry
+source "subsys/logging/Kconfig.template.log_config"
 
-config LOG_POWER_MODULE_LEVEL
-	int "Log level for power module"
-	default 3
+module = MODULE_HW_CODEC
+module-str = module-hw-codec
+source "subsys/logging/Kconfig.template.log_config"
 
-config LOG_PMIC_LEVEL
-	int "Log level for PMIC"
-	default 2
+module = MODULE_LED
+module-str = module-led
+source "subsys/logging/Kconfig.template.log_config"
 
-config LOG_HW_CODEC_LEVEL
-	int "Log level for HW_CODEC"
-	default 2
+module = MODULE_POWER
+module-str = module-power
+source "subsys/logging/Kconfig.template.log_config"
 
-config LOG_BUTTON_HANDLER_LEVEL
-	int "Log level for button_handler.c"
-	default 2
-
-config LOG_SD_CARD_LEVEL
-	int "Log level for SD card"
-	default 2
+module = MODULE_SD_CARD
+module-str = module-sd-card
+source "subsys/logging/Kconfig.template.log_config"
 
 endmenu # Log levels
 
 #----------------------------------------------------------------------------#
 menu "Thread priorities"
 
-config POWER_MODULE_THREAD_PRIO
+config POWER_MEAS_THREAD_PRIO
 	int "Priority for power measurement thread"
 	default 6
 	help
-		This is a preemptible thread
+	  This is a preemptible thread
 
 endmenu # Thread priorities
 
 #----------------------------------------------------------------------------#
 menu "Stack sizes"
 
-config POWER_MODULE_STACK_SIZE
-	int "Stack size for power module"
+config POWER_MEAS_STACK_SIZE
+	int "Stack size for power measurement thread"
 	default 1152
 
 endmenu # Stack sizes

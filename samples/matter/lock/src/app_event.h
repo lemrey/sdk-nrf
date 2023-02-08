@@ -29,13 +29,21 @@ enum class FunctionEvent : uint8_t { NoneSelected = 0, SoftwareUpdate = 0, Facto
 struct AppEvent {
 	union {
 		struct {
-			BoltLockManager::OperationSource Source;
+			uint8_t PinNo;
+			uint8_t Action;
+		} ButtonEvent;
+		struct {
+			void *Context;
+		} TimerEvent;
+		struct {
+			uint8_t Action;
+			int32_t Actor;
 		} LockEvent;
 		struct {
 			LEDWidget *LedWidget;
 		} UpdateLedStateEvent;
-		struct {
-			uint8_t ButtonNumber;
-		} FunctionEvent;
 	};
+
+	AppEventType Type{ AppEventType::None };
+	EventHandler Handler;
 };

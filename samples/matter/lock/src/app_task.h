@@ -21,19 +21,29 @@
 #endif
 
 struct k_timer;
+struct Identify;
 
 class AppTask {
 public:
+	static AppTask &Instance()
+	{
+		static AppTask sAppTask;
+		return sAppTask;
+	};
+
 	CHIP_ERROR StartApp();
 
-	void PostEvent(const AppEvent &aEvent);
 	void UpdateClusterState(BoltLockManager::State state, BoltLockManager::OperationSource source);
+
+	static void PostEvent(const AppEvent &event);
+	static void IdentifyStartHandler(Identify *);
+	static void IdentifyStopHandler(Identify *);
 
 private:
 	CHIP_ERROR Init();
 
-	void CancelFunctionTimer();
-	void StartFunctionTimer(uint32_t timeoutInMs);
+	void CancelTimer();
+	void StartTimer(uint32_t timeoutInMs);
 
 	static void DispatchEvent(const AppEvent &event);
 	static void FunctionTimerEventHandler(const AppEvent &event);
@@ -43,33 +53,31 @@ private:
 	static void StartBLEAdvertisementHandler(const AppEvent &event);
 	static void UpdateLedStateEventHandler(const AppEvent &event);
 
-	static void LockStateChanged(BoltLockManager::State state, BoltLockManager::OperationSource source);
-	static void UpdateStatusLED();
-	static void ButtonEventHandler(uint32_t buttonState, uint32_t hasChanged);
-	static void TimerEventHandler(k_timer *timer);
-	static void LEDStateUpdateHandler(LEDWidget &ledWidget);
 	static void ChipEventHandler(const chip::DeviceLayer::ChipDeviceEvent *event, intptr_t arg);
+	static void ButtonEventHandler(uint32_t buttonState, uint32_t hasChanged);
+	static void LEDStateUpdateHandler(LEDWidget &ledWidget);
+	static void FunctionTimerTimeoutCallback(k_timer *timer);
+	static void UpdateStatusLED();
+
+	static void LockStateChanged(BoltLockManager::State state, BoltLockManager::OperationSource source);
+
 #ifdef CONFIG_MCUMGR_SMP_BT
 	static void RequestSMPAdvertisingStart(void);
 #endif
 
-	friend AppTask &GetAppTask();
+#ifdef CONFIG_THREAD_WIFI_SWITCHING
+	static void SwitchImagesDone();
+	static void SwitchImagesTriggerHandler(const AppEvent &event);
+	static void SwitchImagesTimerTimeoutCallback(k_timer *timer);
+	static void SwitchImagesEventHandler(const AppEvent &event);
 
 	bool mSwitchImagesTimerActive = false;
 #endif
-	};
 
-	TimerFunction mFunction = TimerFunction::NoneSelected;
-
+	FunctionEvent mFunction = FunctionEvent::NoneSelected;
 	bool mFunctionTimerActive = false;
-	static AppTask sAppTask;
 
 #if CONFIG_CHIP_FACTORY_DATA
 	chip::DeviceLayer::FactoryDataProvider<chip::DeviceLayer::InternalFlashFactoryData> mFactoryDataProvider;
 #endif
 };
-
-inline AppTask &GetAppTask()
-{
-	return AppTask::sAppTask;
-}

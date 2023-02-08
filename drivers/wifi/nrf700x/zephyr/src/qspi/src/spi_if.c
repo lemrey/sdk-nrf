@@ -213,7 +213,7 @@ unsigned int spim_cmd_sleep_rpu(void)
 
 int spim_init(struct qspi_config *config)
 {
-	if (!spi_is_ready(&spi_spec)) {
+	if (!spi_is_ready_dt(&spi_spec)) {
 		LOG_ERR("Device %s is not ready\n", spi_spec.bus->name);
 		return -ENODEV;
 	}
@@ -221,6 +221,14 @@ int spim_init(struct qspi_config *config)
 	spim_config = config;
 
 	k_sem_init(&spim_config->lock, 1, 1);
+
+	if (spi_spec.config.frequency >= MHZ(16)) {
+		spim_config->qspi_slave_latency = 1;
+	}
+
+	LOG_INF("SPIM %s: freq = %d MHz\n", spi_spec.bus->name,
+		spi_spec.config.frequency / MHZ(1));
+	LOG_INF("SPIM %s: latency = %d\n", spi_spec.bus->name, spim_config->qspi_slave_latency);
 
 	return 0;
 }

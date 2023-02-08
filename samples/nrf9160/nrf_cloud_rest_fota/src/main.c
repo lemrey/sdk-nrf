@@ -8,7 +8,6 @@
 #include <modem/nrf_modem_lib.h>
 #include <nrf_modem_at.h>
 #include <modem/modem_info.h>
-#include <zephyr/dfu/mcuboot.h>
 #include <zephyr/settings/settings.h>
 #include <net/nrf_cloud.h>
 #include <net/nrf_cloud_rest.h>
@@ -21,7 +20,7 @@ LOG_MODULE_REGISTER(nrf_cloud_rest_fota, CONFIG_NRF_CLOUD_REST_FOTA_SAMPLE_LOG_L
 
 #if defined(CONFIG_NRF_CLOUD_FOTA_FULL_MODEM_UPDATE)
 /* Full modem FOTA requires external flash to hold the full modem image.
- * Below is the external flash device present on the nRF9160 DK version 1.0.1 and higher.
+ * Below is the external flash device present on the nRF9160 DK version 0.14.0 and higher.
  */
 #define EXT_FLASH_DEVICE jedec_spi_nor
 #endif
@@ -568,7 +567,7 @@ static int connect_to_network(void)
 	if (err) {
 		LOG_ERR("Failed to init modem, error: %d", err);
 	} else {
-		k_sem_take(&lte_connected, K_FOREVER);
+		(void)k_sem_take(&lte_connected, K_FOREVER);
 		(void)set_led(1);
 		LOG_INF("Connected");
 	}
@@ -735,7 +734,6 @@ static void handle_download_succeeded_and_reboot(void)
 	err = save_pending_job();
 	if (err) {
 		LOG_WRN("FOTA job will be marked as successful without validation");
-		err = 0;
 		fota_status_details = FOTA_STATUS_DETAILS_NO_VALIDATE;
 		(void)update_job_status();
 	}

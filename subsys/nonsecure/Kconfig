@@ -4,15 +4,11 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-if BUILD_WITH_TFM || IS_SPM
+if BUILD_WITH_TFM
 menu "Trusted Execution Non-Secure"
 
 menu "TF-M UART pins"
 	visible if BUILD_WITH_TFM
-
-config TFM_SECURE_UART1
-	bool
-	select NRF_UARTE1_SECURE
 
 config TFM_UART0_TXD_PIN
 	int "UART0 TXD pin"
@@ -85,8 +81,6 @@ config TFM_UART1_RXD_PIN
 endmenu
 
 menu "Peripheral Secure mapping"
-
-rsource "${ZEPHYR_BASE}/modules/hal_nordic/Kconfig.dt"
 
 peripheral=FPU
 peripheral_depends=CPU_HAS_FPU
@@ -392,4 +386,4 @@ endmenu # Peripheral Secure mapping
 
 endmenu # Trusted Execution Non-Secure
 
-endif # BUILD_WITH_TFM || IS_SPM
+endif # BUILD_WITH_TFM

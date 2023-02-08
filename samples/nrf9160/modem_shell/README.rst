@@ -788,6 +788,8 @@ LED indications
 
 The LEDs have the following functions:
 
+LED 1 (nRF9160 DK)/Purple LED (Thingy:91):
+   Lit for five seconds when the current location has been successfully retrieved by using the ``location get`` command.
 LED 3 (nRF9160 DK)/Blue LED (Thingy:91):
    Indicates the LTE registration status.
 
@@ -912,13 +914,29 @@ To program the certificates and connect to nRF Cloud, complete the following ste
 #. Open the entry for your device in the **Devices** view.
 #. Observe that location and device information are shown in the device page.
 
+nRF9160 DK with nRF7002 EK Wi-Fi support
+========================================
+
+To build the MoSh sample with nRF9160 DK and nRF7002 EK Wi-Fi support, use the ``-DSHIELD=nrf7002_ek``, ``-DDTC_OVERLAY_FILE=nrf9160dk_with_nrf7002ek.overlay`` and  ``-DOVERLAY_CONFIG=overlay-nrf7002ek-wifi-scan-only.conf`` options.
+
+For example:
+
+.. code-block:: console
+
+   west build -p -b nrf9160dk_nrf9160ns -- -DSHIELD=nrf7002_ek -DDTC_OVERLAY_FILE=nrf9160dk_with_nrf7002ek.overlay -DOVERLAY_CONFIG=overlay-nrf7002ek-wifi-scan-only.conf
+
+See :ref:`cmake_options` for more instructions on how to add these options.
+
 ESP8266 Wi-Fi support
 =====================
 
 To build the MoSh sample with ESP8266 Wi-Fi chip support, use the ``-DDTC_OVERLAY_FILE=esp_8266_nrf9160ns.overlay`` and  ``-DOVERLAY_CONFIG=overlay-esp-wifi.conf`` options.
+
 For example:
 
-``west build -p -b nrf9160dk_nrf9160_ns -d build -- -DDTC_OVERLAY_FILE=esp_8266_nrf9160ns.overlay -DOVERLAY_CONFIG=overlay-esp-wifi.conf``
+.. code-block:: console
+
+   west build -p -b nrf9160dk_nrf9160_ns -d build -- -DDTC_OVERLAY_FILE=esp_8266_nrf9160ns.overlay -DOVERLAY_CONFIG=overlay-esp-wifi.conf
 
 See :ref:`cmake_options` for more instructions on how to add these options.
 
@@ -952,7 +970,11 @@ After programming the development kit, test it in the Linux environment by perfo
       PPP: started
       mosh:~$
 
-#. Enter command``ppp uartconf`` that results in the following UART configuration:
+   Higher baudrates than the default 115200 result in better performance with the usual use cases for PPP/dial up.
+   Set the nRF9160 DK side UART for PPP with a MoSh command, for example ``ppp uartconf -b 921600``.
+   You also need to set the corresponding UART accordingly from PC side (in this example, within the ``pppd`` command).
+
+#. Enter command ``ppp uartconf`` that results in the following UART configuration:
 
    .. code-block:: console
 
@@ -1113,6 +1135,53 @@ For example:
 
    west build -p -b nrf9160dk_nrf9160_ns -- -DOVERLAY_CONFIG=overlay-rtt.conf
 
+LwM2M support
+=============
+
+Before building and running the sample, select the LwM2M server for testing.
+Follow the instructions in :ref:`server_setup_lwm2m_client` to set up the server and register your device to the server.
+With the default LwM2M configuration, the device connects directly to the device management server without bootstrap support.
+You can change the LwM2M server address by setting the :kconfig:option:`CONFIG_LWM2M_CLIENT_UTILS_SERVER` Kconfig option.
+
+Location assistance uses a proprietary mechanism to fetch location assistance data from nRF Cloud by proxying it through the LwM2M server.
+As of now, you can only use AVSystem's Coiote LwM2M server for the location assistance data from nRF Cloud.
+
+You can build the MoSh sample with different LwM2M configurations:
+
+  * To build the MoSh sample with the default LwM2M configuration, use the ``-DOVERLAY_CONFIG=overlay-lwm2m.conf`` option and set the used Pre-Shared-Key (PSK) using :kconfig:option:`CONFIG_MOSH_LWM2M_PSK` Kconfig option.
+  * To enable bootstrapping, use the optional overlay file :file:`overlay-lwm2m_bootstrap.conf`.
+  * To enable P-GPS support, use the optional overlay files :file:`overlay-lwm2m_pgps.conf` and :file:`overlay-pgps.conf`.
+
+To build the sample with LwM2M support, use the following command:
+
+.. code-block:: console
+
+   west build -p -b nrf9160dk_nrf9160_ns -- -DOVERLAY_CONFIG=overlay-lwm2m.conf -DCONFIG_MOSH_LWM2M_PSK=\"000102030405060708090a0b0c0d0e0f\"
+
+To enable also P-GPS, use the following command:
+
+.. code-block:: console
+
+   west build -p -b nrf9160dk_nrf9160_ns -- -DOVERLAY_CONFIG="overlay-lwm2m.conf;overlay-lwm2m_pgps.conf;overlay-pgps.conf" -DCONFIG_MOSH_LWM2M_PSK=\"000102030405060708090a0b0c0d0e0f\"
+
+Use the following command to establish connection to the LwM2M server:
+
+.. code-block:: console
+
+   mosh:~$ cloud_lwm2m connect
+   LwM2M: Starting LwM2M client
+   LwM2M: Registration complete
+
+Use the following command to disconnect from the LwM2M server:
+
+.. code-block:: console
+
+   mosh:~$ cloud_lwm2m disconnect
+   LwM2M: Stopping LwM2M client
+   LwM2M: Disconnected
+
+When connected, the ``location`` and ``gnss`` commands use the LwM2M cloud connection for fetching GNSS assistance data and for cellular positioning.
+
 References
 **********
 
@@ -1123,9 +1192,16 @@ Dependencies
 
 This sample uses the following |NCS| libraries:
 
-* :ref:`lte_lc_readme`
-* :ref:`modem_info_readme`
 * :ref:`at_cmd_parser_readme`
+* :ref:`lib_date_time`
+* :ref:`lib_location`
+* :ref:`lte_lc_readme`
+* :ref:`lib_lwm2m_client_utils`
+* :ref:`lib_lwm2m_location_assistance`
+* :ref:`modem_info_readme`
+* :ref:`lib_modem_jwt`
+* :ref:`lib_nrf_cloud`
+* :ref:`lib_rest_client`
 * :ref:`sms_readme`
 
 This sample uses the following `sdk-nrfxlib`_ libraries:

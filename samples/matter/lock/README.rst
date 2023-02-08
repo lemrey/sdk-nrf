@@ -56,7 +56,7 @@ Remote testing in a network
 By default, the Matter accessory device has IPv6 networking disabled.
 You must pair it with the Matter controller over Bluetooth® LE to get the configuration from the controller to use the device within a Thread or Wi-Fi network.
 You have to make the device discoverable manually (for security reasons).
-The controller must get the commissioning information from the Matter accessory device and provision the device into the network.
+The controller must get the `Onboarding information`_ from the Matter accessory device and provision the device into the network.
 For details, see the `Commissioning the device`_ section.
 
 .. matter_door_lock_sample_remote_testing_end
@@ -88,6 +88,7 @@ This sample supports the following build types, depending on the selected board:
 
 * ``debug`` -- Debug version of the application - can be used to enable additional features for verifying the application behavior, such as logs or command-line shell.
 * ``release`` -- Release version of the application - can be used to enable only the necessary application functionalities to optimize its performance.
+* ``thread_wifi_switched`` -- Debug version of the application with the ability to :ref:`switch between Thread and Wi-Fi network support <matter_lock_sample_switching_thread_wifi>` in the field - can be used for the nRF5340 DK with the nRF7002 EK shield attached.
 * ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support - can be used for the nRF52840 DK, nRF5340 DK, nRF7002 DK, and nRF21540 DK.
 
 .. note::
@@ -103,7 +104,7 @@ Device Firmware Upgrade support
 
 .. note::
    You can enable over-the-air Device Firmware Upgrade only on hardware platforms that have external flash memory.
-   Currently only nRF52840 DK and nRF5340 DK support Device Firmware Upgrade feature.
+   Currently only nRF52840 DK, nRF5340 DK and nRF7002 DK support Device Firmware Upgrade feature.
 
 The sample supports over-the-air (OTA) device firmware upgrade (DFU) using one of the two following protocols:
 
@@ -165,6 +166,9 @@ LED 2:
     * Off - The bolt is retracted and the door is unlocked.
     * Rapid Even Flashing (50 ms on/50 ms off during 2 s) - The simulated bolt is in motion from one position to another.
 
+    Additionally, the LED starts blinking evenly (500 ms on/500 ms off) when the Identify command of the Identify cluster is received on the endpoint ``1``.
+    The command's argument can be used to specify the duration of the effect.
+
 .. matter_door_lock_sample_button1_start
 
 Button 1:
@@ -185,6 +189,10 @@ Button 2:
       * If pressed for less than three seconds, it changes the lock state to the opposite one.
       * If pressed for more than three seconds, it starts the NFC tag emulation, enables Bluetooth LE advertising for the predefined period of time (15 minutes by default), and makes the device discoverable over Bluetooth LE.
 
+Button 3:
+    * On the nRF5340 DK when using the ``thread_wifi_switched`` build type: If pressed for more than ten seconds, it switches the running application from Thread or Wi-Fi to the other and factory resets the device.
+    * On other platform or build type: Not available.
+
 .. matter_door_lock_sample_button4_start
 
 Button 4:
@@ -203,7 +211,7 @@ SEGGER J-Link USB port:
 .. matter_door_lock_sample_jlink_end
 
 NFC port with antenna attached:
-    Optionally used for obtaining the commissioning information from the Matter accessory device to start the :ref:`commissioning procedure <matter_lock_sample_remote_control>`.
+    Optionally used for obtaining the `Onboarding information`_ from the Matter accessory device to start the :ref:`commissioning procedure <matter_lock_sample_remote_control>`.
 
 Building and running
 ********************
@@ -313,10 +321,84 @@ If you are new to Matter, the recommended approach is to use :ref:`CHIP Tool for
 
 .. matter_door_lock_sample_commissioning_end
 
+Onboarding information
+++++++++++++++++++++++
+
+When you start the commissioning procedure, the controller must get the onboarding information from the Matter accessory device.
+The onboarding information representation depends on your commissioner setup.
+
+For this sample, you can use one of the following :ref:`onboarding information formats <ug_matter_network_topologies_commissioning_onboarding_formats>` to provide the commissioner with the data payload that includes the device discriminator and the setup PIN code:
+
+  .. list-table:: Door lock sample onboarding information
+     :header-rows: 1
+
+     * - QR Code
+       - QR Code Payload
+       - Manual pairing code
+     * - Scan the following QR code with the app for your ecosystem:
+
+         .. figure:: ../../../doc/nrf/images/matter_qr_code_door_lock.png
+            :width: 200px
+            :alt: QR code for commissioning the light bulb device
+
+       - MT:8IXS142C00KA0648G00
+       - 34970112332
+
 Upgrading the device firmware
 =============================
 
 To upgrade the device firmware, complete the steps listed for the selected method in the :doc:`matter:nrfconnect_examples_software_update` tutorial of the Matter documentation.
+
+.. _matter_lock_sample_switching_thread_wifi:
+
+Switching between Thread and Wi-Fi
+==================================
+
+The ``thread_wifi_switched`` build type allows you to build the door lock application that supports dynamic switching between Matter over Thread and Matter over Wi-Fi.
+This feature requires that both variants of the application are built and placed in appropriate partitions of the external flash.
+After that, when a user triggers the switch, the device is rebooted into the MCUboot bootloader, which swaps the current variant.
+
+To test switching between Thread and Wi-Fi, complete the following steps:
+
+#. Build the door lock application for Matter over Thread:
+
+   .. code-block:: console
+
+      west build -b nrf5340dk_nrf5340_cpuapp -- -DCONF_FILE=prj_thread_wifi_switched.conf -DSHIELD=nrf7002_ek -DCONFIG_CHIP_WIFI=n
+
+#. Program the application to the kit using the following command:
+
+   .. code-block:: console
+
+      west flash --erase
+
+#. Program the application to a partition of the external flash using the following command:
+
+   .. code-block:: console
+
+      west build -t flash-external
+
+#. Build the door lock application for Matter over Wi-Fi:
+
+   .. code-block:: console
+
+      west build -b nrf5340dk_nrf5340_cpuapp -p always -- -DCONF_FILE=prj_thread_wifi_switched.conf -DSHIELD=nrf7002_ek
+
+#. Program the application to another partition of the external flash using the following command:
+
+   .. code-block:: console
+
+      west build -t flash-external
+
+#. |connect_terminal_ANSI|
+#. Press **Button 3** for more than ten seconds to trigger switching to the Matter over Wi-Fi variant of the application.
+#. Observe logs showing the progress of the operation until the device shuts down.
+#. Wait until the device boots again.
+#. Find the following log message which indicates that the expected variant of the application is running:
+
+   .. code-block:: console
+
+      D: 823 [DL]WiFiManager has been initialized
 
 Dependencies
 ************

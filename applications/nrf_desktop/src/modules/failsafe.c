@@ -22,17 +22,17 @@ static bool failsafe_check(void)
 
 	uint32_t reas = nrfx_reset_reason_get();
 
-	nrfx_reset_reason_clear(reas);
-
 	return (reas & mask) != 0;
 }
 
 static void failsafe_erase(void)
 {
 	const struct flash_area *flash_area;
-	int err = flash_area_open(FLASH_AREA_ID(storage), &flash_area);
+	int err = flash_area_open(FIXED_PARTITION_ID(storage_partition),
+				  &flash_area);
 	if (!err) {
-		err = flash_area_erase(flash_area, 0, FLASH_AREA_SIZE(storage));
+		err = flash_area_erase(flash_area, 0,
+				       FIXED_PARTITION_SIZE(storage_partition));
 		flash_area_close(flash_area);
 	}
 
@@ -41,6 +41,11 @@ static void failsafe_erase(void)
 	} else {
 		LOG_WRN("Failsafe erased settings");
 	}
+}
+
+static void failsafe_clear(void)
+{
+	nrfx_reset_reason_clear(nrfx_reset_reason_get());
 }
 
 static bool app_event_handler(const struct app_event_header *aeh)
@@ -58,6 +63,8 @@ static bool app_event_handler(const struct app_event_header *aeh)
 			if (failsafe_check()) {
 				failsafe_erase();
 			}
+			failsafe_clear();
+
 			module_set_state(MODULE_STATE_READY);
 		}
 

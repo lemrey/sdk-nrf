@@ -31,6 +31,8 @@ manifest:
       url-base: https://github.com/NordicSemiconductor
     - name: memfault
       url-base: https://github.com/memfault
+    - name: ant-nrfconnect
+      url-base: https://github.com/ant-nrfconnect
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -80,7 +82,6 @@ manifest:
           - loramac-node
           - lvgl
           - lz4
-          - mbedtls
           - mipi-sys-t
           - nanopb
           - net-tools
@@ -93,6 +94,7 @@ manifest:
           - tinycbor
           - tinycrypt
           - tf-m-tests
+          - uoscore-uedhoc
           - zcbor
           - zscilib
 
@@ -102,15 +104,15 @@ manifest:
     # changes.
     - name: sdk-hostap
       path: modules/lib/hostap
-      revision: 47399f055431513b5dfcd9d1fd1ec5dc5c96a252
+      revision: c1f1e0593d5bde73ba5d512b44fb765472829574
     - name: mcuboot
       repo-path: sdk-mcuboot
-      revision: v1.9.99-ncs2
+      revision: 9d2f9b5742c5cabcb87b7f7f22ff5269b13403bf
       path: bootloader/mcuboot
     - name: mbedtls-nrf
       path: mbedtls
       repo-path: sdk-mbedtls
-      revision: v3.1.0-ncs1
+      revision: v3.1.0-ncs2
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
@@ -118,11 +120,7 @@ manifest:
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
-      revision: v1.6.0-ncs1
-    - name: tfm-mcuboot # This is used by the trusted-firmware-m module.
-      repo-path: sdk-mcuboot
-      path: modules/tee/tfm-mcuboot
-      revision: v1.7.2-ncs2
+      revision: 1b7ee9d3cb09cb0081f49c3d20220cdf7d5f7b3c
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
@@ -139,23 +137,23 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: v2.1.0
+      revision: v2.2.0
       groups:
-      - nrf-802154
+        - nrf-802154
     - name: cjson
       repo-path: sdk-cjson
       path: modules/lib/cjson
       revision: c6af068b7f05207b28d68880740e4b9ec1e4b50a
     - name: homekit
       repo-path: sdk-homekit
-      revision: v2.1.0
+      revision: a8a4b468abca2514f902d47ce4d7cde56e9fe762
       groups:
-      - homekit
+        - homekit
     - name: find-my
       repo-path: sdk-find-my
-      revision: v2.1.0
+      revision: v2.2.0
       groups:
-      - find-my
+        - find-my
     - name: azure-sdk-for-c
       repo-path: azure-sdk-for-c
       path: modules/lib/azure-sdk-for-c
@@ -172,7 +170,7 @@ manifest:
       remote: throwtheswitch
     - name: memfault-firmware-sdk
       path: modules/lib/memfault-firmware-sdk
-      revision: 0.33.2
+      revision: 0.35.0
       remote: memfault
     - name: cirrus
       repo-path: sdk-mcu-drivers

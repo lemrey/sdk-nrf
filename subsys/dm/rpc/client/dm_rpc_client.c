@@ -16,7 +16,7 @@
 #include "../common/dm_rpc_common.h"
 #include "../common/serialize.h"
 
-LOG_MODULE_DECLARE(nrf_dm, CONFIG_DM_MODULE_LOG_LEVEL);
+LOG_MODULE_REGISTER(nrf_dm, CONFIG_DM_MODULE_LOG_LEVEL);
 NRF_RPC_GROUP_DECLARE(dm_rpc_grp);
 
 static void data_handler(struct k_work *work);
@@ -31,16 +31,17 @@ int dm_request_add(struct dm_request *req)
 {
 	int res;
 	struct nrf_rpc_cbor_ctx ctx;
-	size_t buffer_size_max = 30; /* This value is due to the serialization method. */
+	size_t buffer_size_max = 34; /* This value is due to the serialization method. */
 
 	NRF_RPC_CBOR_ALLOC(&dm_rpc_grp, ctx, buffer_size_max);
 
 	/* Encode the request structure */
 	ser_encode_uint(&ctx, req->role);
 	ser_encode_buffer(&ctx, &req->bt_addr, sizeof(bt_addr_le_t));
-	ser_encode_uint(&ctx, req->access_address);
+	ser_encode_uint(&ctx, req->rng_seed);
 	ser_encode_uint(&ctx, req->ranging_mode);
 	ser_encode_uint(&ctx, req->start_delay_us);
+	ser_encode_uint(&ctx, req->extra_window_time_us);
 
 	nrf_rpc_cbor_cmd_no_err(&dm_rpc_grp, DM_REQUEST_ADD_RPC_CMD, &ctx,
 				ser_rsp_decode_i32, &res);
@@ -68,7 +69,8 @@ int dm_init(struct dm_init_param *init_param)
 	return result;
 }
 
-static void process_data(const struct dm_rpc_process_data *data, struct dm_result *result)
+static void process_data(const struct dm_rpc_process_data *data, struct dm_result *result,
+			 float high_precision_estimate)
 {
 	if (!data || !result) {
 		return;
@@ -98,6 +100,9 @@ static void process_data(const struct dm_rpc_process_data *data, struct dm_resul
 		result->dist_estimates.mcpd.best = data->report.distance_estimates.mcpd.best;
 		result->dist_estimates.mcpd.rssi_openspace =
 						data->report.distance_estimates.mcpd.rssi_openspace;
+#ifdef CONFIG_DM__HIGH_PRECISION_CALC
+		result->dist_estimates.mcpd.high_precision = high_precision_estimate;
+#endif
 	}
 }
 
@@ -132,12 +137,18 @@ static void data_handler(struct k_work *work)
 {
 	int ret;
 	enum dm_rpc_cmd cmd;
-	struct dm_result result;
+	struct dm_result result = {0};
+	float high_precision_estimate = 0;
 
 	struct dm_rpc_process_data *dm_data = (struct dm_rpc_process_data *)recv_data;
 
 	nrf_dm_calc(&dm_data->report);
-	process_data(dm_data, &result);
+#ifdef CONFIG_DM_HIGH_PRECISION_CALC
+	if (dm_data->report.ranging_mode == NRF_DM_RANGING_MODE_MCPD) {
+		high_precision_estimate = nrf_dm_high_precision_calc(&dm_data->report);
+	}
+#endif
+	process_data(dm_data, &result, high_precision_estimate);
 	if (init_param_cb->data_ready) {
 		init_param_cb->data_ready(&result);
 	}
@@ -150,7 +161,7 @@ static void data_handler(struct k_work *work)
 	}
 
 	cmd = DM_END_PROCESS_RPC_CMD;
-	ipc_service_send(&ep, &cmd, sizeof(ret));
+	ipc_service_send(&ep, &cmd, sizeof(cmd));
 }
 
 static int ipc_init(const struct device *dev)
@@ -158,17 +169,17 @@ static int ipc_init(const struct device *dev)
 	ARG_UNUSED(dev);
 
 	int err;
-	const struct device *ipc0_instance;
+	const struct device *ipc_instance;
 
-	ipc0_instance = DEVICE_DT_GET(DT_NODELABEL(ipc0));
+	ipc_instance = DEVICE_DT_GET(DT_NODELABEL(ipc1));
 
-	err = ipc_service_open_instance(ipc0_instance);
+	err = ipc_service_open_instance(ipc_instance);
 	if ((err < 0) && (err != -EALREADY)) {
 		LOG_ERR("IPC service instance initialization failed with err: %d", err);
 		return err;
 	}
 
-	err = ipc_service_register_endpoint(ipc0_instance, &ep, &ep_cfg);
+	err = ipc_service_register_endpoint(ipc_instance, &ep, &ep_cfg);
 	if (err < 0) {
 		LOG_ERR("Registering endpoint failed with err: %d", err);
 		return err;

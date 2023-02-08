@@ -37,9 +37,6 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
 	case ZCL_BASIC_CLUSTER_ID:
 		emberAfBasicClusterInitCallback(endpoint);
 		break;
-	case ZCL_BINDING_CLUSTER_ID:
-		emberAfBindingClusterInitCallback(endpoint);
-		break;
 	case ZCL_DESCRIPTOR_CLUSTER_ID:
 		emberAfDescriptorClusterInitCallback(endpoint);
 		break;
@@ -82,6 +79,9 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
 	case ZCL_THREAD_NETWORK_DIAGNOSTICS_CLUSTER_ID:
 		emberAfThreadNetworkDiagnosticsClusterInitCallback(endpoint);
 		break;
+	case ZCL_WIFI_NETWORK_DIAGNOSTICS_CLUSTER_ID:
+		emberAfWiFiNetworkDiagnosticsClusterInitCallback(endpoint);
+		break;
 	default:
 		// Unrecognized cluster ID
 		break;
@@ -99,11 +99,6 @@ void __attribute__((weak)) emberAfAdministratorCommissioningClusterInitCallback(
 	(void)endpoint;
 }
 void __attribute__((weak)) emberAfBasicClusterInitCallback(EndpointId endpoint)
-{
-	// To prevent warning
-	(void)endpoint;
-}
-void __attribute__((weak)) emberAfBindingClusterInitCallback(EndpointId endpoint)
 {
 	// To prevent warning
 	(void)endpoint;
@@ -174,6 +169,11 @@ void __attribute__((weak)) emberAfSoftwareDiagnosticsClusterInitCallback(Endpoin
 	(void)endpoint;
 }
 void __attribute__((weak)) emberAfThreadNetworkDiagnosticsClusterInitCallback(EndpointId endpoint)
+{
+	// To prevent warning
+	(void)endpoint;
+}
+void __attribute__((weak)) emberAfWiFiNetworkDiagnosticsClusterInitCallback(EndpointId endpoint)
 {
 	// To prevent warning
 	(void)endpoint;

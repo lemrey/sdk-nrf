@@ -21,7 +21,8 @@
 /* Connectivity monitoring object RIDs. */
 #define NETWORK_BEARER_ID		0
 #define AVAIL_NETWORK_BEARER_ID		1
-#define RADIO_SIGNAL_STRENGTH		2
+/* Radio Signal Strength */
+#define RSS				2
 #define IP_ADDRESSES			4
 #define APN				7
 #define CELLID				8
@@ -41,7 +42,7 @@
 
 #define CONFIGURATION_OBJECT_ID			50009
 #define PASSIVE_MODE_RID			0
-#define GNSS_TIMEOUT_RID			1
+#define LOCATION_TIMEOUT_RID			1
 #define ACTIVE_WAIT_TIMEOUT_RID			2
 #define MOVEMENT_RESOLUTION_RID			3
 #define MOVEMENT_TIMEOUT_RID			4
@@ -50,13 +51,6 @@
 #define NEIGHBOR_CELL_ENABLE_RID		7
 #define ACCELEROMETER_INACT_THRESHOLD_RID	8
 #define ACCELEROMETER_INACT_TIMEOUT_RID		9
-
-/* Location Assistance resource IDs */
-#define LOCATION_ASSIST_OBJECT_ID		   50001
-#define ASSIST_TYPE_RID				   0
-#define AGPS_MASK_RID				   1
-#define ASSISTANCE_REQUEST_TYPE_SINGLECELL_REQUEST 3
-#define ASSISTANCE_REQUEST_TYPE_MULTICELL_REQUEST  4
 
 /* LTE-FDD (LTE-M) bearer & NB-IoT bearer. */
 #define LTE_FDD_BEARER 6U

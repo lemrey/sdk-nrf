@@ -6,7 +6,7 @@
 
 #pragma once
 
-/* ---- Lighting Example App Config ---- */
+/* ---- Light Switch App Config ---- */
 
 #include "board_util.h"
 
@@ -24,3 +24,8 @@
 
 #define SYSTEM_STATE_LED DK_LED1
 #define IDENTIFY_LED DK_LED2
+
+#if NUMBER_OF_LEDS == 4
+#define FACTORY_RESET_SIGNAL_LED DK_LED3
+#define FACTORY_RESET_SIGNAL_LED1 DK_LED4
+#endif

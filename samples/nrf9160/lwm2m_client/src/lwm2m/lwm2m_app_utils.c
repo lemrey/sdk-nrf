@@ -10,21 +10,18 @@
 
 #include "lwm2m_app_utils.h"
 
-#define NOTIFICATION_REQUEST_DELAY_MS 1500
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(app_lwm2m, CONFIG_APP_LOG_LEVEL);
 
-bool is_regular_read_cb(int64_t read_timestamp)
+void set_ipso_obj_timestamp(int ipso_obj_id, unsigned int obj_inst_id)
 {
-	int64_t dt = k_uptime_get() - read_timestamp;
-
-	return dt > NOTIFICATION_REQUEST_DELAY_MS;
-}
-
-void lwm2m_set_timestamp(int ipso_obj_id, unsigned int obj_inst_id)
-{
-	int32_t timestamp;
+	int ret;
 	char path[MAX_LWM2M_PATH_LEN];
 
-	lwm2m_engine_get_s32(LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, CURRENT_TIME_RID), &timestamp);
 	snprintk(path, MAX_LWM2M_PATH_LEN, "%d/%u/%d", ipso_obj_id, obj_inst_id, TIMESTAMP_RID);
-	lwm2m_engine_set_s32(path, timestamp);
+
+	ret = lwm2m_engine_set_time(path, time(NULL));
+	if (ret) {
+		LOG_ERR("Unable to set timestamp");
+	}
 }

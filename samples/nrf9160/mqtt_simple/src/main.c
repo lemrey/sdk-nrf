@@ -11,6 +11,8 @@
 #include <zephyr/random/rand32.h>
 #include <zephyr/net/mqtt.h>
 #include <zephyr/net/socket.h>
+#include <zephyr/shell/shell.h>
+#include <hw_id.h>
 #if defined(CONFIG_NRF_MODEM_LIB)
 #include <nrf_modem_at.h>
 #endif /* CONFIG_NRF_MODEM_LIB */
@@ -18,9 +20,6 @@
 #include <zephyr/logging/log.h>
 #if defined(CONFIG_MODEM_KEY_MGMT)
 #include <modem/modem_key_mgmt.h>
-#endif
-#if defined(CONFIG_LWM2M_CARRIER)
-#include <lwm2m_carrier.h>
 #endif
 #include <dk_buttons_and_leds.h>
 
@@ -76,56 +75,6 @@ static int certificates_provision(void)
 	return err;
 }
 #endif /* defined(CONFIG_MQTT_LIB_TLS) */
-
-#if defined(CONFIG_LWM2M_CARRIER)
-K_SEM_DEFINE(carrier_registered, 0, 1);
-int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
-{
-	switch (event->type) {
-	case LWM2M_CARRIER_EVENT_BSDLIB_INIT:
-		LOG_INF("LWM2M_CARRIER_EVENT_BSDLIB_INIT");
-		break;
-	case LWM2M_CARRIER_EVENT_CONNECTING:
-		LOG_INF("LWM2M_CARRIER_EVENT_CONNECTING");
-		break;
-	case LWM2M_CARRIER_EVENT_CONNECTED:
-		LOG_INF("LWM2M_CARRIER_EVENT_CONNECTED");
-		break;
-	case LWM2M_CARRIER_EVENT_DISCONNECTING:
-		LOG_INF("LWM2M_CARRIER_EVENT_DISCONNECTING");
-		break;
-	case LWM2M_CARRIER_EVENT_DISCONNECTED:
-		LOG_INF("LWM2M_CARRIER_EVENT_DISCONNECTED");
-		break;
-	case LWM2M_CARRIER_EVENT_BOOTSTRAPPED:
-		LOG_INF("LWM2M_CARRIER_EVENT_BOOTSTRAPPED");
-		break;
-	case LWM2M_CARRIER_EVENT_REGISTERED:
-		LOG_INF("LWM2M_CARRIER_EVENT_REGISTERED");
-		k_sem_give(&carrier_registered);
-		break;
-	case LWM2M_CARRIER_EVENT_DEFERRED:
-		LOG_INF("LWM2M_CARRIER_EVENT_DEFERRED");
-		break;
-	case LWM2M_CARRIER_EVENT_FOTA_START:
-		LOG_INF("LWM2M_CARRIER_EVENT_FOTA_START");
-		break;
-	case LWM2M_CARRIER_EVENT_REBOOT:
-		LOG_INF("LWM2M_CARRIER_EVENT_REBOOT");
-		break;
-	case LWM2M_CARRIER_EVENT_ERROR:
-		LOG_ERR("LWM2M_CARRIER_EVENT_ERROR: code %d, value %d",
-			((lwm2m_carrier_event_error_t *)event->data)->code,
-			((lwm2m_carrier_event_error_t *)event->data)->value);
-		break;
-	default:
-		LOG_WRN("Unhandled LWM2M_CARRIER_EVENT: %d", event->type);
-		break;
-	}
-
-	return 0;
-}
-#endif /* defined(CONFIG_LWM2M_CARRIER) */
 
 /**@brief Function to print strings without null-termination
  */
@@ -366,14 +315,8 @@ static int broker_init(void)
 	return err;
 }
 
-#if defined(CONFIG_NRF_MODEM_LIB)
-#define IMEI_LEN 15
-#define CGSN_RESPONSE_LENGTH (IMEI_LEN + 6 + 1) /* Add 6 for \r\nOK\r\n and 1 for \0 */
-#define CLIENT_ID_LEN sizeof("nrf-") + IMEI_LEN
-#else
 #define RANDOM_LEN 10
 #define CLIENT_ID_LEN sizeof(CONFIG_BOARD) + 1 + RANDOM_LEN
-#endif /* defined(CONFIG_NRF_MODEM_LIB) */
 
 /* Function to get the client id */
 static const uint8_t* client_id_get(void)
@@ -387,23 +330,20 @@ static const uint8_t* client_id_get(void)
 		goto exit;
 	}
 
-#if defined(CONFIG_NRF_MODEM_LIB)
-	char imei_buf[CGSN_RESPONSE_LENGTH + 1];
-	int err;
+	char hw_id_buf[HW_ID_LEN] = {0};
 
-	err = nrf_modem_at_cmd(imei_buf, sizeof(imei_buf), "AT+CGSN");
-	if (err) {
-		LOG_ERR("Failed to obtain IMEI, error: %d", err);
+	int err = hw_id_get(hw_id_buf, ARRAY_SIZE(hw_id_buf));
+
+	if (!err) {
+		snprintf(client_id, sizeof(client_id), "nrf-%s",
+			 hw_id_buf);
 		goto exit;
 	}
 
-	imei_buf[IMEI_LEN] = '\0';
+	LOG_ERR("failed to retrieve HW ID, err: %d", err);
 
-	snprintf(client_id, sizeof(client_id), "nrf-%.*s", IMEI_LEN, imei_buf);
-#else
 	uint32_t id = sys_rand32_get();
 	snprintf(client_id, sizeof(client_id), "%s-%010u", CONFIG_BOARD, id);
-#endif /* !defined(NRF_CLOUD_CLIENT_ID) */
 
 exit:
 	LOG_DBG("client_id = %s", (char *)client_id);
@@ -509,6 +449,31 @@ static void button_handler(uint32_t button_states, uint32_t has_changed)
 }
 #endif
 
+static int shell_mqtt_publish(const struct shell *shell, size_t argc, char **argv)
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	int ret;
+
+	ret = data_publish(&client,
+			   MQTT_QOS_1_AT_LEAST_ONCE,
+			   CONFIG_BUTTON_EVENT_PUBLISH_MSG,
+			   sizeof(CONFIG_BUTTON_EVENT_PUBLISH_MSG) - 1);
+	if (ret) {
+		LOG_ERR("Publish failed: %d", ret);
+	}
+
+	return ret;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(mqtt_sub,
+		SHELL_CMD(publish, NULL, "Publish data to configured publish topic",
+			shell_mqtt_publish),
+		SHELL_SUBCMD_SET_END /* Array terminated. */
+);
+SHELL_CMD_REGISTER(mqtt, &mqtt_sub, "MQTT operations", NULL);
+
 /**@brief Configures modem to provide LTE link. Blocks until link is
  * successfully established.
  */
@@ -529,14 +494,6 @@ static int modem_configure(void)
 		 * and connected.
 		 */
 	} else {
-#if defined(CONFIG_LWM2M_CARRIER)
-		/* Wait for the LWM2M_CARRIER to configure the modem and
-		 * start the connection.
-		 */
-		LOG_INF("Waitng for carrier registration...");
-		k_sem_take(&carrier_registered, K_FOREVER);
-		LOG_INF("Registered!");
-#else /* defined(CONFIG_LWM2M_CARRIER) */
 		int err;
 
 		LOG_INF("LTE Link Connecting...");
@@ -546,7 +503,6 @@ static int modem_configure(void)
 			return err;
 		}
 		LOG_INF("LTE Link Connected!");
-#endif /* defined(CONFIG_LWM2M_CARRIER) */
 	}
 #endif /* defined(CONFIG_LTE_LINK_CONTROL) */
 

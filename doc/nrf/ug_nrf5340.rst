@@ -53,28 +53,22 @@ Application core
 The application core is a full-featured Arm Cortex-M33 processor including DSP instructions and FPU.
 Use this core for tasks that require high performance and for application-level logic.
 
-The M33 TrustZone divides the application MCU into secure and non-secure domains.
+The M33 TrustZone, one of Cortex-M Security Extensions (CMSE), divides the application MCU into Secure Processing Environment (SPE) and Non-Secure Processing Environment (NSPE).
 When the MCU boots, it always starts executing from the secure area.
 
 In Zephyr, the firmware of the application core is built using one of the following build targets:
 
-* ``nrf5340dk_nrf5340_cpuapp`` for the secure domain.
-* ``nrf5340dk_nrf5340_cpuapp_ns`` for the non-secure domain.
-  On selecting this build target, the build system includes an additional secure firmware component before building the main firmware on the non-secure domain.
-  The additional component is :ref:`Trusted Firmware-M (TF-M) <ug_tfm>`.
+* ``nrf5340dk_nrf5340_cpuapp`` for build targets with CMSE disabled.
+* ``nrf5340dk_nrf5340_cpuapp_ns`` for build targets that have CMSE enabled and have the SPE firmware alongside the NSPE firmware.
 
-.. note::
-   In |NCS| releases before v1.6.1, the build target ``nrf5340dk_nrf5340_cpuapp_ns`` was named ``nrf5340dk_nrf5340_cpuappns``.
-
-The |NCS| provides Trusted Firmware-M for running applications from the non-secure area of the memory.
-The Secure Partition Manager (SPM) is deprecated.
+For information about CMSE and the difference between the two environments, see :ref:`app_boards_spe_nspe`.
 
 Trusted Firmware-M (TF-M)
 -------------------------
 
 Trusted Firmware-M provides a configurable set of software components to create a Trusted Execution Environment.
 It has replaced Secure Partition Manager as the solution used by |NCS| applications and samples.
-This means that when you build your application for the non-secure domain, the :ref:`TF-M <ug_tfm>` is automatically included in the build.
+This means that when you build your application with CMSE enabled, the :ref:`TF-M <ug_tfm>` is automatically included in the build.
 It is a framework for functions and use cases beyond the scope of Secure Partition Manager.
 
 For more information about the TF-M, see :ref:`ug_tfm`.
@@ -402,9 +396,9 @@ You can build and program separate images or combined images using the |nRFVSC|.
 Separate images
 ---------------
 
-To build and program the application core, follow the instructions in `Building an application`_ and use ``nrf5340dk_nrf5340_cpuapp`` or ``nrf5340dk_nrf5340_cpuapp_ns`` as the build target.
+To build and program the application core, follow the instructions in `How to build an application`_ and use ``nrf5340dk_nrf5340_cpuapp`` or ``nrf5340dk_nrf5340_cpuapp_ns`` as the build target.
 
-To build and program the network core, follow the instructions in `Building an application`_ and use ``nrf5340dk_nrf5340_cpunet`` as the build target.
+To build and program the network core, follow the instructions in `How to build an application`_ and use ``nrf5340dk_nrf5340_cpunet`` as the build target.
 
 .. _ug_nrf5340_VSC_multi_image:
 
@@ -528,19 +522,27 @@ See the following instructions.
          Therefore, you must recover the network core first.
          Otherwise, if you recover the application core first and the network core last, the binary written to the application core is deleted and readback protection is enabled again after a reset.
 
-.. include:: ug_nrf52.rst
+.. include:: ug_nrf52_developing.rst
    :start-after: fota_upgrades_start
    :end-before: fota_upgrades_end
 
-.. include:: ug_nrf52.rst
+.. include:: ug_nrf52_developing.rst
+   :start-after: fota_upgrades_bt_mesh_start
+   :end-before: fota_upgrades_bt_mesh_end
+
+.. note::
+   Point-to-point DFU over Bluetooth Low Energy is supported by default, out-of-the-box, for all samples and applications compatible with :ref:`zephyr:thingy53_nrf5340`.
+   See :ref:`thingy53_app_update` for more information about updating firmware image on :ref:`zephyr:thingy53_nrf5340`.
+
+.. include:: ug_nrf52_developing.rst
    :start-after: fota_upgrades_matter_start
    :end-before: fota_upgrades_matter_end
 
-.. include:: ug_nrf52.rst
+.. include:: ug_nrf52_developing.rst
    :start-after: fota_upgrades_thread_start
    :end-before: fota_upgrades_thread_end
 
-.. include:: ug_nrf52.rst
+.. include:: ug_nrf52_developing.rst
    :start-after: fota_upgrades_zigbee_start
    :end-before: fota_upgrades_zigbee_end
 
@@ -557,6 +559,12 @@ To enable the simultaneous update of multiple images in the MCUboot, set the fol
 * :kconfig:option:`CONFIG_BOOT_UPGRADE_ONLY` - The simultaneous update of multiple images does not support network core image reversion, so you need to disable application image reversion.
 * :kconfig:option:`CONFIG_PCD_APP` - Enable commands exchange with the network core.
 * :kconfig:option:`CONFIG_UPDATEABLE_IMAGE_NUMBER` - Enable support for multiple update partitions by setting this option to ``2``.
+
+.. note::
+
+   The application core can be reverted, but doing so bricks the network core upon revertion, as the reversion process fills the network core with the content currently in the RAM that pcd uses.
+   To enable this, define the ``USE_NRF53_MULTI_IMAGE_WITHOUT_UPGRADE_ONLY`` kconfig option in the project-level KConfig file.
+   When this is option is defined, you can enable it by setting :kconfig:option`CONFIG_USE_NRF53_MULTI_IMAGE_WITHOUT_UPGRADE_ONLY`.
 
 The :kconfig:option:`CONFIG_NRF53_MULTI_IMAGE_UPDATE` option selects this feature by default if these options and all its other dependencies are asserted.
 

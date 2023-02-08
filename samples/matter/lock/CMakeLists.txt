@@ -69,7 +69,7 @@ endif()
 
 target_sources(app PRIVATE ${app_sources})
 
-if(CONFIG_CHIP_OTA_REQUESTOR)
+if(CONFIG_CHIP_OTA_REQUESTOR OR CONFIG_MCUMGR_SMP_BT)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/ota_util.cpp)
 endif()
 
@@ -77,8 +77,30 @@ if(CONFIG_MCUMGR_SMP_BT)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/dfu_over_smp.cpp)
 endif()
 
+if(CONFIG_THREAD_WIFI_SWITCHING)
+    target_sources(app PRIVATE src/software_images_swapper.cpp)
+endif()
+
 chip_configure_data_model(app
     INCLUDE_SERVER
     ZAP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/lock.zap
 )
+
+if(CONFIG_THREAD_WIFI_SWITCHING)
+    find_package(Python3)
+    set(app_idx ${CONFIG_APPLICATION_IDX})
+    add_custom_target(flash-external
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/src/flash-external.py
+            --app ${APPLICATION_BINARY_DIR}/zephyr/app_update.bin
+            --app-offset ${PM_APP_${app_idx}_CORE_APP_OFFSET}
+            --app-size ${PM_APP_${app_idx}_CORE_APP_SIZE}
+            --net ${APPLICATION_BINARY_DIR}/zephyr/net_core_app_update.bin
+            --net-offset ${PM_APP_${app_idx}_CORE_NET_OFFSET}
+            --net-size ${PM_APP_${app_idx}_CORE_NET_SIZE}
+        USES_TERMINAL
+        DEPENDS
+            ${APPLICATION_BINARY_DIR}/zephyr/app_update.bin
+            ${APPLICATION_BINARY_DIR}/zephyr/net_core_app_update.bin
+    )
+endif()
 # NORDIC SDK APP END

@@ -90,17 +90,21 @@ This is a JSON file that contains the data model configuration of clusters, comm
 It is not used directly by Matter applications, but it is used to generate the source files for handling given clusters.
 
 The ZAP file can be edited using `ZCL Advanced Platform`_ (ZAP tool), a third-party tool that is a generic templating engine for applications and libraries based on Zigbee Cluster Library.
-This tool is provided with the Matter submodule.
+This tool is provided with the Matter repository in the |NCS|.
 
 To edit clusters using the ZAP tool, complete the following steps:
 
-1. Open your installation directory for the |NCS| in a command line.
+1. Make sure that you have installed the ZAP tool prerequisites, as mentioned in the Quick instructions section in the :file:`README.md` file in the official `ZCL Advanced Platform`_ repository.
+#. Open your installation directory for the |NCS| in a command line.
 #. Navigate to :file:`modules/lib/matter`.
 #. Open the :file:`src/template.zap` for editing by running the following command, where ``samples/matter/sensor`` stands for the path where you copied the template sample in the first step of this guide.
 
    .. code-block::
 
       ./scripts/tools/zap/run_zaptool.sh ../../../nrf/samples/matter/sensor/src/template.zap
+
+   .. note::
+       The :file:`run_zaptool.sh` script will run the bootstrap procedure to install all required ZAP tool dependencies (Node.js packages).
 
    The ZAP tool's Zigbee Cluster Configurator window appears.
 
@@ -182,30 +186,41 @@ In each iteration, an event is dequeued and a corresponding event handler is cal
 Add new events
 --------------
 
-After you copied the template sample application, the following events are present in the :c:struct:`AppEvent` structure in the :file:`src/app_event.h` file, each representing one action of the factory reset functionality:
+After you copied the template sample application, the following events are used in the application (:file:`src/app_event.h`):
 
-* :c:enum:`FunctionPress` - For pressing **Button 1**.
-* :c:enum:`FunctionRelease` - For releasing **Button 1**.
-* :c:enum:`FunctionTimer` - For factory reset timeout.
+* :c:enum:`Button` - For general operation of **Button 1**.
+* :c:enum:`ButtonPushed` - For pressing **Button 1**.
+* :c:enum:`ButtonReleased` - For releasing **Button 1**.
+* :c:enum:`Timer` - For factory reset timeout.
+* :c:enum:`UpdateLedState` - For updating of the **LED 1** state.
 
-To model the behavior of the sensor, add the following new :c:enum:`EventType` events:
+To model the behavior of the sensor, add the following new :c:enum:`AppEventType` events:
 
 * :c:enum:`SensorActivate` - For sensor activation.
 * :c:enum:`SensorDeactivate` - For sensor deactivation.
 * :c:enum:`SensorMeasure` - For sensor measurement update.
 
-For example, the edited :c:enum:`EventType` can look as follows:
+For example, the edited :c:enum:`AppEventType` can look as follows:
 
 .. code-block:: C++
 
-   enum EventType : uint8_t { FunctionPress, FunctionRelease, FunctionTimer, SensorActivate, SensorDeactivate, SensorMeasure };
-   enum UpdateLedStateEventType : uint8_t { UpdateLedState = SensorMeasure + 1 };
+   enum class AppEventType {
+        None = 0,
+        Button,
+        ButtonPushed,
+        ButtonReleased,
+        Timer,
+        UpdateLedState,
+        SensorActivate,
+        SensorDeactivate,
+        SensorMeasure
+   };
 
 Add sensor timer
 ----------------
 
 You need to make sure that the sensor is making measurements at the required time points.
-For this purpose, use a Zephyr timer to periodically post :c:struct:`SensorMeasure` events.
+For this purpose, use a Zephyr timer to periodically post :c:enum:`SensorMeasure` events.
 In the template sample, such a timer is being used to count down 6 seconds when **Button 1** is being pressed to initiate the factory reset.
 
 To add a new timer for the measurement event, edit the :file:`src/app_task.cpp` file as follows:
@@ -216,7 +231,10 @@ To add a new timer for the measurement event, edit the :file:`src/app_task.cpp` 
 
    void SensorTimerHandler(k_timer *timer)
    {
-           GetAppTask().PostEvent(AppEvent{ AppEvent::SensorMeasure });
+           AppEvent event;
+           event.Type = AppEventType::SensorMeasure;
+           event.Handler = AppTask::SensorMeasureHandler;
+           AppTask::Instance().PostEvent(event);
    }
 
    void StartSensorTimer(uint32_t aTimeoutMs)
@@ -246,8 +264,8 @@ If :c:func:`StartSensorTimer()` is called, the :c:struct:`SensorMeasure` event i
 Implement event handlers
 ------------------------
 
-When an event is dequeued, the application calls the event handler function.
-Because you have added new events, you must implement the corresponding handlers and modify the :c:func:`DispatchEvent()` function, which is used to process subsequent events from the queue.
+When an event is dequeued, the application calls the event handler in the :c:func:`DispatchEvent()` function.
+Because you have added new events, you must implement the corresponding handlers.
 
 To add new event handlers, complete the following steps:
 
@@ -255,17 +273,17 @@ To add new event handlers, complete the following steps:
 
    .. code-block:: C++
 
-      void AppTask::SensorActivateHandler()
+      void AppTask::SensorActivateHandler(const AppEvent &)
       {
               StartSensorTimer(500);
       }
 
-      void AppTask::SensorDeactivateHandler()
+      void AppTask::SensorDeactivateHandler(const AppEvent &)
       {
               StopSensorTimer();
       }
 
-      void AppTask::SensorMeasureHandler()
+      void AppTask::SensorMeasureHandler(const AppEvent &)
       {
               chip::app::Clusters::TemperatureMeasurement::Attributes::MeasuredValue::Set(
                       /* endpoint ID */ 1, /* temperature in 0.01*C */ int16_t(rand() % 5000));
@@ -277,40 +295,7 @@ To add new event handlers, complete the following steps:
    .. note::
       In the code fragment, the example value is updated randomly, but in a real sensor application it would be updated with the value obtained from external measurement.
 
-#. Declare these handler functions in :file:`src/app_task.h` to make sure the application builds properly.
-#. In the :file:`src/app_task.cpp` file, add cases for new events in :c:func:`DispatchEvent()`, for example:
-
-   .. code-block:: C++
-
-      void AppTask::DispatchEvent(const AppEvent &event)
-      {
-              switch (event.Type) {
-              case AppEvent::FunctionPress:
-                      FunctionPressHandler();
-                      break;
-              case AppEvent::FunctionRelease:
-                      FunctionReleaseHandler();
-                      break;
-              case AppEvent::FunctionTimer:
-                      FunctionTimerEventHandler();
-                      break;
-              case AppEvent::UpdateLedState:
-                      event.UpdateLedStateEvent.LedWidget->UpdateState();
-                      break;
-              case AppEvent::SensorActivate:
-                      SensorActivateHandler();
-                      break;
-              case AppEvent::SensorDeactivate:
-                      SensorDeactivateHandler();
-                      break;
-              case AppEvent::SensorMeasure:
-                      SensorMeasureHandler();
-                      break;
-              default:
-                      LOG_INF("Unknown event received");
-                      break;
-              }
-      }
+#. Declare these handler functions as ``static`` in the ``public`` scope of ``AppTask`` class in :file:`src/app_task.h` to make sure the application builds properly.
 
 Include header for cluster attribute helpers
 ============================================
@@ -360,7 +345,16 @@ For example, the implementation can look as follows:
            if (attributePath.mClusterId != OnOff::Id || attributePath.mAttributeId != OnOff::Attributes::OnOff::Id)
                    return;
 
-           GetAppTask().PostEvent(AppEvent(*value ? AppEvent::SensorActivate : AppEvent::SensorDeactivate));
+           AppEvent event;
+           if (*value) {
+               event.Type = AppEventType::SensorActivate;
+               event.Handler = AppTask::SensorActivateHandler;
+           }
+           else {
+               event.Type = AppEventType::SensorDeactivate;
+               event.Handler = AppTask::SensorDeactivateHandler;
+           }
+           AppTask::Instance().PostEvent(event);
    }
 
 In this implementation, the ``if`` part filters out events other than those that belong to the On/Off cluster.

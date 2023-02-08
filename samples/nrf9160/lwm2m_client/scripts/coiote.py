@@ -13,7 +13,6 @@ import logging
 import json
 import requests
 
-
 class Coiote():
     """Interact with Coiote server"""
     def __init__(self):
@@ -23,23 +22,20 @@ class Coiote():
         if self.base_url is None:
             self.base_url = 'https://eu.iot.avsystem.cloud'
 
-        #
         self.api_url = f"{self.base_url}/api/coiotedm/v3"
 
-        #
-        self.user = os.environ.get("COIOTE_USER")
-
-        #
+        self.user   = os.environ.get("COIOTE_USER")
         self.passwd = os.environ.get("COIOTE_PASSWD")
 
-        #
+        if not self.user or not self.passwd:
+            logging.error("COIOTE_USER or COIOTE_PASSWD not set")
+            sys.exit(1)
+
         self.headers = {'accept': 'application/json',
                         'content-type': 'application/json'}
 
-        #
         self.domain = os.environ.get("COIOTE_DOMAIN")
 
-        #
         token = os.environ.get("COIOTE_TOKEN")
 
         if token is not None:
@@ -47,7 +43,6 @@ class Coiote():
                             'content-type': 'application/json',
                             'authorization': f'Bearer {token}'}
 
-        #
         if self.user and self.passwd:
             self.auth = (self.user, self.passwd)
         else:
@@ -204,7 +199,7 @@ class Coiote():
                     logging.debug("Sending POST:")
                     logging.debug(json.dumps(objs,indent=2))
 
-                    resp = self.post(f"/devices/batch",json.dumps(objs),False)
+                    resp = self.post("/devices/batch",json.dumps(objs),False)
                     obj,status_code,tmp_s,tmp_f = Coiote.handle_batch_response(resp)
 
                     logging.debug("Received response (status %d):",status_code)
@@ -221,7 +216,7 @@ class Coiote():
                 logging.debug("Sending POST:")
                 logging.debug(json.dumps(objs,indent=2))
 
-                resp = self.post(f"/devices/batch",json.dumps(objs),False)
+                resp = self.post("/devices/batch",json.dumps(objs),False)
                 obj,status_code,tmp_s,tmp_f = Coiote.handle_batch_response(resp)
 
                 logging.debug("Received response (status %d):",status_code)
@@ -231,7 +226,7 @@ class Coiote():
                 succeeded += tmp_s
                 failed += tmp_f
 
-        logging.info(f"Coiote: uploaded %d devices into domain '%s', %d succeeded, %d failed.",
+        logging.info("Coiote: uploaded %d devices into domain '%s', %d succeeded, %d failed.",
                 line_tot,self.domain,succeeded,failed)
 
 
@@ -264,7 +259,7 @@ class Coiote():
             logging.error('Coiote: Failed to create device %s', dev_id)
         else:
             logging.info(
-                'Coiote: Creted device %s to domain %s', dev_id, domain)
+                'Coiote: Created device %s to domain %s', dev_id, domain)
 
     def get_domain(self):
         """Get list of domains for current user"""
@@ -293,7 +288,7 @@ if __name__ == "__main__":
         coiote.passwd = getpass()
         coiote.authenticate()
 
-    def get_domain(args):
+    def domain(args):
         """Get domain"""
         domain = coiote.get_domain()
         if domain is not None:
@@ -301,22 +296,29 @@ if __name__ == "__main__":
 
     def get(args):
         """Get a device"""
-        logging.info(coiote.get_device(args.id))
+        resp = coiote.get_device(args.id)
+        print(json.dumps(resp, indent=4))
 
     def delete(args):
         """Delete a device"""
-        logging.info(coiote.delete_device(args.id))
+        coiote.delete_device(args.id)
 
     def create(args):
         """Create a device"""
-        logging.info(coiote.create_device(args.id, args.psk, args.model,args.bootstrap))
+        coiote.create_device(args.id, args.psk, args.model,args.bootstrap)
 
     def batch_create(args):
         """Batch create devices from a file"""
         coiote.batch_create_device(args.file,args.model,args.lines,args.prefix)
 
+    def data(args):
+        """Get data from cached datamodel"""
+        resp = coiote.get(f'/cachedDataModels/{args.id}?parameters={args.query}')
+        print(json.dumps(resp, indent=4))
+
     parser = argparse.ArgumentParser(
-        description='Coiote device management')
+        description='Coiote device management',
+        allow_abbrev=False)
     parser.set_defaults(func=None)
     parser.add_argument("-d", "--debug", action="store_true", default=False, help="Output debug information.")
     subparsers = parser.add_subparsers(title='commands')
@@ -342,7 +344,7 @@ if __name__ == "__main__":
     create_pars.add_argument('-m', '--model', action='store', default=None, help='Generic Model Name')
     create_pars.add_argument('-b', '--bootstrap', default=False, action='store_true', help='Use bootstrap')
     get_domain_pars = subparsers.add_parser('domain', help='Get domain')
-    get_domain_pars.set_defaults(func=get_domain)
+    get_domain_pars.set_defaults(func=domain)
     batch_pars = subparsers.add_parser('batch', help='Batch create devices from a file.')
     batch_pars.set_defaults(func=batch_create)
     batch_pars.add_argument('file', type=str, action='store', help='CSV file with IMEI+PSK pairs.')
@@ -352,10 +354,15 @@ if __name__ == "__main__":
     batch_pars.add_argument(
         '-l', '--lines', action='store', type=int, default=100, help='Maximum batch size. Default is 100.')
 
+    data_pars = subparsers.add_parser('data', help='Get cached data from DataModel')
+    data_pars.set_defaults(func=data)
+    data_pars.add_argument('id', help='Device ID')
+    data_pars.add_argument('query', help='Data query')
+
     arg = parser.parse_args()
     if arg.func is None:
         parser.print_help()
         sys.exit(0)
     if arg.debug:
-        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+        logging.getLogger().setLevel(level = logging.DEBUG)
     arg.func(arg)

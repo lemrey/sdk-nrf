@@ -42,7 +42,7 @@ static K_MUTEX_DEFINE(state_mutex);
 #if IS_ENABLED(CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD)
 static K_SEM_DEFINE(connection_poll_sem, 0, 1);
 static atomic_t connection_poll_active;
-static int start_connection_poll();
+static int start_connection_poll(void);
 #endif
 
 enum nfsm_state nfsm_get_current_state(void)
@@ -103,9 +103,13 @@ int nrf_cloud_init(const struct nrf_cloud_init_param *param)
 		return err;
 	}
 	/* Initialize the encoder, decoder unit. */
-	err = nrf_cloud_codec_init();
-	if (err) {
-		return err;
+	if (param->hooks) {
+		nrf_cloud_os_mem_hooks_init(param->hooks);
+	} else {
+		err = nrf_cloud_codec_init(NULL);
+		if (err) {
+			return err;
+		}
 	}
 
 	/* Set the flash device before initializing the transport/FOTA. */
@@ -163,10 +167,28 @@ int nrf_cloud_uninit(void)
 
 		err = k_sem_take(&uninit_disconnect, K_SECONDS(30));
 		if (err == -EAGAIN) {
-			LOG_WRN("Did not receive expected disconnect event during cloud unint");
+			LOG_WRN("Did not receive expected disconnect event during cloud uninit");
 			err = -EISCONN;
 		}
 	}
+
+#if IS_ENABLED(CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD)
+	if (atomic_get(&connection_poll_active)) {
+		uint32_t wait_cnt = 50;
+
+		LOG_DBG("Waiting for connection poll thread to become inactive");
+		while (--wait_cnt && atomic_get(&connection_poll_active)) {
+			k_sleep(K_MSEC(200));
+		}
+
+		if (!wait_cnt) {
+			LOG_WRN("Connection poll thread did not become inactive");
+			if (!err) {
+				err = -ETIME;
+			}
+		}
+	}
+#endif
 
 	LOG_DBG("Cleaning up nRF Cloud resources");
 	app_event_handler = NULL;
@@ -211,7 +233,7 @@ static int connect_to_cloud(void)
 	return nct_connect();
 }
 
-int nrf_cloud_connect(const struct nrf_cloud_connect_param *param)
+int nrf_cloud_connect(void)
 {
 	int err;
 
@@ -226,7 +248,7 @@ int nrf_cloud_connect(const struct nrf_cloud_connect_param *param)
 #else
 	err = connect_to_cloud();
 	if (!err) {
-		atomic_set(&transport_disconnected,0);
+		atomic_set(&transport_disconnected, 0);
 	}
 #endif
 	return connect_error_translate(err);
@@ -240,38 +262,6 @@ int nrf_cloud_disconnect(void)
 
 	atomic_set(&disconnect_requested, 1);
 	return nct_disconnect();
-}
-
-int nrf_cloud_shadow_update(const struct nrf_cloud_sensor_data *param)
-{
-	int err;
-	struct nct_cc_data sensor_data = {
-		.opcode = NCT_CC_OPCODE_UPDATE_REQ,
-	};
-
-	if (current_state != STATE_DC_CONNECTED) {
-		return -EACCES;
-	}
-
-	if (param == NULL) {
-		return -EINVAL;
-	}
-
-	if (IS_VALID_USER_TAG(param->tag)) {
-		sensor_data.message_id = param->tag;
-	} else {
-		sensor_data.message_id = NCT_MSG_ID_USE_NEXT_INCREMENT;
-	}
-
-	err = nrf_cloud_encode_shadow_data(param, &sensor_data.data);
-	if (err) {
-		return err;
-	}
-
-	err = nct_cc_send(&sensor_data);
-	nrf_cloud_free((void *)sensor_data.data.ptr);
-
-	return err;
 }
 
 int nrf_cloud_shadow_device_status_update(const struct nrf_cloud_device_status *const dev_status)
@@ -363,7 +353,8 @@ int nrf_cloud_send(const struct nrf_cloud_tx_data *msg)
 	switch (msg->topic_type) {
 	case NRF_CLOUD_TOPIC_STATE: {
 		if (current_state < STATE_CC_CONNECTED) {
-			return -EACCES;
+			err = -EACCES;
+			break;
 		}
 		const struct nct_cc_data shadow_data = {
 			.opcode = NCT_CC_OPCODE_UPDATE_REQ,
@@ -375,14 +366,14 @@ int nrf_cloud_send(const struct nrf_cloud_tx_data *msg)
 		err = nct_cc_send(&shadow_data);
 		if (err) {
 			LOG_ERR("nct_cc_send failed, error: %d\n", err);
-			return err;
 		}
 
 		break;
 	}
 	case NRF_CLOUD_TOPIC_MESSAGE: {
 		if (current_state != STATE_DC_CONNECTED) {
-			return -EACCES;
+			err = -EACCES;
+			break;
 		}
 		const struct nct_dc_data buf = {
 			.data.ptr = msg->data.ptr,
@@ -392,19 +383,25 @@ int nrf_cloud_send(const struct nrf_cloud_tx_data *msg)
 
 		if (msg->qos == MQTT_QOS_0_AT_MOST_ONCE) {
 			err = nct_dc_stream(&buf);
+			if (err) {
+				LOG_ERR("nct_dc_stream failed, error: %d", err);
+			}
 		} else if (msg->qos == MQTT_QOS_1_AT_LEAST_ONCE) {
 			err = nct_dc_send(&buf);
+			if (err) {
+				LOG_ERR("nct_dc_send failed, error: %d", err);
+			}
 		} else {
 			err = -EINVAL;
 			LOG_ERR("Unsupported QoS setting");
-			return err;
 		}
 
 		break;
 	}
 	case NRF_CLOUD_TOPIC_BULK: {
 		if (current_state != STATE_DC_CONNECTED) {
-			return -EACCES;
+			err = -EACCES;
+			break;
 		}
 		const struct nct_dc_data buf = {
 			.data.ptr = msg->data.ptr,
@@ -415,17 +412,16 @@ int nrf_cloud_send(const struct nrf_cloud_tx_data *msg)
 		err = nct_dc_bulk_send(&buf, msg->qos);
 		if (err) {
 			LOG_ERR("nct_dc_bulk_send failed, error: %d", err);
-			return err;
 		}
 
 		break;
 	}
 	default:
 		LOG_ERR("Unknown topic type");
-		return -ENODATA;
+		err = -ENODATA;
 	}
 
-	return 0;
+	return err;
 }
 
 int nrf_cloud_tenant_id_get(char *id_buf, size_t id_len)
@@ -453,7 +449,7 @@ int nrf_cloud_process(void)
 }
 
 #if IS_ENABLED(CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD)
-static int start_connection_poll()
+static int start_connection_poll(void)
 {
 	if (current_state == STATE_IDLE) {
 		return -EACCES;
@@ -466,6 +462,13 @@ static int start_connection_poll()
 
 	atomic_set(&disconnect_requested, 0);
 	k_sem_give(&connection_poll_sem);
+
+	/* Set flag to ensure that subsequent connect
+	 * calls return the proper error value since
+	 * the connection poll thread may not yet be
+	 * awake.
+	 */
+	atomic_set(&connection_poll_active, 1);
 
 	return 0;
 }
@@ -504,6 +507,7 @@ start:
 	atomic_set(&transport_disconnected, 0);
 
 	while (true) {
+		fds[0].revents = 0;
 		ret = poll(fds, ARRAY_SIZE(fds), nct_keepalive_time_left());
 
 		/* If poll returns 0 the timeout has expired. */
@@ -516,6 +520,13 @@ start:
 				break;
 			}
 			continue;
+		}
+
+		if (ret < 0) {
+			LOG_ERR("poll() returned an error: %d; revents: 0x%x",
+				ret, fds[0].revents);
+			evt.status = NRF_CLOUD_DISCONNECT_MISC;
+			break;
 		}
 
 		if ((fds[0].revents & POLLIN) == POLLIN) {
@@ -533,12 +544,6 @@ start:
 			}
 
 			continue;
-		}
-
-		if (ret < 0) {
-			LOG_ERR("poll() returned an error: %d", ret);
-			evt.status = NRF_CLOUD_DISCONNECT_MISC;
-			break;
 		}
 
 		if ((fds[0].revents & POLLNVAL) == POLLNVAL) {
@@ -583,13 +588,7 @@ reset:
 	k_sem_take(&connection_poll_sem, K_NO_WAIT);
 	goto start;
 }
-
-#ifdef CONFIG_BOARD_QEMU_X86
-#define POLL_THREAD_STACK_SIZE 4096
-#else
-#define POLL_THREAD_STACK_SIZE 3072
-#endif
-K_THREAD_DEFINE(nrfcloud_connection_poll_thread, POLL_THREAD_STACK_SIZE,
+K_THREAD_DEFINE(nrfcloud_connection_poll_thread, CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD_STACK_SIZE,
 		nrf_cloud_run, NULL, NULL, NULL,
 		K_LOWEST_APPLICATION_THREAD_PRIO, 0, 0);
 #endif

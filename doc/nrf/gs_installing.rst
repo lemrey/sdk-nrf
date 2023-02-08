@@ -8,17 +8,16 @@ Installing manually
    :depth: 2
 
 The recommended way to get started with the |NCS| is to use nRF Connect for Desktop.
-See the :ref:`gs_assistant` page for information about how to install automatically.
+For instructions on automatic installation, see the :ref:`gs_assistant` page.
 
 .. note::
    If you use nRF Connect for Desktop to install the |NCS|, you can skip this section of the documentation.
-   If you prefer to install the toolchain manually, see the following documentation for instructions.
+   However, if you prefer to install the toolchain manually, follow the instructions in this documentation.
 
-To manually install the |NCS|, you must install all required tools and clone the |NCS| repositories.
-See the following sections for detailed instructions.
+To manually install the |NCS|, you must first install all the required tools and clone the |NCS| repositories.
 
-If you already have your system set up to work with Zephyr OS based on Zephyr's :ref:`zephyr:getting_started`, you already have some of the requirements for the |NCS| installed.
-The only requirement not covered by the installation steps in Zephyr is the :ref:`GN tool <gs_installing_gn>`.
+If you already have your system set up to work with Zephyr OS, based on Zephyr's :ref:`zephyr:getting_started`, it means you have most of the requirements for the |NCS| installed.
+The only requirement that is not covered by the installation steps in Zephyr is the :ref:`GN tool <gs_installing_gn>`.
 This tool is needed only for :ref:`ug_matter` applications.
 
 Before you start setting up the toolchain, install available updates for your operating system.
@@ -41,7 +40,7 @@ The installation process is different depending on your operating system.
 
    .. group-tab:: Windows
 
-      The recommended way for installing the required tools on Windows is to use `Chocolatey`_, a package manager for Windows.
+      The recommended way of installing the required tools on Windows is to use `Chocolatey`_, a package manager for Windows.
       Chocolatey installs the tools so that you can use them from a Windows command-line window.
 
       To install the required tools, complete the following steps:
@@ -53,6 +52,12 @@ The installation process is different depending on your operating system.
          :end-before: #. Close the window and open a new
 
       Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
+      To check the list of installed packages and their versions, run the following command:
+
+       .. parsed-literal::
+          :class: highlight
+
+           choco list -lo
 
    .. group-tab:: Linux
 
@@ -79,13 +84,19 @@ The installation process is different depending on your operating system.
          :end-before: group-tab:: Windows
 
       Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
-      Also see :ref:`zephyr:mac-setup-alts` in the Zephyr documentation for additional information.
+      To check the installed versions, run the following command:
 
+       .. parsed-literal::
+          :class: highlight
+
+           brew list --versions
+
+      Also see :ref:`zephyr:mac-setup-alts` in the Zephyr documentation for additional information.
 ..
 
 .. _gs_installing_gn:
 
-In addition to these required tools, install the `GN`_ meta-build system if you are interested in building `Matter`_ applications.
+If you want to build `Matter`_ applications, additionally install the `GN`_ meta-build system.
 This system generates the Ninja files that the |NCS| uses.
 
 .. tabs::
@@ -96,8 +107,8 @@ This system generates the Ninja files that the |NCS| uses.
 
       1. Download the latest version of the GN binary archive for Windows from the `GN website`_.
       2. Extract the :file:`zip` archive.
-      3. Check that the GN tool is added to your :envvar:`PATH` environment variable.
-         See :ref:`zephyr:env_vars` for instructions if needed.
+      3. Ensure that the GN tool is added to your :envvar:`PATH` environment variable.
+         For the exact instructions, see :ref:`zephyr:env_vars`.
 
    .. group-tab:: Linux
 
@@ -149,6 +160,17 @@ This system generates the Ninja files that the |NCS| uses.
 
       #. Download the GN binary archive and extract it by using the following commands:
 
+         * For 64-bit ARM (M1 and M2) host architecture:
+
+         .. parsed-literal::
+            :class: highlight
+
+            wget -O gn.zip https:\ //chrome-infra-packages.appspot.com/dl/gn/gn/mac-arm64/+/latest
+            unzip gn.zip
+            rm gn.zip
+
+         * For 64-bit AMD (Intel) host architecture:
+
          .. parsed-literal::
             :class: highlight
 
@@ -185,7 +207,7 @@ Install west
 
 To manage the combination of repositories and versions, the |NCS| uses :ref:`Zephyr's west <zephyr:west>`.
 
-To install west, reopen the command prompt window to ensure that Python is initialized and complete the following step:
+To install west, reopen the command prompt window as an administrator to ensure that Python is initialized, and complete the following step:
 
 .. tabs::
 
@@ -197,6 +219,9 @@ To install west, reopen the command prompt window to ensure that Python is initi
          :class: highlight
 
          pip3 install west
+
+      .. note::
+         Ensure the west location is added to the path in environmental variables.
 
    .. group-tab:: Linux
 
@@ -245,6 +270,7 @@ To clone the repositories, complete the following steps:
 
 1. Create a folder named :file:`ncs`.
    This folder will hold all |NCS| repositories.
+
 #. Determine the identifier of the revision of the |NCS| you want to work with.
    The recommended way is to work with a specific release.
 
@@ -254,12 +280,12 @@ To clone the repositories, complete the following steps:
    * To work with a branch, the identifier is the branch name (for example, ``main`` to work with the latest state of development).
    * To work with a specific state, the identifier is the SHA (for example, ``224bee9055d986fe2677149b8cbda0ff10650a6e``).
 
-#. From the command line, initialize west with the revision of the |NCS| that you want to check out, replacing *NCS_revision* with the identifier:
+#. On the command line, go to the :file:`ncs` folder (``cd ncs``) and initialize west with the revision of the |NCS| that you want to check out, replacing *nRFConnectSDK_revision* with the identifier:
 
    .. parsed-literal::
       :class: highlight
 
-      west init -m https\://github.com/nrfconnect/sdk-nrf --mr *NCS_revision*
+      west init -m https\://github.com/nrfconnect/sdk-nrf --mr *nRFConnectSDK_revision*
 
    For example, to check out the |release| release, enter the following command:
 
@@ -267,10 +293,6 @@ To clone the repositories, complete the following steps:
       :class: highlight
 
       west init -m https\://github.com/nrfconnect/sdk-nrf --mr |release|
-
-   To check out the latest state of development, enter the following command::
-
-     west init -m https://github.com/nrfconnect/sdk-nrf --mr main
 
    .. west-error-start
 
@@ -282,7 +304,11 @@ To clone the repositories, complete the following steps:
       .. west-error-end
 
       Initializing west with a specific revision of the manifest file does not lock your repositories to this version.
-      Checking out a different branch or tag in the `sdk-nrf`_ repository and running ``west update``  changes the version of the |NCS| that you work with.
+      Checking out a different branch or tag in the `sdk-nrf`_ repository and running ``west update`` changes the version of the |NCS| that you work with.
+
+   To check out the latest state of development, enter the following command::
+
+     west init -m https://github.com/nrfconnect/sdk-nrf --mr main
 
    This will clone the manifest repository `sdk-nrf`_ into :file:`nrf`.
 
@@ -375,162 +401,31 @@ It also includes additional host tools, such as custom QEMU and OpenOCD builds.
    When updating Zephyr SDK, :ref:`verify the Zephyr SDK variables <zephyr:toolchain_zephyr_sdk_update>`.
    Make sure that the ``zephyr`` toolchain is selected, not ``gnuarmemb``.
 
-.. Comment: The content below (for version 0.14.2) needs to be confirmed for the next nRF Connect SDK release.
-
-   .. ncs-include:: develop/getting_started/index.rst
-      :docset: zephyr
-      :dedent: 0
-      :start-after: debug Zephyr applications.
-      :end-before: .. _getting_started_run_sample:
-
 .. tabs::
 
    .. group-tab:: Windows
 
-      #. Open a ``cmd.exe`` window by pressing the Windows key typing "cmd.exe".
-
-      #. Download and verify `Zephyr SDK bundle
-         <https://github.com/zephyrproject-rtos/sdk-ng/releases>`_:
-
-         .. code-block:: console
-
-            cd %HOMEPATH%
-            wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.14.1/zephyr-sdk-0.14.1_windows-x86_64.zip
-
-      #. Extract the Zephyr SDK bundle archive:
-
-         .. code-block:: console
-
-            unzip zephyr-sdk-0.14.1_windows-x86_64.zip
-
-         .. note::
-            It is recommended to extract the Zephyr SDK bundle at one of the following locations:
-
-            * ``%HOMEPATH%``
-            * ``%PROGRAMFILES%``
-
-            The Zephyr SDK bundle archive contains the ``zephyr-sdk-0.14.1`` directory and, when
-            extracted under ``%HOMEPATH%``, the resulting installation path will be
-            ``%HOMEPATH%\zephyr-sdk-0.14.1``.
-
-      #. Run the Zephyr SDK bundle setup script:
-
-         .. code-block:: console
-
-            cd zephyr-sdk-0.14.1
-            setup.cmd
-
-         .. note::
-            You only need to run the setup script once after extracting the Zephyr SDK bundle.
-
-            You must rerun the setup script if you relocate the Zephyr SDK bundle directory after
-            the initial setup.
+      .. ncs-include:: develop/getting_started/index.rst
+         :docset: zephyr
+         :dedent: 6
+         :start-after:   .. _windows_zephyr_sdk:
+         :end-before: .. _getting_started_run_sample:
 
    .. group-tab:: Linux
 
-      #. Open a ``cmd.exe`` window by pressing the Windows key typing "cmd.exe".
-
-      #. Download and verify `Zephyr SDK bundle
-         <https://github.com/zephyrproject-rtos/sdk-ng/releases>`_:
-
-         .. code-block:: bash
-
-            cd ~
-            wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.14.1/zephyr-sdk-0.14.1_linux-x86_64.tar.gz
-            wget -O - https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.14.1/sha256.sum | shasum --check --ignore-missing
-
-         If your host architecture is 64-bit ARM (for example, Raspberry Pi), replace ``x86_64``
-         with ``aarch64`` in order to download the 64-bit ARM Linux SDK.
-
-      #. Extract the Zephyr SDK bundle archive:
-
-         .. code-block:: bash
-
-            tar xvf zephyr-sdk-0.14.1_linux-x86_64.tar.gz
-
-         .. note::
-            It is recommended to extract the Zephyr SDK bundle at one of the following locations:
-
-            * ``$HOME``
-            * ``$HOME/.local``
-            * ``$HOME/.local/opt``
-            * ``$HOME/bin``
-            * ``/opt``
-            * ``/usr/local``
-
-            The Zephyr SDK bundle archive contains the ``zephyr-sdk-0.14.1`` directory and, when
-            extracted under ``$HOME``, the resulting installation path will be
-            ``$HOME/zephyr-sdk-0.14.1``.
-
-      #. Run the Zephyr SDK bundle setup script:
-
-         .. code-block:: bash
-
-            cd zephyr-sdk-0.14.1
-            ./setup.sh
-
-         .. note::
-            You only need to run the setup script once after extracting the Zephyr SDK bundle.
-
-            You must rerun the setup script if you relocate the Zephyr SDK bundle directory after
-            the initial setup.
-
-      #. Install `udev <https://en.wikipedia.org/wiki/Udev>`_ rules, which
-         allow you to flash most Zephyr boards as a regular user:
-
-         .. code-block:: bash
-
-            sudo cp ~/zephyr-sdk-0.14.1/sysroots/x86_64-pokysdk-linux/usr/share/openocd/contrib/60-openocd.rules /etc/udev/rules.d
-            sudo udevadm control --reload
+      .. ncs-include:: develop/getting_started/index.rst
+         :docset: zephyr
+         :dedent: 6
+         :start-after:   .. _ubuntu_zephyr_sdk:
+         :end-before: .. group-tab:: macOS
 
    .. group-tab:: macOS
 
-      #. Open a ``cmd.exe`` window by pressing the Windows key typing "cmd.exe".
-
-      #. Download and verify `Zephyr SDK bundle
-         <https://github.com/zephyrproject-rtos/sdk-ng/releases>`_:
-
-         .. code-block:: bash
-
-            cd ~
-            wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.14.1/zephyr-sdk-0.14.1_macos-x86_64.tar.gz
-            wget -O - https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.14.1/sha256.sum | shasum --check --ignore-missing
-
-         If your host architecture is 64-bit ARM (Apple Silicon, also known as M1), replace
-         ``x86_64`` with ``aarch64`` in order to download the 64-bit ARM macOS SDK.
-
-      #. Extract the Zephyr SDK bundle archive:
-
-         .. code-block:: bash
-
-            tar xvf zephyr-sdk-0.14.1_macos-x86_64.tar.gz
-
-         .. note::
-            It is recommended to extract the Zephyr SDK bundle at one of the following locations:
-
-            * ``$HOME``
-            * ``$HOME/.local``
-            * ``$HOME/.local/opt``
-            * ``$HOME/bin``
-            * ``/opt``
-            * ``/usr/local``
-
-            The Zephyr SDK bundle archive contains the ``zephyr-sdk-0.14.1`` directory and, when
-            extracted under ``$HOME``, the resulting installation path will be
-            ``$HOME/zephyr-sdk-0.14.1``.
-
-      #. Run the Zephyr SDK bundle setup script:
-
-         .. code-block:: bash
-
-            cd zephyr-sdk-0.14.1
-            ./setup.sh
-
-         .. note::
-            You only need to run the setup script once after extracting the Zephyr SDK bundle.
-
-            You must rerun the setup script if you relocate the Zephyr SDK bundle directory after
-            the initial setup.
+      .. ncs-include:: develop/getting_started/index.rst
+         :docset: zephyr
+         :dedent: 6
+         :start-after:  .. _macos_zephyr_sdk:
+         :end-before: .. group-tab:: Windows
 
 .. rst-class:: numbered-step
 
@@ -547,11 +442,9 @@ You can install the |nRFVSC| to open and compile projects in the |NCS|.
 
 .. note::
 
-   If you are building the application or sample using SEGGER Embedded Studio IDE or on the command line and want to migrate to |VSC|, follow the instructions in the `migrating from other IDEs to VS Code <Migrating IDE_>`_ documentation.
+   If you are building the application or sample using SEGGER Embedded Studio IDE or on the command line and want to migrate to |VSC|, use the `Add an existing application <Migrating IDE_>`_ option in the |nRFVSC| to migrate your application.
 
 .. vsc_mig_note_end
-
-For instructions specifically for installing, see `Installing using Visual Studio Code`_.
 
 .. _build_environment_cli:
 

@@ -429,8 +429,16 @@ def first_partition_has_been_aligned(first, solution):
 
 def _set_addresses_and_align(reqs, sub_partitions, solution, size, start, dynamic_partitions, dp):
 
-    # Resolve 'align_next'
     solution_non_empty = [part for part in solution if 'EMPTY_' not in part]
+
+    # Check 'align' and 'align_next'.
+    for part in solution_non_empty:
+        if 'align' in reqs[part]:
+            raise PartitionError(f"'align' config is misplaced (should be part of 'placement').")
+        if 'align_next' in reqs[part]:
+            raise PartitionError(f"'align_next' config is misplaced (should be part of 'placement').")
+
+    # Resolve 'align_next'
     for i in range(len(solution_non_empty) - 1):
         part = solution_non_empty[i]
         next_part = solution_non_empty[i + 1]
@@ -883,7 +891,8 @@ This script generates a file for each partition - "pm_config.h".
 This file contains all addresses and sizes of all partitions.
 
 "pm_config.h" is in the same folder as the given 'pm.yml' file.''',
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        allow_abbrev=False)
     parser.add_argument('--input-files', required=True, type=str, nargs='+',
                         help='List of paths to input yaml files.')
 
@@ -907,7 +916,7 @@ This file contains all addresses and sizes of all partitions.
     main_args, region_args = parser.parse_known_args()
 
     # Create new instance to parse regions
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
     for x in main_args.regions:
         # Generate arguments for each region dynamically
         parser.add_argument(f'--{x}-size', required=True, type=lambda z: int(z, 0))
@@ -1270,6 +1279,7 @@ def test():
         'app': {},
         'e': {'placement': {'after': 'app'}, 'share_size': {'one_of': ['x0', 'app']}},  # app always exists
     }
+    fix_syntactic_sugar(td)
     s, sub_partitions = resolve(td, 'app')
     set_addresses_and_align(td, sub_partitions, s, 1000, 'app')
     set_sub_partition_address_and_size(td, sub_partitions)
@@ -1294,6 +1304,7 @@ def test():
         'e': {'placement': {'after': 'app'}, 'share_size': {'one_of': ['x0', 'app']}},  # app always exists
         'f': {'placement': {'before':  'end'}, 'share_size': 'p_ext'}
     }
+    fix_syntactic_sugar(td)
     s_reqs = td.copy()
     s_reqs['p_ext'] = {'region': 'ext', 'size': 250}
     s, sub_partitions = resolve(td, 'app', s_reqs)
@@ -1506,7 +1517,32 @@ def test():
     expect_addr_size(td, 'fifth', 96000, 2000)
     expect_addr_size(td, 'EMPTY_3', 98000, 2000)
 
+    # Test 'align' (negative)
+    # Wrong place
+    td = {'first': {'placement': {'after': 'start'}, 'size': 10000},
+          'second': {'placement': {'after': 'first'}, 'align': {'start': 4000}, 'size': 1000},
+          'app': {'region': 'flash_primary'}}
+    s, sub_partitions = resolve(td, 'app')
+    try:
+        set_addresses_and_align(td, sub_partitions, s, 100000, 'app')
+    except PartitionError:
+        pass
+    else:
+        assert False, "Should have raised an error."
+
     # Test 'align_next' (negative)
+    # Wrong place
+    td = {'first': {'placement': {'after': 'start'}, 'align_next': 4000, 'size': 10000},
+          'second': {'placement': {'after': 'first'}, 'size': 1000},
+          'app': {'region': 'flash_primary'}}
+    s, sub_partitions = resolve(td, 'app')
+    try:
+        set_addresses_and_align(td, sub_partitions, s, 100000, 'app')
+    except PartitionError:
+        pass
+    else:
+        assert False, "Should have raised an error."
+
     # 'align' already exists (end)
     td = {'first': {'placement': {'after': 'start', 'align_next': 4000}, 'size': 10000},
           'second': {'placement': {'after': 'first', 'align': {'end': 2000}}, 'size': 1000},
@@ -1573,6 +1609,7 @@ def test():
           'mcuboot_scratch': {'placement': {'after': 'app', 'align': {'start': 0x1000}}, 'size': 0x1e000},
           'mcuboot_storage': {'placement': {'after': 'mcuboot_scratch'}, 'size': 0x4000},
           'provision': {'placement': {'before': 'end', 'align': {'start': 0x1000}}, 'size': 0x1000}}
+    fix_syntactic_sugar(td)
     s, sub_partitions = resolve(td, 'app')
     set_addresses_and_align(td, sub_partitions, s, 0x100000, 'app')
     set_sub_partition_address_and_size(td, sub_partitions)
@@ -1684,6 +1721,7 @@ def test():
         'b': {'placement': {'before': ['c']}, 'size': 20},
         'k': {'span': []},
         'app': {}}
+    fix_syntactic_sugar(td)
     s, sub_partitions = resolve(td, 'app')
     set_addresses_and_align(td, {}, s, 1000, 'app')
     set_sub_partition_address_and_size(td, sub_partitions)

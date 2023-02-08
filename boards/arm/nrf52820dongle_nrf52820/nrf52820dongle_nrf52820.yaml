@@ -8,3 +8,6 @@ toolchain:
   - zephyr
   - gnuarmemb
   - xtools
+  - netif:openthread
+supported:
+  - gpio

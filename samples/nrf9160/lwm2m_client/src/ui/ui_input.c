@@ -10,7 +10,7 @@
 #include "ui_input_event.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(ui_input, CONFIG_UI_LOG_LEVEL);
+LOG_MODULE_DECLARE(app_lwm2m_client, CONFIG_APP_LOG_LEVEL);
 
 /**
  * @brief Callback used by the DK buttons and LEDs library.
@@ -37,6 +37,10 @@ static void dk_input_device_event_handler(uint32_t device_states, uint32_t has_c
 				dev_num = i + 1;
 				break;
 			}
+		}
+
+		if (dev_num == 0) {
+			return;
 		}
 
 		/* Device number has been stored, remove from bitmask. */

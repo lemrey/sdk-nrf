@@ -531,6 +531,10 @@ The peripheral supports one wireless connection at a time, but it can be bonded 
 .. note::
    To simplify pairing the nRF Desktop peripherals with Windows 10 hosts, the peripherals include `Swift Pair`_ payload in the Bluetooth LE advertising data.
 
+   Some of the nRF Desktop configurations also include `Fast Pair`_ payload in the Bluetooth LE advertising data to simplify pairing the nRF Desktop peripherals with Android hosts.
+   These configurations apply further modifications that are needed to improve the user experience.
+   See the :ref:`nrf_desktop_bluetooth_guide_fast_pair` documentation section for details.
+
 The nRF Desktop Bluetooth Central device scans for all bonded peripherals that are not connected.
 The scanning is interrupted when any device connected to the dongle through Bluetooth comes in use.
 Continuing the scanning in such scenario would cause report rate drop.
@@ -857,6 +861,13 @@ Selecting a build type from command line
    :start-after: build_types_selection_cmd_start
    :end-before: build_types_selection_cmd_end
 
+.. note::
+   If nRF Desktop is built with `Fast Pair`_ support, you must provide your own Fast Pair Model ID and Anti Spoofing private key as CMake options.
+   See :ref:`ug_bt_fast_pair_provisioning` documentation for the following information:
+
+   * Registering a Fast Pair Provider
+   * Provisioning a Fast Pair Provider in |NCS|
+
 .. _nrf_desktop_testing_steps:
 
 Testing
@@ -931,6 +942,59 @@ You must modify these configuration sources when `Adding a new board`_, as descr
 For information about differences between DTS and Kconfig, see :ref:`zephyr:dt_vs_kconfig`.
 For detailed instructions for adding Zephyr support to a custom board, see Zephyr's :ref:`zephyr:board_porting_guide`.
 
+Application-specific Kconfig configuration
+==========================================
+
+The nRF Desktop introduces Kconfig options that can be used to simplify an application configuration.
+These options can be used to select a device role and to automatically apply a default configuration suitable for the selected role.
+
+HID configuration
+-----------------
+
+The nRF Desktop application introduces application-specific configuration options related to HID device configuration.
+These options are defined in :file:`Kconfig.hid`.
+
+The options define the nRF Desktop device role.
+The device role may be either HID dongle or HID peripheral.
+The HID peripheral role can also specify a peripheral type (HID mouse, HID keyboard or other HID device).
+
+Each role automatically selects nRF Desktop modules needed for the role.
+For example, :ref:`nrf_desktop_hid_state` is automatically enabled for the HID peripheral role.
+Apart from the device role, the application-specific Kconfigs specify a set of supported HID reports and a supported HID boot report (if any).
+
+By default, the nRF Desktop devices use predefined format of HID reports.
+The common HID report map is defined in the :file:`configuration/common/hid_report_desc.c` file.
+
+Default common configuration
+----------------------------
+
+The nRF Desktop application aligns the configuration with the nRF Desktop use case by overlaying Kconfig defaults and selecting the required Kconfig options.
+Among others, the Kconfig :ref:`app_event_manager` and :ref:`lib_caf` options are selected to ensure that they are enabled.
+See the :file:`Kconfig.defaults` file for details related to default common configuration.
+
+Bluetooth configuration
+-----------------------
+
+The nRF Desktop application introduces application-specific configuration options related to Bluetooth connectivity configuration.
+These options are defined in :file:`Kconfig.ble` file.
+
+The :ref:`CONFIG_DESKTOP_BT <config_desktop_app_options>` Kconfig option enables support for Bluetooth connectivity in the nRF Desktop application.
+The option is enabled by default.
+The option performs the following:
+
+* Enables application modules related to Bluetooth that are required for the selected device role
+* Enables required functionalities in Zephyr's Bluetooth stack
+* Overlays Bluetooth Kconfig option defaults to align them with the nRF Desktop use-case
+
+See :file:`Kconfig.ble` file content for details.
+
+CAF configuration
+-----------------
+
+The nRF Desktop application overlays defaults of the :ref:`lib_caf` related Kconfig options to align them with the nRF Desktop use-case.
+The files that apply the overlays are located in the :file:`src/modules` directory and are named :file:`Kconfig.caf_module_name.default`.
+For example, the Kconfig defaults of :ref:`caf_settings_loader` are overlayed in the :file:`src/modules/Kconfig.caf_settings_loader.default`.
+
 .. _nrf_desktop_board_configuration:
 
 Board configuration
@@ -972,6 +1036,7 @@ nRF52840 Gaming Mouse (nrf52840gmouse_nrf52840)
         * Bluetooth is configured to use Nordic's SoftDevice link layer.
 
       * The configuration with the B0 bootloader is set as default.
+      * The board supports debug :ref:`nrf_desktop_bluetooth_guide_fast_pair` configuration (:file:`prj_fast_pair.conf`).
 
 nRF52832 Desktop Mouse (nrf52dmouse_nrf52832) and nRF52810 Desktop Mouse (nrf52810dmouse_nrf52810)
       * Both reference designs are meant for the project-specific hardware and are defined in :file:`nrf/boards/arm/nrf52dmouse_nrf52832` and :file:`nrf/boards/arm/nrf52810dmouse_nrf52810`, respectively.
@@ -985,6 +1050,7 @@ Sample mouse, keyboard or dongle (nrf52840dk_nrf52840)
       * The build types allow to build the application as mouse, keyboard or dongle.
       * Inputs are simulated based on the hardware button presses.
       * The configuration with the B0 bootloader is set as default.
+      * The board supports debug :ref:`nrf_desktop_bluetooth_guide_fast_pair` configuration that acts as a mouse (:file:`prj_fast_pair.conf`).
 
 Sample dongle (nrf52833dk_nrf52833)
       * The configuration uses the nRF52833 Development Kit.
@@ -1007,6 +1073,7 @@ nRF52832 Desktop Keyboard (nrf52kbd_nrf52832)
       * The preconfigured build types configure the device without the bootloader in debug mode and with B0 bootloader in release mode due to memory size limits.
       * Use configuration ``prj_shell.conf`` to add ``shell`` build type.
         This configuration do not have bootloader due to memory size limits.
+      * The board supports release :ref:`nrf_desktop_bluetooth_guide_fast_pair` configuration (:file:`prj_release_fast_pair.conf`).
 
 nRF52840 USB Dongle (nrf52840dongle_nrf52840) and nRF52833 USB Dongle (nrf52833dongle_nrf52833)
       * Since the nRF52840 Dongle is generic and defined in Zephyr, project-specific changes are applied in the DTS overlay file.
@@ -1165,7 +1232,6 @@ The following code excerpt is taken from :file:`boards/arm/nrf52840gmouse_nrf528
    		reg = <0>;
    		irq-gpios = <&gpio0 21 0>;
    		spi-max-frequency = <2000000>;
-   		label = "PMW3360";
    	};
    };
 
@@ -1260,7 +1326,6 @@ In the case of nRF52840, this is :file:`zephyr/dts/arm/nordic/nrf52840.dtsi`, wh
            reg = <0x40004000 0x1000>;
            interrupts = <4 1>;
            status = "disabled";
-           label = "SPI_1";
    };
 
 To change the priority of the peripheral's interrupt, override the ``interrupts`` property of the peripheral node by including the following code snippet in the :file:`dts.overlay` or directly in the board DTS:
@@ -1356,21 +1421,30 @@ The nRF Desktop devices use :ref:`Zephyr's Bluetooth API <zephyr:bluetooth>` to 
 This API is used only by the application modules that handle such connections.
 The information about peer and connection state is propagated to other application modules using :ref:`app_event_manager` events.
 
-The nRF Desktop devices come in the following types:
+The :ref:`CONFIG_DESKTOP_BT <config_desktop_app_options>` Kconfig option enables support for Bluetooth connectivity in the nRF Desktop.
+Specific Bluetooth configurations and application modules are selected according to the HID device role.
+Apart from that, the defaults of Bluetooth-related Kconfigs are aligned with the nRF Desktop use case.
 
-* Peripheral devices (mouse or keyboard)
+The nRF Desktop devices come in the following roles:
 
+* HID peripheral (:ref:`CONFIG_DESKTOP_ROLE_HID_PERIPHERAL <config_desktop_app_options>`)
+
+  * The HID peripherals can work as either mouse (:ref:`CONFIG_DESKTOP_PERIPHERAL_TYPE_MOUSE <config_desktop_app_options>`), keyboard (:ref:`CONFIG_DESKTOP_PERIPHERAL_TYPE_KEYBOARD <config_desktop_app_options>`) or user-specific HID peripheral (:ref:`CONFIG_DESKTOP_PERIPHERAL_TYPE_OTHER <config_desktop_app_options>`).
   * Support only the Bluetooth Peripheral role (:kconfig:option:`CONFIG_BT_PERIPHERAL`).
   * Handle only one Bluetooth LE connection at a time.
   * Use more than one Bluetooth local identity.
 
-* Central devices (dongle)
+* HID dongle (:ref:`CONFIG_DESKTOP_ROLE_HID_DONGLE <config_desktop_app_options>`)
 
   * Support only the Bluetooth Central role (:kconfig:option:`CONFIG_BT_CENTRAL`).
   * Handle multiple Bluetooth LE connections simultaneously.
   * Use only one Bluetooth local identity (the default one).
 
 Both central and peripheral devices have dedicated configuration options and use dedicated modules.
+
+The nRF Desktop peripheral configurations that enable `Fast Pair`_ support use slightly different Bluetooth configuration.
+This is needed to improve the user experience.
+See :ref:`nrf_desktop_bluetooth_guide_fast_pair` for more details.
 
 .. note::
     There is no nRF Desktop device that supports both central and peripheral roles.
@@ -1391,6 +1465,7 @@ For detailed information about every option, see the Kconfig help.
 * :kconfig:option:`CONFIG_BT_MAX_PAIRED`
 
   * nRF Desktop central: The maximum number of paired devices is greater than or equal to the maximum number of simultaneously connected peers.
+    The :kconfig:option:`CONFIG_BT_MAX_PAIRED` is by default set to :ref:`CONFIG_DESKTOP_HID_DONGLE_BOND_COUNT <config_desktop_app_options>`.
   * nRF Desktop peripheral: The maximum number of paired devices is equal to the number of peers plus one, where the one additional paired device slot is used for erase advertising.
 
 * :kconfig:option:`CONFIG_BT_ID_MAX`
@@ -1404,7 +1479,8 @@ For detailed information about every option, see the Kconfig help.
 
 * :kconfig:option:`CONFIG_BT_MAX_CONN`
 
-  * nRF Desktop central: Set the option to the maximum number of simultaneously connected devices.
+  * nRF Desktop central: This option is set to the maximum number of simultaneously connected devices.
+    The :kconfig:option:`CONFIG_BT_MAX_CONN` is by default set to :ref:`CONFIG_DESKTOP_HID_DONGLE_CONN_COUNT <config_desktop_app_options>`.
   * nRF Desktop peripheral: The default value (one) is used.
 
 .. note::
@@ -1494,6 +1570,49 @@ Optionally, you can also enable the following module:
   The Bluetooth LE channel map is forwarded using GATT characteristic.
   The Bluetooth Central can apply the channel map to avoid congested RF channels.
   This results in better connection quality and higher report rate.
+
+.. _nrf_desktop_bluetooth_guide_fast_pair:
+
+Fast Pair
+~~~~~~~~~
+
+The nRF Desktop peripheral can be built with Google `Fast Pair`_ support.
+The configurations that enable Fast Pair are set in the :file:`prj_fast_pair.conf` and :file:`prj_release_fast_pair.conf` files.
+
+.. note::
+   The Fast Pair integration in the nRF Desktop is :ref:`experimental <software_maturity>`.
+   The Resolvable Private Address (RPA) rotation is not yet synchronized with the Fast Pair not discoverable advertising payload update.
+   The factory reset of the Fast Pair non-volatile data is not yet supported.
+
+   The Fast Pair support in the |NCS| is :ref:`experimental <software_maturity>`.
+   See :ref:`ug_bt_fast_pair` for details.
+
+These configurations support multiple bonds per Bluetooth local identity (:kconfig:option:`CONFIG_CAF_BLE_STATE_MAX_LOCAL_ID_BONDS` is set to ``3``) and erase advertising (:ref:`CONFIG_DESKTOP_BLE_PEER_ERASE <config_desktop_app_options>`), but Bluetooth peer selection (:ref:`CONFIG_DESKTOP_BLE_PEER_SELECT <config_desktop_app_options>`) is disabled.
+You can now pair with your other hosts without putting peripheral back in pairing mode (without triggering the erase advertising).
+The nRF Desktop peripheral that integrates Fast Pair behaves as follows:
+
+  * If the used Bluetooth local identity has no bonds, the device advertises in pairing mode, and the Fast Pair discoverable advertising is used.
+    This allows to pair with the nRF Desktop device using both Fast Pair and normal Bluetooth pairing flows.
+    This advertising payload is also used during the erase advertising.
+  * If the used Bluetooth local identity already has a bond, the device is no longer in the pairing mode and the Fast Pair not discoverable advertising is used.
+    This allows to pair only with the Fast Pair Seekers linked to Google Accounts that are already associated with the nRF Desktop device.
+    In this mode the device by default rejects normal Bluetooth pairing (:ref:`CONFIG_DESKTOP_FAST_PAIR_LIMIT_NORMAL_PAIRING <config_desktop_app_options>` option is enabled).
+    The Fast Pair UI indication is hidden after the Provider reaches :kconfig:option:`CONFIG_CAF_BLE_STATE_MAX_LOCAL_ID_BONDS` bonded peers on the used local identity.
+
+After successful erase advertising procedure, the peripheral removes all of the bonds of a given Bluetooth local identity.
+
+Apart from that, the following changes are applied in configurations that support Fast Pair:
+
+* The static :ref:`partition_manager` configuration is modified to introduce a dedicated FLASH partition used to store the Fast Pair provisioning data.
+* Bluetooth privacy feature (:kconfig:option:`CONFIG_BT_PRIVACY`) is enabled.
+* The fast and slow advertising intervals defined in the :ref:`nrf_desktop_ble_adv` are aligned with Fast Pair expectations.
+* The Bluetooth advertising filter accept list (:kconfig:option:`CONFIG_CAF_BLE_ADV_FILTER_ACCEPT_LIST`) is disabled to allow Fast Pair Seekers other than the bonded one to connect outside of the pairing mode.
+* The security failure timeout (:ref:`CONFIG_DESKTOP_BLE_SECURITY_FAIL_TIMEOUT_S <config_desktop_app_options>`) is longer to prevent disconnections during the Fast Pair procedure.
+* Passkey authentication (:ref:`CONFIG_DESKTOP_BLE_ENABLE_PASSKEY <config_desktop_app_options>`) is disabled on keyboard.
+  Fast Pair currently does not support devices that use screen or keyboard for Bluetooth authentication.
+* TX power correction value (:kconfig:option:`CONFIG_BT_ADV_PROV_TX_POWER_CORRECTION_VAL`) is configured to align the TX power included in the advertising data with the Fast Pair expectations.
+
+See :ref:`ug_bt_fast_pair` for detailed information about Fast Pair support in the |NCS|.
 
 Bluetooth Central
 -----------------
@@ -1848,6 +1967,7 @@ These are valid for events that have many listeners or sources, and are gathered
    doc/dev_descr.rst
    doc/dfu.rst
    doc/failsafe.rst
+   doc/fast_pair_app.rst
    doc/fn_keys.rst
    doc/bas.rst
    doc/hid_forward.rst

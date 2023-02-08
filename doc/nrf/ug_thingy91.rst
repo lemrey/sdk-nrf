@@ -24,10 +24,22 @@ This guide gives you more information on the various aspects of Thingy:91.
 Connecting to Thingy:91
 ***********************
 
-For connecting to Thingy:91, you can use `LTE Link Monitor`_, `Trace Collector`_, or a serial terminal.
+You can connect to Thingy:91 wirelessly (using the `nRF Toolbox`_ app) or over a serial connection (using `LTE Link Monitor`_, `Trace Collector`_, or a serial terminal).
 
-Using serial ports
-==================
+Using nRF Toolbox
+=================
+
+To connect to your Thingy:91 wirelessly, you need to meet the following prerequisites:
+
+* The :ref:`connectivity_bridge` installed on your Thingy:91.
+* The :ref:`nus_service_readme` enabled.
+
+  .. note::
+     By default, the Bluetooth LE interface is off, as the connection is not encrypted or authenticated.
+     To turn it on at runtime, set the appropriate option in the :file:`Config.txt` file located on the USB Mass storage Device.
+
+Using a serial terminal
+=======================
 
 If you prefer to use a standard serial terminal, the baud rate has to be specified manually.
 
@@ -43,7 +55,6 @@ Thingy:91 uses the following UART baud rate configuration:
      - 115200
    * - UART_1
      - 1000000
-
 
 Using LTE Link Monitor
 ======================
@@ -121,7 +132,7 @@ You must use the build target ``thingy91_nrf9160_ns`` when building the applicat
 
 .. note::
 
-   LTE/GNSS features can only be used with non-secure target.
+   LTE/GNSS features can only be used with :ref:`Cortex-M Security Extensions enabled <app_boards_spe_nspe_cpuapp_ns>` (``_ns`` build target).
 
 The table below shows the different types of build files that are generated and the different scenarios in which they are used:
 
@@ -139,7 +150,7 @@ The table below shows the different types of build files that are generated and 
 For an overview of different types of build files in the |NCS|, see :ref:`app_build_output_files`.
 
 There are multiple methods of programming a sample or application onto a Thingy:91.
-You can choose the method based on the availability or absence of an external debug probe to program.
+It is recommended to use an external debug probe to program the Thingy:91.
 
 .. note::
 

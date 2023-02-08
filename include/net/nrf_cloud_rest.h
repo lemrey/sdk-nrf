@@ -15,7 +15,7 @@
 #include <zephyr/types.h>
 #include <net/nrf_cloud.h>
 #include <net/nrf_cloud_pgps.h>
-#include <net/nrf_cloud_cell_pos.h>
+#include <net/nrf_cloud_location.h>
 #include <modem/lte_lc.h>
 
 #ifdef __cplusplus
@@ -113,10 +113,12 @@ struct nrf_cloud_rest_context {
 	enum nrf_cloud_error nrf_err;
 };
 
-/** @brief Data required for nRF Cloud cellular positioning request */
-struct nrf_cloud_rest_cell_pos_request {
-	/** Network information used in request */
-	struct lte_lc_cells_info *net_info;
+/** @brief Data required for nRF Cloud location request */
+struct nrf_cloud_rest_location_request {
+	/** Cellular network information used in request */
+	struct lte_lc_cells_info *cell_info;
+	/** Wi-Fi network information used in request */
+	struct wifi_scan_info *wifi_info;
 };
 
 /** @brief Data required for nRF Cloud Assisted GPS (A-GPS) request */
@@ -151,19 +153,19 @@ struct nrf_cloud_rest_agps_result {
 	size_t agps_sz;
 };
 
-/** @defgroup nrf_cloud_rest_pgps_omit Omit item from P-GPS request.
- * @{
- */
+/** Omit the prediction count from P-GPS request */
 #define NRF_CLOUD_REST_PGPS_REQ_NO_COUNT	0
+/** Omit the prediction validity period from P-GPS request */
 #define NRF_CLOUD_REST_PGPS_REQ_NO_INTERVAL	0
+/** Omit the GPS day from P-GPS request */
 #define NRF_CLOUD_REST_PGPS_REQ_NO_GPS_DAY	0
+/** Omit the GPS time of day from P-GPS request */
 #define NRF_CLOUD_REST_PGPS_REQ_NO_GPS_TOD	(-1)
-/** @} */
 
 /** @brief Data required for nRF Cloud Predicted GPS (P-GPS) request */
 struct nrf_cloud_rest_pgps_request {
 	/** Data to be included in the P-GPS request. To omit an item
-	 * use the appropriate define in @ref nrf_cloud_rest_pgps_omit
+	 * use the appropriate `NRF_CLOUD_REST_PGPS_REQ_NO_` define.
 	 */
 	const struct gps_pgps_request *pgps_req;
 };
@@ -181,9 +183,9 @@ struct nrf_cloud_rest_pgps_request {
  *          Otherwise, a (negative) error code is returned.
  *          See @verbatim embed:rst:inline :ref:`nrf_cloud_rest_failure` @endverbatim for details.
  */
-int nrf_cloud_rest_cell_pos_get(struct nrf_cloud_rest_context *const rest_ctx,
-	struct nrf_cloud_rest_cell_pos_request const *const request,
-	struct nrf_cloud_cell_pos_result *const result);
+int nrf_cloud_rest_location_get(struct nrf_cloud_rest_context *const rest_ctx,
+	struct nrf_cloud_rest_location_request const *const request,
+	struct nrf_cloud_location_result *const result);
 
 /**
  * @brief nRF Cloud Assisted GPS (A-GPS) data request.

@@ -19,8 +19,6 @@
 #include "button_assignments.h"
 #include "nrfx_clock.h"
 #include "ble_core.h"
-#include "pmic.h"
-#include "power_module.h"
 #include "sd_card.h"
 #include "board_version.h"
 #include "audio_system.h"
@@ -32,7 +30,7 @@
 #endif
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(main, CONFIG_LOG_MAIN_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_MAIN_LOG_LEVEL);
 
 #if defined(CONFIG_INIT_STACKS)
 /* Used for printing stack usage */
@@ -74,11 +72,7 @@ static int leds_set(void)
 #if (CONFIG_AUDIO_DEV == HEADSET)
 	enum audio_channel channel;
 
-	ret = channel_assignment_get(&channel);
-	if (ret) {
-		/* Channel is not assigned yet: use default */
-		channel = AUDIO_CHANNEL_DEFAULT;
-	}
+	channel_assignment_get(&channel);
 
 	if (channel == AUDIO_CH_L) {
 		ret = led_on(LED_APP_RGB, LED_COLOR_BLUE);
@@ -104,7 +98,7 @@ static int bonding_clear_check(void)
 	int ret;
 	bool pressed;
 
-	ret = button_pressed(BUTTON_MUTE, &pressed);
+	ret = button_pressed(BUTTON_5, &pressed);
 	if (ret) {
 		return ret;
 	}
@@ -121,11 +115,6 @@ static int bonding_clear_check(void)
 static int channel_assign_check(void)
 {
 #if (CONFIG_AUDIO_DEV == HEADSET) && CONFIG_AUDIO_HEADSET_CHANNEL_RUNTIME
-	if (!channel_assignment_get(&(enum audio_channel){ AUDIO_CH_L })) {
-		/* Channel already assigned */
-		return 0;
-	}
-
 	int ret;
 	bool pressed;
 
@@ -135,7 +124,8 @@ static int channel_assign_check(void)
 	}
 
 	if (pressed) {
-		return channel_assignment_set(AUDIO_CH_L);
+		channel_assignment_set(AUDIO_CH_L);
+		return 0;
 	}
 
 	ret = button_pressed(BUTTON_VOLUME_UP, &pressed);
@@ -144,7 +134,8 @@ static int channel_assign_check(void)
 	}
 
 	if (pressed) {
-		return channel_assignment_set(AUDIO_CH_R);
+		channel_assignment_set(AUDIO_CH_R);
+		return 0;
 	}
 #endif
 
@@ -181,6 +172,8 @@ void main(void)
 	ret = button_handler_init();
 	ERR_CHK(ret);
 
+	channel_assignment_init();
+
 	ret = channel_assign_check();
 	ERR_CHK(ret);
 
@@ -193,23 +186,12 @@ void main(void)
 	ret = board_version_get(&board_rev);
 	ERR_CHK(ret);
 
-	if (board_rev.mask & BOARD_REVISION_VALID_MSK_MAX14690_PMIC) {
-		ret = pmic_init();
-		ERR_CHK(ret);
-
-		ret = pmic_defaults_set();
-		ERR_CHK(ret);
-	}
-
 	if (board_rev.mask & BOARD_VERSION_VALID_MSK_SD_CARD) {
 		ret = sd_card_init();
 		if (ret != -ENODEV) {
 			ERR_CHK(ret);
 		}
 	}
-
-	ret = power_module_init();
-	ERR_CHK(ret);
 
 #if defined(CONFIG_AUDIO_DFU_ENABLE)
 	/* Check DFU BTN before Initialize BLE */

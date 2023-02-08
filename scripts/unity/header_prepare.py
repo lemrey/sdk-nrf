@@ -61,25 +61,25 @@ def header_prepare(in_file, out_file, out_wrap_file):
     with open(out_file, 'w') as f_out:
         f_out.write(content)
 
-    # Prepare file with functions prefixed with __wrap_ that will be used for
+    # Prepare file with functions prefixed with __cmock_ that will be used for
     # mock generation.
     func_pattern = re.compile(
         r"^\s*((?:\w+[*\s]+)+)(\w+?\s*\([\w\s,*\.\[\]]*?\)\s*;)", re.M)
-    content2 = func_pattern.sub(r"\n\1__wrap_\2", content)
+    content2 = func_pattern.sub(r"\n\1__cmock_\2", content)
 
     with open(out_wrap_file, 'w') as f_wrap:
         f_wrap.write(content2)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("-i", "--input", type=str,
                         help="input header file", required=True)
     parser.add_argument("-o", "--output", type=str,
                         help="stripped header file to be included in the test",
                         required=True)
     parser.add_argument("-w", "--wrap", type=str,
-                        help='header with __wrap_-prefixed functions for'
+                        help='header with __cmock_-prefixed functions for'
                         'mock generation', required=True)
     args = parser.parse_args()
 

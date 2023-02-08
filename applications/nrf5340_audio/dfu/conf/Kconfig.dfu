@@ -19,15 +19,6 @@ config B0N_MINIMAL
 	help
 	  Let CMakelist choose corresponding overlay file
 
-if AUDIO_DFU = 0
-
-# Avoid multi-build system build network core firmware
-config NCS_INCLUDE_RPMSG_CHILD_IMAGE
-	bool
-	default n
-
-endif
-
 if AUDIO_DFU = 1 || AUDIO_DFU = 2
 
 config AUDIO_DFU_ENABLE
@@ -38,10 +29,6 @@ config AUDIO_DFU_ENABLE
 		To show warning message of EXPERIMENTAL feature DFU
 
 config BOOTLOADER_MCUBOOT
-	bool
-	default y
-
-config NCS_INCLUDE_RPMSG_CHILD_IMAGE
 	bool
 	default y
 
@@ -59,6 +46,10 @@ config MCUMGR
 	default y
 
 config MCUMGR_CMD_OS_MGMT
+	bool
+	default y
+
+config OS_MGMT_TASKSTAT
 	bool
 	default y
 
@@ -110,10 +101,6 @@ config STATS_NAMES
 config MCUBOOT_IMAGE_VERSION
 	string
 	default "0.0.0+0"
-
-config LOG_DFU_ENTRY_LEVEL
-	int "Log level for DFU entry module"
-	default 3
 
 config BT_DEVICE_NAME_DYNAMIC
 	bool

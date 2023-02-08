@@ -20,9 +20,12 @@ The memory requirement tables list flash memory and RAM requirements for the :re
 The values change depending on device type and hardware platform.
 Moreover, take into account the following considerations:
 
-* The sample was compiled using the default :file:`prj.conf` plus :file:`harness\overlay-cert.conf`  and :file:`overlay-multiprotocol.conf` overlay files, and the corresponding :kconfig:option:`OPENTHREAD_NORDIC_LIBRARY`, :kconfig:option:`OPENTHREAD_THREAD_VERSION` choices.
-* The single protocol sample was configured by setting :kconfig:option:`CONFIG_BT` to ``n``.
-* Values for the :ref:`Thread CLI sample <ot_cli_sample>`, which works with all OpenThread calls, are the highest possible for the OpenThread stack using the master image library configuration.
+* The sample was compiled using:
+
+  * The default :file:`prj.conf` and the corresponding :kconfig:option:`OPENTHREAD_NORDIC_LIBRARY`, :kconfig:option:`OPENTHREAD_THREAD_VERSION` choices.
+  * The :kconfig:option:`CONFIG_ASSERT` Kconfig option set to ``n``.
+
+* * Values for the :ref:`Thread CLI sample <ot_cli_sample>`, which works with all OpenThread calls, are the highest possible for the OpenThread stack using the master image library configuration.
 
 The tables provide memory requirements for the following device type variants:
 
@@ -44,13 +47,13 @@ The following tables present memory requirements for samples running on the :ref
    +-----------------------------+-------+-------+
    |                             |   FTD |   MTD |
    +=============================+=======+=======+
-   | ROM OT stack + App [kB]     |   390 |   337 |
+   | ROM OT stack + App [kB]     |   393 |   340 |
    +-----------------------------+-------+-------+
    | ROM Bluetooth LE stack [kB] |     0 |     0 |
    +-----------------------------+-------+-------+
    | Persistent storage [kB]     |    24 |    24 |
    +-----------------------------+-------+-------+
-   | Free ROM [kB]               |   610 |   663 |
+   | Free ROM [kB]               |   607 |   660 |
    +-----------------------------+-------+-------+
    | RAM OT stack + App [kB]     |   100 |    90 |
    +-----------------------------+-------+-------+
@@ -64,13 +67,13 @@ The following tables present memory requirements for samples running on the :ref
    +-----------------------------+-------+-------+
    |                             |   FTD |   MTD |
    +=============================+=======+=======+
-   | ROM OT stack + App [kB]     |   390 |   337 |
+   | ROM OT stack + App [kB]     |   393 |   340 |
    +-----------------------------+-------+-------+
    | ROM Bluetooth LE stack [kB] |    33 |    33 |
    +-----------------------------+-------+-------+
    | Persistent storage [kB]     |    24 |    24 |
    +-----------------------------+-------+-------+
-   | Free ROM [kB]               |   577 |   630 |
+   | Free ROM [kB]               |   574 |   627 |
    +-----------------------------+-------+-------+
    | RAM OT stack + App [kB]     |   100 |    90 |
    +-----------------------------+-------+-------+
@@ -91,13 +94,13 @@ The following tables present memory requirements for samples running on the :ref
    +-----------------------------+----------+-------+-------+
    |                             |   master |   FTD |   MTD |
    +=============================+==========+=======+=======+
-   | ROM OT stack + App [kB]     |      459 |   433 |   380 |
+   | ROM OT stack + App [kB]     |      461 |   436 |   383 |
    +-----------------------------+----------+-------+-------+
    | ROM Bluetooth LE stack [kB] |        0 |     0 |     0 |
    +-----------------------------+----------+-------+-------+
    | Persistent storage [kB]     |       32 |    32 |    32 |
    +-----------------------------+----------+-------+-------+
-   | Free ROM [kB]               |      533 |   559 |   612 |
+   | Free ROM [kB]               |      531 |   556 |   609 |
    +-----------------------------+----------+-------+-------+
    | RAM OT stack + App [kB]     |       99 |    96 |    86 |
    +-----------------------------+----------+-------+-------+
@@ -111,13 +114,13 @@ The following tables present memory requirements for samples running on the :ref
    +-----------------------------+----------+-------+-------+
    |                             |   master |   FTD |   MTD |
    +=============================+==========+=======+=======+
-   | ROM OT stack + App [kB]     |      459 |   433 |   380 |
+   | ROM OT stack + App [kB]     |      461 |   436 |   383 |
    +-----------------------------+----------+-------+-------+
-   | ROM Bluetooth LE stack [kB] |       86 |    87 |    86 |
+   | ROM Bluetooth LE stack [kB] |       86 |    86 |    86 |
    +-----------------------------+----------+-------+-------+
    | Persistent storage [kB]     |       32 |    32 |    32 |
    +-----------------------------+----------+-------+-------+
-   | Free ROM [kB]               |      447 |   472 |   526 |
+   | Free ROM [kB]               |      445 |   470 |   523 |
    +-----------------------------+----------+-------+-------+
    | RAM OT stack + App [kB]     |       99 |    96 |    86 |
    +-----------------------------+----------+-------+-------+

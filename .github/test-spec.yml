@@ -9,6 +9,18 @@
     - "!VERSION"
     - "!ncs_version.h.in"
 
+"CI-run-twister":
+ - any:
+    - "!.github/**/*"
+    - "!.vscode/**/*"
+    - "!doc/**/*"
+    - "!test-manifests/**/*"
+    - "!CODEOWNERS"
+    - "!LICENSE"
+    - "!**/*.rst"
+    - "!VERSION"
+    - "!ncs_version.h.in"
+
 "CI-tool-test-linux":
   - "scripts/requirements*.txt"
   - "scripts/tools-versions-linux.txt"
@@ -47,6 +59,8 @@
   - "applications/nrf5340_audio/**/*"
   - "boards/arm/nrf5340_audio_dk_nrf5340/**/*"
   - "tests/nrf5340_audio/**/*"
+  - "tests/lib/contin_array/**/*"
+  - "tests/lib/pcm_mix/**/*"
 
 "CI-iot-samples-test":
   - "include/modem/at_monitor.h"
@@ -111,7 +125,6 @@
   - "include/fprotect.h"
   - "include/fw_info.*"
   - "include/mgmt/*"
-  - "include/spm.h"
   - "include/dfu/**/*"
   - "include/net/**/*"
   - "cmake/*"
@@ -130,13 +143,10 @@
   - "subsys/fw_info/**/*"
   - "subsys/mgmt/**/*"
   - "subsys/pcd/*"
-  - "subsys/spm/*"
   - "subsys/net/lib/*fota*/**/*"
   - "subsys/net/lib/download_client/**/*"
   - "tests/subsys/bootloader/**/*"
   - "tests/subsys/dfu/**/*"
-  - "tests/subsys/fw_info/**/*"
-  - "tests/subsys/net/**/*"
 
 "CI-all-test":
   - "**/*partition_manager*/**/*"
@@ -152,7 +162,7 @@
   - "subsys/bootloader/**/*"
   - "subsys/partition_manager/**/*"
   - "tests/modules/tfm"
-  - "tests/subsys/spm/secure_services/**/*"
+  - "tests/tfm/**/*"
 
 "CI-ble-test":
   - any:
@@ -272,6 +282,16 @@
   - "modules/nrfxlib/nrf_802154/**/*"
   - "samples/CMakeLists.txt"
 
+"CI-fem-test":
+  - "subsys/mpsl/**/*"
+  - "subsys/ieee802154/**/*"
+  - "subsys/nrf_rpc/**/*"
+  - "drivers/mpsl/**/*"
+  - "dts/bindings/radio_fem/**/*"
+  - "samples/nrf5340/multiprotocol_rpmsg/**/*"
+  - "modules/nrfxlib/nrf_802154/**/*"
+  - "samples/CMakeLists.txt"
+
 "CI-homekit-test":
   - "drivers/hw_cc310/*"
   - "drivers/mpsl/**/*"
@@ -287,7 +307,7 @@
   - "subsys/dfu/*"
   - "subsys/ieee802154/**/*"
   - "subsys/mpsl/**/*"
-  - "subsys/net/**/*"
+  - "subsys/net/openthread/*"
   - "subsys/nfc/**/*"
   - "subsys/nrf_rpc/**/*"
   - "subsys/partition_manager/**/*"
@@ -320,14 +340,19 @@
 "CI-matter-test":
   - "drivers/mpsl/**/*"
   - "drivers/hw_cc310/*"
-  - "drivers/net/*"
+  - "drivers/entropy/*"
+  - "drivers/wifi/**/*"
   - "subsys/mpsl/**/*"
   - "subsys/ieee802154/**/*"
   - "subsys/bootloader/**/*"
   - "subsys/partition_manager/**/*"
   - "subsys/nfc/**/*"
   - "subsys/nrf_rpc/**/*"
-  - "subsys/net/**/*"
+  - "subsys/dfu/**/*"
+  - "subsys/fw_info/*"
+  - "subsys/pcd/**/*"
+  - "subsys/bluetooth/controller/*"
+  - "subsys/net/openthread/*"
   - "modules/tfm/**/*"
   - "modules/nrfxlib/nrf_802154/**/*"
   - "modules/mcuboot/**/*"

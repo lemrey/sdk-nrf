@@ -205,27 +205,27 @@ The following 2 examples are equivalent:
 
    .. _partition_manager_span_ex1:
 
-   * In the following example, the mcuboot and spm configurations result in this partition order: ``mcuboot``, ``spm``, ``app``.
-     Therefore, the foo partition configuration is invalid, because ``spm`` must be placed between ``mcuboot`` and ``app``, but is not in the span list.
+   * In the following example, the mcuboot and tfm configurations result in this partition order: ``mcuboot``, ``tfm``, ``app``.
+     Therefore, the foo partition configuration is invalid, because ``tfm`` must be placed between ``mcuboot`` and ``app``, but is not in the span list.
 
      .. code-block:: yaml
         :caption: Span property example 1 (invalid)
 
         mcuboot:
            placement:
-              before: [spm, app]
+              before: [tfm, app]
 
-        spm:
+        tfm:
            placement:
               before: [app]
 
         foo:
            span: [mcuboot, app]
 
-   * In the following example, these mcuboot, spm, and app configurations have two possible orders:
+   * In the following example, these mcuboot, tfm, and app configurations have two possible orders:
 
-     * Order 1: mcuboot, spm, app
-     * Order 2: mcuboot, app, spm
+     * Order 1: mcuboot, tfm, app
+     * Order 2: mcuboot, app, tfm
 
      In the absence of additional configuration, the Partition Manager may choose either order.
      However, since a span configuring the foo partition is present, the Partition Manager should choose order 2, since it is the only order that results in a valid configuration for the foo partition.
@@ -236,7 +236,7 @@ The following 2 examples are equivalent:
         mcuboot:
            placement:
 
-        spm:
+        tfm:
            placement:
               after: [mcuboot]
 
@@ -248,10 +248,10 @@ The following 2 examples are equivalent:
            span: [mcuboot, app]
 
 
-   * In the following example, these mcuboot, spm, and app configurations have two possible orders:
+   * In the following example, these mcuboot, tfm, and app configurations have two possible orders:
 
-     * Order 1: mcuboot, spm, app
-     * Order 2: mcuboot, app, spm
+     * Order 1: mcuboot, tfm, app
+     * Order 2: mcuboot, app, tfm
 
      However, the overall configuration is unsatisfiable: foo requires order 2, while bar requires order 1.
 
@@ -261,7 +261,7 @@ The following 2 examples are equivalent:
         mcuboot:
            placement:
 
-        spm:
+        tfm:
            placement:
               after: [mcuboot]
 
@@ -273,7 +273,7 @@ The following 2 examples are equivalent:
            span: [mcuboot, app]
 
         bar:
-           span: [mcuboot, spm]
+           span: [mcuboot, tfm]
 
 .. _partition_manager_inside:
 
@@ -407,7 +407,7 @@ The information extracted from devicetree is the alignment value for some partit
        align: {start: CONFIG_FPROTECT_BLOCK_SIZE}
 
    app_image:
-     span: [tfm, spm, app]
+     span: [tfm, app]
 
    s0_image:
      # S0 spans over the image booted by B0
@@ -482,19 +482,21 @@ For example, see the following definitions for default regions:
 
 .. code-block:: cmake
 
-  add_region(     # Define region without device name
-    otp           # Name
-    756           # Size
-    0xff8108      # Base address
-    start_to_end  # Placement strategy
+  add_region(                           # Define region without device name
+    NAME otp                            # Name
+    SIZE 756                            # Size
+    BASE 0xff8108                       # Base address
+    PLACEMENT start_to_end              # Placement strategy
     )
 
-  add_region_with_dev(           # Define region with device name
-    flash_primary                # Name
-    ${flash_size}                # Size
-    ${CONFIG_FLASH_BASE_ADDRESS} # Base address
-    complex                      # Placement strategy
-    NRF_FLASH_DRV_NAME           # Device name
+  add_region(                           # Define region with device name
+    NAME flash_primary                  # Name
+    SIZE ${flash_size}                  # Size
+    BASE ${CONFIG_FLASH_BASE_ADDRESS}   # Base address
+    PLACEMENT complex                   # Placement strategy
+    DEVICE flash_controller             # DTS node label of flash controller
+    DEFAULT_DRIVER_KCONFIG	        # Kconfig option that should be set for
+                                        # the driver to be compiled in
     )
 
 .. _pm_external_flash:
@@ -506,7 +508,7 @@ The Partition Manager supports partitions in the external flash memory through t
 Any placeholder partition can specify that it should be stored in the external flash memory region.
 External flash memory regions always use the *start_to_end* placement strategy.
 
-To store partitions in the external flash memory, you must choose a value for the ``nordic,pm-ext-flash`` property in the devicetree.
+To store partitions in the external flash memory, you can either choose a value for the ``nordic,pm-ext-flash`` property in the devicetree, or directly use an external flash DTS node label as ``DEVICE``.
 See the following example of an overlay file that sets this value:
 
 .. literalinclude:: ../../tests/modules/mcuboot/external_flash/boards/nrf52840dk_nrf52840.overlay
@@ -533,6 +535,31 @@ After the ``nordic,pm-ext-flash`` value is set, you can place partitions in the 
 See :ref:`ug_bootloader_external_flash` for more details on using external flash memory with MCUboot.
 
 .. _pm_build_system:
+
+A partition can be accessible at runtime only if the flash device where it resides has its driver enabled at compile time.
+Partition manager ignores partitions that are located in a region without its driver enabled.
+To let partition manager know which Kconfig option ensures the existence of the driver, the option ``DEFAULT_DRIVER_KCONFIG`` is used.
+
+For partitions in the internal flash memory, ``DEFAULT_DRIVER_KCONFIG`` within :file:`partition_manager.cmake` is set automatically to :kconfig:option:`CONFIG_SOC_FLASH_NRF`, so that all the partitions placed in the internal flash are always available at runtime.
+For external regions, ``DEFAULT_DRIVER_KCONFIG`` within :file:`partition_manager.cmake` must be set to :kconfig:option:`CONFIG_PM_EXTERNAL_FLASH_HAS_DRIVER`.
+Out-of-tree drivers can select this value to attest that they provide support for the external flash.
+This is an hidden option and can be selected only by an external driver or a Kconfig option.
+
+This option is automatically set when :kconfig:option:`CONFIG_NRF_QSPI_NOR` or :kconfig:option:`CONFIG_SPI_NOR` are enabled.
+If the application provides the driver in an unusual way, this option can be overridden by setting :kconfig:option:`CONFIG_PM_OVERRIDE_EXTERNAL_DRIVER_CHECK` in the application configuration.
+
+As partition manager does not know if partitions are used at runtime, consider the following:
+
+  * Enabling Kconfig options that affect ``DEFAULT_DRIVER_KCONFIG`` will add a partition map entry for the partition depending on it, whether it is used at runtime or not.
+  * Not enabling the Kconfig options that affect ``DEFAULT_DRIVER_KCONFIG`` will not add partition map entry for partition depending on it, whether it is used at runtime or not.
+  * Enabling Kconfig options that affects ``DEFAULT_DRIVER_KCONFIG`` can cause linker errors when the option has no effect on including a driver into compilation.
+    In this case, partition manager adds a partition map entry that has a pointer to the flash device it is supposed to be placed on, but due to misconfiguration the driver is actually not compiled in.
+    This situation can also be caused by setting the :kconfig:option:`CONFIG_PM_OVERRIDE_EXTERNAL_DRIVER_CHECK`, as partition manager will just assume that the driver is provided by the application.
+
+.. note::
+
+   When using an application configured with an MCUboot child image, both images use the same partition manager configuration, which means that the app and MCUboot have exactly the same partition maps.
+   The accessibility at runtime of flash partitions depend on the configurations of both the application and MCUboot and the values they give to the ``DEFAULT_DRIVER_KCONFIG`` option of the partition manager region specification.
 
 Build system
 ************
@@ -683,7 +710,7 @@ For example, if you generate a partition placement report on the build of :file:
    | 0xff000: EMPTY_2 (0x1000)                |
    +------------------------------------------+
 
-The sizes of each partition are determined by the associated `pm.yml` file, such as :file:`nrf/samples/bootloader/pm.yml` for |NSIB| and :file:`bootloader/mcuboot/boot/zephyr/pm.yml` for MCUboot.
+The sizes of each partition are determined by the associated :file:`pm.yml` file, such as :file:`nrf/samples/bootloader/pm.yml` for |NSIB| and :file:`bootloader/mcuboot/boot/zephyr/pm.yml` for MCUboot.
 
 .. _ug_pm_static:
 

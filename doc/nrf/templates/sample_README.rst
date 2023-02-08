@@ -175,7 +175,7 @@ Building and running
 ********************
 
 .. note::
-   * Include the standard text for building - either ``.. include:: /includes/build_and_run.txt``, or ``.. include:: /includes/build_and_run_ns.txt`` for the non-secure build targets.
+   * Include the standard text for building - either ``.. include:: /includes/build_and_run.txt`` or ``.. include:: /includes/build_and_run_ns.txt`` for the build targets that use :ref:`Cortex-M Security Extensions <app_boards_spe_nspe>`.
    * The main supported IDE for |NCS| is |VSC|, with the |nRFVSC| installed.
      Therefore, build instructions for the |nRFVSC| are required.
      Build instructions for the command line are optional.
@@ -271,7 +271,6 @@ It uses the following Zephyr libraries:
 
 In addition, it uses the following secure firmware components:
 
-* :ref:`secure_partition_manager`
 * :ref:`Trusted Firmware-M <ug_tfm>`
 
 The sample also uses drivers from `nrfx`_.

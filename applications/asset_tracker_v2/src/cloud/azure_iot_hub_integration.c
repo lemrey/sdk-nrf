@@ -1,6 +1,12 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
 #include <zephyr/kernel.h>
 #include <net/azure_iot_hub.h>
-#include <nrf_modem_at.h>
+#include <hw_id.h>
 
 #include "cloud/cloud_wrapper.h"
 
@@ -308,19 +314,16 @@ int cloud_wrap_init(cloud_wrap_evt_handler_t event_handler)
 	int err;
 
 #if !defined(CONFIG_CLOUD_CLIENT_ID_USE_CUSTOM)
-	char imei_buf[20 + sizeof("OK\r\n")];
+	char hw_id_buf[HW_ID_LEN];
 
-	/* Retrieve device IMEI from modem. */
-	err = nrf_modem_at_cmd(imei_buf, sizeof(imei_buf), "AT+CGSN");
+	err = hw_id_get(hw_id_buf, ARRAY_SIZE(hw_id_buf));
+
 	if (err) {
-		LOG_ERR("Not able to retrieve device IMEI from modem");
+		LOG_ERR("Failed to retrieve device ID");
 		return err;
 	}
 
-	/* Set null character at the end of the device IMEI. */
-	imei_buf[CLIENT_ID_LEN] = 0;
-
-	snprintk(client_id_buf, sizeof(client_id_buf), "%s", imei_buf);
+	snprintk(client_id_buf, sizeof(client_id_buf), "%s", hw_id_buf);
 
 #else
 	snprintk(client_id_buf, sizeof(client_id_buf), "%s", CONFIG_CLOUD_CLIENT_ID);
@@ -481,10 +484,8 @@ int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id, char *path_
 	return 0;
 }
 
-int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id)
 {
-	ARG_UNUSED(path_list);
-
 	int err;
 	struct azure_iot_hub_msg msg = {
 		.payload.ptr = buf,
@@ -505,10 +506,8 @@ int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id,
 	return 0;
 }
 
-int cloud_wrap_agps_request_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_agps_request_send(char *buf, size_t len, bool ack, uint32_t id)
 {
-	ARG_UNUSED(path_list);
-
 	int err;
 	struct azure_iot_hub_msg msg = {
 		.payload.ptr = buf,

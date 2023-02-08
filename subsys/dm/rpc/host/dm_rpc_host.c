@@ -55,9 +55,10 @@ static void dm_request_add_rpc_handler(const struct nrf_rpc_group *group,
 	/* Decode the request structure */
 	req.role = ser_decode_uint(ctx);
 	ser_decode_buffer(ctx, &req.bt_addr, sizeof(bt_addr_le_t));
-	req.access_address = ser_decode_uint(ctx);
+	req.rng_seed = ser_decode_uint(ctx);
 	req.ranging_mode = ser_decode_uint(ctx);
 	req.start_delay_us = ser_decode_uint(ctx);
+	req.extra_window_time_us = ser_decode_uint(ctx);
 
 	if (!ser_decoding_done_and_check(group, ctx)) {
 		report_decoding_error(DM_REQUEST_ADD_RPC_CMD, handler_data);
@@ -127,17 +128,17 @@ static int ipc_init(const struct device *dev)
 	ARG_UNUSED(dev);
 
 	int err;
-	const struct device *ipc0_instance;
+	const struct device *ipc_instance;
 
-	ipc0_instance = DEVICE_DT_GET(DT_NODELABEL(ipc0));
+	ipc_instance = DEVICE_DT_GET(DT_NODELABEL(ipc1));
 
-	err = ipc_service_open_instance(ipc0_instance);
+	err = ipc_service_open_instance(ipc_instance);
 	if ((err < 0) && (err != -EALREADY)) {
 		LOG_ERR("IPC service instance initialization failed with err: %d", err);
 		return err;
 	}
 
-	err = ipc_service_register_endpoint(ipc0_instance, &ep, &ep_cfg);
+	err = ipc_service_register_endpoint(ipc_instance, &ep, &ep_cfg);
 	if (err < 0) {
 		LOG_ERR("Registering endpoint failed with err: %d", err);
 		return err;

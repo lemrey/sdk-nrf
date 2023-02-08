@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/net/tls_credentials.h>
-#include <zephyr/net/http_client.h>
+#include <zephyr/net/http/client.h>
 #include <nrf_socket.h>
 #include "slm_at_host.h"
 #include "slm_at_httpc.h"
@@ -516,8 +516,6 @@ static void httpc_thread_fn(void *arg1, void *arg2, void *arg3)
 		if (err) {
 			LOG_ERR("Fail to disconnect. Error: %d", err);
 		}
-	} else {
-		(void)exit_datamode(0);
 	}
 
 	LOG_INF("HTTP thread terminated");

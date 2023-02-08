@@ -24,15 +24,6 @@ def get_header_guard_end(filename):
 DEST_HEADER = 1
 DEST_KCONFIG = 2
 
-# If nl is something like /soc/peripheral@50000000/qspi@2b000/mx25r6435f@0, it will be
-# converted to C define for node, in this example
-# DT_N_S_soc_S_peripheral_50000000_S_qspi_2b000_S_mx25r6435f_0.
-# If it is just node label, something like flash_sim0, it will just return that.
-def dt_device_node_label_or_node(nl):
-    out = nl.replace('/', "_S_").replace('@', '_' )
-    if (out != nl):
-        out = f"DT_N{out}"
-    return out
 
 def get_config_lines(gpm_config, greg_config, head, split, dest, current_domain=None):
     config_lines = list()
@@ -86,7 +77,7 @@ def get_config_lines(gpm_config, greg_config, head, split, dest, current_domain=
 
             if dest is DEST_HEADER:
                 if partition_has_device(partition):
-                    add_line(f'{name_upper}_DEV', dt_device_node_label_or_node(region['device']))
+                    add_line(f'{name_upper}_DEV', region['device'])
                     if region['default_driver_kconfig']:
                         add_line(f'{name_upper}_DEFAULT_DRIVER_KCONFIG', region['default_driver_kconfig'])
 
@@ -175,7 +166,8 @@ def write_kconfig_file(gpm_config, regions_config, out_path):
 def parse_args():
     parser = argparse.ArgumentParser(
         description='''Creates files based on Partition Manager results.''',
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        allow_abbrev=False)
 
     parser.add_argument('--input-partitions', required=True, type=str, nargs='+',
                         help='Paths to the input .yml files, one per domain.')

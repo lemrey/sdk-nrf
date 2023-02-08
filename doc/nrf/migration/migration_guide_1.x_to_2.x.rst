@@ -28,7 +28,7 @@ Default IDE change
 |VSC| extension IDE has replaced SEGGER Embedded Studio as the default supported IDE for working with the |NCS|.
 
 Required action:
-   If you are building the application or sample using SEGGER Embedded Studio or on the command line and want to migrate to |VSC| extension IDE, follow the instructions in the `migrating from other IDEs to VS Code <Migrating IDE_>`_ documentation.
+   If you are building the application or sample using SEGGER Embedded Studio or on the command line and want to migrate to |VSC| extension IDE, use the `Add an existing application <Migrating IDE_>`_ option in the |nRFVSC| to migrate your application.
 
 Pin control transition
 **********************
@@ -434,7 +434,10 @@ Zephyr v3.x.x namespace change
 
 All Zephyr public headers have been moved to :file:`include/zephyr`, meaning they must be prefixed with ``<zephyr/...>`` when included.
 Because this change can potentially break many applications or libraries, :kconfig:option:`CONFIG_LEGACY_INCLUDE_PATH` is provided to allow using the old include path.
-This option is now enabled by default to allow a smooth transition.
+
+.. note::
+   The :kconfig:option:`CONFIG_LEGACY_INCLUDE_PATH` Kconfig option is disabled by default and will be removed soon.
+
 In order to facilitate the migration to the new include prefix, a script to automate the process is also provided in :file:`scripts/utils/migrate_includes.py` (in Zephyr).
 
 Changes in PWM API

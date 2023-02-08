@@ -9,7 +9,6 @@
 #include <zephyr/kernel.h>
 #include <nrf_modem.h>
 #include <nrf_modem_os.h>
-#include <nrf_modem_platform.h>
 #include <nrf.h>
 #include <nrfx_ipc.h>
 #include <nrf_errno.h>
@@ -18,13 +17,6 @@
 #include <zephyr/logging/log.h>
 
 #define UNUSED_FLAGS 0
-
-/* Handle communication with application from IRQ contexts
- * with the lowest available priority.
- */
-#define APPLICATION_IRQ EGU1_IRQn
-#define APPLICATION_IRQ_PRIORITY IRQ_PRIO_LOWEST
-
 #define THREAD_MONITOR_ENTRIES 10
 
 LOG_MODULE_REGISTER(nrf_modem, CONFIG_NRF_MODEM_LIB_LOG_LEVEL);
@@ -274,16 +266,6 @@ unsigned int nrf_modem_os_sem_count_get(void *sem)
 	return k_sem_count_get(sem);
 }
 
-void nrf_modem_os_application_irq_set(void)
-{
-	NVIC_SetPendingIRQ(APPLICATION_IRQ);
-}
-
-void nrf_modem_os_application_irq_clear(void)
-{
-	NVIC_ClearPendingIRQ(APPLICATION_IRQ);
-}
-
 void nrf_modem_os_event_notify(void)
 {
 	atomic_inc(&rpc_event_cnt);
@@ -294,24 +276,6 @@ void nrf_modem_os_event_notify(void)
 	SYS_SLIST_FOR_EACH_CONTAINER(&sleeping_threads, thread, node) {
 		k_sem_give(&thread->sem);
 	}
-}
-
-ISR_DIRECT_DECLARE(rpc_proxy_irq_handler)
-{
-	nrf_modem_application_irq_handler();
-
-	nrf_modem_os_event_notify();
-
-	ISR_DIRECT_PM(); /* PM done after servicing interrupt for best latency
-			  */
-	return 1; /* We should check if scheduling decision should be made */
-}
-
-void read_task_create(void)
-{
-	IRQ_DIRECT_CONNECT(APPLICATION_IRQ, APPLICATION_IRQ_PRIORITY,
-			   rpc_proxy_irq_handler, UNUSED_FLAGS);
-	irq_enable(APPLICATION_IRQ);
 }
 
 void *nrf_modem_os_alloc(size_t bytes)
@@ -379,12 +343,12 @@ void nrf_modem_os_log(int level, const char *fmt, ...)
 	va_list ap;
 	va_start(ap, fmt);
 
-	if (IS_ENABLED(CONFIG_LOG_MODE_MINIMAL)) {
+#if CONFIG_LOG_MODE_MINIMAL
 		/* Fallback to minimal implementation. */
 		printk("%c: ", z_log_minimal_level_to_char(level));
 		z_log_minimal_vprintk(fmt, ap);
 		printk("\n");
-	} else {
+#else
 		void *source;
 
 		if (IS_ENABLED(CONFIG_LOG_RUNTIME_FILTERING)) {
@@ -395,7 +359,7 @@ void nrf_modem_os_log(int level, const char *fmt, ...)
 
 		z_log_msg_runtime_vcreate(CONFIG_LOG_DOMAIN_ID, source, level,
 					  NULL, 0, 0, fmt, ap);
-	}
+#endif /* CONFIG_LOG_MODE_MINIMAL */
 
 	va_end(ap);
 #endif /* CONFIG_LOG */
@@ -406,11 +370,11 @@ void nrf_modem_os_logdump(int level, const char *str, const void *data, size_t l
 #if defined(CONFIG_LOG)
 	level = log_level_translate(level);
 
-	if (IS_ENABLED(CONFIG_LOG_MODE_MINIMAL)) {
+#if CONFIG_LOG_MODE_MINIMAL
 		/* Fallback to minimal implementation. */
 		printk("%c: %s\n", z_log_minimal_level_to_char(level), str);
 		z_log_minimal_hexdump_print(level, data, len);
-	} else {
+#else
 		void *source;
 
 		if (IS_ENABLED(CONFIG_LOG_RUNTIME_FILTERING)) {
@@ -421,7 +385,8 @@ void nrf_modem_os_logdump(int level, const char *str, const void *data, size_t l
 
 		z_log_msg_runtime_vcreate(CONFIG_LOG_DOMAIN_ID, source, level,
 					  data, len, 0, str, (va_list) { 0 });
-	}
+#endif /* CONFIG_LOG_MODE_MINIMAL */
+
 #endif /* CONFIG_LOG */
 }
 
@@ -445,8 +410,6 @@ static int on_init(const struct device *dev)
  */
 void nrf_modem_os_init(void)
 {
-	read_task_create();
-
 	/* Initialize heaps */
 	k_heap_init(&nrf_modem_lib_heap, library_heap_buf, sizeof(library_heap_buf));
 	k_heap_init(&nrf_modem_lib_shmem_heap, (void *)PM_NRF_MODEM_LIB_TX_ADDRESS,

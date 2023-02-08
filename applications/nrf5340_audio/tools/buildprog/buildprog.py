@@ -35,7 +35,6 @@ NRF5340_AUDIO_FOLDER = (BUILDPROG_FOLDER / "../..").resolve()
 USER_CONFIG = BUILDPROG_FOLDER / "nrf5340_audio_dk_devices.json"
 
 TARGET_BOARD_NRF5340_AUDIO_DK_APP_NAME = "nrf5340_audio_dk_nrf5340_cpuapp"
-TARGET_BOARD_NRF5340_AUDIO_DK_NET_NAME = "nrf5340_audio_dk_nrf5340_cpunet"
 
 TARGET_CORE_APP_FOLDER = NRF5340_AUDIO_FOLDER
 TARGET_CORE_NET_FOLDER = NRF5340_AUDIO_FOLDER / "bin"
@@ -44,8 +43,6 @@ TARGET_DEV_GATEWAY_FOLDER = NRF5340_AUDIO_FOLDER / "build/dev_gateway"
 
 TARGET_RELEASE_FOLDER = "build_release"
 TARGET_DEBUG_FOLDER = "build_debug"
-
-PRISTINE_FLAG = " --pristine"
 
 
 def __print_add_color(status):
@@ -108,6 +105,9 @@ def __build_cmd_get(core: Core, device: AudioDevice, build: BuildType, pristine,
         if options.min_b0n:
             device_flag += " -DCONFIG_B0N_MINIMAL=y"
 
+        if options.nrf21540:
+            device_flag += " -DSHIELD=nrf21540_ek_fwd"
+
         if os.name == 'nt':
             release_flag = release_flag.replace('\\', '/')
 
@@ -148,17 +148,6 @@ def __build_module(build_config, options):
     if ret_val:
         raise Exception("cmake error: " + str(ret_val))
 
-    if options.mcuboot != '':
-        if options.min_b0n:
-            pcft_sign_cmd = f"python {BUILDPROG_FOLDER}/pcft_sign.py -i\
-            {TARGET_CORE_APP_FOLDER}/dfu/bin/ble5-ctr-rpmsg_shifted_min.hex -b {dest_folder}"
-        else:
-            pcft_sign_cmd = f"python {BUILDPROG_FOLDER}/pcft_sign.py -i\
-            {TARGET_CORE_APP_FOLDER}/dfu/bin/ble5-ctr-rpmsg_shifted.hex -b {dest_folder}"
-        ret_val = os.system(pcft_sign_cmd)
-        if ret_val:
-            raise Exception("generate pcft+b0n error: " + str(ret_val))
-
 
 def __find_snr():
     """Rebooting or programming requires connected programmer/debugger"""
@@ -181,33 +170,24 @@ def __populate_hex_paths(dev, options):
         Core.app, dev.nrf5340_audio_dk_dev, options.build, options.pristine, options
     )
 
+    dest_folder = temp_dest_folder
     if dev.core_app_programmed == SelectFlags.TBD:
-        dest_folder = temp_dest_folder
         if options.mcuboot != '':
             dev.hex_path_app = dest_folder / "zephyr/merged.hex"
         else:
             dev.hex_path_app = dest_folder / "zephyr/zephyr.hex"
 
     if dev.core_net_programmed == SelectFlags.TBD:
-        dest_folder = TARGET_CORE_NET_FOLDER
 
         hex_files_found = [
-            file for file in dest_folder.iterdir() if file.suffix == ".hex"
+            file for file in TARGET_CORE_NET_FOLDER.iterdir() if file.suffix == ".hex"
         ]
 
         if options.mcuboot != '':
-            temp_dest_folder = str(temp_dest_folder)
-            if os.name == 'nt':
-                folder_slash ='\\'
-            else:
-                folder_slash ='/'
-            indices = [i for i, c in enumerate(temp_dest_folder) if c == folder_slash]
-            final_file_prefix = temp_dest_folder[indices[-2]+1:].replace(folder_slash, '_')+'_'
-            dev.hex_path_net = dest_folder / f"{final_file_prefix}pcft_CPUNET.hex"
+            dev.hex_path_net = dest_folder / "zephyr/net_core_app_signed.hex"
         else:
-            for hex_file in reversed(hex_files_found):
-                if "pcft_CPUNET" in hex_file.name:
-                    hex_files_found.remove(hex_file)
+            dest_folder = TARGET_CORE_NET_FOLDER
+
             if len(hex_files_found) == 0:
                 raise Exception(
                     f"Found no net core hex file in folder: {dest_folder}")
@@ -233,6 +213,7 @@ def __main():
             "This script builds and programs the nRF5340 "
             "Audio project on Windows and Linux"
         ),
+        allow_abbrev=False
     )
     parser.add_argument(
         "-r",
@@ -312,7 +293,15 @@ def __main():
         required=("-M" in sys.argv or "--min_b0n" in sys.argv),
         choices=["external", "internal"],
         default='',
-        help="MCUBOOT with external, internal flash",)
+        help="MCUBOOT with external, internal flash",
+        )
+    parser.add_argument(
+        "--nrf21540",
+        action="store_true",
+        dest="nrf21540",
+        default=False,
+        help="Set when using nRF21540 for extra TX power",
+        )
     options = parser.parse_args(args=sys.argv[1:])
 
     # Post processing for Enums
@@ -365,7 +354,7 @@ def __main():
     # Reboot step start
 
     if options.only_reboot == SelectFlags.TBD:
-        program_threads_run(device_list, sequential=options.sequential_prog)
+        program_threads_run(device_list, options.mcuboot, sequential=options.sequential_prog)
         __finish(device_list)
 
     # Reboot step finished
@@ -406,7 +395,7 @@ def __main():
         for dev in device_list:
             if dev.snr_connected:
                 __populate_hex_paths(dev, options)
-        program_threads_run(device_list, sequential=options.sequential_prog)
+        program_threads_run(device_list, options.mcuboot, sequential=options.sequential_prog)
 
     # Program step finished
 

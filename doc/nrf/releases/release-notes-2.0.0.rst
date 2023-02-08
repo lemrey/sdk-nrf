@@ -55,7 +55,7 @@ IDE and tool support
 `nRF Connect extension for Visual Studio Code <nRF Connect for Visual Studio Code_>`_ is the only officially supported IDE for |NCS| v2.0.0.
 SEGGER Embedded Studio Nordic Edition is no longer tested and recommended for new projects.
 
-:ref:`gs_app_tcm`, used to install the |NCS| automatically from `nRF Connect for Desktop`_, is now also available for Linux, in addition to the previously available version for Windows and macOS.
+:ref:`Toolchain Manager <gs_app_tcm>`, used to install the |NCS| automatically from `nRF Connect for Desktop`_, is now also available for Linux, in addition to the previously available version for Windows and macOS.
 The Linux version only supports installing the |NCS| v2.0.0 and later.
 
 Supported modem firmware
@@ -360,7 +360,7 @@ nRF9160 samples
   * :ref:`nrf_cloud_rest_cell_pos_sample` sample, demonstrating how to use the :ref:`lib_nrf_cloud_rest` library to perform cellular positioning requests.
   * :ref:`ciphersuites` sample, demonstrating how to use TLS ciphersuites.
 
-* :ref:`secure_partition_manager` (rather than TF-M) is enabled by default for the applications and samples that support Thingy:91.
+* Secure Partition Manager (rather than TF-M) is enabled by default for the applications and samples that support Thingy:91.
 
 * :ref:`at_monitor_sample` sample:
 
@@ -410,7 +410,7 @@ nRF9160 samples
   * Added:
 
     * Minimal Portfolio object support that is required for LwM2M conformance testing.
-    * Support for using :ref:`location_assistance` with Coiote LwM2M server.
+    * Support for using location assistance with Coiote LwM2M server.
     * Guidelines on :ref:`setting up the sample for production <lwm2m_client_provisioning>` using AVSystem’s Coiote Device Management server.
 
   * Updated:
@@ -638,7 +638,7 @@ Modem libraries
     * Improved integration of A-GPS and P-GPS when both are enabled.
     * A missing call to the :c:func:`nrf_cloud_pgps_notify_prediction` function, when using the REST interface with P-GPS.
     * Support for P-GPS data retrieval from an external source, implemented separately by the application.
-      Enabled by setting the :kconfig:option:`CONFIG_LOCATION_METHOD_GNSS_PGPS_EXTERNAL` option.
+      Enabled by setting the ``CONFIG_LOCATION_METHOD_GNSS_PGPS_EXTERNAL`` option.
       The library triggers a :c:enum:`LOCATION_EVT_GNSS_PREDICTION_REQUEST` event when assistance is needed.
     * Obstructed satellite visibility detection feature for GNSS.
       When this feature is enabled, the library tries to detect occurrences where getting a GNSS fix is unlikely or would consume a lot of energy.
@@ -1084,7 +1084,7 @@ Documentation
     Linux users can install the |NCS| by using the `Installing using Visual Studio Code <Installing on Linux_>`_ instructions or by following the steps on the :ref:`gs_installing` page.
   * Documentation on the SEGGER Embedded Studio, as this tool will no longer be supported moving forward.
     The previous |NCS| releases still support SEGGER Embedded Studio (Nordic edition).
-    To migrate from SEGGER Embedded Studio IDE or on the command line to |VSC|, follow the instructions in the `migrating from other IDEs to VS Code <Migrating IDE_>`_ documentation.
+    To migrate from SEGGER Embedded Studio IDE or on the command line to |VSC|, use the `Add an existing application <Migrating IDE_>`_ option in the |nRFVSC| to migrate your application.
   * Added |VSC| instructions on the following documentation:
 
     * :ref:`gs_modifying`

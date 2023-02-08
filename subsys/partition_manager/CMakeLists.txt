@@ -77,6 +77,10 @@ if (CONFIG_IPC_SERVICE AND CONFIG_SOC_NRF5340_CPUAPP)
   ncs_add_partition_manager_config(pm.yml.rpmsg_nrf53)
 endif()
 
+if (CONFIG_SECURE_BOOT_STORAGE)
+  ncs_add_partition_manager_config(pm.yml.secure_boot_storage)
+endif()
+
 if (CONFIG_PCD_APP)
   ncs_add_partition_manager_config(pm.yml.pcd)
 endif()
@@ -103,6 +107,10 @@ endif()
 
 if (CONFIG_BT_FAST_PAIR_REGISTRATION_DATA)
   ncs_add_partition_manager_config(pm.yml.bt_fast_pair)
+endif()
+
+if (CONFIG_NRF_MODEM_LIB_TRACE_BACKEND_FLASH)
+  ncs_add_partition_manager_config(pm.yml.modem_trace)
 endif()
 
 # We are using partition manager if we are a child image or if we are

@@ -23,7 +23,7 @@ Building with |VSC|
 
 |vsc_extension_instructions|
 
-For instructions specifically for building, see `Building an application`_.
+For instructions specifically for building, see `How to build an application`_.
 If you want to build and program with custom options, read about the advanced `Custom launch and debug configurations`_ and `Application-specific flash options`_.
 
 .. include:: gs_installing.rst
@@ -37,11 +37,11 @@ If you want to build and program with custom options, read about the advanced `C
 Building on the command line
 ****************************
 
-After completing the :ref:`manual <build_environment_cli>` or :ref:`automatic <gs_app_installing-ncs-tcm>` command-line build setup, use the following steps to build |NCS| projects on the command line.
+After completing the :ref:`manual <build_environment_cli>` or :ref:`automatic <gs_app_installing_choose_building_method_cl>` command-line build setup, use the following steps to build |NCS| projects on the command line.
 
 1.    Open a terminal window.
 
-      If you have installed the |NCS| using the :ref:`gs_app_tcm`, click the down arrow next to the version you installed and select :guilabel:`Open bash`.
+      If you have installed the |NCS| using the :ref:`Toolchain Manager <gs_app_tcm>`, click the down arrow next to the version you installed and select :guilabel:`Open bash`.
 
       .. figure:: images/gs-assistant_tm_dropdown.png
          :alt: The Toolchain Manager dropdown menu for the installed nRF Connect SDK version, cropped

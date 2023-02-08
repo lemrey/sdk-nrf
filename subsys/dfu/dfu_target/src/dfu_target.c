@@ -15,6 +15,7 @@ static const struct dfu_target dfu_target_ ## name  = { \
 	.write = dfu_target_ ## name ## _write, \
 	.done = dfu_target_ ## name ## _done, \
 	.schedule_update = dfu_target_ ## name ## _schedule_update, \
+	.reset = dfu_target_ ## name ## _reset, \
 }
 
 #ifdef CONFIG_DFU_TARGET_MODEM_DELTA
@@ -37,10 +38,10 @@ LOG_MODULE_REGISTER(dfu_target, CONFIG_DFU_TARGET_LOG_LEVEL);
 static const struct dfu_target *current_target;
 static int current_img_num = -1;
 
-int dfu_target_img_type(const void *const buf, size_t len)
+enum dfu_target_image_type dfu_target_img_type(const void *const buf, size_t len)
 {
 	if (len < MIN_SIZE_IDENTIFY_BUF) {
-		return -EAGAIN;
+		return DFU_TARGET_IMAGE_TYPE_NONE;
 	}
 #ifdef CONFIG_DFU_TARGET_MCUBOOT
 	if (dfu_target_mcuboot_identify(buf)) {
@@ -58,7 +59,7 @@ int dfu_target_img_type(const void *const buf, size_t len)
 	}
 #endif
 	LOG_ERR("No supported image type found");
-	return -ENOTSUP;
+	return DFU_TARGET_IMAGE_TYPE_NONE;
 }
 
 int dfu_target_init(int img_type, int img_num, size_t file_size, dfu_target_callback_t cb)
@@ -141,15 +142,18 @@ int dfu_target_done(bool successful)
 
 int dfu_target_reset(void)
 {
-	if (current_target != NULL) {
-		int err = current_target->done(false);
+	int err;
 
-		if (err != 0) {
-			LOG_ERR("Unable to clean up dfu_target");
-			return err;
-		}
+	if (current_target == NULL) {
+		return -EACCES;
 	}
-	current_target = NULL;
+
+	err = current_target->reset();
+	if (err != 0) {
+		LOG_ERR("Unable to clean up dfu_target");
+		return err;
+	}
+
 	return 0;
 }
 
@@ -162,7 +166,6 @@ int dfu_target_schedule_update(int img_num)
 	}
 
 	err = current_target->schedule_update(img_num);
-	current_target = NULL;
 
 	return err;
 }

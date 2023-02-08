@@ -13,17 +13,14 @@
 
 #include "nrf_modem_lib_trace.h"
 
-#include "mock_trace_backend.h"
-#include "mock_nrf_modem.h"
-#include "mock_nrf_modem_trace.h"
-#include "mock_nrf_modem_os.h"
+#include "cmock_trace_backend.h"
+#include "cmock_nrf_modem.h"
+#include "cmock_nrf_modem_trace.h"
+#include "cmock_nrf_modem_os.h"
 
 LOG_MODULE_REGISTER(trace_test, CONFIG_NRF_MODEM_LIB_TRACE_TEST_LOG_LEVEL);
 
 extern int unity_main(void);
-
-/* Suite teardown shall finalize with mandatory call to generic_suiteTearDown. */
-extern int generic_suiteTearDown(int num_failures);
 
 static void clear_rw_frags(void);
 
@@ -53,10 +50,6 @@ static void nrf_modem_at_printf_ExpectTraceLevelAndReturn(
 
 void setUp(void)
 {
-	mock_nrf_modem_Init();
-	mock_nrf_modem_trace_Init();
-	mock_trace_backend_Init();
-
 	nrf_modem_trace_get_error = 0;
 	nrf_modem_trace_get_cmock_num_calls = 0;
 	trace_backend_write_error = 0;
@@ -66,13 +59,6 @@ void setUp(void)
 		"AT%%XMODEMTRACE=1,%d", NRF_MODEM_LIB_TRACE_LEVEL_FULL, 0);
 
 	clear_rw_frags();
-}
-
-void tearDown(void)
-{
-	mock_nrf_modem_Verify();
-	mock_nrf_modem_trace_Verify();
-	mock_trace_backend_Verify();
 }
 
 static void NRF_MODEM_LIB_ON_INIT_callback(void)
@@ -143,7 +129,7 @@ int32_t nrf_modem_os_timedwait_stub(uint32_t context, int32_t *timeout, int cmoc
 	return 0;
 }
 
-int nrf_modem_trace_get_stub(struct nrf_modem_trace_data **frags, size_t *n_frags,
+int nrf_modem_trace_get_stub(struct nrf_modem_trace_data **frags, size_t *n_frags, int timeout,
 			     int cmock_num_calls)
 {
 	/* `cmock_num_calls` is reset to 0 at the beginning of each independent test execution. */
@@ -212,11 +198,6 @@ int trace_backend_deinit_stub(int cmock_num_calls)
 	return 0;
 }
 
-int test_suiteTearDown(int num_failures)
-{
-	return generic_suiteTearDown(num_failures);
-}
-
 void test_trace_thread_handler_get_single(void)
 {
 	struct nrf_modem_trace_data header = { 0 };
@@ -224,10 +205,10 @@ void test_trace_thread_handler_get_single(void)
 	struct nrf_modem_trace_data *header_write;
 	struct nrf_modem_trace_data *data_write;
 
-	__wrap_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
-	__wrap_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
-	__wrap_trace_backend_write_Stub(trace_backend_write_stub);
-	__wrap_trace_backend_deinit_Stub(trace_backend_deinit_stub);
+	__cmock_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
+	__cmock_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
+	__cmock_trace_backend_write_Stub(trace_backend_write_stub);
+	__cmock_trace_backend_deinit_Stub(trace_backend_deinit_stub);
 
 	NRF_MODEM_LIB_ON_INIT_callback();
 
@@ -255,10 +236,10 @@ void test_trace_thread_handler_get_single(void)
 
 void test_trace_thread_handler_get_multi(void)
 {
-	__wrap_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
-	__wrap_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
-	__wrap_trace_backend_write_Stub(trace_backend_write_stub);
-	__wrap_trace_backend_deinit_Stub(trace_backend_deinit_stub);
+	__cmock_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
+	__cmock_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
+	__cmock_trace_backend_write_Stub(trace_backend_write_stub);
+	__cmock_trace_backend_deinit_Stub(trace_backend_deinit_stub);
 
 	NRF_MODEM_LIB_ON_INIT_callback();
 
@@ -298,10 +279,10 @@ void test_trace_thread_handler_write_efault(void)
 	struct nrf_modem_trace_data header = { 0 };
 	struct nrf_modem_trace_data data = { 0 };
 
-	__wrap_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
-	__wrap_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
-	__wrap_trace_backend_write_Stub(trace_backend_write_stub);
-	__wrap_trace_backend_deinit_Stub(trace_backend_deinit_stub);
+	__cmock_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
+	__cmock_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
+	__cmock_trace_backend_write_Stub(trace_backend_write_stub);
+	__cmock_trace_backend_deinit_Stub(trace_backend_deinit_stub);
 
 	NRF_MODEM_LIB_ON_INIT_callback();
 
@@ -322,10 +303,10 @@ void test_trace_thread_handler_write_efault(void)
 
 void test_trace_thread_handler_get_einprogress(void)
 {
-	__wrap_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
-	__wrap_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
-	__wrap_trace_backend_write_Stub(trace_backend_write_stub);
-	__wrap_trace_backend_deinit_Stub(trace_backend_deinit_stub);
+	__cmock_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
+	__cmock_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
+	__cmock_trace_backend_write_Stub(trace_backend_write_stub);
+	__cmock_trace_backend_deinit_Stub(trace_backend_deinit_stub);
 
 	NRF_MODEM_LIB_ON_INIT_callback();
 
@@ -338,10 +319,10 @@ void test_trace_thread_handler_get_einprogress(void)
 
 void test_trace_thread_handler_get_enodata(void)
 {
-	__wrap_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
-	__wrap_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
-	__wrap_trace_backend_write_Stub(trace_backend_write_stub);
-	__wrap_trace_backend_deinit_Stub(trace_backend_deinit_stub);
+	__cmock_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
+	__cmock_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
+	__cmock_trace_backend_write_Stub(trace_backend_write_stub);
+	__cmock_trace_backend_deinit_Stub(trace_backend_deinit_stub);
 
 	NRF_MODEM_LIB_ON_INIT_callback();
 
@@ -354,10 +335,10 @@ void test_trace_thread_handler_get_enodata(void)
 
 void test_trace_thread_handler_get_eshutdown(void)
 {
-	__wrap_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
-	__wrap_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
-	__wrap_trace_backend_write_Stub(trace_backend_write_stub);
-	__wrap_trace_backend_deinit_Stub(trace_backend_deinit_stub);
+	__cmock_trace_backend_init_ExpectAndReturn(nrf_modem_trace_processed, 0);
+	__cmock_nrf_modem_trace_get_Stub(nrf_modem_trace_get_stub);
+	__cmock_trace_backend_write_Stub(trace_backend_write_stub);
+	__cmock_trace_backend_deinit_Stub(trace_backend_deinit_stub);
 
 	NRF_MODEM_LIB_ON_INIT_callback();
 

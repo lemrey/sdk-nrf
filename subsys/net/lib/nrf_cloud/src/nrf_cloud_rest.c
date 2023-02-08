@@ -21,6 +21,7 @@
 #include <zephyr/logging/log.h>
 #include <cJSON.h>
 
+#include "nrf_cloud_mem.h"
 #include "nrf_cloud_codec.h"
 
 LOG_MODULE_REGISTER(nrf_cloud_rest, CONFIG_NRF_CLOUD_REST_LOG_LEVEL);
@@ -68,7 +69,7 @@ LOG_MODULE_REGISTER(nrf_cloud_rest, CONFIG_NRF_CLOUD_REST_LOG_LEVEL);
 #define API_UPDATE_FOTA_DETAILS_TMPLT	"{\"status\":\"%s\", \"details\":\"%s\"}"
 
 #define API_LOCATION			"/location"
-#define API_GET_CELL_POS_TEMPLATE	API_VER API_LOCATION "/cell"
+#define API_GET_LOCATION_TEMPLATE	API_VER API_LOCATION "/ground-fix"
 #define API_GET_AGPS_BASE		API_VER API_LOCATION "/agps?"
 #define AGPS_FILTERED			"filtered=true"
 #define AGPS_ELEVATION_MASK		"&mask=%u"
@@ -163,7 +164,7 @@ static int generate_auth_header(const char *const tok, char **auth_hdr_out)
 		return -EINVAL;
 	}
 
-	*auth_hdr_out = k_malloc(prefix_len + tok_len + postfix_len + 1);
+	*auth_hdr_out = nrf_cloud_malloc(prefix_len + tok_len + postfix_len + 1);
 	if (!*auth_hdr_out) {
 		return -ENOMEM;
 	}
@@ -189,7 +190,7 @@ static int generate_auth_header(const char *const tok, char **auth_hdr_out)
 
 		if (err < 0) {
 			LOG_ERR("Failed to auto-generate JWT, error: %d", err);
-			k_free(*auth_hdr_out);
+			nrf_cloud_free(*auth_hdr_out);
 			*auth_hdr_out = NULL;
 			return err;
 		}
@@ -235,7 +236,7 @@ static void init_rest_client_request(struct nrf_cloud_rest_context const *const 
 
 	req->http_method	= meth;
 
-	(void)nrf_cloud_codec_init();
+	(void)nrf_cloud_codec_init(NULL);
 }
 
 static void sync_rest_client_data(struct nrf_cloud_rest_context *const rest_ctx,
@@ -306,7 +307,7 @@ int nrf_cloud_rest_shadow_state_update(struct nrf_cloud_rest_context *const rest
 
 	/* Format API URL with device ID */
 	buff_sz = sizeof(API_DEVICES_STATE_TEMPLATE) + strlen(device_id);
-	url = k_malloc(buff_sz);
+	url = nrf_cloud_malloc(buff_sz);
 	if (!url) {
 		ret = -ENOMEM;
 		goto clean_up;
@@ -344,10 +345,10 @@ int nrf_cloud_rest_shadow_state_update(struct nrf_cloud_rest_context *const rest
 
 clean_up:
 	if (url) {
-		k_free(url);
+		nrf_cloud_free(url);
 	}
 	if (auth_hdr) {
-		k_free(auth_hdr);
+		nrf_cloud_free(auth_hdr);
 	}
 
 	close_connection(rest_ctx);
@@ -365,7 +366,7 @@ int nrf_cloud_rest_shadow_device_status_update(struct nrf_cloud_rest_context *co
 	int ret;
 	struct nrf_cloud_data data_out;
 
-	(void)nrf_cloud_codec_init();
+	(void)nrf_cloud_codec_init(NULL);
 
 	ret = nrf_cloud_device_status_encode(dev_status, &data_out, false);
 	if (ret) {
@@ -422,7 +423,7 @@ int nrf_cloud_rest_fota_job_update(struct nrf_cloud_rest_context *const rest_ctx
 	buff_sz = sizeof(API_UPDATE_FOTA_URL_TEMPLATE) +
 		  strlen(device_id) +
 		  strlen(job_id);
-	url = k_malloc(buff_sz);
+	url = nrf_cloud_malloc(buff_sz);
 	if (!url) {
 		ret = -ENOMEM;
 		goto clean_up;
@@ -462,7 +463,7 @@ int nrf_cloud_rest_fota_job_update(struct nrf_cloud_rest_context *const rest_ctx
 			  strlen(job_status_strings[status]);
 	}
 
-	payload = k_malloc(buff_sz);
+	payload = nrf_cloud_malloc(buff_sz);
 	if (!payload) {
 		ret = -ENOMEM;
 		goto clean_up;
@@ -487,13 +488,13 @@ int nrf_cloud_rest_fota_job_update(struct nrf_cloud_rest_context *const rest_ctx
 
 clean_up:
 	if (url) {
-		k_free(url);
+		nrf_cloud_free(url);
 	}
 	if (auth_hdr) {
-		k_free(auth_hdr);
+		nrf_cloud_free(auth_hdr);
 	}
 	if (payload) {
-		k_free(payload);
+		nrf_cloud_free(payload);
 	}
 
 	close_connection(rest_ctx);
@@ -521,7 +522,7 @@ int nrf_cloud_rest_fota_job_get(struct nrf_cloud_rest_context *const rest_ctx,
 	/* Format API URL with device ID */
 	url_sz = sizeof(API_GET_FOTA_URL_TEMPLATE) +
 		    strlen(device_id);
-	url = k_malloc(url_sz);
+	url = nrf_cloud_malloc(url_sz);
 	if (!url) {
 		ret = -ENOMEM;
 		goto clean_up;
@@ -578,10 +579,10 @@ int nrf_cloud_rest_fota_job_get(struct nrf_cloud_rest_context *const rest_ctx,
 
 clean_up:
 	if (url) {
-		k_free(url);
+		nrf_cloud_free(url);
 	}
 	if (auth_hdr) {
-		k_free(auth_hdr);
+		nrf_cloud_free(auth_hdr);
 	}
 
 	close_connection(rest_ctx);
@@ -594,13 +595,13 @@ void nrf_cloud_rest_fota_job_free(struct nrf_cloud_fota_job_info *const job)
 	nrf_cloud_fota_job_free(job);
 }
 
-int nrf_cloud_rest_cell_pos_get(struct nrf_cloud_rest_context *const rest_ctx,
-	struct nrf_cloud_rest_cell_pos_request const *const request,
-	struct nrf_cloud_cell_pos_result *const result)
+int nrf_cloud_rest_location_get(struct nrf_cloud_rest_context *const rest_ctx,
+	struct nrf_cloud_rest_location_request const *const request,
+	struct nrf_cloud_location_result *const result)
 {
 	__ASSERT_NO_MSG(rest_ctx != NULL);
 	__ASSERT_NO_MSG(request != NULL);
-	__ASSERT_NO_MSG(request->net_info != NULL);
+	__ASSERT_NO_MSG((request->cell_info != NULL) || (request->wifi_info != NULL));
 
 	int ret;
 	char *auth_hdr = NULL;
@@ -611,7 +612,7 @@ int nrf_cloud_rest_cell_pos_get(struct nrf_cloud_rest_context *const rest_ctx,
 	memset(&resp, 0, sizeof(resp));
 	init_rest_client_request(rest_ctx, &req, HTTP_POST);
 
-	req.url = API_GET_CELL_POS_TEMPLATE;
+	req.url = API_GET_LOCATION_TEMPLATE;
 
 	/* Format auth header */
 	ret = generate_auth_header(rest_ctx->auth, &auth_hdr);
@@ -630,9 +631,9 @@ int nrf_cloud_rest_cell_pos_get(struct nrf_cloud_rest_context *const rest_ctx,
 	req.header_fields = (const char **)headers;
 
 	/* Get payload */
-	ret = nrf_cloud_format_cell_pos_req(request->net_info, 1, &payload);
+	ret = nrf_cloud_format_location_req(request->cell_info, request->wifi_info, &payload);
 	if (ret) {
-		LOG_ERR("Failed to generate cellular positioning request, err: %d", ret);
+		LOG_ERR("Failed to generate location request, err: %d", ret);
 		goto clean_up;
 	}
 
@@ -646,7 +647,7 @@ int nrf_cloud_rest_cell_pos_get(struct nrf_cloud_rest_context *const rest_ctx,
 	}
 
 	if (result) {
-		ret = nrf_cloud_parse_cell_pos_response(rest_ctx->response, result);
+		ret = nrf_cloud_parse_location_response(rest_ctx->response, result);
 		if (ret != 0) {
 			if (ret > 0) {
 				ret = -EBADMSG;
@@ -657,14 +658,14 @@ int nrf_cloud_rest_cell_pos_get(struct nrf_cloud_rest_context *const rest_ctx,
 
 clean_up:
 	if (auth_hdr) {
-		k_free(auth_hdr);
+		nrf_cloud_free(auth_hdr);
 	}
 	if (payload) {
 		cJSON_free(payload);
 	}
 
 	if (result) {
-		/* Add the nRF Cloud error to the cell pos response */
+		/* Add the nRF Cloud error to the response */
 		result->err = rest_ctx->nrf_err;
 	}
 
@@ -879,7 +880,7 @@ int nrf_cloud_rest_agps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 		goto clean_up;
 	}
 
-	url = k_malloc(url_sz);
+	url = nrf_cloud_malloc(url_sz);
 	if (!url) {
 		ret = -ENOMEM;
 		goto clean_up;
@@ -1052,10 +1053,10 @@ int nrf_cloud_rest_agps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 
 clean_up:
 	if (url) {
-		k_free(url);
+		nrf_cloud_free(url);
 	}
 	if (auth_hdr) {
-		k_free(auth_hdr);
+		nrf_cloud_free(auth_hdr);
 	}
 
 	close_connection(rest_ctx);
@@ -1107,7 +1108,7 @@ int nrf_cloud_rest_pgps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 		}
 	}
 
-	url = k_malloc(url_sz);
+	url = nrf_cloud_malloc(url_sz);
 	if (!url) {
 		ret = -ENOMEM;
 		goto clean_up;
@@ -1198,10 +1199,10 @@ int nrf_cloud_rest_pgps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 
 clean_up:
 	if (url) {
-		k_free(url);
+		nrf_cloud_free(url);
 	}
 	if (auth_hdr) {
-		k_free(auth_hdr);
+		nrf_cloud_free(auth_hdr);
 	}
 
 	close_connection(rest_ctx);
@@ -1294,7 +1295,7 @@ int nrf_cloud_rest_send_location(struct nrf_cloud_rest_context *const rest_ctx,
 	char *json_msg = NULL;
 	cJSON *msg_obj = NULL;
 
-	(void)nrf_cloud_codec_init();
+	(void)nrf_cloud_codec_init(NULL);
 
 	msg_obj = cJSON_CreateObject();
 	err = nrf_cloud_gnss_msg_json_encode(gnss, msg_obj);
@@ -1351,7 +1352,7 @@ int nrf_cloud_rest_send_device_message(struct nrf_cloud_rest_context *const rest
 		buff_sz = strlen(device_id) + sizeof(API_DEVICES_MSGS_D2C_TPC_TMPLT) +
 			  (bulk ? sizeof(API_DEVICES_MSGS_BULK) : 0);
 
-		d2c = k_malloc(buff_sz);
+		d2c = nrf_cloud_malloc(buff_sz);
 		if (!d2c) {
 			ret = -ENOMEM;
 			goto clean_up;
@@ -1381,7 +1382,7 @@ int nrf_cloud_rest_send_device_message(struct nrf_cloud_rest_context *const rest
 
 	/* Format API URL with device ID */
 	buff_sz = sizeof(API_DEVICES_MSGS_TEMPLATE) + strlen(device_id);
-	url = k_malloc(buff_sz);
+	url = nrf_cloud_malloc(buff_sz);
 	if (!url) {
 		ret = -ENOMEM;
 		goto clean_up;
@@ -1415,16 +1416,16 @@ int nrf_cloud_rest_send_device_message(struct nrf_cloud_rest_context *const rest
 
 clean_up:
 	if (url) {
-		k_free(url);
+		nrf_cloud_free(url);
 	}
 	if (auth_hdr) {
-		k_free(auth_hdr);
+		nrf_cloud_free(auth_hdr);
 	}
 	if (req.body) {
 		cJSON_free((void *)req.body);
 	}
 	if (d2c) {
-		k_free(d2c);
+		nrf_cloud_free(d2c);
 	}
 	cJSON_Delete(root_obj);
 

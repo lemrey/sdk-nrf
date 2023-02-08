@@ -72,11 +72,13 @@ Options that alter the default values of the application's real-time configurati
 
 CONFIG_DATA_DEVICE_MODE_ACTIVE
    This configuration sets the device in active mode.
+   Default mode for the nRF9160 DK.
 
 .. _CONFIG_DATA_DEVICE_MODE_PASSIVE:
 
 CONFIG_DATA_DEVICE_MODE_PASSIVE
    This configuration sets the device in passive mode.
+   Default mode for the Thingy:91.
 
 .. _CONFIG_DATA_ACTIVE_TIMEOUT_SECONDS:
 
@@ -108,10 +110,10 @@ CONFIG_DATA_ACCELEROMETER_INACT_THRESHOLD
 CONFIG_DATA_ACCELEROMETER_INACT_TIMEOUT_SECONDS
    This configuration sets a timeout in seconds after which the accelerometer reports inactivity.
 
-.. _CONFIG_DATA_GNSS_TIMEOUT_SECONDS:
+.. _CONFIG_DATA_LOCATION_TIMEOUT_SECONDS:
 
-CONFIG_DATA_GNSS_TIMEOUT_SECONDS
-   This configuration sets the GNSS timeout value.
+CONFIG_DATA_LOCATION_TIMEOUT_SECONDS
+   This configuration sets the location timeout value.
 
 .. _CONFIG_DATA_SAMPLE_GNSS_DEFAULT:
 

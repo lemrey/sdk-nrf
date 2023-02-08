@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-# Support for Matter (formerly Connected Home over IP) protocol in NCS is experimental
-config CHIP
+# Support for Matter (formerly Connected Home over IP) protocol in NCS is experimental for Wi-Fi technology
+config CHIP_OVER_WIFI
 	bool
+	default y if CHIP && WIFI_NRF700X
 	select EXPERIMENTAL

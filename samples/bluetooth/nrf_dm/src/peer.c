@@ -5,7 +5,9 @@
  */
 
 #include <zephyr/kernel.h>
-#include <zephyr/bluetooth/conn.h>
+#include <zephyr/random/rand32.h>
+
+#include <math.h>
 
 #include "peer.h"
 #include "pwm_led.h"
@@ -35,7 +37,7 @@ struct peer_entry {
 };
 
 static struct peer_entry *closest_peer;
-static uint32_t access_address;
+static uint32_t rng_seed;
 static enum dm_ranging_mode ranging_mode = DEFAULT_RANGING_MODE;
 
 K_MSGQ_DEFINE(result_msgq, sizeof(struct dm_result), 16, 4);
@@ -74,10 +76,22 @@ static struct peer_entry *mcpd_min_peer_result(struct peer_entry *a, struct peer
 		return a;
 	}
 
-	if (a->result.dist_estimates.mcpd.best > b->result.dist_estimates.mcpd.best) {
+#ifdef CONFIG_DM_HIGH_PRECISION_CALC
+	float dist_a = !isnan(a->result.dist_estimates.mcpd.high_precision) ?
+		  a->result.dist_estimates.mcpd.high_precision : a->result.dist_estimates.mcpd.best;
+	float dist_b = !isnan(b->result.dist_estimates.mcpd.high_precision) ?
+		  b->result.dist_estimates.mcpd.high_precision : b->result.dist_estimates.mcpd.best;
+
+	if (dist_a < dist_b) {
 		return a;
 	}
 	return b;
+#else
+	if (a->result.dist_estimates.mcpd.best < b->result.dist_estimates.mcpd.best) {
+		return a;
+	}
+	return b;
+#endif
 }
 
 static struct peer_entry *peer_find_closest(void)
@@ -134,7 +148,12 @@ static void led_notification(const struct peer_entry *peer)
 	if (peer->result.ranging_mode == DM_RANGING_MODE_RTT) {
 		res = peer->result.dist_estimates.rtt.rtt;
 	} else {
+#ifdef CONFIG_DM_HIGH_PRECISION_CALC
+		res = peer->result.dist_estimates.mcpd.high_precision;
+		res = isnan(res) ? peer->result.dist_estimates.mcpd.best : res;
+#else
 		res = peer->result.dist_estimates.mcpd.best;
+#endif
 	}
 
 	res = (res < 0 ? 0 : res) * 10;
@@ -164,11 +183,21 @@ static void print_result(struct dm_result *result)
 	if (result->ranging_mode == DM_RANGING_MODE_RTT) {
 		printk("rtt: rtt=%.2f\n", result->dist_estimates.rtt.rtt);
 	} else {
+#ifdef CONFIG_DM_HIGH_PRECISION_CALC
+		printk("mcpd: high_precision=%.2f ifft=%.2f phase_slope=%.2f "
+			"rssi_openspace=%.2f best=%.2f\n",
+			result->dist_estimates.mcpd.high_precision,
+			result->dist_estimates.mcpd.ifft,
+			result->dist_estimates.mcpd.phase_slope,
+			result->dist_estimates.mcpd.rssi_openspace,
+			result->dist_estimates.mcpd.best);
+#else
 		printk("mcpd: ifft=%.2f phase_slope=%.2f rssi_openspace=%.2f best=%.2f\n",
 			result->dist_estimates.mcpd.ifft,
 			result->dist_estimates.mcpd.phase_slope,
 			result->dist_estimates.mcpd.rssi_openspace,
 			result->dist_estimates.mcpd.best);
+#endif
 	}
 }
 
@@ -226,28 +255,15 @@ enum dm_ranging_mode peer_ranging_mode_get(void)
 	return ranging_mode;
 }
 
-int peer_access_address_prepare(void)
+uint32_t peer_rng_seed_prepare(void)
 {
-	bt_addr_le_t addr = {0};
-	size_t count = 1;
-
-	bt_id_get(&addr, &count);
-
-	access_address = addr.a.val[0];
-	access_address |= addr.a.val[1] << 8;
-	access_address |= addr.a.val[2] << 16;
-	access_address |= addr.a.val[3] << 24;
-
-	if (access_address == 0) {
-		return -EFAULT;
-	}
-
-	return 0;
+	rng_seed = sys_rand32_get();
+	return rng_seed;
 }
 
-uint32_t peer_access_address_get(void)
+uint32_t peer_rng_seed_get(void)
 {
-	return access_address;
+	return rng_seed;
 }
 
 bool peer_supported_test(const bt_addr_le_t *peer)

@@ -45,15 +45,15 @@ Build targets
 
 The build targets of interest for Thingy:53 in the |NCS| are listed in the following table:
 
-+--------------------------------+----------------------------------------------------------+
-|Component                       |  Build target                                            |
-+================================+==========================================================+
-| nRF5340 SoC - Application core |``thingy53_nrf5340_cpuapp`` for the secure domain         |
-|                                |                                                          |
-|                                |``thingy53_nrf5340_cpuapp_ns`` for the non-secure domain  |
-+--------------------------------+----------------------------------------------------------+
-| nRF5340 SoC - Network core     |``thingy53_nrf5340_cpunet``                               |
-+--------------------------------+----------------------------------------------------------+
++--------------------------------+----------------------------------------------------------------------------------------------------------------------------------+
+|Component                       |  Build target                                                                                                                    |
++================================+==================================================================================================================================+
+| nRF5340 SoC - Application core |``thingy53_nrf5340_cpuapp`` for :ref:`Cortex-M Security Extensions (CMSE) disabled <app_boards_spe_nspe_cpuapp>`                  |
+|                                |                                                                                                                                  |
+|                                |``thingy53_nrf5340_cpuapp_ns`` for :ref:`CMSE enabled <app_boards_spe_nspe_cpuapp_ns>`                                            |
++--------------------------------+----------------------------------------------------------------------------------------------------------------------------------+
+| nRF5340 SoC - Network core     |``thingy53_nrf5340_cpunet``                                                                                                       |
++--------------------------------+----------------------------------------------------------------------------------------------------------------------------------+
 
 .. note::
    The |NCS| samples and applications that are compatible with the Nordic Thingy:53 follow the :ref:`thingy53_app_guide`.
@@ -205,9 +205,9 @@ Partition manager configuration
 ===============================
 
 The samples compatible with the Nordic Thingy:53 use :ref:`partition_manager` to define memory partitions.
-To ensure that partition layout does not change between builds, the sample must use a static partition layout that is consistent between all compatible samples in the |NCS|.
-See :file:`pm_static_thingy53_nrf5340_cpuapp.yml` in a compatible sample for the configuration used.
 The memory layout must stay consistent, so that MCUboot can perform proper image updates and clean up the settings storage partition.
+To ensure that partition layout does not change between builds, the sample must use a static partition layout that is consistent between all compatible samples in the |NCS|.
+The memory partitions are defined in the :file:`pm_static_thingy53_nrf5340_cpuapp.yml` and :file:`pm_static_thingy53_nrf5340_cpuapp_ns.yml` files in the :file:`zephyr/boards/arm/thingy53_nrf5340` directory.
 
 The PCD SRAM partition is locked by the MCUboot bootloader to prevent the application from modifying the network core firmware.
 Trying to access data on this partition results in an ARM fault.
@@ -236,7 +236,7 @@ Use the following Kconfig options to enable the MCUboot bootloader:
 
 In addition, set the :kconfig:option:`CONFIG_UPDATEABLE_IMAGE_NUMBER` option to ``2`` and set an image version, such as ``"1.0.0+0"``, using the :kconfig:option:`CONFIG_MCUBOOT_IMAGE_VERSION` Kconfig option.
 
-See :file:`thingy53_nrf5430_cpuapp.conf` in a compatible sample for how this is done.
+See :file:`thingy53_nrf5340_cpuapp.conf` in a compatible sample for how this is done.
 
 .. _thingy53_app_usb:
 

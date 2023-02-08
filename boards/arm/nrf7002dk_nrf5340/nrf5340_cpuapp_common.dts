@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2022 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 #include "nrf5340_cpuapp_common-pinctrl.dtsi"
 
@@ -14,6 +14,8 @@
 		zephyr,bt-mon-uart = &uart0;
 		zephyr,bt-c2h-uart = &uart0;
 		zephyr,bt-hci-rpmsg-ipc = &ipc0;
+		nordic,802154-spinel-ipc = &ipc0;
+		zephyr,ieee802154 = &ieee802154;
 	};
 
 	leds {
@@ -95,6 +97,16 @@
 		};
 	};
 
+	nrf_radio_coex: nrf7002-coex {
+		status = "okay";
+		compatible = "nordic,nrf700x-coex";
+		req-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
+		status0-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+		grant-gpios = <&gpio0 24 GPIO_ACTIVE_HIGH>;
+		swctrl1-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+		btrf-switch-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+	};
+
 	/* These aliases are provided for compatibility with samples */
 	aliases {
 		led0 = &led0;
@@ -158,7 +170,6 @@ arduino_i2c: &i2c1 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
 		spi-max-frequency = <33000000>;
-		label = "MX25R64";
 		jedec-id = [c2 28 17];
 		sfdp-bfp = [
 			e5 20 f1 ff ff ff ff 03 44 eb 08 6b 08 3b 04 bb
@@ -183,16 +194,12 @@ arduino_i2c: &i2c1 {
 		status = "okay";
 		compatible = "nordic,nrf7002-qspi";
 		reg = <1>;
-		sck-frequency = <8000000>;
+		sck-frequency = <24000000>;
 		quad-mode;
 		/* Wi-Fi Pins used */
 		iovdd-ctrl-gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
 		bucken-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
 		host-irq-gpios = <&gpio0 23 GPIO_ACTIVE_HIGH>;
-		coex-req-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
-		coex-status0-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
-		coex-grant-gpios = <&gpio0 24 GPIO_ACTIVE_HIGH>;
-		swctrl1-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
 	};
 };
 
@@ -256,6 +263,10 @@ arduino_spi: &spi3 {
 			reg = <0x000fa000 0x00006000>;
 		};
 	};
+};
+
+&ieee802154 {
+	status = "okay";
 };
 
 zephyr_udc0: &usbd {

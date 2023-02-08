@@ -12,6 +12,7 @@
 #include <bluetooth/mesh/dk_prov.h>
 #include <dk_buttons_and_leds.h>
 #include "model_handler.h"
+#include "smp_dfu.h"
 
 static void bt_ready(int err)
 {
@@ -39,6 +40,13 @@ static void bt_ready(int err)
 	bt_mesh_prov_enable(BT_MESH_PROV_ADV | BT_MESH_PROV_GATT);
 
 	printk("Mesh initialized\n");
+
+	if (IS_ENABLED(CONFIG_SOC_SERIES_NRF52X) && IS_ENABLED(CONFIG_MCUMGR_SMP_BT)) {
+		err = smp_dfu_init();
+		if (err) {
+			printk("Unable to initialize DFU (err %d)\n", err);
+		}
+	}
 }
 
 void main(void)

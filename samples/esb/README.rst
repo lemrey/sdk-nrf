@@ -44,11 +44,6 @@ Configuration
 
 |config|
 
-FEM support
-===========
-
-.. include:: /includes/sample_fem_support.txt
-
 User interface
 ***************
 
@@ -64,6 +59,11 @@ The Transmitter sample can be found under :file:`samples/esb/ptx` in the |NCS| f
 The Receiver sample can be found under :file:`samples/esb/prx` in the |NCS| folder structure.
 
 See :ref:`gs_programming` for information about how to build and program the application.
+
+FEM support
+===========
+
+.. include:: /includes/sample_fem_support.txt
 
 Testing
 =======

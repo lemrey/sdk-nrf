@@ -10,6 +10,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/settings/settings.h>
 #include <bluetooth/services/fast_pair.h>
+#include <bluetooth/adv_prov/fast_pair.h>
 
 #include <dk_buttons_and_leds.h>
 
@@ -18,6 +19,7 @@ LOG_MODULE_REGISTER(fp_sample, LOG_LEVEL_INF);
 
 #include "bt_adv_helper.h"
 #include "hids_helper.h"
+#include "battery_module.h"
 
 #define RUN_STATUS_LED						DK_LED1
 #define CON_STATUS_LED						DK_LED2
@@ -25,6 +27,7 @@ LOG_MODULE_REGISTER(fp_sample, LOG_LEVEL_INF);
 
 #define FP_ADV_MODE_BUTTON_MASK					DK_BTN1_MSK
 #define VOLUME_UP_BUTTON_MASK					DK_BTN2_MSK
+#define BOND_REMOVE_BUTTON_MASK					DK_BTN3_MSK
 #define VOLUME_DOWN_BUTTON_MASK					DK_BTN4_MSK
 
 #define RUN_LED_BLINK_INTERVAL_MS				1000
@@ -39,6 +42,19 @@ static struct bt_conn *peer;
 static struct k_work bt_adv_restart;
 static struct k_work_delayable fp_adv_mode_status_led_handle;
 static struct k_work_delayable fp_discoverable_adv_timeout;
+
+
+static void advertising_stop(void)
+{
+	int ret = k_work_cancel_delayable(&fp_discoverable_adv_timeout);
+
+	__ASSERT_NO_MSG((ret & ~(K_WORK_CANCELING)) == 0);
+
+	ret = bt_adv_helper_adv_stop();
+	if (ret) {
+		LOG_ERR("Failed to stop advertising (err %d)", ret);
+	}
+}
 
 static void advertising_start(void)
 {
@@ -196,6 +212,25 @@ static void pairing_complete(struct bt_conn *conn, bool bonded)
 	}
 }
 
+static enum bt_security_err pairing_accept(struct bt_conn *conn,
+					   const struct bt_conn_pairing_feat *const feat)
+{
+	ARG_UNUSED(conn);
+	ARG_UNUSED(feat);
+
+	enum bt_security_err ret;
+
+	if (fp_adv_mode != BT_FAST_PAIR_ADV_MODE_DISCOVERABLE) {
+		LOG_WRN("Normal Bluetooth pairing not allowed outside of pairing mode");
+		ret = BT_SECURITY_ERR_PAIR_NOT_ALLOWED;
+	} else {
+		LOG_INF("Accept normal Bluetooth pairing");
+		ret = BT_SECURITY_ERR_SUCCESS;
+	}
+
+	return ret;
+}
+
 static const char *volume_change_to_str(enum hids_helper_volume_change volume_change)
 {
 	const char *res = NULL;
@@ -279,6 +314,27 @@ static void fp_adv_mode_btn_handle(uint32_t button_state, uint32_t has_changed)
 	}
 }
 
+static void bond_remove_btn_handle(uint32_t button_state, uint32_t has_changed)
+{
+	uint32_t button_pressed = button_state & has_changed;
+
+	if (button_pressed & BOND_REMOVE_BUTTON_MASK) {
+		advertising_stop();
+
+		int err = bt_unpair(BT_ID_DEFAULT, NULL);
+
+		if (err) {
+			LOG_ERR("Cannot remove bonds (err %d)", err);
+		} else {
+			LOG_INF("Bonds removed");
+		}
+
+		if (!peer) {
+			advertising_start();
+		}
+	}
+}
+
 static void button_changed(uint32_t button_state, uint32_t has_changed)
 {
 	__ASSERT_NO_MSG(!k_is_in_isr());
@@ -286,17 +342,27 @@ static void button_changed(uint32_t button_state, uint32_t has_changed)
 
 	fp_adv_mode_btn_handle(button_state, has_changed);
 	volume_control_btn_handle(button_state, has_changed);
+	bond_remove_btn_handle(button_state, has_changed);
 }
 
 void main(void)
 {
 	bool run_led_on = true;
 	int err;
+	static const struct bt_conn_auth_cb conn_auth_callbacks = {
+		.pairing_accept = pairing_accept,
+	};
 	static struct bt_conn_auth_info_cb auth_info_cb = {
 		.pairing_complete = pairing_complete
 	};
 
 	LOG_INF("Starting Bluetooth Fast Pair example");
+
+	err = bt_conn_auth_cb_register(&conn_auth_callbacks);
+	if (err) {
+		LOG_ERR("Registering authentication callbacks failed (err %d)", err);
+		return;
+	}
 
 	err = bt_conn_auth_info_cb_register(&auth_info_cb);
 	if (err) {
@@ -329,6 +395,18 @@ void main(void)
 	err = dk_leds_init();
 	if (err) {
 		LOG_ERR("LEDs init failed (err %d)", err);
+		return;
+	}
+
+	err = battery_module_init();
+	if (err) {
+		LOG_ERR("Battery module init failed (err %d)", err);
+		return;
+	}
+
+	err = bt_le_adv_prov_fast_pair_set_battery_mode(BT_FAST_PAIR_ADV_BATTERY_MODE_SHOW_UI_IND);
+	if (err) {
+		LOG_ERR("Setting advertising battery mode failed (err %d)", err);
 		return;
 	}
 

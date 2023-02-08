@@ -8,7 +8,6 @@ menuconfig FOTA_DOWNLOAD
 	bool "FOTA Download"
 	depends on DOWNLOAD_CLIENT
 	depends on DFU_TARGET
-	imply SPM_SERVICE_S0_ACTIVE
 	imply FW_INFO
 
 if (FOTA_DOWNLOAD)
@@ -19,6 +18,10 @@ config FOTA_SOCKET_RETRIES
 
 config FOTA_DOWNLOAD_PROGRESS_EVT
 	bool "Emit progress event upon receiving a download fragment"
+
+config FOTA_CLIENT_AUTOSCHEDULE_UPDATE
+	bool "Mark target images to be updated when downloaded"
+	default y
 
 config FOTA_DOWNLOAD_MCUBOOT_FLASH_BUF_SZ
 	int "Size of buffer used for flash write operations during MCUboot updates"

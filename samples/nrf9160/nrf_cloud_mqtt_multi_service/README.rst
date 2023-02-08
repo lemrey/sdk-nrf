@@ -8,7 +8,7 @@ nRF9160: nRF Cloud MQTT multi-service
    :depth: 2
 
 This sample is a minimal, error tolerant, integrated demonstration of the :ref:`lib_nrf_cloud`, :ref:`lib_location`, and :ref:`lib_at_host` libraries.
-It demonstrates how you can use these libraries together to support Firmware-Over-The-Air (FOTA), location services, modem AT commands over UART, and periodic sensor samples in your `nRF Cloud`_-enabled application.
+It demonstrates how you can use these libraries together to support Firmware-Over-The-Air (FOTA), Location Services, periodic sensor samples, and more in your `nRF Cloud`_-enabled application.
 It also demonstrates how to implement error tolerance in your cellular applications without relying on reboot loops.
 
 .. _nrf_cloud_mqtt_multi_service_requirements:
@@ -32,7 +32,8 @@ This sample implements or demonstrates the following features:
 * Error-tolerant use of the `nRF Cloud MQTT API`_ using the :ref:`nrf_modem <nrfxlib:nrf_modem>` and :ref:`nrf_cloud <lib_nrf_cloud>` libraries.
 * Support for `Firmware-Over-The-Air (FOTA) update service <nRF Cloud Getting Started FOTA documentation_>`_ using the `nRF Cloud`_ portal.
 * Support for `modem AT commands <AT Commands Reference Guide_>`_ over UART using the :ref:`lib_at_host` library.
-* Periodic cellular and GNSS location tracking using the :ref:`lib_location` library.
+* Support for remote execution of modem AT commands using application-specific device messages.
+* Periodic cellular, Wi-Fi, and GNSS location tracking using the :ref:`lib_location` library.
 * Periodic temperature sensor sampling on your `Nordic Thingy:91`_, or fake temperature  measurements on your `Nordic nRF9160 DK`_.
 * Transmission of sensor and GNSS location samples to the nRF Cloud portal as `nRF Cloud device messages <nRF Cloud Device Messages_>`_.
 * Construction of valid `nRF Cloud device messages <nRF Cloud Device Messages_>`_ using `cJSON`_.
@@ -112,6 +113,7 @@ It performs the following major tasks:
 * Periodically samples temperature data (using the :file:`src/temperature.c` file).
 * Constructs timestamped sensor sample and location `device messages <nRF Cloud Device Messages_>`_ using `cJSON`_.
 * Sends sensor sample and location device messages to the :ref:`nrf_cloud_mqtt_multi_service_device_message_queue`.
+* Checks for and executes :ref:`remote modem AT command requests <nrf_cloud_mqtt_multi_service_remote_at>`.
 
 .. note::
    Periodic location tracking is handled by the :ref:`lib_location` library once it has been requested, whereas temperature samples are individually requested by the Main Application Loop.
@@ -132,7 +134,7 @@ Reboot after download completion is handled by the :file:`src/fota_support.c` fi
 In a real-world setting, these two behaviors could be directly implemented in the :file:`src/connection.c` file.
 In this sample, they are separated for clarity.
 
-This sample supports full modem FOTA for the nRF9160 development kit version 1.0.1 and higher.
+This sample supports full modem FOTA for the nRF9160 development kit version 0.14.0 and higher.
 To enable full modem FOTA, add the following parameter to your build command:
 
 ``-DOVERLAY_CONFIG=overlay_full_modem_fota.conf``
@@ -163,16 +165,62 @@ Location tracking
 =================
 
 All matters concerning location tracking are handled in the :file:`src/location_tracking.c` file.
-For the most part, this amounts to setting up a periodic location request, and then passing the results to a callback configured by the :file:`src/application.c` file.
+This involves setting up a periodic location request, and then passing the results to a callback configured by the :file:`src/application.c` file.
 
-Additionally, the :ref:`lib_location` library requires GPS assistance data (either A-GPS, P-GPS, or both) to have the fastest possible `time-to-first-fix <TTFF_>`_.
-The library requests this data automatically, but has no way to automatically receive the response.
-Therefore, all MQTT messages received from `nRF Cloud`_ must be be passed directly through to the :ref:`lib_nrf_cloud_agps` and :ref:`lib_nrf_cloud_pgps` libraries to be checked for A-GPS and P-GPS data, respectively.
-The :c:func:`location_assistance_data_handler` function handles this task, and MQTT messages are sent directly to it from the :file:`src/connection.c` file.
+For location readings to be visible in the nRF Cloud portal, they must be marked as enabled in the `Device Shadow <nRF Cloud Device Shadows_>`_.
+This is performed by the :file:`src/connection.c` file.
 
-.. note::
-  For location readings to be visible in the nRF Cloud portal, they must be marked as enabled in the `Device Shadow <nRF Cloud Device Shadows_>`_.
-  This is performed by the :file:`src/connection.c` file.
+Each enabled location method is tried in the following order until one succeeds: GNSS, Wi-Fi, then cellular.
+
+The GNSS and cellular location tracking methods are enabled by default and will work on both Thingy:91 and nRF9160 DK targets.
+
+.. _nrf_cloud_mqtt_multi_service_wifi_location_tracking:
+
+The Wi-Fi location tracking method is not enabled by default and requires the nRF7002 wifi companion chip.
+
+When enabled, this location method scans the MAC addresses of nearby access points and submits them to nRF Cloud to obtain a location estimate.
+
+See :ref:`nrf_cloud_mqtt_multi_service_building_wifi` for details on how to enable Wi-Fi location tracking.
+
+This sample supports placing P-GPS data in external flash for the nRF9160 development kit version 0.14.0 and later.
+Currently, you cannot combine this with full modem FOTA.
+To enable this, add the following parameter to your build command:
+
+``-DOVERLAY_CONFIG=overlay_pgps_ext_flash.conf``
+
+Also, specify your development kit version by appending it to the board name.
+For example, if your development kit version is 1.0.1, use the following board name in your build command:
+
+``nrf9160dk_nrf9160_ns@1_0_1``
+
+.. _nrf_cloud_mqtt_multi_service_remote_at:
+
+Remote execution of modem AT commands
+=====================================
+
+If the :ref:`CONFIG_AT_CMD_REQUESTS <CONFIG_AT_CMD_REQUESTS>` KConfig option is enabled, you can remotely execute modem AT commands on your device by sending a device message with appId ``MODEM``, messageType ``CMD``, and the data key set to the command you would like to execute.
+
+The application executes the command stored in the data key, and responds with a device message containing either an error code or the response from the modem to the AT command.
+
+For example, if you send the following device message to a device running this sample with :ref:`CONFIG_AT_CMD_REQUESTS <CONFIG_AT_CMD_REQUESTS>` enabled:
+
+.. code-block:: json
+
+   {"appId":"MODEM", "messageType":"CMD", "data":"AT+CGMR"}
+
+It executes the modem AT command ``AT+CGMR`` and sends a device message similar to the following back to nRF Cloud:
+
+.. code-block:: json
+
+   {
+      "appId": "MODEM",
+      "messageType": "DATA",
+      "ts": 1669244834095,
+      "data": "mfw_nrf9160_1.3.2\r\nOK"
+   }
+
+
+To do this in the nRF Cloud portal, write `{"appId":"MODEM", "messageType":"CMD", "data":"AT+CGMR"}` into the **Send a message** box of the **Terminal** card and click :guilabel:`Send`.
 
 .. _nrf_cloud_mqtt_multi_service_led_status_indication:
 
@@ -235,7 +283,8 @@ While any valid JSON string can be sent as a device message, and accepted and st
 The nRF Cloud portal knows how to interpret these schemas.
 These schemas are described in `nRF Cloud application protocols for long-range devices <nRF Cloud JSON protocol schemas_>`_.
 The device messages constructed in the :file:`src/application.c` file all adhere to the general message schema.
-GNSS and temperature data device messages conform to the ``gps`` and ``temp`` ``deviceToCloud`` schemas respectively.
+
+GNSS and temperature data device messages conform to the ``gnss`` and ``temp`` ``deviceToCloud`` schemas respectively.
 
 .. _nrf_cloud_mqtt_multi_service_configuration:
 
@@ -422,15 +471,23 @@ CONFIG_LOCATION_TRACKING_SAMPLE_INTERVAL_SECONDS - Location sampling interval (s
 
 CONFIG_LOCATION_TRACKING_GNSS - GNSS location tracking
    Enables GNSS location tracking.
-   Disable both this and :ref:`CONFIG_LOCATION_TRACKING_CELLULAR <CONFIG_LOCATION_TRACKING_CELLULAR>` to completely disable location tracking.
+   Disable all location tracking methods to completely disable location tracking.
    Defaults to enabled.
 
 .. _CONFIG_LOCATION_TRACKING_CELLULAR:
 
 CONFIG_LOCATION_TRACKING_CELLULAR - Cellular location tracking
    Enables cellular location tracking.
-   Disable both this and :ref:`CONFIG_LOCATION_TRACKING_GNSS <CONFIG_LOCATION_TRACKING_GNSS>` to completely disable location tracking.
+   Disable all location tracking methods to completely disable location tracking.
    Defaults to enabled.
+
+.. _CONFIG_LOCATION_TRACKING_WIFI:
+
+CONFIG_LOCATION_TRACKING_WIFI - Wi-Fi location tracking
+   Enables Wi-Fi location tracking.
+   Disable all location tracking methods to completely disable location tracking.
+   Requires the use of an nRF7002 companion chip.
+   Defaults to disabled.
 
 .. _CONFIG_TEMP_DATA_USE_SENSOR:
 
@@ -492,6 +549,19 @@ CONFIG_LED_CONTINUOUS_INDICATION - Continuous LED status indication
 CONFIG_TEST_COUNTER - Enable test counter
    Enables the test counter.
 
+.. _CONFIG_AT_CMD_REQUESTS:
+
+CONFIG_AT_CMD_REQUESTS - Enable AT command requests
+   Allow remote execution of modem AT commands, requested using application-specific device messages.
+   See :ref:`nrf_cloud_mqtt_multi_service_remote_at` for details.
+
+.. _CONFIG_AT_CMD_REQUEST_RESPONSE_BUFFER_LENGTH:
+
+CONFIG_AT_CMD_REQUEST_RESPONSE_BUFFER_LENGTH - Length of AT command request response buffer (bytes)
+   Sets the size of the buffer for storing responses to modem AT commands before they are forwarded to the cloud.
+   Modem responses longer than this length will be replaced with an error code message (-NRF_E2BIG).
+   Cannot be less than 40 bytes.
+
 .. _nrf_cloud_mqtt_multi_service_building_and_running:
 
 Building and running
@@ -500,6 +570,26 @@ Building and running
 .. |sample path| replace:: :file:`samples/nrf9160/nrf_cloud_mqtt_multi_service`
 
 .. include:: /includes/build_and_run_ns.txt
+
+.. _nrf_cloud_mqtt_multi_service_building_wifi:
+
+Building with nRF7002 EK Wi-Fi scanning support (for nRF9160 DK)
+================================================================
+
+To build the sample with nRF7002 EK Wi-Fi scanning support, use the ``-DSHIELD=nrf7002_ek``, ``-DDTC_OVERLAY_FILE=nrf9160dk_with_nrf7002ek.overlay`` and  ``-DOVERLAY_CONFIG=overlay-nrf7002ek-wifi-scan-only.conf`` options.
+
+This enables the Wi-Fi location tracking method automatically.
+
+For example:
+
+.. code-block:: console
+
+   west build -p -b nrf9160dk_nrf9160_ns -- -DSHIELD=nrf7002_ek -DDTC_OVERLAY_FILE="nrf9160dk_with_nrf7002ek.overlay" -DOVERLAY_CONFIG="overlay-nrf7002ek-wifi-scan-only.conf"
+
+This is only supported on the `Nordic nRF9160 DK`_ with an attached nRF7002 EK.
+
+See also :ref:`the paragraphs on the Wi-Fi location tracking method <nrf_cloud_mqtt_multi_service_wifi_location_tracking>`.
+
 
 .. _nrf_cloud_mqtt_multi_service_dependencies:
 

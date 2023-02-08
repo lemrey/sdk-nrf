@@ -24,7 +24,8 @@ The sample supports the following development kits:
 You can use any one of the development kits listed above.
 
 .. note::
-   On nRF5340 DK, the sample is designed to run on the network core.
+   On nRF5340 DK and nRF7002 DK, the sample is designed to run on the network core and requires the :ref:`nrf5340_remote_shell` running on the application core.
+   This sample uses the :ref:`shell_ipc_readme` library to forward shell data through the physical UART interface of the application core.
 
 The sample also requires one of the following testing devices:
 
@@ -68,6 +69,7 @@ See :ref:`radio_test_ui` for a list of available commands.
    For the IEEE 802.15.4 mode, the start channel and the end channel must be within the channel range of 11 to 26.
    Use the ``start_channel`` and ``end_channel`` commands to control this setting.
 
+
 .. _radio_test_ui:
 
 User interface
@@ -93,6 +95,7 @@ User interface
    * - output_power
      - <sub_cmd>
      - Output power set.
+       If a front-end module is attached and the :kconfig:option:`CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC` Kconfig option is enabled, it has the same effect as the ``total_output_power`` command.
    * - parameters_print
      -
      - Print current delay, channel, and other parameters.
@@ -129,6 +132,34 @@ User interface
    * - transmit_pattern
      - <sub_cmd>
      - Set transmission pattern.
+   * - total_output_power
+     - <tx output power>
+     - Set total output power in dBm.
+       This value includes SoC output power and front-end module gain.
+
+Tx output power
+===============
+
+This sample has a few commands that you can use to test the device output power.
+The behavior of the commands vary depending on the hardware configuration and Kconfig options as follows:
+
+* Radio Test without front-end module support:
+
+  * The ``output_power`` command sets the SoC output command with a subcommand set.
+    The output power is set directly in the radio peripheral.
+
+* Radio Test with front-end module support in default configuration (the :kconfig:option:`CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC` Kconfig option is enabled):
+
+  * The ``output_power`` command sets the total output power, including front-end module gain.
+  * The ``total_output_power`` command sets the total output power, including front-end module gain with a value in dBm unit provided by user.
+  * For these commands, the radio peripheral and FEM gain is calculated and set automatically to meet your requirements.
+  * If an exact output power value cannot be set, a lower value is used.
+
+* Radio Test with front-end module support and manual Tx output power control (the kconfig:option:`CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC` Kconfig option is disabled):
+
+  * The ``output_power`` command sets the SoC output command with a subcommands set.
+  * The ``fem`` command with the ``tx_gain`` subcommand sets the front-end module gain to an arbitrary value for given front-end module.
+  * You can use this configuration to perform tests on your hardware design.
 
 Building and running
 ********************
@@ -137,28 +168,29 @@ Building and running
 .. include:: /includes/build_and_run.txt
 
 .. note::
-   On the |nRF5340DKnoref|, the Radio test sample is a standalone network sample that does not require any counterpart application sample.
-   Program the application core to boot up the network core.
-   Use any sample for this, for example :ref:`nrf5340_empty_app_core`.
-   The :ref:`nrf5340_empty_app_core` is built and programmed automatically by default.
-   If you want to program another sample for the application core, unset the :kconfig:option:`CONFIG_NCS_SAMPLE_EMPTY_APP_CORE_CHILD_IMAGE` option.
+   On the nRF5340 or nRF7002 development kit, the Radio Test sample requires the :ref:`nrf5340_remote_shell` sample on the application core.
+   The Remote IPC shell sample is built and programmed automatically by default.
+   If you want to program your custom solution for the application core, unset the :kconfig:option:`CONFIG_NCS_SAMPLE_REMOTE_SHELL_CHILD_IMAGE` Kconfig option.
 
-Remote IPC Service Shell variant
+Remote USB CDC ACM Shell variant
 ================================
 
-This sample has a possibility to run the remote IPC Service Shell through nRF5340 DK application core USB or UART peripheral.
+This sample can run the remote IPC Service Shell through the USB on the nRF5340 DK application core.
 For example, when building on the command line, you can do so as follows:
 
 .. code-block:: console
 
-  west build samples/peripheral/radio_test -b nrf5340dk_nrf5340_cpunet -- -DCONF_FILE='prj_ipc_shell.conf'
+  west build samples/peripheral/radio_test -b nrf5340dk_nrf5340_cpunet -- -DCONFIG_RADIO_TEST_USB=y
 
 You can also build this sample with the remote IPC Service Shell and support for the front-end module.
 You can use the following command:
 
 .. code-block:: console
 
-  west build -b nrf5340dk_nrf5340_cpunet -- -DCONF_FILE=prj_ipc_shell.conf -DSHIELD=nrf21540_ek -Dremote_shell_SHIELD=nrf21540_ek
+  west build samples/peripheral/radio_test -b nrf5340dk_nrf5340_cpunet -- -DSHIELD=nrf21540_ek -DCONFIG_RADIO_TEST_USB=y
+
+.. note::
+    You can also build the sample with the remote IPC Service Shell for the |nRF7002DKnoref| using the ``nrf7002dk_nrf5340_cpunet`` build target in the commands.
 
 .. _radio_test_testing:
 
@@ -168,7 +200,7 @@ Testing
 After programming the sample to your development kit, complete the following steps to test it in one of the following two ways:
 
 .. note::
-   For the |nRF5340DKnoref|, see :ref:`logging_cpunet` for information about the COM terminals on which the logging output is available.
+   For the |nRF5340DKnoref| or |nRF7002DKnoref|, see :ref:`logging_cpunet` for information about the COM terminals on which the logging output is available.
 
 .. _radio_test_testing_board:
 
@@ -208,24 +240,30 @@ Testing with RSSI Viewer
 Dependencies
 ************
 
+This sample uses the following |NCS| library:
+
+  * :ref:`shell_ipc_readme`
+
 This sample has the following nrfx dependencies:
 
-  * ``nrfx/drivers/include/nrfx_timer.h``
-  * ``nrfx/hal/nrf_nvmc.h``
-  * ``nrfx/hal/nrf_power.h``
-  * ``nrfx/hal/nrf_radio.h``
-  * ``nrfx/hal/nrf_rng.h``
+  * :file:`nrfx/drivers/include/nrfx_timer.h`
+  * :file:`nrfx/hal/nrf_power.h`
+  * :file:`nrfx/hal/nrf_radio.h`
+
+The sample also has the following nrfxlib dependency:
+
+  * :ref:`nrfxlib:mpsl_fem`
 
 In addition, it uses the following Zephyr libraries:
 
 * :ref:`zephyr:device_model_api`:
 
-   * ``drivers/clock_control.h``
+   * :file:`drivers/clock_control.h`
 
 * :ref:`zephyr:kernel_api`:
 
-  * ``include/init.h``
+  * :file:`include/init.h`
 
 * :ref:`zephyr:shell_api`:
 
-  * ``include/shell/shell.h``
+  * :file:`include/shell/shell.h`

@@ -14,7 +14,7 @@ See the subpages for detailed documentation on the application and its internal 
 .. _asset_tracker_v2_subpages:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Subpages:
 
    doc/asset_tracker_v2_description
@@ -26,7 +26,7 @@ See the subpages for detailed documentation on the application and its internal 
    doc/cloud_module
    doc/cloud_wrapper
    doc/debug_module
-   doc/gnss_module
+   doc/location_module
    doc/modem_module
    doc/sensor_module
    doc/ui_module

@@ -86,7 +86,7 @@ Motion impact detection
 =======================
 
 Motion impact is detected when the magnitude (root sum squared) of acceleration exceeds the configured threshold value.
-To enable motion impact detection, you must include :kconfig:option:`CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION` and :kconfig:option:`CONFIG_ADXL372` when building the application.
+To enable motion impact detection, you must include :kconfig:option:`CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION` when building the application.
 
 The threshold is configured using the :kconfig:option:`CONFIG_ADXL372_ACTIVITY_THRESHOLD` option.
 The accelerometer records acceleration magnitude when it is in the active mode and reports the peak magnitude once it reverts to the inactive mode.
@@ -184,11 +184,9 @@ The :file:`asset_tracker_v2/src/events/sensor_module_event.h` header file contai
 Dependencies
 ************
 
-This module uses the following |NCS| libraries and drivers:
+This module uses the following Zephyr API:
 
 * :ref:`Generic sensor API <sensor_api>`
-* :ref:`adxl362`
-* :ref:`bme680`
 
 API documentation
 *****************

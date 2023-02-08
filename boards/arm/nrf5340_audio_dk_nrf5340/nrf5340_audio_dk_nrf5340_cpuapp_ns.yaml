@@ -9,6 +9,7 @@ toolchain:
 ram: 192
 flash: 192
 supported:
+  - gpio
   - i2c
   - i2s
   - spi
@@ -16,3 +17,4 @@ supported:
   - watchdog
   - usb_cdc
   - usb_device
+  - netif:openthread

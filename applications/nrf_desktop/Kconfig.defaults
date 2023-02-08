@@ -1,0 +1,17 @@
+#
+# Copyright (c) 2022 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config DESKTOP_COMMON
+	bool
+	default y
+	select APP_EVENT_MANAGER
+	select CAF
+
+config DESKTOP_COMMON_MODULES
+	bool
+	default y
+	select DESKTOP_SETTINGS_LOADER
+	select DESKTOP_POWER_MANAGER

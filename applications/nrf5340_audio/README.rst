@@ -13,6 +13,19 @@ It is developed for use with the :ref:`nrf53_audio_app_dk`.
 In its default configuration, the application requires the :ref:`LC3 software codec <nrfxlib:lc3>`.
 The application also comes with various tools, including the :file:`buildprog.py` Python script that simplifies building and programming the firmware.
 
+.. _nrf53_audio_app_overview_features:
+
+Feature support matrix
+   The following table lists features of the nRF5340 Audio application and their respective limitations and maturity level.
+   For an explanation of the maturity levels, see :ref:`Software maturity levels <software_maturity>`.
+
+   .. note::
+      Features not listed are not supported.
+
+   .. include:: ../../doc/nrf/software_maturity.rst
+      :start-after: software_maturity_application_nrf5340audio_table:
+      :end-before: software_maturity_protocol
+
 .. _nrf53_audio_app_overview:
 
 Overview
@@ -21,6 +34,7 @@ Overview
 The application can work as a gateway or a headset.
 The gateway receives the audio data from external sources (USB or I2S) and forwards it to one or more headsets.
 The headset is a receiver device that plays back the audio it gets from the gateway.
+It is also possible to enable a bidirectional mode where one gateway and one headset can send and receive audio to and from each other at the same time.
 
 Both device types use the same code base, but different firmware, and you need both types of devices for testing the application.
 Gateways and headsets can both run in one of the available application modes, either the *connected isochronous stream* (CIS) mode or in the *broadcast isochronous stream* (BIS) mode.
@@ -49,11 +63,6 @@ Regardless of the configuration, the application handles the audio data in the f
 
 #. Decoded audio data is sent to the hardware audio output over I2S.
 
-.. note::
-   Currently, only a unidirectional stream is supported (gateway to headsets).
-   In addition, only the gateway uses USB.
-   This means that no decoded audio data is sent over USB in the current version.
-
 In the `I2S-based firmware for gateway and headsets`_, sending the audio data through the application layers includes a mandatory synchronization step using the synchronization module.
 This proprietary module ensures that the audio is played at the same time with the correct speed.
 For more information, see `Synchronization module overview`_.
@@ -77,18 +86,23 @@ Connected Isochronous Stream (CIS)
   This is the default configuration of the nRF5340 Audio application.
   In this configuration, you can use the nRF5340 Audio development kit in the role of the gateway, the left headset, or the right headset.
 
+  In the current version of the nRF5340 Audio application, the CIS mode offers both unidirectional and bidirectional communication.
+  You can configure the CIS to bidirectional communication, in which it will support a walkie-talkie demonstration.
+  In the bidirectional communication, the headset device will send audio from the on-board PDM microphone.
+  In the walkie-talkie demonstration, the gateway device will send audio from the on-board PDM microphone instead of using the line-in.
+  See `Enabling the walkie-talkie demo`_ for more information.
+
   .. note::
-     In the current version of the nRF5340 Audio application, the CIS mode offers only monodirectional communication.
+     Only one headset device can be connected when testing the bidirectional mode or the walkie-talkie demo.
 
 Broadcast Isochronous Stream (BIS)
-  BIS is a monodirectional communication protocol that allows for broadcasting one or more audio streams from a source device to an unlimited number of receivers that are not connected to the source.
+  BIS is a unidirectional communication protocol that allows for broadcasting one or more audio streams from a source device to an unlimited number of receivers that are not connected to the source.
 
   In this configuration, you can use the nRF5340 Audio development kit in the role of the gateway or as one of the headsets.
   Use multiple nRF5340 Audio development kits to test BIS having multiple receiving headsets.
 
   .. note::
-     * In the BIS mode, you can use any number of nRF5340 Audio development kits as receivers.
-     * In the current version of the nRF5340 Audio application, the BIS mode offers only monophonic sound reproduction.
+     In the BIS mode, you can use any number of nRF5340 Audio development kits as receivers.
 
 The audio quality for both modes does not change, although the processing time for stereo can be longer.
 
@@ -282,7 +296,6 @@ The nRF5340 Audio application is designed to be used only with the following har
    The application supports PCA10121 revisions 1.0.0 or above.
    The application is also compatible with the following pre-launch revisions:
 
-   * Revision 0.7.0 (not recommended).
    * Revisions 0.8.0 and above.
 
 You need at least two nRF5340 Audio development kits (one with the gateway firmware and one with headset firmware) to test the application.
@@ -320,7 +333,7 @@ Key features of the nRF5340 Audio DK
 * Normal operating temperature range 10–40°C.
 
   .. note::
-      The battery supplied with this kit can operate with a max temperature of Max +60°C.
+      The battery supplied with this kit can operate with a max temperature of +60°C.
 
 * When using a power adapter to USB, the power supply adapter must meet USB power supply requirements.
 * Embedded battery charge system.
@@ -656,16 +669,20 @@ The application uses the following buttons on the supported development kit:
 | **BTN 4**     | Depending on the moment it is pressed:                                                 |
 |               |                                                                                        |
 |               | * Long-pressed during startup: Turns on the DFU mode, if                               |
-|               |   the device is :ref:`configured <nrf53_audio_app_configuration_configure_fota>`.      |
+|               |   the device is :ref:`configured for it<nrf53_audio_app_configuration_configure_fota>`.|
 |               | * Pressed on the gateway during playback: Sends a test tone generated on the device.   |
 |               |   Use this tone to check the synchronization of headsets.                              |
 |               | * Pressed on the gateway during playback multiple times: Changes the tone frequency.   |
 |               |   The available values are 1000 Hz, 2000 Hz, and 4000 Hz.                              |
+|               | * Pressed on a BIS headset during playback: Change audio stream, if more than one is   |
+|               |   available.                                                                           |
 +---------------+----------------------------------------------------------------------------------------+
 | **BTN 5**     | Depending on the moment it is pressed:                                                 |
 |               |                                                                                        |
 |               | * Long-pressed during startup: Clears the previously stored bonding information.       |
 |               | * Pressed during playback: Mutes the playback volume.                                  |
+|               | * Pressed on a BIS headset during playback: Change the gateway, if more than one is    |
+|               |   available.                                                                           |
 +---------------+----------------------------------------------------------------------------------------+
 | **RESET**     | Resets the device.                                                                     |
 +---------------+----------------------------------------------------------------------------------------+
@@ -763,7 +780,37 @@ Selecting the BIS mode
 ======================
 
 The CIS mode is the default operating mode for the application.
-You can switch to the BIS mode by adding the ``CONFIG_TRANSPORT_BIS`` Kconfig option set to ``y``  to the :file:`prj.conf` file for the debug version and the :file:`prj_release.conf` file for the release version.
+You can switch to the BIS mode by adding the :kconfig:option:`CONFIG_TRANSPORT_BIS` Kconfig option set to ``y`` to the :file:`prj.conf` file for the debug version and the :file:`prj_release.conf` file for the release version.
+
+Enabling the BIS mode with two gateways
+---------------------------------------
+
+In addition to the standard BIS mode with one gateway, you can also add a second gateway device that the BIS headsets can receive audio stream from.
+To configure the second gateway, add both the :kconfig:option:`CONFIG_TRANSPORT_BIS` and the :kconfig:option:`CONFIG_BT_USE_AUDIO_BROADCAST_NAME_ALT` Kconfig options set to ``y`` to the :file:`prj.conf` file for the debug version and to the :file:`prj_release.conf` file for the release version.
+You can provide an alternative name to the second gateway using the :kconfig:option:`CONFIG_BT_AUDIO_BROADCAST_NAME_ALT` or use the default alternative name.
+
+You build each BIS gateway separately using the normal procedures from :ref:`nrf53_audio_app_building`.
+After building the first gateway, configure the required Kconfig options for the second gateway and build the second gateway firmware.
+Remember to program the two firmware versions to two separate gateway devices.
+
+.. _nrf53_audio_app_configuration_select_bidirectional:
+
+Selecting the CIS bidirectional communication
+=============================================
+
+The CIS unidirectional mode is the default operating mode for the application.
+You can switch to the bidirectional mode by adding the :kconfig:option:`CONFIG_STREAM_BIDIRECTIONAL` Kconfig option set to ``y``  to the :file:`prj.conf` file (for the debug version) or to the :file:`prj_release.conf` file (for the release version).
+
+.. _nrf53_audio_app_configuration_enable_walkie_talkie:
+
+Enabling the walkie-talkie demo
+-------------------------------
+
+The walkie-talkie demo is a bidirectional stream using the PDM microphone as input on each side.
+You can switch to using the walkie-talkie by adding the :kconfig:option:`CONFIG_WALKIE_TALKIE_DEMO` Kconfig option set to ``y``  to the :file:`prj.conf` file (for the debug version) or to the :file:`prj_release.conf` file (for the release version).
+
+.. note::
+   Only one headset can be connected when using the bidirectional mode or the walkie-talkie demo.
 
 .. _nrf53_audio_app_configuration_select_i2s:
 
@@ -833,6 +880,22 @@ To enable the desired FOTA functions:
 
 For the full list of parameters and examples, see the :ref:`nrf53_audio_app_building_script_running` section.
 
+FOTA build files
+----------------
+
+The generated FOTA build files use the following naming patterns:
+
+* For multi-image DFU, the file is called ``dfu_application.zip``.
+  This file updates two cores with one single file.
+* For single-image DFU, the bin file for the application core is called ``app_update.bin``.
+  The bin file for the network core is called ``net_core_app_update.bin``.
+  In this scenario, the cores are updated one by one with two separate files in two actions.
+
+See :ref:`app_build_output_files` for more information about the image files.
+
+.. note::
+   |net_core_hex_note|
+
 Entering the DFU mode
 ---------------------
 
@@ -870,7 +933,8 @@ You can build and program the application in one of the following ways:
 * :ref:`nrf53_audio_app_building_standard`.
   Using this method requires building and programming each development kit separately.
 
-You might want to check the :ref:`nRF5340 Audio application known issues <known_issues_nrf5340audio>` before building and programming the application.
+.. note::
+   You might want to check the :ref:`nRF5340 Audio application known issues <known_issues_nrf5340audio>` before building and programming the application.
 
 Testing out of the box
 ======================
@@ -883,6 +947,25 @@ Before building the application, you can verify if the kit is working by complet
 #. Observe **RGB1** (bottom side LEDs around the center opening that illuminate the Nordic Semiconductor logo) turn solid yellow, **OB/EXT** turn solid green, and **LED3** start blinking green.
 
 You can now program the development kits with either gateway or headset firmware before they can be used.
+
+.. _nrf53_audio_app_adding_FEM_support:
+
+Adding FEM support
+==================
+
+You can add support for the nRF21540 front-end module (FEM) to this application by using one of the following options, depending on how you decide to build the application:
+
+* If you opt for :ref:`nrf53_audio_app_building_script`, add the ``--nrf21540`` to the script's building command.
+* If you opt for :ref:`nrf53_audio_app_building_standard`, add the ``-DSHIELD=nrf21540_ek_fwd`` to the ``west build`` command.
+  For example:
+
+  .. code-block:: console
+
+     west build -b nrf5340_audio_dk_nrf5340_cpuapp --pristine -- -DCONFIG_AUDIO_DEV=1 -DSHIELD=nrf21540_ek_fwd -DCONF_FILE=prj_release.conf
+
+You can use the :kconfig:option:`CONFIG_NRF_21540_MAIN_TX_POWER` and :kconfig:option:`CONFIG_NRF_21540_PRI_ADV_TX_POWER` to set the TX power output.
+
+See :ref:`ug_radio_fem` for more information about FEM in the |NCS|.
 
 .. _nrf53_audio_app_building_script:
 
@@ -929,11 +1012,12 @@ See the following examples of the parameter usage with the command run from the 
 
      python buildprog.py -c app -b debug -d both
 
-* Example 2: The following command builds the application as in *example 1*, but with the DFU internal flash memory layout enabled and using the minimal size of the network core bootloader:
+* Example 2: The following command builds the application using the script for both the application and the network core (``both``).
+  As in *example 1*, it builds with the ``debug`` application version, but with the DFU internal flash memory layout enabled and using the minimal size of the network core bootloader:
 
-   .. code-block:: console
+  .. code-block:: console
 
-     python buildprog.py -c app -b debug -d both -m internal -M
+     python buildprog.py -c both -b debug -d both -m internal -M
 
   If you run this command with the ``external`` DFU type parameter instead of ``internal``, the external flash memory layout will be enabled.
 
@@ -945,16 +1029,18 @@ For example, when running the command above, the script creates the :file:`dev_g
 
 Programming with the script
    The development kits are programmed according to the serial numbers set in the JSON file.
-   If you run the script with the ``-p`` parameter, you can program one or both of the cores after building the files.
    Make sure to connect the development kits to your PC using USB and turn them on using the **POWER** switch before you run the command.
+
+   The following parameters are available for programming:
+
+   * Programming (``-p`` parameter) -- If you run the building script with this parameter, you can program one or both of the cores after building the files.
+   * Sequential programming (``-s`` parameter) -- If you are using Windows Subsystem for Linux (WSL) and encounter problems while programming, include this parameter alongside other parameters to program sequentially.
+
    The command for programming can look as follows:
 
    .. code-block:: console
 
       python buildprog.py -c both -b debug -d both -p
-
-   .. note::
-      If you are using Windows Subsystem for Linux (WSL) and encounter problems while programming, include the ``-s`` parameter to program sequentially.
 
    This command builds the application with the ``debug`` application version for both the headset and the gateway and programs the application core.
    Given the ``-c both`` parameter, it also takes the precompiled Bluetooth Low Energy Controller binary from the :file:`applications/nrf5340_audio/bin` directory and programs it to the network core of both the gateway and the headset.
@@ -966,6 +1052,13 @@ Programming with the script
       .. code-block:: console
 
          python buildprog.py -c both -b debug -d both -p --recover-on-fail
+
+   If you want to program firmware that has DFU enabled, you must include the DFU parameters in the command.
+   The command for programming with DFU enabled can look as follows:
+
+   .. code-block:: console
+
+     python buildprog.py -c both -b debug -d both -m internal -M -p
 
 Getting help
    Run ``python buildprog.py -h`` for information about all available script parameters.
@@ -1051,12 +1144,6 @@ Complete the following steps to build the application:
       * For the debug version: No build flag needed.
       * For the release version: ``-DCONF_FILE=prj_release.conf``
 
-   #. (Optional) Choose the DFU flash memory layouts:
-
-      * For internal flash memory DFU: ``-DCONFIG_AUDIO_DFU=1``
-      * For external flash memory DFU: ``-DCONFIG_AUDIO_DFU=2``
-      * For minimal sizes of the network core bootloader: ``-DCONFIG_B0N_MINIMAL=y``
-
 #. Build the application using the standard :ref:`build steps <gs_programming>`.
    For example, if you want to build the firmware for the application core as a headset using the ``release`` application version, you can run the following command:
 
@@ -1075,6 +1162,10 @@ Programming the application
 After building the files for the development kit you want to program, complete the following steps to program the application from the command line:
 
 1. Plug the device into the USB port.
+
+   .. note::
+      |usb_known_issues|
+
 #. Turn on the development kit using the On/Off switch.
 #. Open a command prompt.
 #. Run the following command to print the SEGGER serial number of your development kit:
@@ -1097,7 +1188,7 @@ After building the files for the development kit you want to program, complete t
 
    .. code-block:: console
 
-      nrfjprog --program build/zephyr/zephyr.hex --coprocessor CP_APPLICATION --sectorerase -r
+      nrfjprog --program build/zephyr/zephyr.hex --coprocessor CP_APPLICATION --chiperase -r
 
    In this command, :file:`build/zephyr/zephyr.hex` is the HEX binary file for the application core.
    If a custom build folder is specified, the path to this folder must be used instead of :file:`build/`.
@@ -1145,9 +1236,13 @@ This is the default setting.
 Testing the default CIS mode
 ----------------------------
 
-Complete the following steps to test the CIS mode for one gateway and two headset devices:
+Complete the following steps to test the unidirectional CIS mode for one gateway and two headset devices:
 
 1. Make sure that the development kits are still plugged into the USB ports and are turned on.
+
+   .. note::
+      |usb_known_issues|
+
    After programming, **RGB2** starts blinking green on every device to indicate the ongoing CPU activity on the network core.
    **LED3** starts blinking green on every device to indicate the ongoing CPU activity on the application core.
 #. Wait for the **LED1** on the gateway to start blinking blue.
@@ -1168,20 +1263,20 @@ Complete the following steps to test the CIS mode for one gateway and two headse
    The playback volume increases for both headsets.
 #. Press the **VOL-** button on the gateway.
    The playback volume decreases for both headsets.
-#. Press the **PLAY/PAUSE** button on one of the headsets.
-   The playback stops for the given headset and continues on the other one.
+#. Press the **PLAY/PAUSE** button on any one of the devices.
+   The playback stops for both headsets and the streaming state for all devices is set to paused.
 #. Press the **RESET** button on the gateway.
    The gateway resets and the playback on the unpaused headset stops.
    After some time, the gateway establishes the connection with both headsets and resumes the playback on the unpaused headset.
-#. Press the **PLAY/PAUSE** button on one of the paused headsets.
-   The playback resumes in sync with the other headset.
+#. Press the **PLAY/PAUSE** button on any one of the devices.
+   The playback resumes in both headsets.
 #. Press the **BTN 4** button on the gateway multiple times.
    For each button press, the audio stream playback is stopped and the gateway sends a test tone to both headsets.
    These tones can be used as audio cues to check the synchronization of the headsets.
 
 After the kits have paired for the first time, they are now bonded.
 This means the Long-Term Key(LTK) is stored on each side, and that the kits will only connect to each other unless the bonding information is cleared.
-To clear the bonding information, press and hold **BTN5** during boot.
+To clear the bonding information, press and hold **BTN 5** during boot.
 
 When you finish testing, power off the nRF5340 Audio development kits by switching the power switch from On to Off.
 
@@ -1195,6 +1290,23 @@ Testing the BIS mode is identical to `Testing the default CIS mode`_, except for
 * You must :ref:`select the BIS mode manually <nrf53_audio_app_configuration_select_bis>` before building the application.
 * You can play the audio stream with different audio settings on the receivers.
   For example, you can decrease or increase the volume separately for each receiver during playback.
+* When pressing the **PLAY/PAUSE** button on a headset, the streaming state only changes for that given headset.
+* Pressing the **PLAY/PAUSE** button on the gateway will respectively start or stop the stream for all headsets listening in.
+* Pressing the **BTN 4** button on a headset will change the active audio stream.
+  The default configuration of the BIS mode supports two audio streams (left and right).
+* Pressing the **BTN 5** button on a headset will change the gateway source for the audio stream (after `Enabling the BIS mode with two gateways`_).
+  If a second gateway is not present, the headset will not play audio.
+
+.. _nrf53_audio_app_testing_steps_cis_walkie_talkie:
+
+Testing the walkie-talkie demo
+------------------------------
+
+Testing the walkie-talkie demo is identical to `Testing the default CIS mode`_, except for the following differences:
+
+* You must enable the Kconfig option mentioned in `Enabling the walkie-talkie demo`_ before building the application.
+* Instead of controlling the playback, you can speak through the PDM microphones.
+  The line is open all the time, no need to press any buttons to talk, but the volume control works as in `Testing the default CIS mode`_.
 
 .. _nrf53_audio_app_porting_guide:
 
@@ -1224,15 +1336,17 @@ You can test upgrading the firmware on both cores at the same time on a headset 
 
       python buildprog.py -c both -b debug -d headset --pristine -m external
 
-#. Transfer the generated zip file to your Android or iOS device.
-   The file name should start with :file:`dev_headset_build_debug_dfu_application`.
+#. Transfer the generated file to your Android or iOS device, depending on the DFU scenario.
+   See the `FOTA build files`_ section for information about FOTA file name patterns.
    For transfer, you can use cloud services like Google Drive for Android or iCloud for iOS.
+#. Enter the DFU mode by pressing and holding down **RESET** and **BTN 4** at the same time, and then releasing **RESET** while continuing to hold down **BTN 4** for a couple more seconds.
 #. Open `nRF Connect Device Manager`_ and look for ``NRF5340_AUDIO_HL_DFU`` in the scanned devices window.
    The headset is left by default.
 #. Tap on :guilabel:`NRF5340_AUDIO_HL_DFU` and then on the downward arrow icon at the bottom of the screen.
 #. In the :guilabel:`Firmware Upgrade` section, tap :guilabel:`SELECT FILE`.
-#. Select the zip file you transferred to the device.
-#. Tap :guilabel:`START` and then :guilabel:`START` again in the notification to start the DFU process.
+#. Select the file you transferred to the device.
+#. Tap :guilabel:`START` and check :guilabel:`Confirm only` in the notification.
+#. Tap :guilabel:`START` again to start the DFU process.
 #. When the DFU has finished, verify that the new application core and network core firmware works properly.
 
 Adapting application for end products
@@ -1306,6 +1420,11 @@ Do not use the default MCUBoot key for end products.
 See :ref:`ug_fw_update` and :ref:`west-sign` for more information.
 
 To create your own app that supports DFU, you can use the `nRF Connect Device Manager`_ libraries for Android and iOS.
+
+Changing default values
+=======================
+
+Given the requirements for the Coordinated Set Identification Service (CSIS), make sure to change the Set Identity Resolving Key (SIRK) value when adapting the application.
 
 Dependencies
 ************
@@ -1403,6 +1522,7 @@ Legal notices for the nRF5340 Audio DK
       All rights are reserved.
       Reproduction in whole or in part is prohibited without the prior written permission of the copyright holder.
 
-.. |net_core_hex_note| replace:: The network core for both gateway and headsets is programmed with the precompiled Bluetooth Low Energy Controller binary file :file:`ble5-ctr-rpmsg_<XYZ>.hex`, where ``<XYZ>`` corresponds to the controller version, for example :file:`ble5-ctr-rpmsg_3216.hex`.
+.. |net_core_hex_note| replace:: The network core for both gateway and headsets is programmed with the precompiled Bluetooth Low Energy Controller binary file :file:`ble5-ctr-rpmsg_<XYZ>.hex`, where *<XYZ>* corresponds to the controller version, for example :file:`ble5-ctr-rpmsg_3216.hex`.
    This file includes the LE Audio Controller Subsystem for nRF53 and is provided in the :file:`applications/nrf5340_audio/bin` directory.
-   If :ref:`DFU <nrf53_audio_app_configuration_configure_fota>` is enabled, the subsystem's binary file will be :file:`pcft_CPUNET.hex`.
+   If :ref:`DFU is enabled <nrf53_audio_app_configuration_configure_fota>`, the subsystem's binary file will be generated in the :file:`build/zephyr/` directory and will be called :file:`net_core_app_signed.hex`.
+.. |usb_known_issues| replace:: Make sure to check the :ref:`nRF5340 Audio application known issues <known_issues_nrf5340audio>` related to serial connection with the USB.

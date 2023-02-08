@@ -30,12 +30,18 @@ If this API fails, the application must not use any APIs of the module.
 
 Connecting
 **********
-The application can use :c:func:`nrf_cloud_connect` to connect to the cloud.
+The application can use the :c:func:`nrf_cloud_connect` function to connect to the cloud.
 This API triggers a series of events and actions in the system.
 If the API fails, the application must retry to connect.
-If the :kconfig:option:`CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD` Kconfig option is not enabled, the application should monitor the connection socket. :c:func:`nrf_cloud_connect` blocks and returns success when the MQTT connection to the cloud completes.
-If the :kconfig:option:`CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD` Kconfig option is enabled, an nRF Cloud library thread monitors the connection socket. :c:func:`nrf_cloud_connect` does not block and returns success if the connection monitoring thread has started.
-When :kconfig:option:`CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD` is enabled, an additional event, :c:enum:`NRF_CLOUD_EVT_TRANSPORT_CONNECTING`, is sent to the application.
+
+If the :kconfig:option:`CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD` Kconfig option is not enabled, the application should monitor the connection socket.
+The :c:func:`nrf_cloud_connect` function blocks and returns success when the MQTT connection to the cloud completes.
+
+If the :kconfig:option:`CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD` Kconfig option is enabled, an nRF Cloud library thread monitors the connection socket.
+The :c:func:`nrf_cloud_connect` function does not block and returns success if the connection monitoring thread has started.
+
+When the :kconfig:option:`CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD` Kconfig option is enabled, an additional event, :c:enum:`NRF_CLOUD_EVT_TRANSPORT_CONNECTING`, is sent to the application.
+To adjust the stack size of the connection monitoring thread, set the :kconfig:option:`CONFIG_NRF_CLOUD_CONNECTION_POLL_THREAD_STACK_SIZE` Kconfig option.
 The status field of :c:struct:`nrf_cloud_evt` contains the connection status that is defined by :c:enumerator:`nrf_cloud_connect_result`.
 The event :c:enumerator:`NRF_CLOUD_EVT_TRANSPORT_DISCONNECTED` also contains additional information in the status field that is defined by :c:enumerator:`nrf_cloud_disconnect_status`.
 
@@ -48,7 +54,7 @@ See :ref:`nrf9160_ug_updating_cloud_certificate` and the :ref:`modem_key_mgmt` l
 The certificates are generated using the device ID and PIN or HWID.
 The device ID is also the MQTT client ID.
 There are multiple configuration options for the device or client ID.
-See :ref:`config_device_id` for more information.
+See :ref:`configuration_device_id` for more information.
 
 As the next step, the API subscribes to an MQTT topic to start receiving user association requests from the cloud.
 
@@ -92,7 +98,7 @@ When the device is successfully associated with a user on the cloud, subsequent 
 
 After receiving :c:enumerator:`NRF_CLOUD_EVT_READY`, the application can start sending sensor data to the cloud.
 
-.. _config_device_id:
+.. _configuration_device_id:
 
 Configuration options for device ID
 ===================================
@@ -102,6 +108,8 @@ Configuration options for device ID
 * :kconfig:option:`CONFIG_NRF_CLOUD_CLIENT_ID_SRC_INTERNAL_UUID` - If you enable this option, the ID is automatically generated using the modem's 128-bit internal UUID, which results in a 32-character string with no hyphens. This option requires modem firmware v1.3.0 or higher.
 
 * :kconfig:option:`CONFIG_NRF_CLOUD_CLIENT_ID_SRC_COMPILE_TIME` - If you enable this option, the ID is set at compile time using the value specified by :kconfig:option:`CONFIG_NRF_CLOUD_CLIENT_ID`.
+
+* :kconfig:option:`CONFIG_NRF_CLOUD_CLIENT_ID_SRC_HW_ID` - If you enable this option, the ID is automatically generated using a unique hardware ID (for example, a MAC address). You can choose the required hardware ID using the ``HW_ID_LIBRARY_SOURCE`` Kconfig choice.
 
 * :kconfig:option:`CONFIG_NRF_CLOUD_CLIENT_ID_SRC_RUNTIME` - If you enable this option, the ID is set at run time. If the nRF Cloud library is used directly, set the NULL-terminated ID string in :c:struct:`nrf_cloud_init_param` when calling :c:func:`nrf_cloud_init`.
 
@@ -127,12 +135,12 @@ The device passes this information by writing a ``fota_v2`` field containing an 
 :c:func:`nrf_cloud_service_info_json_encode` can be used to generate the proper JSON data to enable FOTA.
 Additionally, :c:func:`nrf_cloud_shadow_device_status_update` can be used to generate the JSON data and perform the shadow update.
 
-Following are the three supported FOTA types:
+Following are the supported FOTA types:
 
-* ``APP``
-* ``MODEM``
-* ``BOOT``
-* ``MDM_FULL``
+* ``"APP"`` - Updates the application.
+* ``"BOOT"`` - Updates the :ref:`upgradable_bootloader`.
+* ``"MDM_FULL"`` - :ref:`Full modem FOTA <full_dfu>` updates the entire modem firmware image. Full modem updates require |external_flash_size| of available space. For the nRF9160, a full modem firmware image is approximately 2 MB. Consider the power and network costs before deploying full modem FOTA updates.
+* ``"MODEM"`` - :ref:`Delta modem FOTA <nrf_modem_delta_dfu>` applies incremental changes between specific versions of the modem firmware. Delta modem updates are much smaller in size and do not require external memory.
 
 For example, a device that supports all the FOTA types writes the following data into the device shadow:
 
@@ -152,9 +160,14 @@ For example, a device that supports all the FOTA types writes the following data
    }}}}}
 
 You can initiate FOTA updates through `nRF Cloud`_ or by using the `nRF Cloud Device API`_.
-When the device receives the :c:enumerator:`NRF_CLOUD_EVT_FOTA_DONE` event, the application must perform any necessary cleanup and perform a reboot to complete the update.
+When the device receives FOTA update information from nRF Cloud, the nRF Cloud library sends the :c:enumerator:`NRF_CLOUD_EVT_FOTA_START` event to the application.
+The FOTA update is in progress until the application receives either the :c:enumerator:`NRF_CLOUD_EVT_FOTA_DONE` or :c:enumerator:`NRF_CLOUD_EVT_FOTA_ERROR` event.
+When receiving the :c:enumerator:`NRF_CLOUD_EVT_FOTA_DONE` event, the application must perform any necessary cleanup and reboot the device to complete the update.
 The message payload of the :c:enumerator:`NRF_CLOUD_EVT_FOTA_DONE` event contains the :c:enum:`nrf_cloud_fota_type` value.
 If the value equals :c:enumerator:`NRF_CLOUD_FOTA_MODEM_DELTA`, the application can optionally avoid a reboot by reinitializing the modem library and then calling the :c:func:`nrf_cloud_modem_fota_completed` function.
+
+See `nRF Cloud FOTA`_ for details on the FOTA service in nRF Cloud.
+See `nRF Cloud MQTT FOTA`_ for MQTT-specific FOTA details such as topics and payload formats.
 
 Building FOTA images
 ====================
@@ -167,6 +180,10 @@ The UI populates the ``Version`` field from only the |NCS| version field in the 
 
 Alternatively, you can use the :file:`app_update.bin` file to create an update bundle, but you need to enter the ``Name`` and ``Version`` fields manually.
 See `nRF Cloud Getting Started FOTA documentation`_ to learn how to create an update bundle.
+
+Modem firmware is controlled by Nordic Semiconductor.
+A user cannot build or upload modem firmware images.
+Modem FOTA update bundles (full and delta) are automatically uploaded to nRF Cloud and are available to all users.
 
 .. _lib_nrf_cloud_data:
 
@@ -181,7 +198,7 @@ Additionally, :c:func:`nrf_cloud_shadow_device_status_update` can be used to gen
 
 Following are the supported UI types on nRF Cloud:
 
-* ``GPS``
+* ``GNSS``
 * ``FLIP``
 * ``TEMP``
 * ``HUMIDITY``

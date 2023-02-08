@@ -18,7 +18,7 @@ The library also has integrated support for a proprietary FOTA solution.
 For more information on Azure FOTA, see the documentation on :ref:`lib_azure_fota` library and :ref:`azure_fota_sample` sample.
 
 The library uses `Azure SDK for Embedded C`_ for message processing and other operations.
-For more information on how Azure SDK for Embedded C is integrated in this library, see `Azure SDK for Embedded C IoT client libraries`_.
+For more information on how Azure SDK for Embedded C is integrated in this library, see :module_file:`Azure SDK for Embedded C IoT client libraries<azure-sdk-for-c: sdk/docs/iot/README.md>`.
 
 .. important::
    If the server sends a device-bound message when the device is unavailable for a period of time, for instance while in LTE Power Saving Mode, the server will most likely terminate the TCP connection.
@@ -49,7 +49,7 @@ The Azure IoT Hub library requires provisioning of the following certificates an
    Azure has started the process of migrating their IoT Hub and DPS server certificates from `Baltimore CyberTrust Root Certificate`_ to `DigiCert Global Root G2`_.
    Azure advises to have both Baltimore CyberTrust Root and DigiCert Global Root G2 certificates for all devices to avoid disruption of service during the transition.
    Refer to `Azure IoT TLS: Critical changes`_ for updated information and timeline.
-   Due to this, it is recommended to provision the DigiCert Root G2 certificate to a secondary security tag set by the :kconfig:option:`CONFIG_AZURE_IOT_HUB_SEC_TAG` option.
+   Due to this, it is recommended to provision the DigiCert Root G2 certificate to a secondary security tag set by the :kconfig:option:`CONFIG_AZURE_IOT_HUB_SECONDARY_SEC_TAG` option.
    This ensures that the device can connect after the transition.
 
 .. note::

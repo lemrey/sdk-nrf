@@ -6,7 +6,8 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <mgmt/mgmt.h>
+#include <zephyr/mgmt/mcumgr/mgmt/mgmt.h>
+#include <zephyr/mgmt/mcumgr/smp/smp.h>
 #include <nrfx_ipc.h>
 #include <nrf_modem_full_dfu.h>
 #include <mgmt/fmfu_mgmt.h>
@@ -14,7 +15,7 @@
 #include <zcbor_common.h>
 #include <zcbor_decode.h>
 #include <zcbor_encode.h>
-#include "zcbor_bulk/zcbor_bulk_priv.h"
+#include <mgmt/mcumgr/util/zcbor_bulk.h>
 #include <zephyr/stats/stats.h>
 
 LOG_MODULE_REGISTER(mgmt_fmfu, CONFIG_MGMT_FMFU_LOG_LEVEL);
@@ -36,10 +37,10 @@ struct firmware_packet {
 	uint32_t data_len;
 };
 
-static int unpack(struct mgmt_ctxt *ctxt, struct firmware_packet *packet,
+static int unpack(struct smp_streamer *ctxt, struct firmware_packet *packet,
 		  bool *whole_file_received)
 {
-	zcbor_state_t *zsd = ctxt->cnbd->zs;
+	zcbor_state_t *zsd = ctxt->reader->zs;
 	static uint32_t file_length;
 	/*
 	 * These data types are long long so that we don't have to typecast
@@ -84,9 +85,9 @@ static int unpack(struct mgmt_ctxt *ctxt, struct firmware_packet *packet,
 	return offset + packet->data_len;
 }
 
-static int encode_response(struct mgmt_ctxt *ctx, uint32_t expected_offset)
+static int encode_response(struct smp_streamer *ctxt, uint32_t expected_offset)
 {
-	zcbor_state_t *zse = ctx->cnbe->zs;
+	zcbor_state_t *zse = ctxt->writer->zs;
 	bool ok;
 
 	ok = zcbor_tstr_put_lit(zse, "rc")			&&
@@ -97,7 +98,7 @@ static int encode_response(struct mgmt_ctxt *ctx, uint32_t expected_offset)
 	return ok ? MGMT_ERR_EOK : MGMT_ERR_ENOMEM;
 }
 
-static int fmfu_firmware_upload(struct mgmt_ctxt *ctx)
+static int fmfu_firmware_upload(struct smp_streamer *ctx)
 {
 	static bool bootloader = true;
 
@@ -149,7 +150,7 @@ static int fmfu_firmware_upload(struct mgmt_ctxt *ctx)
 	return encode_response(ctx, next_expected_offset);
 }
 
-static int fmfu_get_memory_hash(struct mgmt_ctxt *ctxt)
+static int fmfu_get_memory_hash(struct smp_streamer *ctxt)
 {
 	uint64_t start;
 	uint64_t end;
@@ -157,8 +158,8 @@ static int fmfu_get_memory_hash(struct mgmt_ctxt *ctxt)
 	struct zcbor_string zdigest;
 	bool ok;
 	size_t decoded = 0;
-	zcbor_state_t *zsd = ctxt->cnbd->zs;
-	zcbor_state_t *zse = ctxt->cnbe->zs;
+	zcbor_state_t *zsd = ctxt->reader->zs;
+	zcbor_state_t *zse = ctxt->writer->zs;
 	struct zcbor_map_decode_key_val mem_hash_decode[] = {
 		ZCBOR_MAP_DECODE_KEY_VAL(start, zcbor_uint64_decode, &start),
 		ZCBOR_MAP_DECODE_KEY_VAL(end, zcbor_uint64_decode, &end),

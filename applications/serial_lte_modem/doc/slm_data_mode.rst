@@ -37,6 +37,10 @@ See the following examples:
 * ``AT#XSEND`` makes SLM enter data mode to receive arbitrary data to transmit.
 * ``AT#XSEND="data"`` makes SLM transmit data in normal AT Command mode.
 
+.. note::
+   If the data contains either  ``,`` or ``"`` as characters, it can only be sent in data mode.
+   A typical use case is to send JSON messages.
+
 Other examples:
 
 * ``AT#XTCPSEND``
@@ -49,14 +53,29 @@ Other examples:
 
 The SLM application sends an *OK* response when it successfully enters data mode.
 
+Sending data in data mode
+=========================
+
+Any arbitrary data received from the MCU is sent to LTE network *as-is*.
+
+If the current sending function succeeds and :ref:`CONFIG_SLM_DATAMODE_URC <CONFIG_SLM_DATAMODE_URC>` is defined, the SLM application reports back the total size as ``#XDATAMODE: <size>``.
+The ``<size>`` value is a positive integer.
+This Unsolicited Result Code (URC) can also be used to impose flow control on uplink sending.
+
 Exiting data mode
 =================
 
 To exit data mode, the MCU sends the termination command set by the :ref:`CONFIG_SLM_DATAMODE_TERMINATOR <CONFIG_SLM_DATAMODE_TERMINATOR>` configuration option over UART.
 
 The pattern string could be sent alone or as an affix to the data.
+The pattern string must be sent in full.
 
-If the current sending function fails, the SLM application exits data mode and returns the result as ``#XDATAMODE: <result>``.
+.. note::
+   Some terminal software, like LTE Link Monitor, always appends an AT command terminator (for example ``<CR><LF>``) to uplink data.
+   This makes it unsuitable for data mode as exiting data mode can't work.
+
+If the current sending function fails, the SLM application exits data mode and returns the error code as ``#XDATAMODE: <error>``.
+The ``<error>`` value is a negative integer.
 
 The SLM application also exits data mode automatically in the following scenarios:
 
@@ -64,10 +83,8 @@ The SLM application also exits data mode automatically in the following scenario
 * The remote server disconnects the TCP client.
 * The TCP client disconnects from the remote server due to an error.
 * The UDP client disconnects from the remote server due to an error.
-* FTP unique or single put operations are completed.
-* An HTTP request is sent.
 
-When exiting data mode automatically, the SLM application sends ``#XDATAMODE: 0`` as an unsolicited notification.
+When exiting data mode, the SLM application sends ``#XDATAMODE: 0`` as an unsolicited notification.
 
 After exiting data mode, the SLM application returns to the AT command mode.
 
@@ -103,6 +120,13 @@ Check and configure the following configuration options for data mode:
 CONFIG_SLM_DATAMODE_TERMINATOR - Pattern string to terminate data mode
    This option specifies a pattern string to terminate data mode.
    The default pattern string is ``+++``.
+
+.. _CONFIG_SLM_DATAMODE_URC:
+
+CONFIG_SLM_DATAMODE_URC - Send URC in data mode
+   This option reports the result of the previous data-sending operation while the SLM application remains in data mode.
+   The MCU could use this URC for application-level uplink flow control.
+   It is not selected by default.
 
 Data mode AT commands
 *********************
@@ -183,9 +207,13 @@ The application sends the following unsolicited notification when it exits data 
 
 ::
 
-   #XDATAMODE: <result>
+   #XDATAMODE: <size>
+   #XDATAMODE: <error>
+   #XDATAMODE: 0
 
-The ``<result>`` value returns an integer indicating the result of the sending operation in data mode.
+The ``<size>`` value returns a positive integer indicating the total size of the sending operation in data mode.
+The ``<error>`` value returns a negative integer indicating the error code of the sending operation in data mode.
+The ``0`` value indicates that the SLM application quit data mode and returned to AT command mode.
 
 Example
 ~~~~~~~
@@ -195,5 +223,6 @@ Example
    AT#XSEND
    OK
    Test TCP datamode
+   #XDATAMODE: 15
    +++
    #XDATAMODE: 0

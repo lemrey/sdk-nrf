@@ -19,7 +19,7 @@ target_sources_ifdef(CONFIG_BT_CENTRAL
 target_sources_ifdef(CONFIG_DESKTOP_BLE_DISCOVERY_ENABLE
 		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ble_discovery.c)
 
-target_sources_ifdef(CONFIG_DESKTOP_BLE_SCANNING_ENABLE
+target_sources_ifdef(CONFIG_DESKTOP_BLE_SCAN_ENABLE
 		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ble_scan.c)
 
 target_sources_ifdef(CONFIG_DESKTOP_BLE_QOS_ENABLE
@@ -27,6 +27,9 @@ target_sources_ifdef(CONFIG_DESKTOP_BLE_QOS_ENABLE
 
 target_sources_ifdef(CONFIG_DESKTOP_CONFIG_CHANNEL_ENABLE
 		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/info.c)
+
+target_sources_ifdef(CONFIG_DESKTOP_FAST_PAIR
+		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/fast_pair.c)
 
 target_sources_ifdef(CONFIG_DESKTOP_HID_FORWARD_ENABLE
 		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/hid_forward.c)

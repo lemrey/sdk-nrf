@@ -15,7 +15,7 @@ s0_pad:
     align: {start: CONFIG_FPROTECT_BLOCK_SIZE}
 
 app_image:
-  span: [tfm, spm, app]
+  span: [tfm, app]
 
 s0_image:
   # S0 spans over the image booted by B0
@@ -44,13 +44,3 @@ s1_image:
 s1:
   # Partition which contains the whole S1 partition.
   span: [s1_pad, s1_image]
-
-provision:
-  size: CONFIG_PM_PARTITION_SIZE_PROVISION
-#if defined(CONFIG_SOC_NRF9160) || defined(CONFIG_SOC_NRF5340_CPUAPP)
-  region: otp
-#else
-  placement:
-    after: b0
-    align: {start: CONFIG_FPROTECT_BLOCK_SIZE}
-#endif

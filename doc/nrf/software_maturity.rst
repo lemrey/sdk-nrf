@@ -8,7 +8,11 @@ Software maturity levels
    :depth: 2
 
 The |NCS| supports its various features and components at different levels of software maturity.
-The tables at the end of this page summarize the maturity level for each feature and component supported in the |NCS|.
+The tables on this page summarize the maturity level for each feature and component supported in the |NCS|.
+
+Software maturity categories
+****************************
+
 The following categories are used in the tables to classify the software maturity of each feature and component:
 
 Supported
@@ -46,8 +50,8 @@ See the following table for more details:
      - Customer issues raised for experimental features on tagged |NCS| releases are handled by technical support on DevZone.
      - Not available.
    * - **Bug fixing**
-     - Reported critical bugs will be resolved in both ``main`` and the latest tagged versions.
-     - Bug fixes and improvements are not guaranteed to be applied.
+     - Reported critical bugs and security fixes will be resolved in both ``main`` and the latest tagged versions.
+     - Bug fixes, security fixes, and improvements are not guaranteed to be applied.
      - Not available.
    * - **Implementation completeness**
      - Complete implementation of the agreed features set.
@@ -73,10 +77,106 @@ See the following table for more details:
      - Incomplete verification
      - Not applicable.
 
+.. _api_deprecation:
+
+API deprecation
+***************
+
+The **Deprecated** status is assigned to API that has gone through all maturity levels, but is being phased out.
+The deprecated API will be removed in one of future releases, no earlier than two releases after the deprecation is announced and only when the code has transitioned to not using the deprecated API.
+The experimental API can be removed without deprecation notification.
+Following :ref:`Zephyr's guidelines for API lifecycle <zephyr:api_lifecycle>`, the API documentation informs about the deprecation and attempts to use a deprecated API at build time will log a warning to the console.
+
+.. _software_maturity_application:
+
+Application support
+*******************
+
+The following subsections indicate the software maturity levels of the support for :ref:`applications <applications>`.
+
+.. note::
+    Features not listed are not supported.
+
+.. _software_maturity_application_nrf5340audio:
+
+nRF5340 Audio
+=============
+
+The following table indicates the software maturity levels of the support for the :ref:`nrf53_audio_app` application.
+
+.. _software_maturity_application_nrf5340audio_table:
+
+.. toggle::
+
+   .. list-table:: nRF5340 Audio application feature support
+      :header-rows: 1
+      :align: center
+      :widths: auto
+
+      * - Feature
+        - Description
+        - Limitations
+        - Maturity level
+      * - **Broadcast source**
+        - Transmitting broadcast audio using Broadcast Isochronous Stream (BIS) and Broadcast Isochronous Group (BIG).
+
+          Play and pause emulated by disabling and enabling stream, respectively.
+        - The following limitations apply:
+
+          * Basic Audio Profile (BAP) broadcast, one BIG with two BIS streams.
+          * Audio input: USB or I2S (Line in or using Pulse Density Modulation).
+          * Configuration: 48 kHz, 16 bit, several bit rates ranging from 24 kbps to 160 kbps.
+
+        - Experimental
+      * - **Broadcast sink**
+        - Receiving broadcast audio using BIS and BIG.
+
+          Synchronizes and unsynchronizes with the stream.
+        - The following limitations apply:
+
+          * BAP broadcast, one BIG, one of the two BIS streams (selectable).
+          * Audio output: I2S/Analog headset output.
+          * Configuration: 48 kHz, 16 bit, several bit rates ranging from 24 kbps to 160 kbps.
+
+        - Experimental
+      * - **Unicast client**
+        - BAP unicast, one Connected Isochronous Group (CIG) with two Connected Isochronous Streams (CIS).
+
+          Transmitting unidirectional or transceiving bidirectional audio using CIG and CIS.
+
+          Play and pause emulated by disabling and enabling stream, respectively.
+        - The following limitations apply:
+
+          * BAP unicast, one CIG with two CIS.
+          * Bidirectional mode only supports connecting to *one* unicast server.
+          * Audio input: USB or I2S (Line in or using Pulse Density Modulation).
+          * Audio output: USB or I2S/Analog headset output.
+          * Configuration: 48 kHz, 16 bit, several bit rates ranging from 24 kbps to 160 kbps.
+
+        - Experimental
+      * - **Unicast server**
+        - BAP unicast, 1 CIG with 2 CIS streams.
+
+          Receiving unidirectional or transceiving bidirectional audio using CIG and CIS.
+
+          To emulate play and pause, the available context type for media is added or removed. This enables and disables streaming, respectively.
+
+          Coordinated Set Identification Service (CSIS) is implemented on the server side.
+        - The following limitations apply:
+
+          * BAP unicast, one CIG, one of the two CIS streams (selectable).
+          * Audio output: I2S/Analog headset output.
+          * Audio input: PDM microphone over I2S.
+          * Configuration: 48 kHz, 16 bit, several bit rates ranging from 24 kbps to 160 kbps.
+
+        - Experimental
+
+.. _software_maturity_protocol:
+
 Protocol support
 ****************
 
-The following table indicates the software maturity levels of the support for each protocol:
+The following table indicates the software maturity levels of the support for each :ref:`protocol <protocols>`:
 
 .. sml-table:: top_level
 
@@ -127,28 +227,28 @@ The following sections contain the tables indicating the software maturity level
 * Hardware Unique Key
 
 Trusted Firmware-M support
---------------------------
+==========================
 
 .. toggle::
 
   .. sml-table:: trusted_firmware_m
 
 PSA Crypto support
-------------------
+==================
 
 .. toggle::
 
   .. sml-table:: psa_crypto
 
 |NSIB|
-------
+======
 
 .. toggle::
 
   .. sml-table:: immutable_bootloader
 
 Hardware Unique Key
--------------------
+===================
 
 .. toggle::
 

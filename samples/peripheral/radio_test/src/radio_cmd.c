@@ -14,7 +14,7 @@
 
 #if CONFIG_FEM
 #include "fem.h"
-#endif
+#endif /* CONFIG_FEM */
 
 #include "radio_test.h"
 
@@ -28,6 +28,7 @@
 	"Toggle DCDC state <state>, "			\
 	"Toggle DC/DC state regardless of state value"
 #endif
+
 
 /* Radio parameter configuration. */
 static struct radio_param_config {
@@ -223,9 +224,9 @@ static int cmd_tx_carrier_start(const struct shell *shell, size_t argc,
 	test_config.params.unmodulated_tx.txpower = config.txpower;
 	test_config.params.unmodulated_tx.channel = config.channel_start;
 #if CONFIG_FEM
-	test_config.fem.active_delay = config.fem.active_delay;
+	test_config.fem.ramp_up_time = config.fem.ramp_up_time;
 	test_config.fem.gain = config.fem.gain;
-#endif
+#endif /* CONFIG_FEM */
 	radio_test_start(&test_config);
 
 	shell_print(shell, "Start the TX carrier");
@@ -262,9 +263,9 @@ static int cmd_tx_modulated_carrier_start(const struct shell *shell,
 	test_config.params.modulated_tx.channel = config.channel_start;
 	test_config.params.modulated_tx.pattern = config.tx_pattern;
 #if CONFIG_FEM
-	test_config.fem.active_delay = config.fem.active_delay;
+	test_config.fem.ramp_up_time = config.fem.ramp_up_time;
 	test_config.fem.gain = config.fem.gain;
-#endif
+#endif /* CONFIG_FEM */
 
 	if (argc == 2) {
 		test_config.params.modulated_tx.packets_num = atoi(argv[1]);
@@ -315,9 +316,9 @@ static int cmd_duty_cycle_set(const struct shell *shell, size_t argc,
 	test_config.params.modulated_tx_duty_cycle.duty_cycle =
 		config.duty_cycle;
 #if CONFIG_FEM
-	test_config.fem.active_delay = config.fem.active_delay;
+	test_config.fem.ramp_up_time = config.fem.ramp_up_time;
 	test_config.fem.gain = config.fem.gain;
-#endif
+#endif /* CONFIG_FEM */
 
 	radio_test_start(&test_config);
 	test_in_progress = true;
@@ -678,9 +679,9 @@ static int cmd_rx_sweep_start(const struct shell *shell, size_t argc,
 	test_config.params.rx_sweep.channel_end = config.channel_end;
 	test_config.params.rx_sweep.delay_ms = config.delay_ms;
 #if CONFIG_FEM
-	test_config.fem.active_delay = config.fem.active_delay;
+	test_config.fem.ramp_up_time = config.fem.ramp_up_time;
 	test_config.fem.gain = config.fem.gain;
-#endif
+#endif /* CONFIG_FEM */
 
 	radio_test_start(&test_config);
 
@@ -701,9 +702,9 @@ static int cmd_tx_sweep_start(const struct shell *shell, size_t argc,
 	test_config.params.tx_sweep.delay_ms = config.delay_ms;
 	test_config.params.tx_sweep.txpower = config.txpower;
 #if CONFIG_FEM
-	test_config.fem.active_delay = config.fem.active_delay;
+	test_config.fem.ramp_up_time = config.fem.ramp_up_time;
 	test_config.fem.gain = config.fem.gain;
-#endif
+#endif /* CONFIG_FEM */
 
 	radio_test_start(&test_config);
 
@@ -730,9 +731,9 @@ static int cmd_rx_start(const struct shell *shell, size_t argc, char **argv)
 	test_config.params.rx.channel = config.channel_start;
 	test_config.params.rx.pattern = config.tx_pattern;
 #if CONFIG_FEM
-	test_config.fem.active_delay = config.fem.active_delay;
+	test_config.fem.ramp_up_time = config.fem.ramp_up_time;
 	test_config.fem.gain = config.fem.gain;
-#endif
+#endif /* CONFIG_FEM */
 
 	radio_test_start(&test_config);
 
@@ -1100,7 +1101,7 @@ static int cmd_fem(const struct shell *shell, size_t argc, char **argv)
 	return 0;
 }
 
-#if CONFIG_NRF21540_FEM
+#if !CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC
 static int cmd_fem_gain_set(const struct shell *shell, size_t argc,
 			    char **argv)
 {
@@ -1124,7 +1125,7 @@ static int cmd_fem_gain_set(const struct shell *shell, size_t argc,
 
 	return 0;
 }
-#endif /* CONFIG_NRF21540_FEM */
+#endif /* !CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC */
 
 static int cmd_fem_antenna_select(const struct shell *shell, size_t argc,
 				  char **argv)
@@ -1163,10 +1164,9 @@ static int cmd_fem_antenna_2(const struct shell *shell, size_t argc,
 	return fem_antenna_select(FEM_ANTENNA_2);
 }
 
-static int cmd_fem_active_delay_set(const struct shell *shell, size_t argc,
-				    char **argv)
+static int cmd_fem_ramp_up_set(const struct shell *shell, size_t argc, char **argv)
 {
-	uint32_t delay;
+	uint32_t ramp_up_time;
 
 	if (argc == 1) {
 		shell_help(shell);
@@ -1178,11 +1178,11 @@ static int cmd_fem_active_delay_set(const struct shell *shell, size_t argc,
 		return -EINVAL;
 	}
 
-	delay = atoi(argv[1]);
+	ramp_up_time = atoi(argv[1]);
 
-	config.fem.active_delay = delay;
+	config.fem.ramp_up_time = ramp_up_time;
 
-	shell_print(shell, "Front-end module (FEM) activation delay set to %d us", delay);
+	shell_print(shell, "Front-end module (FEM) radio rump-up time set to %d us", ramp_up_time);
 
 	return 0;
 }
@@ -1264,20 +1264,48 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_fem_antenna,
 );
 
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_fem,
-#ifdef CONFIG_NRF21540_FEM
+#if !CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC
 	SHELL_CMD(tx_gain, NULL,
 		  "Set the front-end module (FEM) Tx gain in an arbitrary units <gain>",
 		  cmd_fem_gain_set),
-#endif /* CONFIG_NRF21540_FEM */
+#endif /* !CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC */
 	SHELL_CMD(antenna, &sub_fem_antenna,
 		  "Select the front-end module (FEM) antenna <sub_cmd>",
 		  cmd_fem_antenna_select),
-	SHELL_CMD(active_delay, NULL,
-		  "Set the front-end module (FEM) activation delay <time us>",
-		  cmd_fem_active_delay_set),
+	SHELL_CMD(ramp_up_time, NULL,
+		  "Set the front-end module (FEM) radio ramp-up time <time us>",
+		  cmd_fem_ramp_up_set),
 	SHELL_SUBCMD_SET_END
 );
 #endif /* CONFIG_FEM */
+
+#if CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC
+static int cmd_total_output_power_set(const struct shell *shell, size_t argc, char **argv)
+{
+	int power;
+
+	if (argc == 1) {
+		shell_help(shell);
+		return SHELL_CMD_HELP_PRINTED;
+	}
+
+	if (argc > 2) {
+		shell_error(shell, "%s: bad parameters count", argv[0]);
+		return -EINVAL;
+	}
+
+	power = atoi(argv[1]);
+
+	if ((power > INT8_MAX) || (power < INT8_MIN)) {
+		shell_error(shell, "%s: Out of range power value", argv[0]);
+		return -EINVAL;
+	}
+
+	config.txpower = (int8_t)power;
+
+	return 0;
+}
+#endif /* CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC */
 
 SHELL_CMD_REGISTER(start_channel, NULL,
 		   "Start channel for the sweep or the channel for"
@@ -1300,8 +1328,18 @@ SHELL_CMD_REGISTER(start_tx_modulated_carrier, NULL,
 		   cmd_tx_modulated_carrier_start);
 SHELL_CMD_REGISTER(output_power,
 		   &sub_output_power,
-		   "Output power set <sub_cmd>",
+		   "Output power set <sub_cmd>"
+		   "If front-end module is attached and automatic power control is enabled, "
+		   "this commands sets the total output power including fem gain",
 		   cmd_output_power_set);
+
+#if CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC
+SHELL_CMD_REGISTER(total_output_power, NULL,
+		  "Total output power in dBm, including gain of the attached front-end module. "
+		  "<tx power> dBm",
+		  cmd_total_output_power_set);
+#endif /* CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC */
+
 SHELL_CMD_REGISTER(transmit_pattern,
 		   &sub_transmit_pattern,
 		   "Set the transmission pattern",
@@ -1329,6 +1367,13 @@ SHELL_CMD_REGISTER(fem,
 static int radio_cmd_init(const struct device *dev)
 {
 	ARG_UNUSED(dev);
+
+#if CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC
+	/* When front-end module is used, set output power to the front-end module
+	 * default gain.
+	 */
+	config.txpower = fem_default_tx_gain_get();
+#endif /* CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC */
 
 	return radio_test_init(&test_config);
 }

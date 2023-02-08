@@ -27,7 +27,7 @@
 #include "audio_sync_timer.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(streamctrl, CONFIG_LOG_STREAMCTRL_LEVEL);
+LOG_MODULE_REGISTER(streamctrl, CONFIG_STREAMCTRL_LOG_LEVEL);
 
 struct ble_iso_data {
 	uint8_t data[CONFIG_BT_ISO_RX_MTU];
@@ -38,8 +38,6 @@ struct ble_iso_data {
 } __packed;
 
 DATA_FIFO_DEFINE(ble_fifo_rx, CONFIG_BUF_BLE_RX_PACKET_NUM, WB_UP(sizeof(struct ble_iso_data)));
-
-#define TEST_TONE_BASE_FREQ_HZ 1000
 
 static struct k_thread audio_datapath_thread_data;
 static k_tid_t audio_datapath_thread_id;
@@ -146,8 +144,7 @@ static void le_audio_rx_data_handler(uint8_t const *const p_data, size_t data_si
 							K_NO_WAIT);
 		ERR_CHK(ret);
 
-		ret = data_fifo_block_free(&ble_fifo_rx, &stale_data);
-		ERR_CHK(ret);
+		data_fifo_block_free(&ble_fifo_rx, &stale_data);
 	}
 
 	ret = data_fifo_pointer_first_vacant_get(&ble_fifo_rx, (void *)&iso_received, K_NO_WAIT);
@@ -155,6 +152,7 @@ static void le_audio_rx_data_handler(uint8_t const *const p_data, size_t data_si
 
 	if (data_size > ARRAY_SIZE(iso_received->data)) {
 		ERR_CHK_MSG(-ENOMEM, "Data size too large for buffer");
+		return;
 	}
 
 	memcpy(iso_received->data, p_data, data_size);
@@ -190,8 +188,7 @@ static void audio_datapath_thread(void *dummy1, void *dummy2, void *dummy3)
 					  iso_received->sdu_ref, iso_received->bad_frame,
 					  iso_received->recv_frame_ts);
 #endif
-		ret = data_fifo_block_free(&ble_fifo_rx, (void *)&iso_received);
-		ERR_CHK(ret);
+		data_fifo_block_free(&ble_fifo_rx, (void *)&iso_received);
 
 		STACK_USAGE_PRINT("audio_datapath_thread", &audio_datapath_thread_data);
 	}
@@ -223,11 +220,46 @@ void streamctrl_encoded_data_send(void const *const data, size_t len)
 	}
 }
 
+#if (CONFIG_AUDIO_TEST_TONE)
+#define TEST_TONE_BASE_FREQ_HZ 1000
+
+static int test_tone_button_press(void)
+{
+	int ret;
+	static uint32_t test_tone_hz;
+
+	if (CONFIG_AUDIO_BIT_DEPTH_BITS != 16) {
+		LOG_WRN("Tone gen only supports 16 bits");
+		return -ECANCELED;
+	}
+
+	if (strm_state == STATE_STREAMING) {
+		if (test_tone_hz == 0) {
+			test_tone_hz = TEST_TONE_BASE_FREQ_HZ;
+		} else if (test_tone_hz >= TEST_TONE_BASE_FREQ_HZ * 4) {
+			test_tone_hz = 0;
+		} else {
+			test_tone_hz = test_tone_hz * 2;
+		}
+
+		if (test_tone_hz != 0) {
+			LOG_INF("Test tone set at %d Hz", test_tone_hz);
+		} else {
+			LOG_INF("Test tone off");
+		}
+
+		ret = audio_encode_test_tone_set(test_tone_hz);
+		ERR_CHK_MSG(ret, "Failed to generate test tone");
+	}
+
+	return 0;
+}
+#endif /* (CONFIG_AUDIO_TEST_TONE) */
+
 /* Handle button activity events */
 static void button_evt_handler(struct button_evt event)
 {
 	int ret;
-	static uint32_t test_tone_hz;
 
 	LOG_DBG("Got btn evt from queue - id = %d, action = %d", event.button_pin,
 		event.button_action);
@@ -239,42 +271,22 @@ static void button_evt_handler(struct button_evt event)
 
 	switch (event.button_pin) {
 	case BUTTON_PLAY_PAUSE:
-		/* Starts/pauses the audio stream */
-		switch (strm_state) {
-		case STATE_PAUSED:
-			LOG_INF("Playing stream");
-
-			ret = le_audio_play();
-			if (ret) {
-				LOG_WRN("Failed to start playing");
-			}
-
-			break;
-
-		case STATE_STREAMING:
-			LOG_INF("Pausing stream");
-
-			ret = le_audio_pause();
-			if (ret) {
-				LOG_WRN("Failed to pause stream");
-			}
-
-			break;
-
-		default:
-			/* We got the play/pause button in a state where we
-			 * can not use it. This should be expected, buttons
-			 * can be pressed at any time. For now, inform about it.
-			 */
-			LOG_DBG("Got play/pause in state %d", strm_state);
+		if (IS_ENABLED(CONFIG_WALKIE_TALKIE_DEMO)) {
+			LOG_DBG("Play/pause not supported in walkie-talkie mode");
+			return;
 		}
+		/* Starts/pauses the audio stream */
+		ret = le_audio_play_pause();
+		if (ret) {
+			LOG_WRN("Could not play/pause");
+		}
+
 		break;
 
 	case BUTTON_VOLUME_UP:
 		ret = le_audio_volume_up();
 		if (ret) {
 			LOG_WRN("Failed to increase volume");
-			break;
 		}
 
 		break;
@@ -283,50 +295,40 @@ static void button_evt_handler(struct button_evt event)
 		ret = le_audio_volume_down();
 		if (ret) {
 			LOG_WRN("Failed to decrease volume");
-			break;
 		}
 
 		break;
 
-	case BUTTON_MUTE:
+	case BUTTON_4:
+		if (IS_ENABLED(CONFIG_WALKIE_TALKIE_DEMO)) {
+			LOG_DBG("Button 4 functions not supported in walkie-talkie mode");
+			break;
+		}
+
+#if (CONFIG_AUDIO_TEST_TONE)
+		ret = test_tone_button_press();
+#else
+		ret = le_audio_user_defined_button_press(LE_AUDIO_USER_DEFINED_ACTION_1);
+#endif /*CONFIG_AUDIO_TEST_TONE*/
+
+		if (ret) {
+			LOG_WRN("Failed button 4 press");
+		}
+
+		break;
+
+	case BUTTON_5:
+#if (CONFIG_AUDIO_MUTE)
 		ret = le_audio_volume_mute();
 		if (ret) {
 			LOG_WRN("Failed to mute volume");
-			break;
 		}
-
-		break;
-
-	case BUTTON_TEST_TONE:
-		switch (strm_state) {
-		case STATE_STREAMING:
-			if (CONFIG_AUDIO_BIT_DEPTH_BITS != 16) {
-				LOG_WRN("Tone gen only supports 16 bits");
-				break;
-			}
-
-			if (test_tone_hz == 0) {
-				test_tone_hz = TEST_TONE_BASE_FREQ_HZ;
-			} else if (test_tone_hz >= TEST_TONE_BASE_FREQ_HZ * 4) {
-				test_tone_hz = 0;
-			} else {
-				test_tone_hz = test_tone_hz * 2;
-			}
-
-			if (test_tone_hz != 0) {
-				LOG_INF("Test tone set at %d Hz", test_tone_hz);
-			} else {
-				LOG_INF("Test tone off");
-			}
-
-			ret = audio_encode_test_tone_set(test_tone_hz);
-			ERR_CHK_MSG(ret, "Failed to generate test tone");
-			break;
-
-		default:
-			LOG_WRN("Test tone can only be set in streaming mode");
-			break;
+#else
+		ret = le_audio_user_defined_button_press(LE_AUDIO_USER_DEFINED_ACTION_2);
+		if (ret) {
+			LOG_WRN("User defined button 5 action failed");
 		}
+#endif
 		break;
 
 	default:
@@ -374,8 +376,8 @@ static void le_audio_evt_handler(enum le_audio_evt_type event)
 	case LE_AUDIO_EVT_CONFIG_RECEIVED:
 		LOG_DBG("Config received");
 
-		int bitrate;
-		int sampling_rate;
+		uint32_t bitrate;
+		uint32_t sampling_rate;
 
 		ret = le_audio_config_get(&bitrate, &sampling_rate);
 		if (ret) {
@@ -383,8 +385,8 @@ static void le_audio_evt_handler(enum le_audio_evt_type event)
 			break;
 		}
 
-		LOG_DBG("Sampling rate: %d", sampling_rate);
-		LOG_DBG("Bitrate: %d", bitrate);
+		LOG_DBG("Sampling rate: %d Hz", sampling_rate);
+		LOG_DBG("Bitrate: %d kbps", bitrate);
 		break;
 
 	default:
@@ -420,9 +422,6 @@ void streamctrl_event_handler(void)
 int streamctrl_start(void)
 {
 	int ret;
-
-	ret = audio_datapath_tone_play(440, 500, 0.2);
-	ERR_CHK(ret);
 
 	ret = data_fifo_init(&ble_fifo_rx);
 	ERR_CHK_MSG(ret, "Failed to set up ble_rx FIFO");

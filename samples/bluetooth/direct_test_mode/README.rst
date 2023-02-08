@@ -18,12 +18,12 @@ The sample supports the following development kit:
 
 Additionally, the sample requires one of the following testing devices:
 
-  * Dedicated test equipment, like an Anritsu MT8852 tester.
-    See :ref:`direct_test_mode_testing_anritsu`.
-  * Another development kit with the same sample.
-    See :ref:`direct_test_mode_testing_board`.
-  * Another development kit connected to a PC with the Direct Test Mode sample available in the `nRF Connect for Desktop`_.
-    See :ref:`direct_test_mode_testing_app`.
+* Dedicated test equipment, like an Anritsu MT8852 tester.
+  See :ref:`direct_test_mode_testing_anritsu`.
+* Another development kit with the same sample.
+  See :ref:`direct_test_mode_testing_board`.
+* A computer with the Direct Test Mode app available in the `nRF Connect for Desktop`_.
+  See :ref:`direct_test_mode_testing_app`.
 
 Overview
 ********
@@ -263,7 +263,12 @@ The DTM-to-Serial adaptation layer
 :file:`main.c` is an implementation of the UART interface specified in the `Bluetooth Core Specification`_: Vol. 6, Part F, Chap. 3.
 
 The default selection of UART pins is defined in :file:`zephyr/boards/arm/board_name/board_name.dts`.
-You can change the defaults using the symbols ``tx-pin`` and ``rx-pin`` in the DTS overlay file at the project level.
+You can change the defaults using the symbols ``tx-pin`` and ``rx-pin`` in the DTS overlay file of the child image at the project level.
+The overlay files for the :ref:`nrf5340_remote_shell` child image are located in at :file:`child_image/remote_shell` directory.
+
+.. note::
+   On the nRF5340 development kit, the physical UART interface of the application core is used for communication with the tester device.
+   This sample uses the :ref:`uart_ipc` for sending responses and receiving commands through the UART interface of the application core.
 
 Debugging
 *********
@@ -283,12 +288,25 @@ Building and running
 .. include:: /includes/build_and_run.txt
 
 .. note::
-   On the nRF5340 development kit, the Direct Test Mode sample is a standalone network sample.
-   It does not require any counterpart application sample.
-   However, you must still program the application core to boot up the network core.
-   You can use any sample for this, for example, the :ref:`nrf5340_empty_app_core`.
-   The :ref:`nrf5340_empty_app_core` is built and programmed automatically by default.
-   If you want to program another sample for the application core, unset the :kconfig:option:`CONFIG_NCS_SAMPLE_EMPTY_APP_CORE_CHILD_IMAGE` option.
+   On the nRF5340 development kit, this sample requires the :ref:`nrf5340_remote_shell` sample on the application core.
+   The Remote IPC shell sample is built and programmed automatically by default.
+   If you want to program your custom solution for the application core, unset the :kconfig:option:`CONFIG_NCS_SAMPLE_REMOTE_SHELL_CHILD_IMAGE` Kconfig option.
+
+USB CDC ACM transport variant
+=============================
+
+On the nRF5340 development kit, you can build this sample configured to use the USB interface as a communication interface with the tester.
+
+.. code-block:: console
+
+   west build samples/bluetooth/direct_test_mode -b nrf5340dk_nrf5340_cpunet -- -DCONFIG_DTM_USB=y
+
+You can also build this sample with support for the front-end module.
+Use the following command:
+
+.. code-block:: console
+
+   west build samples/bluetooth/direct_test_mode -b nrf5340dk_nrf5340_cpunet -- -DSHIELD=nrf21540_ek -DCONFIG_DTM_USB=y
 
 .. _dtm_testing:
 
@@ -341,7 +359,7 @@ Testing with nRF Connect for Desktop
 #. Start the ``TRANSMITTER_TEST`` by sending the ``0x80 0x96`` DTM command to the connected development kit.
    This command triggers TX activity on 2402 MHz frequency (1st channel) with ``10101010`` packet pattern and 37-byte packet length.
 #. Observe that you received the ``TEST_STATUS_EVENT`` packet in response with the SUCCESS status field: ``0x00 0x00``.
-#. Start the Direct Test Mode application in nRF Connect for Desktop and select the development kits to communicate with.
+#. Start the Direct Test Mode app in nRF Connect for Desktop and select the development kit to communicate with.
 #. Set the Receiver mode and 37th channel in the test configuration menu.
 #. Start the test.
 #. On the application chart, observe that the number of RX packets is increasing for the 2402 MHz channel.
@@ -473,16 +491,24 @@ On Ubuntu, run:
 Dependencies
 ************
 
-This sample uses the following nrfx dependencies:
+This sample uses the following |NCS| driver:
 
-  * ``nrfx/drivers/include/nrfx_timer.h``
-  * ``nrfx/hal/nrf_nvmc.h``
-  * ``nrfx/hal/nrf_radio.h``
-  * ``nrfx/helpers/nrfx_gppi.h``
+  * :ref:`uart_ipc`
 
-In addition, it uses the following Zephyr libraries:
+This sample has the following nrfx dependencies:
+
+  * :file:`nrfx/drivers/include/nrfx_timer.h`
+  * :file:`nrfx/hal/nrf_nvmc.h`
+  * :file:`nrfx/hal/nrf_radio.h`
+  * :file:`nrfx/helpers/nrfx_gppi.h`
+
+The sample also has the following nrfxlib dependency:
+
+  * :ref:`nrfxlib:mpsl_fem`
+
+In addition, it has the following Zephyr dependencies:
 
 * :ref:`zephyr:device_model_api`:
 
-   * ``drivers/clock_control.h``
-   * ``drivers/uart.h``
+   * :file:`drivers/clock_control.h`
+   * :file:`drivers/uart.h`

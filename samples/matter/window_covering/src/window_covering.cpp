@@ -12,7 +12,6 @@
 
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/util/af.h>
-#include <zephyr/logging/log.h>
 #include <platform/CHIPDeviceLayer.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>

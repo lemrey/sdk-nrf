@@ -12,10 +12,8 @@
 #include "ui_input_event.h"
 #include "lwm2m_app_utils.h"
 
-#define MODULE app_lwm2m_push_button
-
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(MODULE, CONFIG_APP_LOG_LEVEL);
+LOG_MODULE_DECLARE(app_lwm2m, CONFIG_APP_LOG_LEVEL);
 
 #define BUTTON1_OBJ_INST_ID 0
 #define BUTTON1_APP_NAME "Push button 1"
@@ -24,7 +22,7 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_APP_LOG_LEVEL);
 #define BUTTON2_OBJ_INST_ID 1
 #define BUTTON2_APP_NAME "Push button 2"
 
-static int32_t lwm2m_timestamp[2];
+static time_t lwm2m_timestamp[2];
 
 int lwm2m_init_push_button(void)
 {
@@ -88,7 +86,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 
 			if (event->state) {
 				if (IS_ENABLED(CONFIG_LWM2M_IPSO_PUSH_BUTTON_VERSION_1_1)) {
-					lwm2m_set_timestamp(IPSO_OBJECT_PUSH_BUTTON_ID,
+					set_ipso_obj_timestamp(IPSO_OBJECT_PUSH_BUTTON_ID,
 							    BUTTON1_OBJ_INST_ID);
 				}
 			}
@@ -102,7 +100,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 
 			if (event->state) {
 				if (IS_ENABLED(CONFIG_LWM2M_IPSO_PUSH_BUTTON_VERSION_1_1)) {
-					lwm2m_set_timestamp(IPSO_OBJECT_PUSH_BUTTON_ID,
+					set_ipso_obj_timestamp(IPSO_OBJECT_PUSH_BUTTON_ID,
 							    BUTTON2_OBJ_INST_ID);
 				}
 			}
@@ -119,5 +117,5 @@ static bool app_event_handler(const struct app_event_header *aeh)
 	return false;
 }
 
-APP_EVENT_LISTENER(MODULE, app_event_handler);
-APP_EVENT_SUBSCRIBE(MODULE, ui_input_event);
+APP_EVENT_LISTENER(button, app_event_handler);
+APP_EVENT_SUBSCRIBE(button, ui_input_event);

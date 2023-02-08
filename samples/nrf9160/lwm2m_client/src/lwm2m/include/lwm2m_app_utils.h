@@ -31,6 +31,7 @@
 #define POWER_SOURCE_RID 6
 #define POWER_SOURCE_VOLTAGE_RID 7
 #define POWER_SOURCE_CURRENT_RID 8
+#define BATTERY_LEVEL_RID 9
 #define CURRENT_TIME_RID 13
 #define UTC_OFFSET_RID 14
 #define TIMEZONE_RID 15
@@ -59,7 +60,7 @@ extern "C" {
 #endif
 
 /* Set timestamp resource */
-void lwm2m_set_timestamp(int ipso_obj_id, unsigned int obj_inst_id);
+void set_ipso_obj_timestamp(int ipso_obj_id, unsigned int obj_inst_id);
 
 /* Check whether notification read callback or regular read callback */
 bool is_regular_read_cb(int64_t read_timestamp);

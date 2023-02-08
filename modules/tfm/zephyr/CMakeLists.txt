@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-if (NOT CONFIG_TFM_BUILD_NS)
+if (NOT CONFIG_TFM_BUILD_NS AND CONFIG_TFM_PARTITION_PLATFORM AND CONFIG_SOC_FAMILY_NRF)
   zephyr_library_named(tfm_api_nrf)
 
   # The non-secure API files are located in a folder associated with the TF-M
@@ -13,7 +13,7 @@ if (NOT CONFIG_TFM_BUILD_NS)
   # For convenience we instead refer directly to the source files here.
   set(src_dir ${CMAKE_CURRENT_LIST_DIR}/../tfm/boards/src)
 
-  zephyr_library_sources_ifdef(CONFIG_TFM_PARTITION_PLATFORM
+  zephyr_library_sources(
     ${src_dir}/tfm_ioctl_ns_api.c
     )
 endif()
@@ -37,9 +37,9 @@ if (CONFIG_TFM_BL2)
     tfm_secure_PM_HEX_FILE ${CMAKE_BINARY_DIR}/tfm_s_signed.hex
     )
 else()
-  if (CONFIG_TFM_REGRESSION_NS)
+  if (CONFIG_TFM_USE_NS_APP)
     set_property(GLOBAL PROPERTY
-      tfm_nonsecure_PM_HEX_FILE $<TARGET_PROPERTY:tfm,TFM_NS_HEX_FILE>
+      app_PM_HEX_FILE $<TARGET_PROPERTY:tfm,TFM_NS_HEX_FILE>
       )
   endif()
 endif()
@@ -47,7 +47,8 @@ endif()
 if (CONFIG_BOOTLOADER_MCUBOOT AND NOT CONFIG_PM_EXTERNAL_FLASH_MCUBOOT_SECONDARY)
   # Configure the secondary partition to be non-secure
   set_property(TARGET zephyr_property_target
-    APPEND PROPERTY TFM_CMAKE_OPTIONS -DNRF_NS_SECONDARY=ON
+    APPEND PROPERTY TFM_CMAKE_OPTIONS
+	-DNRF_NS_SECONDARY=$<TARGET_PROPERTY:partition_manager,PM_mcuboot_secondary_IS_ENABLED>
   )
 endif()
 
@@ -73,15 +74,26 @@ set_property(TARGET zephyr_property_target
     -DCONFIG_TFM_HALT_ON_CORE_PANIC=${CONFIG_TFM_HALT_ON_CORE_PANIC}
 )
 
+set_property(TARGET zephyr_property_target
+  APPEND PROPERTY TFM_CMAKE_OPTIONS -DSECURE_UART1=${CONFIG_TFM_SECURE_UART}
+)
+
+if (CONFIG_TFM_SECURE_UART0)
+  set_property(TARGET zephyr_property_target
+    APPEND PROPERTY TFM_CMAKE_OPTIONS -DNRF_SECURE_UART_INSTANCE=0
+  )
+endif()
+
 if (CONFIG_TFM_SECURE_UART1)
   set_property(TARGET zephyr_property_target
-    APPEND PROPERTY TFM_CMAKE_OPTIONS -DSECURE_UART1=ON
-    )
-else()
-  set_property(TARGET zephyr_property_target
-    APPEND PROPERTY TFM_CMAKE_OPTIONS -DSECURE_UART1=OFF
-    )
+    APPEND PROPERTY TFM_CMAKE_OPTIONS -DNRF_SECURE_UART_INSTANCE=1
+  )
 endif()
+
+set_property(TARGET zephyr_property_target
+  APPEND PROPERTY TFM_CMAKE_OPTIONS
+    -DCONFIG_TFM_LOG_SHARE_UART=${CONFIG_TFM_SECURE_UART_SHARE_INSTANCE}
+)
 
 set_property(GLOBAL PROPERTY
   tfm_PM_HEX_FILE $<TARGET_PROPERTY:tfm,TFM_S_HEX_FILE>
@@ -115,8 +127,6 @@ if (CONFIG_TFM_PROFILE_TYPE_MINIMAL)
     -DPLATFORM_DEFAULT_NV_SEED=OFF
     -DPLATFORM_DEFAULT_OTP=OFF
     -DPLATFORM_DEFAULT_OTP_WRITEABLE=OFF
-    -DPLATFORM_DEFAULT_PROVISIONING=OFF
-    -DTFM_DUMMY_PROVISIONING=OFF
     -DCRYPTO_NV_SEED=OFF
     -DPLATFORM_NV_COUNTER_MODULE_DISABLED=TRUE
     -DPLATFORM_DEFAULT_NV_COUNTERS=OFF
@@ -139,6 +149,20 @@ if (CONFIG_BOOTLOADER_MCUBOOT)
     )
 endif()
 
+if (CONFIG_TFM_NRF_PROVISIONING)
+  set_property(TARGET zephyr_property_target
+    APPEND PROPERTY TFM_CMAKE_OPTIONS
+    -DNRF_PROVISIONING=ON
+    )
+endif()
+
+if (CONFIG_NFCT_PINS_AS_GPIOS)
+  set_property(TARGET zephyr_property_target
+  APPEND PROPERTY TFM_CMAKE_OPTIONS
+    -DCONFIG_NFCT_PINS_AS_GPIOS=${CONFIG_NFCT_PINS_AS_GPIOS}
+  )
+endif()
+
 # The ENGINE_BUF_SIZE holds the dynamic allocation buffer for
 # TF-M, which is the equivalent of dynamic allocation in MBEDTLS
 set_property(TARGET zephyr_property_target
@@ -146,6 +170,11 @@ set_property(TARGET zephyr_property_target
     -DCRYPTO_ENGINE_BUF_SIZE=${CONFIG_TFM_CRYPTO_ENGINE_BUF_SIZE}
     -DCRYPTO_CONC_OPER_NUM=${CONFIG_TFM_CRYPTO_CONC_OPER_NUM}
     -DCRYPTO_IOVEC_BUFFER_SIZE=${CONFIG_TFM_CRYPTO_IOVEC_BUFFER_SIZE}
+    # Pass Zephyr Python to TF-M so both uses identical Python.
+    -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
+    # TF-M calls back into nrf_security which loads Zephyr Python lookup
+    # mechanism, thus also set PYTHON_PREFER.
+    -DPYTHON_PREFER=${Python3_EXECUTABLE}
 )
 
 zephyr_include_directories(${NRF_DIR}/include/tfm)

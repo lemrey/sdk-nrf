@@ -25,7 +25,7 @@
 #include "events/data_module_event.h"
 #include "events/sensor_module_event.h"
 #include "events/util_module_event.h"
-#include "events/gnss_module_event.h"
+#include "events/location_module_event.h"
 #include "events/modem_module_event.h"
 #include "events/ui_module_event.h"
 #include "events/debug_module_event.h"
@@ -41,7 +41,7 @@ struct debug_msg_data {
 		struct sensor_module_event sensor;
 		struct data_module_event data;
 		struct app_module_event app;
-		struct gnss_module_event gnss;
+		struct location_module_event location;
 		struct modem_module_event modem;
 	} module;
 };
@@ -65,7 +65,7 @@ entry:
 
 	if (send_type == COREDUMP) {
 		if (memfault_coredump_has_valid_coredump(NULL)) {
-			LOG_WRN("Sending a coredump to Memfault!");
+			LOG_DBG("Sending a coredump to Memfault!");
 		} else {
 			LOG_DBG("No coredump available.");
 			goto entry;
@@ -95,6 +95,8 @@ entry:
 		memcpy(message, data, len);
 
 		struct debug_module_event *debug_module_event = new_debug_module_event();
+
+		__ASSERT(debug_module_event, "Not enough heap left to allocate event");
 
 		debug_module_event->type = DEBUG_EVT_MEMFAULT_DATA_READY;
 		debug_module_event->data.memfault.len = len;
@@ -141,10 +143,10 @@ static bool app_event_handler(const struct app_event_header *aeh)
 		message_handler(&debug_msg);
 	}
 
-	if (is_gnss_module_event(aeh)) {
-		struct gnss_module_event *event = cast_gnss_module_event(aeh);
+	if (is_location_module_event(aeh)) {
+		struct location_module_event *event = cast_location_module_event(aeh);
 		struct debug_msg_data debug_msg = {
-			.module.gnss = *event
+			.module.location = *event
 		};
 
 		message_handler(&debug_msg);
@@ -255,13 +257,13 @@ static void send_memfault_data(void)
 	}
 }
 
-static void add_gnss_metrics(uint8_t satellites, uint32_t search_time,
-			    enum gnss_module_event_type event)
+static void add_location_metrics(uint8_t satellites, uint32_t search_time,
+				 enum location_module_event_type event)
 {
 	int err;
 
 	switch (event) {
-	case GNSS_EVT_DATA_READY:
+	case LOCATION_MODULE_EVT_GNSS_DATA_READY:
 		err = memfault_metrics_heartbeat_set_unsigned(
 						MEMFAULT_METRICS_KEY(GnssTimeToFix),
 						search_time);
@@ -269,16 +271,16 @@ static void add_gnss_metrics(uint8_t satellites, uint32_t search_time,
 			LOG_ERR("Failed updating GnssTimeToFix metric, error: %d", err);
 		}
 		break;
-	case GNSS_EVT_TIMEOUT:
+	case LOCATION_MODULE_EVT_TIMEOUT:
 		err = memfault_metrics_heartbeat_set_unsigned(
-						MEMFAULT_METRICS_KEY(GnssTimeoutSearchTime),
+						MEMFAULT_METRICS_KEY(LocationTimeoutSearchTime),
 						search_time);
 		if (err) {
-			LOG_ERR("Failed updating GnssTimeoutSearchTime metric, error: %d", err);
+			LOG_ERR("Failed updating LocationTimeoutSearchTime metric, error: %d", err);
 		}
 		break;
 	default:
-		LOG_ERR("Unknown GNSS module event type");
+		LOG_ERR("Unknown location module event.");
 		return;
 	}
 
@@ -309,6 +311,9 @@ static void memfault_handle_event(struct debug_msg_data *msg)
 	if ((IS_EVENT(msg, data, DATA_EVT_DATA_SEND)) ||
 	    (IS_EVENT(msg, data, DATA_EVT_DATA_SEND_BATCH)) ||
 	    (IS_EVENT(msg, data, DATA_EVT_NEIGHBOR_CELLS_DATA_SEND)) ||
+#if defined(CONFIG_LOCATION_METHOD_WIFI)
+	    (IS_EVENT(msg, data, DATA_EVT_WIFI_ACCESS_POINTS_DATA_SEND)) ||
+#endif
 	    (IS_EVENT(msg, data, DATA_EVT_UI_DATA_SEND))) {
 		/* Limit how often non-coredump memfault data (events and metrics) are sent
 		 * to memfault. Updates can never occur more often than the interval set by
@@ -352,11 +357,11 @@ static void memfault_handle_event(struct debug_msg_data *msg)
 		return;
 	}
 
-	if ((IS_EVENT(msg, gnss, GNSS_EVT_TIMEOUT)) ||
-	    (IS_EVENT(msg, gnss, GNSS_EVT_DATA_READY))) {
-		add_gnss_metrics(msg->module.gnss.data.gnss.satellites_tracked,
-				msg->module.gnss.data.gnss.search_time,
-				msg->module.gnss.type);
+	if ((IS_EVENT(msg, location, LOCATION_MODULE_EVT_TIMEOUT)) ||
+	    (IS_EVENT(msg, location, LOCATION_MODULE_EVT_GNSS_DATA_READY))) {
+		add_location_metrics(msg->module.location.data.location.satellites_tracked,
+				msg->module.location.data.location.search_time,
+				msg->module.location.type);
 		return;
 	}
 }
@@ -373,11 +378,11 @@ static void message_handler(struct debug_msg_data *msg)
 		}
 
 		/* Notify the rest of the application that it is connected to network
-		 * when building for QEMU x86.
+		 * when building for PC.
 		 */
-		if (IS_ENABLED(CONFIG_BOARD_QEMU_X86)) {
-			{ SEND_EVENT(debug, DEBUG_EVT_QEMU_X86_INITIALIZED); }
-			SEND_EVENT(debug, DEBUG_EVT_QEMU_X86_NETWORK_CONNECTED);
+		if (IS_ENABLED(CONFIG_BOARD_QEMU_X86) || IS_ENABLED(CONFIG_BOARD_NATIVE_POSIX)) {
+			{ SEND_EVENT(debug, DEBUG_EVT_EMULATOR_INITIALIZED); }
+			SEND_EVENT(debug, DEBUG_EVT_EMULATOR_NETWORK_CONNECTED);
 		}
 	}
 
@@ -390,7 +395,7 @@ APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, app_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, modem_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, cloud_module_event);
-APP_EVENT_SUBSCRIBE_EARLY(MODULE, gnss_module_event);
+APP_EVENT_SUBSCRIBE_EARLY(MODULE, location_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, ui_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, sensor_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, data_module_event);
