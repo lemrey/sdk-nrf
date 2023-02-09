@@ -433,3 +433,21 @@
   platforms:
     - nrf54h20dk_nrf54h20_cpusec@soc1
   comment: "https://projecttools.nordicsemi.no/jira/browse/KRKNWK-16307"
+
+- scenarios:
+    - sample.esb.prx
+    - sample.esb.prx.build
+    - sample.esb.prx.dynamic_irq
+    - sample.esb.prx.nrf5340_nrf21540
+    - sample.esb.ptx
+    - sample.esb.ptx.build
+    - sample.esb.ptx.dynamic_irq
+    - sample.esb.ptx.nrf5340_nrf21540
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf52dk_nrf52810
+    - nrf5340dk_nrf5340_cpunet
+    - nrf21540dk_nrf52840
+  comment: "error: 'nrfx_timer_config_t' has no member named 'frequency'"
