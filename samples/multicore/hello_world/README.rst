@@ -1,7 +1,7 @@
 .. _multicore_hello_world:
 
-nRF5340: Multicore Hello World application
-##########################################
+Multicore Hello World application
+#################################
 
 .. contents::
    :local:

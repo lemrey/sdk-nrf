@@ -148,12 +148,12 @@
 
 .. nrf54h20dk_nrf54h20_cpuapp@soc1
 
-| nRF54H20 SOC1 FPGA | | nrf54h20dk_nrf54h20_cpuapp | ``nrf54h20dk_nrf54h20_cpuapp@soc1`` |
+| :ref:`nRF54H20 PDK <ug_nrf54h20_gs>` | | ``nrf54h20dk_nrf54h20_cpuapp`` | ``nrf54h20dk_nrf54h20_cpuapp@soc1`` |
 
 .. nrf54h20dk_nrf54h20_cpurad@soc1
 
-| nRF54H20 SOC1 FPGA | | nrf54h20dk_nrf54h20_cpurad | ``nrf54h20dk_nrf54h20_cpurad@soc1`` |
+| :ref:`nRF54H20 PDK <ug_nrf54h20_gs>` | | ``nrf54h20dk_nrf54h20_cpurad`` | ``nrf54h20dk_nrf54h20_cpurad@soc1`` |
 
 .. nrf54h20dk_nrf54h20_cpuapp
 
-| nRF54H20 FPGA | | nrf54h20dk_nrf54h20_cpuapp | ``nrf54h20dk_nrf54h20_cpuapp`` |
+| :ref:`nRF54H20 PDK <ug_nrf54h20_gs>` | | ``nrf54h20dk_nrf54h20_cpuapp`` | ``nrf54h20dk_nrf54h20_cpuapp`` |

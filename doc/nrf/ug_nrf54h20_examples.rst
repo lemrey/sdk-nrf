@@ -16,6 +16,8 @@ The following examples have been developed and tested on the nRF54H20 for the in
 
    ../../../samples/multicore/hello_world/README
    ../../../samples/caf_sensor_manager/README
+   ../../../samples/ipc/ipc_service/README
+   ../../../samples/event_manager_proxy/README
 
    ../../../applications/machine_learning/README
 
