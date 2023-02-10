@@ -182,7 +182,7 @@ manifest:
       revision: 308c171cb4b5eed266649012a68406487ec81fb2
     - name: suit-processor
       remote: nordicsemi
-      revision: 77b45d6c1bada96313149f372e61ac95a471a123
+      revision: f98aacffd3834bcaba66811f532c270c0f4de2d5
       path: modules/lib/suit-processor
     # Other third-party repositories.
     - name: cmock
