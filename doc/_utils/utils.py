@@ -22,9 +22,22 @@ ALL_DOCSETS = {
     "tfm": ("Trusted Firmware-M", "index", "trusted-firmware-m"),
     "matter": ("Matter", "index", "matter"),
     "kconfig": ("Kconfig Reference", "index", None),
-    "internal": ("Internal Documentation", "index", "doc-internal"),
 }
 """All supported docsets (name: title, home page, manifest project name)."""
+
+OPTIONAL_DOCSETS = {
+    "internal": ("Internal Documentation", "index", "doc-internal"),
+}
+"""Optional docsets (name: title, home page, manifest project name)."""
+
+
+# append optional docsets if they exist
+for docset, props in OPTIONAL_DOCSETS.items():
+    for p in _MANIFEST.projects:
+        if p.name != props[2] or not (Path(p.topdir) / Path(p.path)).exists():
+            continue
+
+        ALL_DOCSETS[docset] = props
 
 
 def get_projdir(docset: str) -> Path:
