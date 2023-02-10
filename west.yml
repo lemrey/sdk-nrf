@@ -118,7 +118,7 @@ manifest:
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
-      revision: 847c13b4f61753f8c5162b94c5e7628632a1fe74
+      revision: ca1fadac3f152e03a6fd6a27165b375b9d3bb671
       groups:
       - doc-internal
     - name: ic-next
