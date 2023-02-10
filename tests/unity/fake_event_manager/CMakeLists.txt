@@ -8,5 +8,5 @@ zephyr_include_directories(.)
 
 zephyr_sources_ifdef(
   CONFIG_FAKE_EVENT_MANAGER
-  event_manager.c
+  app_event_manager.c
   )
