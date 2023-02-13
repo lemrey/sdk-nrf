@@ -17,20 +17,7 @@
 / {
     chosen {
         zephyr,console = &uart136;
-        zephyr,sram = &cpuapp_sram;
         zephyr,shell-uart = &uart136;
-    };
-};
-
-&ram0x {
-    cpuapp_sram: memory@1000 {
-        compatible = "nordic,allocatable-ram", "mmio-sram";
-        reg = <0x1000 DT_SIZE_K(512)>;
-        ranges = <0x0 0x1000 DT_SIZE_K(512)>;
-        #address-cells = <1>;
-        #size-cells = <1>;
-        perm-read;
-        perm-write;
     };
 };
 

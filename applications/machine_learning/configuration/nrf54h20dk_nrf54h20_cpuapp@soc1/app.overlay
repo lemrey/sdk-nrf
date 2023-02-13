@@ -7,7 +7,6 @@
 / {
 	chosen {
 		zephyr,console = &uart136;
-		zephyr,sram = &sram_cpuapp;
 	};
 
 	allocatable_ram {
@@ -65,16 +64,6 @@
 &mram0 {
 	/* Expand to include PPR */
 	reg = <0x1e0aa000 DT_SIZE_K(576)>;
-};
-
-&ram0x {
-	sram_cpuapp: memory@1000 {
-		compatible = "nordic,allocatable-ram";
-		reg = <0x1000 DT_SIZE_K(60)>;
-		perm-write;
-		perm-read;
-		perm-execute;
-	};
 };
 
 &vevif_cpuppr {
