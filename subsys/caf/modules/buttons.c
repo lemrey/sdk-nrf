@@ -42,6 +42,16 @@ enum state {
 static const struct device * const gpio_devs[] = {
 	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio0)),
 	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio1)),
+#if IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio2)),
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio3)),
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio4)),
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio5)),
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio6)),
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio7)),
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio8)),
+	DEVICE_DT_GET_OR_NULL(DT_NODELABEL(gpio9)),
+#endif
 };
 static struct gpio_callback gpio_cb[ARRAY_SIZE(gpio_devs)];
 static struct k_work_delayable matrix_scan;
