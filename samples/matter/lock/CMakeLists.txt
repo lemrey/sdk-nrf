@@ -34,33 +34,25 @@ target_include_directories(app PRIVATE
     ${ZEPHYR_CONNECTEDHOMEIP_MODULE_DIR}/zzz_generated/app-common
 )
 
-if (CONF_FILE STREQUAL "prj_fpga.conf")
-    zephyr_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-endif()
+target_sources(app PRIVATE
+    src/app_task.cpp
+    src/bolt_lock_manager.cpp
+    src/main.cpp
+    src/zcl_callbacks.cpp
+    src/zap-generated/IMClusterCommandHandler.cpp
+    src/zap-generated/callback-stub.cpp
+    ${COMMON_ROOT}/src/led_widget.cpp
+    $<$<BOOL:${CONFIG_NET_L2_OPENTHREAD}>:${COMMON_ROOT}/src/thread_util.cpp>
+)
 
-set(app_sources src/bolt_lock_manager.cpp
-                src/main.cpp
-                src/zcl_callbacks.cpp
-                src/zap-generated/IMClusterCommandHandler.cpp
-                src/zap-generated/callback-stub.cpp
-                $<$<BOOL:${CONFIG_NET_L2_OPENTHREAD}>:${COMMON_ROOT}/src/thread_util.cpp>
-                ${COMMON_ROOT}/src/led_widget.cpp
-                src/app_task.cpp
-                )
-
-if(CONFIG_EMULATOR_FPGA OR CONFIG_SOC_SERIES_NRF54HX)
+if(CONFIG_SOC_SERIES_NRF54HX)
 
     # FIXME Disabled -Werror due to warning in zephyr/subsys/net/lib/openthread/platform/entropy.c
     # Which warns that OpenThread uses NOT SAFE random generator due to lack of the Entropy Driver on FPGA board.
     # It is a workaround within sdk-nrf-next, and it should not be merged with sdk-nrf upstream.
     zephyr_compile_options(-Wno-error)
 
-    set(app_sources ${app_sources} 
-                    ${COMMON_ROOT}/src/debug_helpers.cpp
-                    )
 endif()
-
-target_sources(app PRIVATE ${app_sources})
 
 if(CONFIG_CHIP_OTA_REQUESTOR OR CONFIG_MCUMGR_SMP_BT)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/ota_util.cpp)
