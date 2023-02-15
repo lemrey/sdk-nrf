@@ -451,3 +451,26 @@
     - nrf5340dk_nrf5340_cpunet
     - nrf21540dk_nrf52840
   comment: "error: 'nrfx_timer_config_t' has no member named 'frequency'"
+
+- scenarios:
+    - tfm.regression_lib_mode
+    - tfm.regression_ipc_lvl1
+    - tfm.regression_ipc_lvl2.mbedtls_builtin
+    - tfm.regression_ipc_lvl2.cc3xx
+    - tfm.regression_ipc_lvl2.oberon
+    - tfm.regression_ipc_lvl2.cc3xx_oberon
+    - tfm.psa_test_protected_storage
+    - tfm.psa_test_internal_trusted_storage
+    - tfm.psa_test_storage
+    - tfm.psa_test_crypto
+    - tfm.psa_test_initial_attestation
+    - sample.tfm.helloworld
+    - sample.tfm.hello_world.bootloaders
+    - sample.tfm.hello_world.full
+    - sample.tfm.hello_world.lvl2
+    - sample.tfm.psa_template
+    - sample.tfm.secure_peripheral
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+  comment: "TF-M UART driver is broken with sdk-hal_nordic-next"
