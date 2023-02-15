@@ -9,6 +9,6 @@ The |NCS| provides support for developing on the nRF54H System on Chip (SoC).
    :maxdepth: 2
    :caption: Subpages:
 
-   ug_nrf54h20_gs
-   ug_nrf54h20_examples
-   ug_nrf54h20_architecture
+   working_with_nrf/nrf54h/ug_nrf54h20_gs
+   working_with_nrf/nrf54h/ug_nrf54h20_app_samples
+   working_with_nrf/nrf54h/ug_nrf54h20_architecture

@@ -9,4 +9,4 @@ The |NCS| provides support for developing on the nRF7140 System on Chip (SoC).
    :maxdepth: 2
    :caption: Subpages:
 
-   ug_nrf71_architecture
+   working_with_nrf/nrf71/ug_nrf71_architecture

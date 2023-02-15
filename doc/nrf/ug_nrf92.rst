@@ -9,4 +9,4 @@ The |NCS| provides support for developing on the nRF9230 System in Package (SiP)
    :maxdepth: 2
    :caption: Subpages:
 
-   ug_nrf92_architecture
+   working_with_nrf/nrf92/ug_nrf92_architecture

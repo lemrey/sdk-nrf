@@ -37,7 +37,7 @@ The triggers of the warm boot procedure are:
   * GRTC event
 
 Cold Boot Sequence
-==================
+******************
 
 The nRF54H20 boot sequence has two key characteristics:
 
@@ -49,7 +49,7 @@ The nRF54H20 boot sequence has two key characteristics:
   It ensures that global resources are allocated for other local domains before any of them has opportunity to access global resources (correct access to allocated resources, or tries of malicious access to resources owned by other domains).
 
 Boot stages
-===========
+***********
 
 The Secure Domain boots the System Controller, the Application Core, and the Radio Core:
 

@@ -7,13 +7,17 @@ Interprocessor Communication in nRF54H20
    :local:
    :depth: 2
 
+Interprocessor communication (IPC) is the communication between different CPUs (and domains).
+The nRF54H20 includes several types of CPUs that are optimized for different types of workloads.
+This provides an asymmetric multiprocessing environment where you can freely select the CPU that is best suited to the workloads that compose your application.
+
 Interprocessor Communication is required in asymmetric multiprocessing environments to share services' requests, responses, and data between processors.
 
 The following sections describe the communication protocol used for IPC in |NCS| for the nRF54H20 SoC.
 They also include an overview of the connection scheme between the cores available in the system.
 
 Technical solution
-==================
+******************
 
 A single Interprocessor Communication instance used in the nRF54H20 SoC allows full-duplex communication between two cores.
 It support only unicast messages.
@@ -25,7 +29,7 @@ The number of IPC instances which might be created is limited by the available h
 The Interprocessor Communication can be described using the OSI model.
 
 Physical layer
---------------
+==============
 
 The physical layer used by IPC in the nRF54H20 SoC consists of shared RAM and signaling peripherals.
 
@@ -93,7 +97,7 @@ Some of the channels in BELLBOARDs and VEVIFs are reserved for functions differe
 See :ref:`Post-mortem debugging capabilities<ug_nrf54h20_architecture_post_mortem_debugging_capabilities>` for information on the assignment of IPC channels for other functions.
 
 MAC, Network, Transport
------------------------
+=======================
 
 The layers responsible for maintaining a stable full-duplex stream of data between two cores (MAC, Network, Transport) are implemented in an IPC transport library.
 The default IPC transport library for nRF54H20 is *icmsg* (TODO: link to repo).
@@ -116,7 +120,7 @@ However, you must use as data plane memory allocation mechanisms optimized for b
    The ownership of the shared buffers is passed between the cores using the control plane, but only one of the cores is responsible for managing (allocating, resizing, freeing) the buffers.
 
 Session
--------
+=======
 
 The IPC session establishment in the nRF54H20 SoC is performed by the *ipc_service* library (TODO: link to Zephyr repo or docs).
 This library provides an unified API for IPC transports and it integrates specific transports as its backends.
@@ -126,7 +130,7 @@ The library is responsible for creating IPC instances based on the system config
 It is recommended to use the ipc_service API to perform inter-processor communication in the nRF54H20 SoC.
 
 Presentation and Application layers
------------------------------------
+===================================
 
 The presentation and application layers are connection specific.
 Each connection has other requirements regarding the type and the nature of the exchanged messages.
@@ -144,12 +148,12 @@ PPR with event_manager  event_proxy
 ======================  =====================
 
 IPC connections scheme
-======================
+**********************
 
 TODO: Describe overall IPC connections and create a diagram
 
 Radio core
-----------
+==========
 
 The Radio Core is intended to expose radio communication services to the Application Core through IPC.
 These services include:
@@ -170,7 +174,7 @@ TrustZone configuration for the Application and Radio core can differ.
 It is valid to access services exposed from SPE in NSPE, or the other way around.
 
 Secure Domain Core
-------------------
+==================
 
 The Secure Domain Core exposes security-related services to the other local cores in the system (Application, Radio).
 The list of services includes:
@@ -194,7 +198,7 @@ NSPE must use local secure services to request SPE to use Secure Domain Core's s
 The Secure Domain Core handles the requests in its Non-Secure Processing Environment.
 
 System Controller
------------------
+=================
 
 The System Controller exposes the following services to local cores (Application, Radio, Secure Domain) through IPC:
 
@@ -209,13 +213,13 @@ If TrustZone is enabled in a local core, services are accessible from local core
 If TrustZone is disabled in a local core, services are accessible from the only available processing environment, the Secure Processing Environment.
 
 FLPR
-----
+====
 
 The FLPR exposes IPC communication for its owner to manage its operations.
 The communication details depends on the FLPR role in the system.
 
 PPR
----
+===
 
 The PPR exposes IPC communication for its owner to manage its operations.
 The communication details depends on the PPR role in the system.

@@ -25,7 +25,7 @@ The MRAM is a global memory available to all CPUs in the system.
 Some RAM memories are, instead, tightly coupled to a specific CPU, while others are intended to be shared between multiple CPUs.
 
 RAM
-===
+***
 
 There are multiple RAM banks in the system.
 Each local domain (like Application or Radio) contains its own RAM.
@@ -34,12 +34,12 @@ There is also a large part of the RAM in the global domain to be shared between 
 TODO: diagram
 
 Local RAM
----------
+=========
 
 Local RAM is present in each of local domains
 
 Application Core RAM
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 .. image:: images/nrf54h20_memory_map_app.png
    :width: 300 px
@@ -68,7 +68,7 @@ Access control
       Local RAM cannot include a Non-Secure Callable section.
 
 Radio Core RAM
-^^^^^^^^^^^^^^
+--------------
 
 .. image:: images/nrf54h20_memory_map_radio.png
    :width: 300 px
@@ -98,7 +98,7 @@ Access control
       Local RAM cannot include a Non-Secure Callable section.
 
 BBPROC memory
-"""""""""""""
+^^^^^^^^^^^^^
 
 TODO: diagram
 
@@ -121,7 +121,7 @@ Access control
    The access to the BBPROC memory is configured as the access to the local RAM in the Radio Domain.
 
 Secure Domain
-^^^^^^^^^^^^^
+-------------
 
 .. image:: images/nrf54h20_memory_map_secure.png
    :width: 300 px
@@ -147,7 +147,7 @@ Access control
    The Local RAM cannot include a Non-Secure Callable section.
 
 Global RAM
-----------
+==========
 
 The Global Domain RAM (or Global RAM, GRAM) is distributed in multiple instances across the system.
 Each of the instances has other properties and other purposes.
@@ -157,7 +157,7 @@ TODO: access control
 .. _ug_nrf54h20_architecture_memory_gp_shared_ram:
 
 General-purpose shared RAM (RAM0x)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------
 
 .. image:: images/nrf54h20_memory_map_ram0x.png
    :width: 300 px
@@ -199,7 +199,7 @@ Access control
 TODO: secure domain usage of RAM0x, full partitioning, table with MPC OVERRIDEs
 
 SYSCTRL memory (RAM20)
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 .. image:: images/nrf54h20_memory_map_ram20.png
    :width: 300 px
@@ -232,7 +232,7 @@ Access control
    If TrustZone is disabled for a core, the shared memory region is accessible from the Secure Processing Environment.
 
 Fast global RAM (RAM21)
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 .. image:: images/nrf54h20_memory_map_ram21.png
    :width: 300 px
@@ -259,7 +259,7 @@ Access control
    The security attribute of memory partitions must follow FLPR and DMA engines security settings.
 
 Slow global RAM (RAM3x)
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 .. image:: images/nrf54h20_memory_map_ram3x.png
    :width: 300 px
@@ -286,7 +286,7 @@ Access control
   The security attribute of memory partitions must follow PPR and CMA engines security settings.
 
 MRAM (non volatile memory)
-==========================
+**************************
 
 The MRAM is divided in the following parts:
 
@@ -294,7 +294,7 @@ The MRAM is divided in the following parts:
 * MRAM_11
 
 MRAM_10
--------
+=======
 
 .. image:: images/nrf54h20_memory_map_mram10.png
    :width: 300 px
@@ -332,7 +332,7 @@ Access control
    Other cores can access only the parts assigned to them, according to the security rules described above.
 
 MRAM_11
--------
+=======
 
 .. image:: images/nrf54h20_memory_map_mram11.png
    :width: 300 px
@@ -372,7 +372,7 @@ Access control
    The security configuration of this partition follows the Trustzone configuration of the Application Core (Secure if Trustzone is disabled, or Non-Secure if Trustzone is enabled).
 
 Memory Privilege Controller (MPC) configuration
-===============================================
+***********************************************
 
 The Secure Domain configures Memory Privilege Controllers (MPCs) before it boots other domains.
 MPC configuration provides rights for other cores to access memory regions assigned to them.
@@ -439,7 +439,7 @@ OVERRIDE Id  Owner  Permissions  SECUREMASK  Regions
 .. TODO: Diagrams showing memory view from App's SPE, App's NSPE, maybe for other cores as well?
 
 SAU configuration
-=================
+*****************
 
 Each one of the Cortex-M33 CPUs in the system with the TrustZone feature enabled (specifically, the Application, Radio, and Secure Domain Cores) associates a Security Attribution Unit (SAU) peripheral.
 The Secure Domain configures the SAUs for itself during its initialization before it switches to the Non-Secure Processing Environment (NSPE).
