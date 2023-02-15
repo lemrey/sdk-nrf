@@ -30,13 +30,6 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 
-#define FACTORY_RESET_TRIGGER_TIMEOUT 3000
-#define FACTORY_RESET_CANCEL_WINDOW_TIMEOUT 3000
-#define MOVEMENT_START_WINDOW_TIMEOUT 2000
-#define APP_EVENT_QUEUE_SIZE 10
-#define BUTTON_PUSH_EVENT 1
-#define BUTTON_RELEASE_EVENT 0
-
 LOG_MODULE_DECLARE(app, CONFIG_MATTER_LOG_LEVEL);
 
 using namespace ::chip;
