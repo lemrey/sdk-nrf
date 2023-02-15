@@ -474,3 +474,9 @@
     - nrf5340dk_nrf5340_cpuapp_ns
     - nrf9160dk_nrf9160_ns
   comment: "TF-M UART driver is broken with sdk-hal_nordic-next"
+
+- scenarios:
+    - sample.hw_id.ble
+  platforms:
+    - nrf51dk_nrf51422
+  comment: "nRF51 SoC not supported by the HCS's nrfx, see NCSDK-19772"
