@@ -480,3 +480,14 @@
   platforms:
     - nrf51dk_nrf51422
   comment: "nRF51 SoC not supported by the HCS's nrfx, see NCSDK-19772"
+
+- scenarios:
+    - applications.nrf5340_audio.headset
+    - applications.nrf5340_audio.gateway
+    - applications.nrf5340_audio.headset_dfu_internal
+    - applications.nrf5340_audio.gateway_dfu_internal
+    - applications.nrf5340_audio.headset_dfu_external
+    - applications.nrf5340_audio.gateway_dfu_external
+  platforms:
+    - nrf5340_audio_dk_nrf5340_cpuapp
+  comment: "nrfx timer and i2s API changes break the application"
