@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+#include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
+
+/ {
+	chosen {
+		zephyr,console = &uart136;
+		zephyr,shell-uart = &uart136;
+	};
+};
+
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	/delete-property/ hw-flow-control;
+
+	status = "okay";
+	tx-pin = <0x44>;
+	rx-pin = <0x45>;
+	memory-regions = <&ram3x_cpuapp>;
+};
