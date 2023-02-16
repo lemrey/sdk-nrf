@@ -1,0 +1,18 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+source "Kconfig.zephyr"
+
+menu "Nordic Central UART BLE sample"
+
+config BT_UART_ASYNC_ADAPTER
+	bool "Enable UART async adapter"
+	select SERIAL_SUPPORT_ASYNC
+	help
+	  Enables asynchronous adapter for UART driver that supports only
+	  IRQ interface.
+
+endmenu

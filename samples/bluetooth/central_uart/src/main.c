@@ -7,6 +7,7 @@
 /** @file
  *  @brief Nordic UART Service Client sample
  */
+#include "uart_async_adapter.h"
 
 #include <errno.h>
 #include <zephyr/kernel.h>
@@ -45,7 +46,7 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #define UART_WAIT_FOR_BUF_DELAY K_MSEC(50)
 #define UART_RX_TIMEOUT 50
 
-static const struct device *uart = DEVICE_DT_GET(DT_NODELABEL(uart0));
+static const struct device *uart = DEVICE_DT_GET(DT_CHOSEN(nordic_nus_uart));
 static struct k_work_delayable uart_work;
 
 K_SEM_DEFINE(nus_write_sem, 0, 1);
@@ -61,6 +62,12 @@ static K_FIFO_DEFINE(fifo_uart_rx_data);
 
 static struct bt_conn *default_conn;
 static struct bt_nus_client nus_client;
+
+#if CONFIG_BT_UART_ASYNC_ADAPTER
+UART_ASYNC_ADAPTER_INST_DEFINE(async_adapter);
+#else
+static const struct device *const async_adapter;
+#endif
 
 static void ble_data_sent(struct bt_nus_client *nus, uint8_t err,
 					const uint8_t *const data, uint16_t len)
@@ -262,6 +269,14 @@ static void uart_work_handler(struct k_work *item)
 	uart_rx_enable(uart, buf->data, sizeof(buf->data), UART_RX_TIMEOUT);
 }
 
+static bool uart_test_async_api(const struct device *dev)
+{
+	const struct uart_driver_api *api =
+			(const struct uart_driver_api *)dev->api;
+
+	return (api->callback_set != NULL);
+}
+
 static int uart_init(void)
 {
 	int err;
@@ -277,6 +292,12 @@ static int uart_init(void)
 		rx->len = 0;
 	} else {
 		return -ENOMEM;
+	}
+
+	if (IS_ENABLED(CONFIG_BT_UART_ASYNC_ADAPTER) && !uart_test_async_api(uart)) {
+		/* Implement API adapter */
+		uart_async_adapter_init(async_adapter, uart);
+		uart = async_adapter;
 	}
 
 	k_work_init_delayable(&uart_work, uart_work_handler);

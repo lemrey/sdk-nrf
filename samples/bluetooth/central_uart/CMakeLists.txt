@@ -14,4 +14,9 @@ target_sources(app PRIVATE
 )
 # NORDIC SDK APP END
 
+# Include UART ASYNC API adapter
+target_sources_ifdef(CONFIG_BT_UART_ASYNC_ADAPTER app PRIVATE
+  src/uart_async_adapter.c
+)
+
 zephyr_library_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
