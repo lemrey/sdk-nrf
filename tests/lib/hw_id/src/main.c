@@ -14,7 +14,7 @@
 
 #include <hw_id.h>
 
-#include <bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/drivers/hwinfo.h>
 #include <modem/modem_jwt.h>
 #include <nrf_modem_at.h>

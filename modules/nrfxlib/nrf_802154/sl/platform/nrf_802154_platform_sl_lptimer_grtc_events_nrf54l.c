@@ -5,7 +5,7 @@
  */
 
 #include <assert.h>
-#include <kernel.h>
+#include <zephyr/kernel.h>
 
 #include <haly/nrfy_dppi.h>
 #include <hal/nrf_ppib.h>

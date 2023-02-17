@@ -11,7 +11,7 @@
 #ifndef _APP_EVENT_MANAGER_H_
 #define _APP_EVENT_MANAGER_H_
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <stdbool.h>
 /**
  * @defgroup event_manager Fake Event Manager
