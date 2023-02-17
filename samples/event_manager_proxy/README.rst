@@ -73,11 +73,24 @@ For example, you can do this from the command line using west by completing the 
 #. Open the command line terminal.
 #. Run the following command to build the application code for the host and the remote:
 
-   .. code-block:: console
+   .. note::
+      To program the sample using the nRF54H20 :term:`Preview Development Kit (PDK)`, you must provide ICMSG backend configuration.
 
-      west build -b nrf5340dk_nrf5340_cpuapp .
+   .. tabs::
 
-#. Program the host core:
+      .. tab:: nRF54H20 PDK
+
+         .. code-block:: console
+
+            west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- CONF_FILE=prj_icmsg.conf
+
+      .. tab:: nRF5340 DK
+
+         .. code-block:: console
+
+            west build -b nrf5340dk_nrf5340_cpuapp
+
+#. Program both the cores:
 
    .. code-block:: console
 

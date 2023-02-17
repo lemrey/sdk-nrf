@@ -56,20 +56,20 @@ The sample provides predefined configuration files for typical use cases.
 The configuration and devicetree overlay files are placed in the :file:`samples/ipc/ipc_service/boards` and :file:`samples/ipc/ipc_service` folders.
 
 .. important::
-   For the nRF54H20 Development Kit (DK), there is no default configuration.
-   You must provide configuration and devicetree overlays.
+   For the nRF54H20 :term:`Preview Development Kit (PDK)`, there is no default configuration.
+   You must provide configurations and devicetree overlays.
 
-Following are the available configuration files for the nRF54H20 DK:
+Following are the available configuration files for the nRF54H20 PDK:
 
 * :file:`nrf54h20dk_nrf54h20_cpuapp_ppr.conf` is used to test transmission between ``cpuapp`` and ``cpuppr`` build targets with an ICMSG backend.
 * :file:`nrf54h20dk_nrf54h20_cpuapp_rad.conf` is used to test transmission between ``cpuapp`` and ``cpurad`` build targets with ICMSG and RPMSG backends.
 * :file:`nrf54h20dk_nrf54h20_cpuapp_sys.conf` is used to test transmission between ``cpuapp`` and ``cpusys`` build targets with ICMSG and RPMSG backends.
 * :file:`nrf54h20dk_nrf54h20_cpurad_sys.conf` is used to test transmission between ``cpurad`` and ``cpusys`` build targets with ICMSG and RPMSG backends.
 
-For the nRF54H20 DK, select any one of the configuration files.
+For the nRF54H20 PDK, select any one of the configuration files.
 When using the command line, add any of these file names with the ``-DOVERLAY_CONFIG=boards/`` and ``-Dremote_OVERLAY_CONFIG=boards/`` prefixes to the build command for local and remote applications, respectively.
 
-Following are the available devicetree overlay files for the nRF54H20 DK:
+Following are the available devicetree overlay files for the nRF54H20 PDK:
 
 * :file:`nrf54h20dk_nrf54h20_cpuapp_ppr.overlay` is used for ``cpuapp`` and ``cpuppr`` configurations with ICMSG backends.
 * :file:`nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay` is used for ``cpuapp`` and ``cpurad`` configurations with ICMSG backends.
@@ -85,7 +85,7 @@ When using the command line, along with parameters of configuration files, add t
 For ICMSG targets, the :file:`prj_icmsg.conf` file must be selected as a configuration.
 When using command line, along with the rest parameters, add the ``-DCONF_FILE=prj_icmsg.conf`` and ``-Dremote_CONF_FILE=prj_icmsg.conf`` parameters to the build command for local and remote applications, respectively.
 
-An example on how to program the sample for the nRF54H20 DK with a configuration overlay, devicetree overlay, and selected IPC backend is shown in the :ref:`Building and running <nRF54H20_sample_build>` section.
+An example on how to program the sample for the nRF54H20 PDK with configuration overlays, devicetree overlays, and selected IPC backend is shown in the :ref:`Building and running <nRF54H20_sample_build>` section.
 
 Building and running
 ********************
@@ -102,19 +102,19 @@ To verify the throughput for only one direction of data transmission, configure 
 * ``-DCONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1`` and ``-Dremote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=20000000`` to get the application sending performance.
 
 .. note::
-   To program the sample using the nRF54H20 DK, you must provide different configuration and overlay parameters along with the build command.
+   To program the sample using the nRF54H20 PDK, you must provide different configuration and overlay parameters along with the build command.
    There is no default configuration for the nRF54H20 build targets.
 
 You can use different overlays and configurations to build commands for different testing scenarios.
 The overlay and configuration file details are provided in the :ref:`ipc_service_configuration_file` section.
 
-For the nRF54H20 DK, the following examples show the testing scenarios for ``cpuapp`` and ``cpurad`` configurations with ICMSG backends.
+For the nRF54H20 PDK, the following examples show the testing scenarios for ``cpuapp`` and ``cpurad`` configurations with ICMSG backends.
 
 * To test the application where only the application core is sending data through the IPC service, use the following command:
 
    .. tabs::
 
-      .. tab:: nRF54H20 Development Kit
+      .. tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -125,7 +125,7 @@ For the nRF54H20 DK, the following examples show the testing scenarios for ``cpu
             -Dremote_CONF_FILE=prj_icmsg.conf -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 Development Kit
+      .. tab:: nRF5340 DK
 
          .. code-block:: console
 
@@ -136,7 +136,7 @@ For the nRF54H20 DK, the following examples show the testing scenarios for ``cpu
 
    .. tabs::
 
-      .. tab:: nRF54H20 Development Kit
+      .. tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -147,7 +147,7 @@ For the nRF54H20 DK, the following examples show the testing scenarios for ``cpu
             -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 Development Kit
+      .. tab:: nRF5340 DK
 
          .. code-block:: console
 
@@ -160,7 +160,7 @@ For the nRF54H20 DK, the following examples show the testing scenarios for ``cpu
 
    .. tabs::
 
-      .. tab:: nRF54H20 Development Kit
+      .. tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -170,7 +170,7 @@ For the nRF54H20 DK, the following examples show the testing scenarios for ``cpu
             -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 Development Kit
+      .. tab:: nRF5340 DK
 
          .. code-block:: console
 
@@ -184,7 +184,7 @@ For the nRF54H20 DK, the following examples show the testing scenarios for ``cpu
 
    .. tabs::
 
-      .. tab:: nRF54H20 Development Kit
+      .. tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -202,7 +202,7 @@ For the nRF54H20 DK, the following examples show the testing scenarios for ``cpu
             -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 Development Kit
+      .. tab:: nRF5340 DK
 
          .. code-block:: console
 
