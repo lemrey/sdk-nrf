@@ -7,5 +7,12 @@
 # This TOML configuration adds configurations for UICR that are currently
 # unable to be set through devicetree.
 
+[gpio_own_5]
+PIN_0 = "Own"
+PIN_2 = "Own"
+
+[gpio_secure_5]
+PIN_2 = "NonSecure"
+
 [initnsvtor_0]
 INITNSVTOR = 0x0e099000

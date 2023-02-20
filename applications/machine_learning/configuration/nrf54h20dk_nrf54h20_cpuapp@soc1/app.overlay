@@ -7,6 +7,7 @@
 / {
 	chosen {
 		zephyr,console = &uart136;
+		ncs,ml-app-ei-data-forwarder-uart = &uart136;
 	};
 
 	allocatable_ram {
@@ -51,6 +52,25 @@
 		status = "okay";
 	};
 
+	/* Redefine leds to fit CAF requirements. */
+	/delete-node/ leds;
+
+	leds0 {
+		compatible = "gpio-leds";
+		led0: led_0 {
+			gpios = < &gpio9 0 GPIO_ACTIVE_HIGH >;
+			label = "Green LED 0";
+		};
+	};
+
+	leds1 {
+		compatible = "gpio-leds";
+		led1: led_1 {
+			gpios = < &gpio9 1 GPIO_ACTIVE_HIGH >;
+			label = "Green LED 1";
+		};
+	};
+
 	/* Configure PPR code region. Allow to execute from defined
 	 * region by App and cores owned by App.
 	 */
@@ -85,6 +105,10 @@
 	status = "okay";
 	tx-pin = <7>;
 	rx-pin = <6>;
+};
+
+&gpio9 {
+	status = "okay";
 };
 
 &grtc {
