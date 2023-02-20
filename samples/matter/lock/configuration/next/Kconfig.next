@@ -18,67 +18,6 @@
 # This file only changes defaults and thus all symbols here must be promptless
 # and safeguarded so that they only are applied when building Matter.
 
-if CHIP
-
-config LOG
-    default y
-
-if LOG
-
-choice MATTER_LOG_LEVEL_CHOICE
-	default MATTER_LOG_LEVEL_INF
-endchoice
-
-config LOG_DEFAULT_LEVEL
-    default 2
-
-config SHELL_LOG_BACKEND
-    default y
-
-endif # LOG
-
-# Generic networking options
-config NET_SOCKETS_POSIX_NAMES
-    default n
-
-# Enable OpenThread
-config NET_L2_OPENTHREAD
-    default y
-
-config INIT_STACKS
-    default y
-
-config MPU_STACK_GUARD
-    default y
-
-config PRINTK_SYNC
-    default y
-
-# Enable extended discovery
-config CHIP_EXTENDED_DISCOVERY
-    default y
-
-config SHELL
-    default y
-
-# By default NFC is disable for NRF54, waiting for NFC driver
-config CHIP_NFC_COMMISSIONING
-    default n
-
-# As long as there is no flash storage on FPGA DFUs must be disabled
-config CHIP_OTA_REQUESTOR
-    default n
-    
-config TEST_RANDOM_GENERATOR
-    default y
-
-choice OPENTHREAD_SECURITY
-    default OPENTHREAD_MBEDTLS_CHOICE
-endchoice
-
-config OPENTHREAD_NRF_SECURITY
-    default n
-
 if EMULATOR_FPGA
 
 config SHELL_ARGC_MAX
@@ -112,6 +51,32 @@ choice LOG_MODE
     default LOG_MODE_DEFERRED
 endchoice
 
+config CHIP_NFC_COMMISSIONING
+    default n
+
+# As long as there is no flash storage on FPGA DFUs must be disabled
+config CHIP_OTA_REQUESTOR
+    default n
+    
+config TEST_RANDOM_GENERATOR
+    default y
+
+choice OPENTHREAD_SECURITY
+    default OPENTHREAD_MBEDTLS_CHOICE
+endchoice
+
+config OPENTHREAD_NRF_SECURITY
+    default n
+
+config MAIN_STACK_SIZE
+    default 12288
+
+config CHIP_MALLOC_SYS_HEAP_SIZE
+    default 28672 # 28 kB
+
+config HWINFO_NRF
+    default n
+
 config ASSERT
     default y
 
@@ -130,38 +95,11 @@ choice BT_HCI_BUS_TYPE
 	default BT_RPMSG
 endchoice
 
-config BT_PERIPHERAL
-    default y
-
-config BT_GATT_DYNAMIC_DB
-    default y
-
-config BT_GAP_AUTO_UPDATE_CONN_PARAMS
-    default y
-
-config BT_DEVICE_NAME_DYNAMIC
-    default n
-
-config BT_MAX_CONN
-    default 1
-
 config BT_L2CAP_TX_MTU
     default 247
 
-config BT_PERIPHERAL_PREF_MIN_INT
-    default 36
-
-config BT_PERIPHERAL_PREF_MAX_INT
-    default 36
-
-config BT_BUF_ACL_RX_SIZE
-    default 251
-
-config BT_BUF_ACL_TX_SIZE
-    default 251
-
-config MAIN_STACK_SIZE
-    default 12288
+config PRINTK_SYNC
+    default y
 
 # Settings needed to handle IPC service and
 # communication between domains
@@ -246,5 +184,3 @@ endif #BOARD_NRF54LFPGA_NRF54L15_SOC1_CPUAPP
 ################################################
 # MOONLIGHT SPECIFIC SECTION END
 ################################################
-
-endif # chip

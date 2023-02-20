@@ -95,18 +95,13 @@ config MPSL_FEM_NRF21540_TX_GAIN_DB
 
 endif # MPSL_FEM
 
-if !(SOC_SERIES_NRF54HX)
-
-source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
-source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
-
-endif # !(SOC_SERIES_NRF54HX)
 
 if SOC_SERIES_NRF54HX
 
 source "${ZEPHYR_BASE}/../nrf/samples/matter/lock/configuration/next/Kconfig.next"
-source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 
 endif # SOC_SERIES_NRF54HX
 
+source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
+source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
 source "Kconfig.zephyr"

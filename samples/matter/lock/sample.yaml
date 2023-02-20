@@ -56,6 +56,7 @@ tests:
   sample.matter.lock.fpga:
     build_only: true
     extra_args: CONF_FILE=prj_fpga.conf
+      DTC_OVERLAY_FILE="serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay"
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -63,6 +64,7 @@ tests:
   sample.matter.lock.lilium_pdk:
     build_only: true
     extra_args: CONF_FILE=prj_no_dfu.conf
+      DTC_OVERLAY_FILE="serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay;boards/nrf54h20_pdk.overlay"
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1

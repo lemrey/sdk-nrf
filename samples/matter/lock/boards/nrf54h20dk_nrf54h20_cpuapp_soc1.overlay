@@ -5,6 +5,7 @@
  */
 
 #include <zephyr/dt-bindings/ipc_service/static_vrings.h>
+#include <common/nordic_nrf_next/nrf54h20_ram0x.dtsi>
 
 /*
  * Chosen dts configs description:
@@ -26,6 +27,11 @@
 };
 
 ipc0: &ipc_cpurad { };
+
+
+&cpuapp_sram0x {
+    reg = <DT_ADDR(DT_NRF54H20_APP_SRAM_OFFSET_FROM_RAM0X_S) DT_SIZE_K(350)>;
+};
 
 /delete-node/ &slot0_partition;
 /delete-node/ &cpuapp_uicr_ext;
