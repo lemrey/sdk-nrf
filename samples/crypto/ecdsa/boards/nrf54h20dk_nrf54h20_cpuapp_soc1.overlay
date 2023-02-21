@@ -1,0 +1,1 @@
+#include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
