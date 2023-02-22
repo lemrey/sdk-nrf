@@ -7,7 +7,6 @@
 / {
 	chosen {
 		zephyr,console = &uart136;
-		ncs,ml-app-ei-data-forwarder-uart = &uart136;
 	};
 
 	allocatable_ram {
