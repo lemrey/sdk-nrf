@@ -15,6 +15,7 @@
 #include <nrf_modem_at.h>
 #include <modem/lte_lc.h>
 #include <modem/lte_lc_trace.h>
+#include <modem/at_cmd_hook.h>
 #include <modem/at_cmd_parser.h>
 #include <modem/at_params.h>
 #include <modem/at_monitor.h>
@@ -134,6 +135,31 @@ static bool is_cellid_valid(uint32_t cellid)
 
 	return true;
 }
+
+static void lte_lc_cfun_evt(const char* cmd, int err)
+{
+	int mode;
+	char *mode_str;
+
+	if (err) {
+		return;
+	}
+
+	mode_str = (char *)cmd + strlen("AT+CFUN=");
+
+	if (mode_str[0] < '0' || mode_str[0] > '9') {
+		return;
+	}
+
+	mode = atoi(mode_str);
+
+	STRUCT_SECTION_FOREACH(lte_lc_cfun_cb, e) {
+		LOG_DBG("CFUN monitor callback: %p", e->callback);
+		e->callback(mode, e->context);
+	}
+}
+
+AT_CMD_HOOK(ltelc_athook_cfun, "AT+CFUN=", NULL, lte_lc_cfun_evt);
 
 AT_MONITOR(ltelc_atmon_cereg, "+CEREG", at_handler_cereg);
 AT_MONITOR(ltelc_atmon_cscon, "+CSCON", at_handler_cscon);
@@ -1393,11 +1419,6 @@ int lte_lc_func_mode_set(enum lte_lc_func_mode mode)
 	if (err) {
 		LOG_ERR("Failed to set functional mode. Please check XSYSTEMMODE.");
 		return -EFAULT;
-	}
-
-	STRUCT_SECTION_FOREACH(lte_lc_cfun_cb, e) {
-		LOG_DBG("CFUN monitor callback: %p", e->callback);
-		e->callback(mode, e->context);
 	}
 
 	return 0;

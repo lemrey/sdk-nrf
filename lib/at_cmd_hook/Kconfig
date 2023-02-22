@@ -1,0 +1,24 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig AT_CMD_HOOK
+	bool "Custom AT commands"
+
+if AT_CMD_HOOK
+
+config AT_HOOK_POST_CB_LEN_MAX
+	int "AT hook post callback max length"
+	default 32
+	help
+	   This allows the application to set the size of the AT command string passed to the
+	   post callback, when it is allocated on the heap.
+
+module=AT_CMD_HOOK
+module-dep=LOG
+module-str= AT cmd hook
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+endif # AT_CMD_HOOK

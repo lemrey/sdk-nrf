@@ -450,6 +450,16 @@ Bootloader libraries
 Modem libraries
 ---------------
 
+* Added the :ref:`at_cmd_hook_readme` library to add application callbacks for AT commands.
+
+* :ref:`_at_cmd_custom_readme` library:
+
+  * Updated:
+
+    * Renamed the :c:macro:`AT_CUSTOM_CMD` macro to :c:macro:`AT_CMD_CUSTOM`.
+    * Renamed the :c:macro:`AT_CUSTOM_CMD_PAUSED` and :c:macro:`AT_CUSTOM_CMD_ACTIVE` macros to :c:macro:`AT_CMD_CUSTOM_PAUSED` and :c:macro:`AT_CMD_CUSTOM_ACTIVE`, respectively.
+    * Renamed the :c:func:`at_custom_cmd_respond`, :c:func:`at_custom_cmd_pause` and :c:func:`at_custom_cmd_active` functions to :c:func:`at_cmd_custom_respond`, :c:func:`at_cmd_custom_pause` and :c:func:`at_cmd_custom_active`, respectively.
+
 * :ref:`nrf_modem_lib_readme` library:
 
   * Added:
