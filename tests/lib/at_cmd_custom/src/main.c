@@ -47,9 +47,8 @@ static int at_cmd_callback_cmd2(char *buf, size_t len, char *at_cmd)
 	"\r\n+CPMS: \"TA\",%d,%d,\"TA\",%d,%d\r\nOK\r\n", 0, 3, 0, 3);
 }
 
-/* AT filter list
- * Including all comands the filter should check for and function ptr
- * to functions to be called on detection.
+/* Custom AT commands
+ * Including all commands to check for and callbacks.
  */
 
 AT_CMD_CUSTOM(CMD1, "AT+CMD1", at_cmd_callback_cmd1);
