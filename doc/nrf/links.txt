@@ -994,6 +994,7 @@
 
 .. _`Git`: https://git-scm.com/
 .. _`Git revisions`: https://git-scm.com/docs/gitrevisions
+.. _`Git for Windows`: https://git-scm.com/download/win
 
 .. _`Go language package`: https://golang.org/doc/install
 
@@ -1062,3 +1063,21 @@
 .. _`GNU Project Debugger`: https://www.sourceware.org/gdb/
 
 .. _`SIGMA`: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
+
+.. ### Source: res.developer.nordicsemi.com
+
+.. _`64-bit Windows, executable`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nRF-Command-Line-Tools-10.21.0-x64.exe
+
+.. _`x86 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools_10.21.0_amd64.deb
+.. _`x86 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-1.x86_64.rpm
+.. _`x86 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0_Linux-amd64.tar.gz
+
+.. _`ARM64 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools_10.21.0_arm64.deb
+.. _`ARM64 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-1.arm64.rpm
+.. _`ARM64 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0_Linux-arm64.tar.gz
+
+.. _`ARMHF system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools_10.21.0_armhf.deb
+.. _`ARMHF system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-1.armhf.rpm
+.. _`ARMHF system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0_Linux-armhf.tar.gz
+
+.. _`macOS, DMG file`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-Darwin.dmg

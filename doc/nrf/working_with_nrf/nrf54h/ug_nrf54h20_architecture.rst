@@ -8,9 +8,9 @@ Architecture of nRF54H20
    :depth: 2
 
 The nRF54H20 is a multicore System-on-Chip (SoC) that uses an asymmetric multiprocessing (AMP) configuration.
-Each core is tasked with specific responsibilities and optimized for different workloads.
+Each core is tasked with specific responsibilities, and is optimized for different workloads.
 
-The following pages briefly describes the responsibilities of the cores, their interprocessor interactions, the memory mapping, and the boot sequence in nRF54H20.
+The following pages briefly describe the responsibilities of the cores, their interprocessor interactions, the memory mapping, and the boot sequence in the nRF54H20.
 
 .. toctree::
    :maxdepth: 2
