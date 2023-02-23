@@ -29,7 +29,5 @@
 
 &uart135 {
 	status = "okay";
-	tx-pin = < 0x24 >;
-	rx-pin = < 0x25 >;
 	memory-regions = <&ram3x_cpusys>;
 };

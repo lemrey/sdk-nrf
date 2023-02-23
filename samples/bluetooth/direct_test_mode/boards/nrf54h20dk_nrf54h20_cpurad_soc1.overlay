@@ -20,8 +20,6 @@
 	status = "okay";
 	memory-regions = <&ram3x_cpurad>;
 	current-speed = <19200>;
-	tx-pin = < 0x44 >;
-	rx-pin = < 0x45 >;
 };
 
 &dppic020 {

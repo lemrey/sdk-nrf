@@ -20,8 +20,6 @@
 &uart136 {
 	status = "okay";
 	memory-regions = <&ram3x_cpurad>;
-	tx-pin = < 0x44 >;
-	rx-pin = < 0x45 >;
 };
 
 &dppic020 {
