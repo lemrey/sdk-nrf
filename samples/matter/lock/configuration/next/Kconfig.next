@@ -80,6 +80,18 @@ config HWINFO_NRF
 config ASSERT
     default y
 
+config NET_PKT_RX_COUNT
+    default 10
+
+config NET_BUF_RX_COUNT
+    default 16
+
+config NET_BUF_TX_COUNT
+    default 16
+
+config FPU
+    default n
+
 config MBEDTLS_USER_CONFIG_ENABLE
 	default y
 
