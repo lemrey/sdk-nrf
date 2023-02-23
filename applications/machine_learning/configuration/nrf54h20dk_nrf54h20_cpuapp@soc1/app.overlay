@@ -64,6 +64,22 @@
 		};
 	};
 
+	leds2 {
+		compatible = "gpio-leds";
+		led2: led_2 {
+			gpios = < &gpio9 2 GPIO_ACTIVE_HIGH >;
+			label = "Green LED 2";
+		};
+	};
+
+	leds3 {
+		compatible = "gpio-leds";
+		led3: led_3 {
+			gpios = < &gpio9 3 GPIO_ACTIVE_HIGH >;
+			label = "Green LED 3";
+		};
+	};
+
 	/* Configure PPR code region. Allow to execute from defined
 	 * region by App and cores owned by App.
 	 */
