@@ -5,7 +5,7 @@
  */
 
 #include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
-#include "../../boards/shared/nrf54_ipc_shm_ram0.dtsi"
+#include "../../boards/shared/nrf54_ipc_shm_ram2sys.dtsi"
 #include "../../boards/shared/nrf54_uart_pinout.dtsi"
 
 / {

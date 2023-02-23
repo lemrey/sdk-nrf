@@ -5,24 +5,11 @@
  */
 
 #include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
-#include "../../boards/shared/nrf54_ipc_shm_ram0.dtsi"
 #include "../../boards/shared/nrf54_uart_pinout.dtsi"
 
 /{
 	chosen {
 		zephyr,console = &uart135;
-	};
-
-	allocatable_ram {
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		ram3x_app_uart_mem: memory@2fc00000 {
-			compatible = "nordic,allocatable-ram";
-			reg = <0x2fc00000 DT_SIZE_K(16)>;
-			perm-read;
-			perm-write;
-		};
 	};
 };
 
