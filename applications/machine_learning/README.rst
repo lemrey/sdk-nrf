@@ -20,15 +20,14 @@ The application supports the following development kits:
 
 .. table-from-sample-yaml::
 
-The available configurations use only built-in sensors or the simulated sensor signal.
-You do not need to connect any additional components to the board.
+The available configurations use the built-in sensors, sensors connected with additional shield, or the simulated sensor signal.
 
 .. include:: /includes/tfm.txt
 
 Overview
 ********
 
-To perform its tasks, the nRF Machine Learning application uses components available in Zephyr and the |NCS|, namely the :ref:`lib_caf` modules and :ref:`zephyr:sensor_api` for sampling sensors, and :ref:`zephyr:uart_api` or :ref:`nus_service_readme` for forwarding data.
+To perform its tasks, the nRF Machine Learning application uses components available in Zephyr and the |NCS|, namely the :ref:`lib_caf` modules and :ref:`zephyr:sensor_api` for sampling sensors, :ref:`zephyr:uart_api` or :ref:`nus_service_readme` for forwarding data, and :ref:`peripheral_status` for presenting gesture detection results over Bluetooth® LE.
 It also uses the `Edge Impulse's data forwarder`_ protocol.
 
 Sampling sensors
@@ -47,6 +46,60 @@ By default, the following sensors are used by the application:
 * nRF5340 Development Kit - Simulated sensor (:ref:`sensor_sim`).
   The simulated sensor generates predefined waves as acceleration.
   This development kit does not have a built-in accelerometer.
+* nRF54H20 :term:`Preview Development Kit (PDK)` - Accelerometer (``ADXL362``) connected to the PDK with the sensor hub shield.
+  This PDK does not have a built-in accelerometer.
+
+Sensor HUB shield
+-----------------
+
+The sensor hub shield is an extension for the nRF54H20 PDK containing ``ADXL362`` accelerometer.
+This enables you to test the multicore application targeting the nRF54H20 PDK.
+
+.. figure:: /images/sensor_hub_shield.png
+   :width: 350px
+   :align: center
+   :alt: Sensor Hub shield
+
+   Sensor Hub shield
+
+Pin assignment
+^^^^^^^^^^^^^^
+
+For the exact pin assignment, refer to the following table:
+
++-------------------------+----------+-----------------+
+| nRF54H20 connector pin  | SIGNAL   | Shield function |
++=========================+==========+=================+
+| P1.02                   | SPI CS   | Chip Select     |
++-------------------------+----------+-----------------+
+| P2.07                   | SPI MOSI | Serial Data In  |
++-------------------------+----------+-----------------+
+| P2.10                   | SPI MISO | Serial Data Out |
++-------------------------+----------+-----------------+
+| P2.01                   | SPI SCK  | Serial Clock    |
++-------------------------+----------+-----------------+
+| P1.08                   | GPIO     | Interrupt 1     |
++-------------------------+----------+-----------------+
+| P1.09                   | GPIO     | Interrupt 2     |
++-------------------------+----------+-----------------+
+
+Shield is an add-on that you can attach to the nRF54H20 PDK to extend its features and functionalities.
+
+If you want to run the application on the nRF54H20 PDK, you need to attach the sensor hub shield to it.
+To forward the data over Nordic UART Service (NUS), you need an additional development kit that is able to run the :ref:`central_uart` sample or the `nRF Connect for Mobile`_ application on your smartphone or tablet.
+
+The sensor shield must be connected throughout the adapter board to the **PORT_P1** connector of the PDK.
+The connector of the shield must be placed above the **PORT_P2**.
+The shield must be oriented so its buttons are close to the bottom of the PDK.
+The shield must not be rotated.
+The orientation of the Nordic logo on the shield and PDK must be the same.
+
+.. figure:: /images/sensor_hub_with_shield.png
+   :width: 350px
+   :align: center
+   :alt: Shield connected to the PDK
+
+   Shield connected to the PDK
 
 Forwarding data
 ===============
@@ -57,6 +110,7 @@ By default, the following transports are used:
 * Thingy:53 uses :ref:`nus_service_readme`.
 * nRF52840 Development Kit uses :ref:`zephyr:uart_api`.
 * nRF5340 Development Kit uses :ref:`zephyr:uart_api`.
+* nRF54H20 PDK uses :ref:`nus_service_readme`.
 
 Machine learning model
 ======================
@@ -67,8 +121,8 @@ The labels that are assigned by the machine learning model are specific to the g
 
 By default, the application uses pretrained machine leaning models deployed in `Edge Impulse studio`_:
 
-* Thingy:53 uses the `NCS hardware accelerometer machine learning model`_.
-  The model uses the data from the built-in accelerometer to recognize the following gestures:
+* Both Thingy:53 and the nRF54H20 PDK use the `NCS hardware accelerometer machine learning model`_.
+  The model uses the data from the accelerometer to recognize the following gestures:
 
   * ``idle`` - The device is placed on a flat surface.
   * ``updown`` - The device is moved in updown direction.
@@ -136,6 +190,19 @@ For example, the :ref:`caf_ble_state` and :ref:`caf_ble_adv` modules are not ena
 
 See :ref:`nrf_machine_learning_app_internal_modules` for detailed information about every module used by the nRF Machine Learning application.
 
+Firmware architecture for nRF54H20 PDK
+--------------------------------------
+
+On the nRF54H20 PDK, the architecture of the nRF Machine Learning application is split in two, as part of the application is running on a separate processor (PPR).
+PPR handles the sensor sampling and sending the data to the application processor.
+
+The following figure shows the application architecture for the nRF54H20 PDK, visualizing the relations between the Application Event Manager, modules, drivers, and libraries.
+
+.. figure:: /images/ml_app_architecture_hcs.svg
+   :alt: nRF Machine Learning application architecture for the nRF54H20 PDK
+
+   The architecture of the nRF Machine Learning application for the nRF54H20 PDK
+
 Programming Thingy:53
 =====================
 
@@ -158,6 +225,53 @@ Keep in mind that if you use bootloader to update firmware, the new firmware mus
 
 The nRF53 Development Kit uses RTT as logger's backend.
 The RTT logs can be easily accessed, because the Development Kit has a built-in SEGGER chip.
+
+Programming nRF54H20 PDK
+========================
+
+When building for the nRF54H20 PDK for the single-core variant and invoking ``west build`` or ``cmake`` in the Machine Learning application, set the ``-DSHIELD=sensor_hub`` option.
+
+When building for an nRF54H20 board with an additional PPR core, add the ``-DremoteSHIELD`` parameter to build for the PPR core as well.
+
+To build the application for the nRF54H20 PDK with sensor sampling by PPR core (dual-core application), run the following command:
+
+.. code-block:: console
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DSHIELD=sensor_hub -Dremote_SHIELD=sensor_hub
+
+To build the application for the nRF54H20 DK with sensor sampling by Application core (single-core application), run following command:
+
+.. code-block:: console
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_singlecore.conf -DSHIELD=sensor_hub
+
+When building an application for the nRF54H20 PDK, you are building all domain images at once.
+During this process, the following images are built:
+
+* Application core application (:file:`<build_dir>/zephyr/zephyr.hex`)
+* PPR core application (:file:`<build_dir>/remote/zephyr/zephyr.hex`)
+* Secure Domain firmware (:file:`<build_dir>/secdom/src/secdom-build/zephyr.hex`)
+* System Controller firmware (:file:`<build_dir>/sysctrl/src/sysctrl-build/zephyr.hex`)
+* Radio core firmware (:file:`<build_dir>/hci_rpmsg/zephyr/zephyr.hex`)
+
+Additionally, the following UICR contents are generated for setup access for domains:
+
+* System Controler UICR (:file:`<build_dir>/sysctrl/src/sysctrl-build/uicr.hex`)
+* Application UICR (:file:`<build_dir>/zephyr/uicr.hex`)
+* Radio UICR (:file:`<build_dir>/hci_rpmsg/zephyr/uicr.hex`)
+
+All of the HEX files need to be flashed into the device.
+
+The nRF54H20 PDK has a J-Link debug IC that can be used to program the firmware.
+Flash the sample using the standard |NCS| flash command:
+
+.. code-block:: console
+
+   west flash
+
+The command flashes all required binaries to the PDK from the build directory, then resets and runs the application.
+
+For more detailed information about working with the PDK, see the :ref:`ug_nrf54h20_gs` documentation.
 
 Custom model requirements
 =========================
@@ -206,6 +320,8 @@ The application supports the following build types:
 Not every board supports both mentioned build types.
 The given board can also support some additional configurations of the nRF Machine Learning application.
 For example, the nRF52840 Development Kit supports ``nus`` configuration that uses :ref:`nus_service_readme` instead of :ref:`zephyr:uart_api` for data forwarding.
+Additionally, the nRF54H20 PDK supports the ``singlecore`` configuration that does not use Peripheral processor (PPR) for data sampling.
+Data are collected with the application CPU instead.
 
 .. note::
     `Selecting a build type`_ is optional.
@@ -233,7 +349,11 @@ By default, the following buttons are used by the application:
 
 * Thingy:53:
 
-  * The **SW3** button switches between data forwarding and running the machine learning model.
+  * The **SW3** button switches between data forwarding and running the machine learning model and removes Bluetooth bonds.
+
+* nRF54H20 PDK:
+
+  * **Button 1** switches between data forwarding and running the machine learning model and removes Bluetooth bonds.
 
 * nRF52840 and nRF5340 Development Kit:
 
@@ -256,10 +376,10 @@ By default, the application uses the following LED effects:
 
   * If the device is returning the machine learning prediction results, the LED uses following predefined colors:
 
-    * ``rotate`` - Red
-    * ``updown`` - Green
-    * ``tap`` - Blue
-    * Anomaly - Purple
+    * Red - ``rotate``
+    * Green - ``updown``
+    * Blue - ``tap``
+    * Purple - Anomaly
 
     If the machine learning model is running, but it has not detected anything yet or the ``idle`` state is detected, the LED is blinking.
     After a successful detection, the LED is set to the predefined color.
@@ -277,13 +397,31 @@ By default, the application uses the following LED effects:
     Then the sequence is repeated.
     The machine learning result is represented by the number of blinks:
 
-    * ``sine`` - 1 blink
-    * ``triangle`` - 2 blinks
-    * ``square`` - 3 blinks
-    * ``idle`` - 4 blinks
+    * 1 blink - ``sine``
+    * 2 blinks - ``triangle``
+    * 3 blinks - ``square``
+    * 4 blinks - ``idle``
 
     If the machine learning model is running, but it has not detected anything yet or it has detected an anomaly, the **LED1** is breathing.
   * If the device forwards data, the **LED1** uses the following blinking patterns:
+
+    * LED blinks slowly if it is not connected.
+    * LED blinks with an average frequency if it is connected, but is not actively forwarding data.
+    * LED blinks rapidly if it is connected and is actively forwarding data.
+
+* nRF54H20 PDK uses monochromatic LEDs to display the application state.
+  **LED1**, **LED2** and **LED3** display the application state.
+
+  * If the device is returning the machine learning prediction results, a pattern of LEDs are turn on.
+    The machine learning result is represented by:
+
+    * **LED1** - ``updown``
+    * **LED2** - ``rotate``
+    * **LED3** - ``tap``
+    * **LED2** and **LED3** - Anomaly
+
+    If the machine learning model is running, but it has not detected anything yet or the ``idle`` state is detected, the **LED1**, **LED2**, and **LED3**, keep blinking.
+  * If the device forwards data, **LED1** uses the following blinking patterns:
 
     * LED blinks slowly if it is not connected.
     * LED blinks with an average frequency if it is connected, but is not actively forwarding data.
@@ -337,15 +475,19 @@ By default, the application enables a set of data providers available in the |NC
 Multi-image builds
 ------------------
 
-The Thingy:53 and nRF53 Development Kit use multi-image build with the following child images:
+The Thingy:53, nRF53 DK and, nRF54H20 PDK can use the multi-image building with the following child images:
 
 * MCUboot bootloader
 * Bluetooth HCI RPMsg
+* Peripheral processor (only for the nRF54H20 PDK)
 
 You can define the application-specific configuration for the mentioned child images in the board-specific directory in the :file:`applications/machine_learning/configuration/` directory.
 The Kconfig configuration file should be located in subdirectory :file:`child_image/child_image_name` and its name should match the application Kconfig file name, that is contain the build type if necessary
 For example, the :file:`applications/machine_learning/configuration/thingy53_nrf5340_cpuapp/child_image/hci_rpmsg/prj.conf` file defines configuration of Bluetooth HCI RPMsg for ``debug`` build type on ``thingy53_nrf5340_cpuapp`` board, while the :file:`applications/machine_learning/configuration/thingy53_nrf5340_cpuapp/child_image/hci_rpmsg/prj_release.conf` file defines configuration of Bluetooth HCI RPMsg for ``release`` build type.
 See :ref:`ug_multi_image` for detailed information about multi-image builds and child image configuration.
+
+The nRF54H20 PDK uses a multi-image build to build an additional image for the PPR core.
+The source files, devicetree, and Kconfig configuration files are located in the :file:`applications/machine_learning/remote` directory.
 
 .. _nrf_machine_learning_app_configuration_build_types:
 
@@ -416,6 +558,10 @@ See :ref:`testing_rtt_connect` for detailed instructions about accessing the log
 
    You can also use ``rtt`` configuration to have the Thingy:53 use RTT for logs.
 
+.. note::
+   The nRF54H20 PDK in the ``debug`` configuration provides logs through the UART.
+   For detailed information on working with the nRF54H20 PDK, see the :ref:`ug_nrf54h20_gs` documentation.
+
 Testing with Thingy:53
 ----------------------
 
@@ -480,6 +626,74 @@ After programming the application, perform the following steps to test the nRF M
 
 Optionally, you can also connect to the device using `Edge Impulse's data forwarder`_ and forward data to `Edge Impulse studio`_ (after logging in).
 See `Forwarding data to Edge Impulse studio`_ for details.
+
+Testing with the nRF54H20 PDK
+-----------------------------
+
+After programming the application, perform the following steps to test the nRF Machine Learning application on the PDK:
+
+1. Turn on your PDK.
+   The application starts in a mode that runs the machine learning model.
+   **LED1**, **LED2**, and **LED3** are blinking because no gesture has been recognized by the machine learning model yet.
+#. Move the device up and down.
+   The ``updown`` gesture is recognized by the machine learning model.
+   **LED1** turns on for some time.
+#. Rotate the device.
+   The ``rotate`` gesture is recognized by the machine learning model.
+   **LED2** turns on for some time.
+#. Tap the device.
+   The ``tap`` gesture is recognized by the machine learning model.
+   **LED3** turns on for some time.
+#. Shake the device.
+   The machine learning model detects an anomaly.
+   **LED2** and **LED3** turn on for some time.
+#. Gesture detection results can also be read using the Nordic Status Message Service.
+   Start the `nRF Connect for Mobile`_ application on your smartphone or tablet.
+#. Connect to the device from the application.
+   The device is advertising as ``Sensor HUB``.
+   The services of the connected device are shown.
+   If the device can not be found - the PDK might be connected to the other device.
+   Terminate the connection with the other device, refresh the scanning and connect to the PDK.
+   If the device disconnects shortly after being connected - the PDK might have saved bonding data from previous connection.
+   The bonding data can be erased if you double-click the **Button 1** within 3 seconds after the application reboots.
+#. Find **Nordic Status Message Service** by its name or UUID (57a70001-9350-11ed-a1eb-0242ac120002).
+#. Read its **Characteristic User Description** to see that it is ``Gesture``.
+#. Read the **Nordic Status Message Service** message characteristic to check the initial status.
+   It presents the status string that describes the previously detected gesture.
+#. Enable notification for the characteristic.
+#. Move the device up and down.
+   The ``updown`` gesture is recognized by the machine learning model and **Nordic Status Message Service** is updated.
+   **LED1** turns on for some time.
+#. Rotate the device.
+   The ``rotate`` gesture is recognized by the machine learning model and **Nordic Status Message Service** is updated.
+   **LED2** turns on for some time.
+#. Tap the device.
+   The ``tap`` gesture is recognized by the machine learning model and **Nordic Status Message Service** is updated.
+   **LED3** turns on for some time.
+#. Disconnect the `nRF Connect for Mobile`_ application from the device.
+#. Press and hold **Button 1** for more than 5 seconds to switch to the data forwarding mode.
+   After the mode is switched, **LED1**, **LED2**, and **LED3** start blinking very slowly.
+#. You can test the data forwarding mode of the application with the `nRF Connect for Mobile`_.
+
+   a. Open the `nRF Connect for Mobile`_ application and connect to the device again.
+   #. Bond with the device from the `nRF Connect for Mobile`_ application on your smartphone or tablet.
+   #. Find **Nordic UART Service** and enable notification of its "TX Charcteristic".
+   #. Observe the sensor readouts represented as comma-separated values.
+      Every new value represents a single sensor readout.
+
+#. You can also test the data forwarding mode with use of additional DK.
+
+   a. Program the :ref:`central_uart` sample to a compatible development kit, for example the nRF52840 Development Kit.
+   #. Turn on the programmed device.
+      After a brief delay, the Bluetooth® connection between the sample and the PDK is established.
+      The nRF54H20 PDK forwards the sensor readouts over NUS to the Central UART sample.
+      The **LED1**, **LED2**, and **LED3** on the nRF54H20 PDK start to blink rapidly.
+   #. Connect to the Bluetooth® Central UART sample with a terminal emulator (for example, PuTTY).
+      See :ref:`putty` for the required settings.
+   #. Observe the sensor readouts represented as comma-separated values.
+      Every line represents a single sensor readout.
+      The Central UART sample forwards the data to the host over UART.
+   #. Turn off PuTTY to ensure that only one program has access to data on UART.
 
 Forwarding data to Edge Impulse studio
 --------------------------------------
