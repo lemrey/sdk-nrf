@@ -123,6 +123,9 @@ config CHIP_LIB_SHELL
 config NRF_REGTOOL_TOML_CONFIG_FILES
 	default "boards/nrf54h20_pdk.toml"
 
+config CHIP_NUS
+    default y
+
 if EMULATOR_FPGA
 
 # TODO to check if it is still needed here

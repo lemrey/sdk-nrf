@@ -18,6 +18,10 @@
 #include "thread_util.h"
 #endif
 
+#ifdef CONFIG_CHIP_NUS
+#include "bt_nus_service.h"
+#endif
+
 #include <platform/CHIPDeviceLayer.h>
 
 #include "board_util.h"
@@ -67,6 +71,12 @@ constexpr size_t kAppEventQueueSize = 10;
 constexpr EndpointId kLockEndpointId = 1;
 #if NUMBER_OF_BUTTONS == 2
 constexpr uint32_t kAdvertisingTriggerTimeout = 3000;
+#endif
+
+#ifdef CONFIG_CHIP_NUS
+constexpr uint16_t kAdvertisingIntervalMin = 400;
+constexpr uint16_t kAdvertisingIntervalMax = 500;
+constexpr uint8_t kLockNUSPriority = 2;
 #endif
 
 K_MSGQ_DEFINE(sAppEventQueue, sizeof(AppEvent), kAppEventQueueSize, alignof(AppEvent));
@@ -194,6 +204,16 @@ CHIP_ERROR AppTask::Init()
 	/* Initialize DFU over SMP */
 	GetDFUOverSMP().Init();
 	GetDFUOverSMP().ConfirmNewImage();
+#endif
+
+#ifdef CONFIG_CHIP_NUS
+	/* Initialize Nordic UART Service for Lock purposes */
+	if (!GetNUSService().Init(kLockNUSPriority, kAdvertisingIntervalMin, kAdvertisingIntervalMax)) {
+		ChipLogError(Zcl, "Cannot initialize NUS service");
+	}
+	GetNUSService().RegisterCommand("Lock", sizeof("Lock"), NUSLockCallback, nullptr);
+	GetNUSService().RegisterCommand("Unlock", sizeof("Unlock"), NUSUnlockCallback, nullptr);
+	GetNUSService().StartServer();
 #endif
 
 	/* Initialize lock manager */
@@ -616,6 +636,9 @@ void AppTask::LockStateChanged(BoltLockManager::State state, BoltLockManager::Op
 	case BoltLockManager::State::kLockingCompleted:
 		LOG_INF("Lock action completed");
 		sLockLED.Set(true);
+#ifdef CONFIG_CHIP_NUS
+		GetNUSService().SendData("Locked", sizeof("Locked"));
+#endif
 		break;
 	case BoltLockManager::State::kUnlockingInitiated:
 		LOG_INF("Unlock action initiated");
@@ -623,6 +646,9 @@ void AppTask::LockStateChanged(BoltLockManager::State state, BoltLockManager::Op
 		break;
 	case BoltLockManager::State::kUnlockingCompleted:
 		LOG_INF("Unlock action completed");
+#ifdef CONFIG_CHIP_NUS
+		GetNUSService().SendData("Unlocked", sizeof("Unlocked"));
+#endif
 		sLockLED.Set(false);
 		break;
 	}
@@ -679,3 +705,46 @@ void AppTask::UpdateClusterState(BoltLockManager::State state, BoltLockManager::
 		}
 	});
 }
+
+#ifdef CONFIG_THREAD_WIFI_SWITCHING_CLI_SUPPORT
+void AppTask::RegisterSwitchCliCommand()
+{
+	static const shell_command_t sSwitchCommand = { [](int, char **) {
+							       AppTask::Instance().SwitchImagesEventHandler(AppEvent{});
+							       return CHIP_NO_ERROR;
+						       },
+							"switch_images",
+							"Switch between Thread and Wi-Fi application variants" };
+	Engine::Root().RegisterCommands(&sSwitchCommand, 1);
+}
+#endif
+
+#ifdef CONFIG_CHIP_NUS
+void AppTask::NUSLockCallback(void *context)
+{
+	LOG_INF("Received LOCK command from NUS");
+	if (BoltLockMgr().mState == BoltLockManager::State::kLockingCompleted ||
+	    BoltLockMgr().mState == BoltLockManager::State::kLockingInitiated) {
+		LOG_INF("Device is already locked");
+	} else {
+		AppEvent nus_event;
+		nus_event.Type = AppEventType::NUSCommand;
+		nus_event.Handler = LockActionEventHandler;
+		PostEvent(nus_event);
+	}
+}
+
+void AppTask::NUSUnlockCallback(void *context)
+{
+	LOG_INF("Received LOCK command from NUS");
+	if (BoltLockMgr().mState == BoltLockManager::State::kUnlockingCompleted ||
+	    BoltLockMgr().mState == BoltLockManager::State::kUnlockingInitiated) {
+		LOG_INF("Device is already unlocked");
+	} else {
+		AppEvent nus_event;
+		nus_event.Type = AppEventType::NUSCommand;
+		nus_event.Handler = LockActionEventHandler;
+		PostEvent(nus_event);
+	}
+}
+#endif
