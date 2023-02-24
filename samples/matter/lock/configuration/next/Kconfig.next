@@ -109,7 +109,7 @@ if BOARD_NRF54H20DK_NRF54H20_CPUAPP
 # These configs should be moved out of this section, 
 # when Moonlight will work with assert and log_minimal enabled.
 choice LOG_MODE
-    default LOG_MODE_IMMEDIATE
+    default LOG_MODE_DEFERRED
 endchoice
 
 config ASSERT
