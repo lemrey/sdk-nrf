@@ -124,9 +124,9 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: d2260c6e03400578f2b0f131f97b0ae5aff76278
+      revision: 30046118637bb68749c453be386c37d288af3887
     - name: sdk-secdom
-      revision: c00424115c1fb90cb5fb3f2bf6f9a6a97ab6a53f
+      revision: 46c1d9599c5344ffe6ff7106ba6cfca8b6a0461e
       path: core_fw/secdom
     - name: nrf-regtool
       revision: v3.0.2
@@ -180,7 +180,7 @@ manifest:
       revision: 308c171cb4b5eed266649012a68406487ec81fb2
     - name: suit-processor
       remote: nordicsemi
-      revision: f98aacffd3834bcaba66811f532c270c0f4de2d5
+      revision: 614838e61f1a118e1c1695f61dd0b8ec156bdabc
       path: modules/lib/suit-processor
     # Other third-party repositories.
     - name: cmock
