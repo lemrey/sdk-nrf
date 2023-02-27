@@ -5,14 +5,8 @@
  */
 
 / {
-	arng: arng {
-		status = "okay";
-		compatible = "nordic,entropy-prng";
-		label = "ENTROPY_0";
-	};
-
 	chosen {
-		zephyr,entropy = &arng;
+		zephyr,entropy = &nordic_rng;
 		zephyr,console = &uart136;
 	};
 
