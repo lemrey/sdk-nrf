@@ -132,14 +132,13 @@ int cpu_load_init(void)
 	uint8_t ch_wakeup;
 	uint8_t ch_tick = 0;
 	nrfx_err_t err;
-	nrfx_timer_config_t config = NRFX_TIMER_DEFAULT_CONFIG;
+	nrfx_timer_config_t config = NRFX_TIMER_DEFAULT_CONFIG(NRFX_MHZ_TO_HZ(1));
 	int ret = 0;
 
 	if (ready) {
 		return 0;
 	}
 
-	config.frequency = NRF_TIMER_FREQ_1MHz;
 	config.bit_width = NRF_TIMER_BIT_WIDTH_32;
 
 	if (IS_ENABLED(CONFIG_CPU_LOAD_ALIGNED_CLOCKS)) {

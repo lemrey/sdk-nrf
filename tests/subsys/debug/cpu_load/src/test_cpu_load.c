@@ -36,13 +36,12 @@ void test_cpu_load(void)
 
 #ifdef DPPI_PRESENT
 	static nrfx_timer_t timer = NRFX_TIMER_INSTANCE(1);
-	nrfx_timer_config_t config = NRFX_TIMER_DEFAULT_CONFIG;
+	nrfx_timer_config_t config = NRFX_TIMER_DEFAULT_CONFIG(NRFX_MHZ_TO_HZ(1));
 	uint8_t ch;
 	uint32_t evt = nrf_power_event_address_get(NRF_POWER,
 						NRF_POWER_EVENT_SLEEPENTER);
 	uint32_t tsk = nrfx_timer_task_address_get(&timer, NRF_TIMER_TASK_COUNT);
 
-	config.frequency = NRF_TIMER_FREQ_1MHz;
 	config.bit_width = NRF_TIMER_BIT_WIDTH_32;
 
 	err = nrfx_timer_init(&timer, &config, timer_handler);
