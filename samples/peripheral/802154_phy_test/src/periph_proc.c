@@ -81,7 +81,8 @@ void periph_init(void)
 	int ret;
 
 #if IS_ENABLED(CONFIG_PTT_CLK_OUT)
-	nrfx_timer_config_t clk_timer_cfg = NRFX_TIMER_DEFAULT_CONFIG;
+	nrfx_timer_config_t clk_timer_cfg = NRFX_TIMER_DEFAULT_CONFIG(
+						NRF_TIMER_BASE_FREQUENCY_GET(clk_timer.p_reg));
 
 	err_code = nrfx_timer_init(&clk_timer, &clk_timer_cfg, clk_timer_handler);
 	NRFX_ASSERT(err_code);
