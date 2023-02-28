@@ -150,20 +150,12 @@ static void grant_init(void)
 
 	/* Setup grant timer for application */
 	nrfx_timer_config_t grant_timer_cfg = {
-		.nrfy_config = {
-			.prescaler  = 0,
-			.mode       = NRF_TIMER_MODE_TIMER,
-			.bit_width  = NRF_TIMER_BIT_WIDTH_32,
-		},
+		.frequency          = NRFX_MHZ_TO_HZ(1),
+		.mode               = NRF_TIMER_MODE_TIMER,
+		.bit_width          = NRF_TIMER_BIT_WIDTH_32,
 		.interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
-		.p_context = NULL,
+		.p_context          = NULL,
 	};
-
-	if (nrfx_timer_prescaler_calculate(&grant_timer, 1000000,
-					   &grant_timer_cfg.nrfy_config.prescaler) !=
-	    NRFX_SUCCESS) {
-		__ASSERT(false, "Failed to calculate the prescaler value for the grant timer");
-	}
 
 	if (nrfx_timer_init(&grant_timer, &grant_timer_cfg, dummy_timer_event_handler) !=
 	    NRFX_SUCCESS) {
