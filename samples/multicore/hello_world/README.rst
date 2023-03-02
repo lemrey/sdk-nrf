@@ -21,6 +21,11 @@ Overview
 ********
 
 The sample demonstrates how to build a multicore Hello World application with the :c:macro:`add_child_image` CMake macro.
+Depending on the development kit, different cores are involved:
+
+* On the nRF5340 SoC, the sample utilizes the application core and the network core.
+* On the nRF54H20 SoC, the sample utilizes the application core and the PPR core.
+
 For general information about multi-image builds, see :ref:`ug_multi_image`.
 When building any multi-image application, the build system in the |NCS| adds the child images based on the options selected for the parent image.
 This sample shows how to inform the build system about dedicated sources for the child image (in the :file:`zephyr` and :file:`aci` directories).
@@ -35,6 +40,7 @@ Both the application and remote cores use the same :file:`main.c` that prints th
 
 Building and running
 ********************
+
 .. |sample path| replace:: :file:`samples/multicore/hello_world`
 
 .. include:: /includes/build_and_run.txt
@@ -44,20 +50,44 @@ Testing
 
 After programming the sample to your development kit, complete the following steps to test it:
 
-1. |connect_terminal|
-#. Reset the kit.
-#. Observe the console output for both cores:
+.. tabs::
 
-   * For the application core, the output is similar to the following one:
+   .. tab:: nRF5340
 
-      .. code-block:: console
+      1. |connect_terminal|
+      #. Reset the kit.
+      #. Observe the console output for both cores:
 
-         *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
-         Hello world from nrf5340dk_nrf5340_cpuapp
+         * For the application core, the output should be as follows:
 
-   * For the network core, the output is similar to the following one:
+            .. code-block:: console
 
-      .. code-block:: console
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf5340dk_nrf5340_cpuapp
 
-         *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
-         Hello world from nrf5340dk_nrf5340_cpunet
+         * For the network core, the output should be as follows:
+
+            .. code-block:: console
+
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf5340dk_nrf5340_cpunet
+
+   .. tab:: nRF54H20
+
+      1. |connect_terminal|
+      #. Reset the kit.
+      #. Observe the console output for both cores:
+
+         * For the application core, the output should be as follows:
+
+            .. code-block:: console
+
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf54h20dk_nrf54h20_cpuapp
+
+         * For the PPR core, the output should be as follows:
+
+            .. code-block:: console
+
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf54h20dk_nrf54h20_cpuppr
