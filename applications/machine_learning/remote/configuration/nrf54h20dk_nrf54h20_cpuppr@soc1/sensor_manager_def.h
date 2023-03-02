@@ -17,23 +17,15 @@ const struct {} sensor_manager_def_include_once;
 
 
 static const struct sm_sampled_channel accel_chan[] = {
-	{
-		.chan = SENSOR_CHAN_ACCEL_X,
-		.data_cnt = 1,
-	},
-	{
-		.chan = SENSOR_CHAN_ACCEL_Y,
-		.data_cnt = 1,
-	},
-	{
-		.chan = SENSOR_CHAN_ACCEL_Z,
-		.data_cnt = 1,
-	},
+        {
+                .chan = SENSOR_CHAN_ACCEL_XYZ,
+                .data_cnt = 3,
+        },
 };
 
 static const struct sm_sensor_config sensor_configs[] = {
 	{
-		.dev = DEVICE_DT_GET(DT_NODELABEL(sensor_stub)),
+		.dev = DEVICE_DT_GET(DT_NODELABEL(adxl362)),
 		.event_descr = CONFIG_ML_APP_SENSOR_EVENT_DESCR,
 		.chans = accel_chan,
 		.chan_cnt = ARRAY_SIZE(accel_chan),

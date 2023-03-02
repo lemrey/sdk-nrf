@@ -45,13 +45,6 @@
 		status = "okay";
 	};
 
-	sensor_stub: sensor_stub {
-		compatible = "nordic,sensor-stub";
-		label = "SENSOR_STUB";
-		generator = "sensor_stub_gen";
-		status = "okay";
-	};
-
 	/* Redefine leds to fit CAF requirements. */
 	/delete-node/ leds;
 
@@ -79,6 +72,11 @@
 		reg = <0x1e12a000 DT_SIZE_K(64)>;
 		zephyr,memory-region = "PPR_CODE";
 	};
+};
+
+/* Required for nrf54's sensor hub shield. */
+&spi130 {
+	memory-regions = <&ram3x_cpuapp>;
 };
 
 &mram0 {

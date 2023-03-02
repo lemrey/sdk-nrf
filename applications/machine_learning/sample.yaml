@@ -18,7 +18,7 @@ tests:
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
-    extra_args: CONF_FILE=prj_singlecore.conf
+    extra_args: CONF_FILE=prj_singlecore.conf SHIELD="sensor_hub"
     extra_configs:
       - CONFIG_EMULATOR_FPGA=y
   applications.machine_learning.zdebug.fpga:
@@ -27,7 +27,7 @@ tests:
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
-    extra_args: remote_CONFIG_EMULATOR_FPGA=y
+    extra_args: remote_CONFIG_EMULATOR_FPGA=y SHIELD="sensor_hub" remote_SHIELD="sensor_hub"
     extra_configs:
       - CONFIG_EMULATOR_FPGA=y
   applications.machine_learning.zdebug_nus:

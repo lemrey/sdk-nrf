@@ -14,5 +14,8 @@ PIN_2 = "Own"
 [gpio_secure_5]
 PIN_2 = "NonSecure"
 
+[gpio_own_1]
+PIN_2 = "Own"
+
 [initnsvtor_0]
 INITNSVTOR = 0x0e099000

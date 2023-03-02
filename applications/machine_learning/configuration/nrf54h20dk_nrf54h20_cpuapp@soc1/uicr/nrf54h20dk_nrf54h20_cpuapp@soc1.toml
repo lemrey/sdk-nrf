@@ -18,5 +18,17 @@ PIN_2 = "NonSecure"
 CC_6 = "NonSecure"
 CC_7 = "NonSecure"
 
+[gpio_own_1]
+PIN_2 = "Own"
+
+[gpio_secure_1]
+PIN_2 = "NonSecure"
+
+# Fix SPIM130 configuration in UICR, set processor id to PPR.
+# Note that id of configured peripheral may change if additional peripherals are enabled in the configuration
+[periph_config_2]
+PROCESSOR = 13
+ADDRESS = 0x5f9a5000
+
 [initnsvtor_0]
 INITNSVTOR = 0x0e099000
