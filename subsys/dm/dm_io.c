@@ -13,18 +13,18 @@
 struct {
 	enum dm_io_output out;
 	nrfx_gpiote_pin_t pin;
-	nrfx_gpiote_out_config_t conf;
+	nrfx_gpiote_output_config_t conf;
 } static const debug_pin_config[] = {
 #ifdef CONFIG_DM_GPIO_DEBUG
 	{
 	.out = DM_IO_RANGING,
 	.pin = CONFIG_DM_RANGING_PIN,
-	.conf = NRFX_GPIOTE_CONFIG_OUT_SIMPLE(false)
+	.conf = NRFX_GPIOTE_DEFAULT_OUTPUT_CONFIG
 	},
 	{
 	.out = DM_IO_ADD_REQUEST,
 	.pin = CONFIG_DM_ADD_REQUEST_PIN,
-	.conf = NRFX_GPIOTE_CONFIG_OUT_SIMPLE(false)
+	.conf = NRFX_GPIOTE_DEFAULT_OUTPUT_CONFIG
 	},
 #endif
 };
@@ -44,8 +44,9 @@ int dm_io_init(void)
 		}
 
 		for (size_t i = 0; i < ARRAY_SIZE(debug_pin_config); i++) {
-			if (nrfx_gpiote_out_init(debug_pin_config[i].pin,
-						&debug_pin_config[i].conf) != NRFX_SUCCESS) {
+			if (nrfx_gpiote_output_configure(debug_pin_config[i].pin,
+							 &debug_pin_config[i].conf,
+							 NULL) != NRFX_SUCCESS) {
 				return -ENODEV;
 			}
 		}
