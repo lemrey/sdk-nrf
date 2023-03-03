@@ -88,6 +88,18 @@ jobs:
       env:
         PR_REF: ${{ github.event.pull_request.head.sha }}
       run: |
+        # add credentials
+        # disable the keychain credential helper
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+        git config --global credential.helper ""
+        # enable the local store credential helper
+        git config --global --add credential.helper store
+        # add credential
+        echo "https://x-access-token:${{ secrets.NCS_GITHUB_TOKEN }}@github.com" >> ~/.git-credentials
+        echo "git-credentials file:"
+        cat ~/.git-credentials
+        # init & update
         export PATH="$HOME/.local/bin:$PATH"
         export PATH="$HOME/bin:$PATH"
         if [ "${{ inputs.path }}" = "nrf" ]; then
