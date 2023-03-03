@@ -87,18 +87,17 @@ jobs:
       working-directory: ncs
       env:
         PR_REF: ${{ github.event.pull_request.head.sha }}
+        GITHUB_USER: ${{ secrets.NCS_NORDICBUILDER_USER }}
+        GITHUB_TOKEN: ${{ secrets.NCS_NORDICBUILDER_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.NCS_JENKINS_TOKEN }}
       run: |
-        # add credentials
-        # disable the keychain credential helper
+        # Add User:Pass to Git credential store
+        git config --global --add credential.https://github.com.username $GITHUB_USER
         git config --global user.email "you@example.com"
-        git config --global user.name "Your Name"
-        git config --global credential.helper ""
-        # enable the local store credential helper
-        git config --global --add credential.helper store
-        # add credential
-        echo "https://x-access-token:${{ secrets.NCS_GITHUB_TOKEN }}@github.com" >> ~/.git-credentials
-        echo "git-credentials file:"
-        cat ~/.git-credentials
+        git config --global user.name ${GITHUB_USER}
+        echo 'echo $GITHUB_TOKEN' > $(pwd)/.git-askpass
+        chmod +x $(pwd)/.git-askpass
+        export GIT_ASKPASS=$(pwd)/.git-askpass
         # init & update
         export PATH="$HOME/.local/bin:$PATH"
         export PATH="$HOME/bin:$PATH"
