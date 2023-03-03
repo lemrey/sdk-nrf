@@ -79,7 +79,7 @@ jobs:
         git config --global user.name "Your Name"
         git remote -v
         git branch
-        git rebase origin/${BASE_REF}
+        git rebase --rebase-merges origin/${BASE_REF}
         # debug
         git log --pretty=oneline | head -n 10
 
