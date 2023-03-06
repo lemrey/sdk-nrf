@@ -114,7 +114,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: pull/49/head
+      revision: cde729ad5d7a2a1ee72636275ed821dc0b705b17
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
@@ -166,7 +166,7 @@ manifest:
       revision: c6af068b7f05207b28d68880740e4b9ec1e4b50a
     - name: homekit
       repo-path: sdk-homekit
-      revision: a8a4b468abca2514f902d47ce4d7cde56e9fe762
+      revision: 4a941dc22638852f841aa9644aaeb72f9c95cfea
       groups:
         - homekit
     - name: find-my
