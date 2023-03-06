@@ -273,11 +273,6 @@ int lwm2m_os_pdn_default_apn_get(char *buf, size_t len);
 int lwm2m_os_pdn_default_callback_set(lwm2m_os_pdn_event_handler_t cb);
 
 /**
- * @brief Initialize the LWM2M OS layer.
- */
-int lwm2m_os_init(void);
-
-/**
  * @brief Allocate memory.
  */
 void *lwm2m_os_malloc(size_t size);
@@ -303,7 +298,8 @@ int lwm2m_os_sem_init(lwm2m_os_sem_t **sem, unsigned int initial_count, unsigned
  * @brief Take a semaphore.
  *
  * @param sem     Address of the semaphore.
- * @param timeout Timeout in ms or -1 for forever.
+ * @param timeout Timeout in ms, or -1 for forever, in which case the semaphore is taken for as long
+ *                as necessary.
  *
  * @retval  0      Semaphore taken.
  * @retval -EBUSY  Returned without waiting.
@@ -337,6 +333,10 @@ int64_t lwm2m_os_uptime_delta(int64_t *ref);
 
 /**
  * @brief Put a thread to a sleep.
+ *
+ * @param ms Desired duration of sleep in milliseconds. Can be -1 for forever, in which case the
+ *           thread is suspended, but can be subsequently resumed by means of
+ *           @ref lwm2m_os_thread_resume.
  */
 int lwm2m_os_sleep(int ms);
 
@@ -379,10 +379,9 @@ lwm2m_os_work_q_t *lwm2m_os_work_q_start(int index, const char *name);
  * @brief Reserve a timer task from the OS.
  *
  * @param handler Function to run for this task.
- *
- * @return Timer task.
+ * @param timer   Assigned timer task.
  */
-lwm2m_os_timer_t *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler);
+void lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler, lwm2m_os_timer_t **timer);
 
 /**
  * @brief Release a timer task.
@@ -450,29 +449,11 @@ bool lwm2m_os_timer_is_pending(lwm2m_os_timer_t *timer);
 int lwm2m_os_thread_start(int index, lwm2m_os_thread_entry_t entry, const char *name);
 
 /**
- * @brief  LwM2M OS modem init responses.
- */
-#define LWM2M_OS_NRF_MODEM_INIT_SUCCESS        0
-#define LWM2M_OS_NRF_MODEM_INIT_UPDATED        1
-#define LWM2M_OS_NRF_MODEM_INIT_UPDATE_FAILED  2
-
-/**
- * @brief Initialize modem library.
+ * @brief Resume a suspended thread. If the thread is not suspended, this function shall do nothing.
  *
- * @retval  LWM2M_OS_NRF_MODEM_INIT_SUCCESS        If the modem was initialized successfully.
- * @retval  LWM2M_OS_NRF_MODEM_INIT_UPDATED	   If the modem firmware was updated.
- * @retval  LWM2M_OS_NRF_MODEM_INIT_UPDATE_FAILED  If the modem failed to update the firmware.
- * @retval -EIO    If modem initialization failed.
+ * @param index Number of the thread.
  */
-int lwm2m_os_nrf_modem_init(void);
-
-/**
- * @brief Shutdown the Modem library.
- *
- * @retval  0      If success.
- * @retval -EIO    If modem shutdown failed.
- */
-int lwm2m_os_nrf_modem_shutdown(void);
+void lwm2m_os_thread_resume(int index);
 
 /**
  * @brief Initialize AT command driver.

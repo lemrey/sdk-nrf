@@ -46,6 +46,37 @@ Changes
     * This was primarily done to save space in the :ref:`serial_lte_modem` application.
     * All other relevant samples and applications use the :ref:`lte_lc_readme` library. We highly recommend that you include it in your applications.
 
+* Removed the event LWM2M_CARRIER_ERROR_INTERNAL.
+
+* Changed lwm2m_os_init(void) to static. Now called by SYS_INIT
+
+nRF modem dependency change
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+LwM2M carrier library no longer explicitly controls the modem library.
+The application can initialize the modem at it's own convenience.The LwM2M carrier library will then
+use the modem library callbacks to start or pause its own operations.
+
+* Removed lwm2m_carrier_init
+
+  * The LwM2M carrier library now initializes itself every time the init callback from the modem library is called.
+  * Renamed lwm2m_carrier_run to lwm2m_carrier_main.
+
+* Removed the event LWM2M_CARRIER_EVENT_INIT.
+
+  * This event would indicate that the modem was ready to be used by the application, but this is not longer necessary since the application now controls modem library.
+  * Keep in mind that CA Root Certificats must still be provisioned while modem is offline. (Any time the link is down).
+  * lte_lc_init and lte_lc_register_handler can instead be done at any time after nrf_modem_lib_init().
+
+* Removed lwm2m_os_nrf_modem_init and lwm2m_os_nrf_modem_shutdown
+
+* The library no longer sends an initial LWM2M_CARRIER_EVENT_LTE_LINK_UP after initialization.
+
+  * This event was meant to indicate to the application when it could go online for the first time, but this is no longer needed.
+    Instead it will wait for the link to be brought up by the application.
+  * The first time the library goes online, this can trigger an additional LINK_DOWN event.
+
+
 liblwm2m_carrier 3.1.0
 **********************
 

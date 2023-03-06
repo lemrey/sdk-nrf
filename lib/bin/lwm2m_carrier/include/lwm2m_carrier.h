@@ -26,31 +26,29 @@ extern "C" {
  * @name LwM2M carrier library events.
  * @{
  */
-/** Carrier library initialized. */
-#define LWM2M_CARRIER_EVENT_INIT	  1
 /** Request connect to the LTE network. */
-#define LWM2M_CARRIER_EVENT_LTE_LINK_UP	  2
+#define LWM2M_CARRIER_EVENT_LTE_LINK_UP	  1
 /**
  * Request disconnect from the LTE network.
  * The link must be offline until a subsequent LWM2M_CARRIER_EVENT_LTE_LINK_UP event.
  */
-#define LWM2M_CARRIER_EVENT_LTE_LINK_DOWN 3
+#define LWM2M_CARRIER_EVENT_LTE_LINK_DOWN 2
 /** Request power off LTE network. */
-#define LWM2M_CARRIER_EVENT_LTE_POWER_OFF 4
+#define LWM2M_CARRIER_EVENT_LTE_POWER_OFF 3
 /** LwM2M carrier bootstrapped. */
-#define LWM2M_CARRIER_EVENT_BOOTSTRAPPED  6
+#define LWM2M_CARRIER_EVENT_BOOTSTRAPPED  4
 /** LwM2M carrier registered. */
-#define LWM2M_CARRIER_EVENT_REGISTERED	  7
+#define LWM2M_CARRIER_EVENT_REGISTERED	  5
 /** LwM2M carrier operation is deferred. */
-#define LWM2M_CARRIER_EVENT_DEFERRED	  8
+#define LWM2M_CARRIER_EVENT_DEFERRED	  6
 /** Firmware update started. */
-#define LWM2M_CARRIER_EVENT_FOTA_START	  9
+#define LWM2M_CARRIER_EVENT_FOTA_START	  7
 /** Application will reboot. */
-#define LWM2M_CARRIER_EVENT_REBOOT	  10
+#define LWM2M_CARRIER_EVENT_REBOOT	  8
 /** Modem domain event received. */
-#define LWM2M_CARRIER_EVENT_MODEM_DOMAIN  12
+#define LWM2M_CARRIER_EVENT_MODEM_DOMAIN  9
 /** Data received through the App Data Container object */
-#define LWM2M_CARRIER_EVENT_APP_DATA      13
+#define LWM2M_CARRIER_EVENT_APP_DATA      10
 /** An error occurred. */
 #define LWM2M_CARRIER_EVENT_ERROR	  20
 /** @} */
@@ -74,6 +72,18 @@ typedef struct {
 	/** URI from where the firmware will be downloaded. Set to NULL if no URI will be used. */
 	const char *uri;
 } lwm2m_carrier_event_fota_start_t;
+
+/**
+ * @name LwM2M carrier library modem initialization results.
+ * @{
+ */
+/** Modem initialization successful. */
+#define LWM2M_CARRIER_MODEM_INIT_SUCCESS        0
+/** Modem firmware update successful. */
+#define LWM2M_CARRIER_MODEM_INIT_UPDATED        1
+/** Modem firmware update failed. */
+#define LWM2M_CARRIER_MODEM_INIT_UPDATE_FAILED  2
+/** @} */
 
 /**
  * @name LwM2M carrier library modem domain event types.
@@ -156,15 +166,13 @@ typedef struct {
  * -ENOMEM  Too many open connections.
  * -EBADF   Incorrect firmware update version.
  */
-#define LWM2M_CARRIER_ERROR_FOTA_FAIL		8
+#define LWM2M_CARRIER_ERROR_FOTA_FAIL		4
 /** Illegal object configuration detected. */
-#define LWM2M_CARRIER_ERROR_CONFIGURATION	9
+#define LWM2M_CARRIER_ERROR_CONFIGURATION	5
 /** LwM2M carrier init failed. */
-#define LWM2M_CARRIER_ERROR_INIT		10
-/** Internal error detected. */
-#define LWM2M_CARRIER_ERROR_INTERNAL		11
+#define LWM2M_CARRIER_ERROR_INIT		6
 /** LwM2M carrier run failed. */
-#define LWM2M_CARRIER_ERROR_RUN			12
+#define LWM2M_CARRIER_ERROR_RUN			7
 /** @} */
 
 /**
@@ -343,23 +351,6 @@ typedef struct {
 } lwm2m_carrier_config_t;
 
 /**
- * @brief Initialize the LwM2M carrier library.
- *
- * @note This function will block until a SIM card is initialized by the modem. The library cannot
- *       proceed if, for example, no SIM is inserted, or a PIN code must be entered.
- *
- * @note The first time this function is called after a modem firmware update (FOTA), it may block
- *       for several seconds in order to complete the procedure.
- *
- * @retval  0      If initialization was successful.
- * @retval -EACCES If initialization failed due to an error in the OS integration layer.
- * @retval -ENOMEM If initialization failed due to insufficient OS resources.
- * @retval -EIO    If initialization failed due to a modem or AT command error.
- * @retval -EFAULT If initialization failed due to an internal error.
- */
-int lwm2m_carrier_init(void);
-
-/**
  * @brief LwM2M carrier library main function.
  *
  * @param[in] config Configuration parameters for the library. Optional.
@@ -375,7 +366,25 @@ int lwm2m_carrier_init(void);
  * @retval -EINVAL If configuration parameters are invalid. See @c lwm2m_carrier_config_t
  * @retval -EFAULT If library failed due to an internal error.
  */
-int lwm2m_carrier_run(const lwm2m_carrier_config_t *config);
+int lwm2m_carrier_main(const lwm2m_carrier_config_t *config);
+
+/**
+ * @brief LwM2M carrier library modem initialization handler.
+ *
+ * @param[in] result Modem initialization result.
+ *
+ * @note This function must be called whenever the modem is initialized, as otherwise the device
+ *       management services will not be enabled.
+ */
+void lwm2m_carrier_on_modem_init(int result);
+
+/**
+ * @brief LwM2M carrier library modem shutdown handler.
+ *
+ * @note This function must be called whenever the modem is shut down, as it will shut down the
+ *       device management services.
+ */
+void lwm2m_carrier_on_modem_shutdown(void);
 
 /**
  * @brief Request the LwM2M carrier library to perform an action.
