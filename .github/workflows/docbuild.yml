@@ -3,16 +3,16 @@ name: Documentation Build
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  branches:
-    - haltium-ncs
-  paths:
-    - '.github/workflows/docbuild.yml'
-    - '**.rst'
-    - '**/Kconfig'
-    - 'doc/**'
-    - 'include/**'
-    - 'scripts/requirements-doc.txt'
-    - 'west.yml'
+    branches:
+      - haltium-ncs
+    paths:
+      - '.github/workflows/docbuild.yml'
+      - '**.rst'
+      - '**/Kconfig'
+      - 'doc/**'
+      - 'include/**'
+      - 'scripts/requirements-doc.txt'
+      - 'west.yml'
   push:
     branches:
       - haltium-ncs
@@ -43,7 +43,7 @@ jobs:
           sudo apt update
           sudo apt-get install -y ninja-build mscgen plantuml
           DOXYGEN_VERSION=$(cat ./ncs/nrf/scripts/tools-versions-linux.txt |grep 'doxygen' | sed 's/^.*=//')
-          wget --no-verbose https://downloads.sourceforge.net/project/doxygen/rel-${DOXYGEN_VERSION}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
+          wget --no-verbose "https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_VERSION//./_}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz"
           tar xf doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
           echo "${PWD}/doxygen-${DOXYGEN_VERSION}/bin" >> $GITHUB_PATH
 
@@ -75,10 +75,35 @@ jobs:
         run: |
           cmake -GNinja -Bdoc/_build -Sdoc -DSPHINXOPTS_EXTRA="-W"
           ninja -C doc/_build
-          tar cfJ html-output.tar.xz --directory=doc/_build html
 
-      - name: Archive build
+      - name: Prepare extra cache files
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') }}
+        working-directory: ncs/nrf
+        run: |
+          mkdir -p cache/extra && cd cache/extra
+          # Create documentation upload files
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "publish2 dev PR-${{ github.event.number }} __FILE__" > monitor.txt
+            echo "${{ github.event.number }}" > pr.txt
+          else
+            VERSION_REGEX="^v([0-9a-z\.\-]+)$"
+            if [[ ${GITHUB_REF#refs/tags/} =~ $VERSION_REGEX ]]; then
+              VERSION=${BASH_REMATCH[1]}
+            elif [[ ${GITHUB_REF#refs/heads/} == "haltium-ncs" ]]; then
+              VERSION="latest"
+            else
+              echo "Not a release or latest, skipping publish"
+              exit 0
+            fi
+            echo "publish2 main ${VERSION} __FILE__" > monitor.txt
+          fi
+
+          cd ../../doc/_build
+          zip -rq ../../cache/html.zip html
+
+      - name: Archive cache
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') }}
         uses: actions/upload-artifact@v2
         with:
-          name: docs
-          path: ncs/nrf/html-output.tar.xz
+          name: cache
+          path: ncs/nrf/cache
