@@ -163,6 +163,7 @@
 .. _`Migrating IDE`: https://nrfconnect.github.io/vscode-nrf-connect/get_started/build_app_ncs.html
 .. _`How to debug an application`:
 .. _`How to connect to the terminal`: https://nrfconnect.github.io/vscode-nrf-connect/get_started/quick_debug.html
+.. _`nRF Terminal documentation`: https://nrfconnect.github.io/vscode-nrf-connect/terminal/nrfterminal.html
 .. _`Debugging applications for a multi-core System on Chip`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_concepts.html
 .. _`west module management`: https://nrfconnect.github.io/vscode-nrf-connect/guides/west_module_management.html
 .. _`Custom launch and debug configurations`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_advanced.html#custom-launch-and-debug-configurations
