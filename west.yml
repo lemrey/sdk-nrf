@@ -70,6 +70,7 @@ manifest:
           - canopennode
           - chre
           - cmsis
+          - coremark
           - edtt
           - fatfs
           - fff
