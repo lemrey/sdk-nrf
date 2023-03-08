@@ -13,6 +13,13 @@ It offers an extensible framework for building size-optimized software for memor
 It integrates the Zephyr™ real-time operating system (RTOS) and a wide range of complete applications, samples, and protocol stacks such as Bluetooth® Low Energy, Bluetooth mesh, Matter, Thread/Zigbee and LTE-M/NB-IoT/GPS, TCP/IP.
 It also includes middleware such as CoAP, MQTT, LwM2M, various libraries, hardware drivers, Trusted Firmware-M for security, and a secure bootloader (MCUboot).
 
+nRF54H20 initial limited sampling
+*********************************
+
+This version of the |NCS| is dedicated to the initial limited sampling of the nRF54H20 SoC, and is based on the |NCS| version 2.2.99 (commit hash ``d69930b57ff79433c2fded560c6e7ecdb65b9886``).
+The documentation of this version is based on the publicly available |NCS| documentation, with an added :ref:`ug_nrf54h` section containing all the software documentation applicable to the nRF54H20 SoC and PDK.
+Refer exclusively to this section when using the nRF54H20 PDK.
+
 Repositories
 ************
 

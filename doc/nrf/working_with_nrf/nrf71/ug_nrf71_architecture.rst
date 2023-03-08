@@ -3,6 +3,13 @@
 Software Architecture for nRF7140
 #################################
 
+.. contents::
+   :local:
+   :depth: 2
+
+.. note::
+   This is a preliminary document and it might contain incomplete, incorrect, and outdated information.
+
 The nRF7140 is a multi-core System-on-Chip (SoC) that uses an asymmetric multiprocessing (AMP) configuration.
 Each core is tasked with specific responsibilities and they cooperate to run the whole system use-cases efficiently.
 

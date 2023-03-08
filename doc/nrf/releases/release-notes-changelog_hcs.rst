@@ -1,13 +1,14 @@
 .. _ncs_release_notes_changelog_hcs:
 
-Changelog for |NCS| v2.0.99 + HCS
+Changelog for |NCS| v2.2.99 + HCS
 #################################
 
 .. contents::
    :local:
    :depth: 2
 
-The most relevant changes that are present on the main branch of the |NCS|, as compared to the latest official release, are tracked in this file.
+This page tracks the most relevant changes that are present on the branch of the initial limited sampling for nRF54H20 of the |NCS|, as compared to the |NCS| version 2.2.99 (commit hash ``d69930b57ff79433c2fded560c6e7ecdb65b9886``).
+You can find the most relevant changes of the |NCS| version 2.2.99 :ref:`here <ncs_release_notes_changelog>`.
 
 .. note::
    This file is a work in progress and might not cover all relevant changes.
@@ -23,7 +24,7 @@ Known issues
 ************
 
 Known issues are only tracked for the latest official release.
-See `known issues for nRF Connect SDK v2.0.0`_ for the list of issues valid for the latest release.
+See `known issues for nRF Connect SDK v2.2.0`_ for the list of issues valid for the latest release.
 
 Changelog
 *********
@@ -33,7 +34,7 @@ The following sections provide detailed lists of changes by component.
 Application development
 =======================
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Protocols
 =========
@@ -44,61 +45,61 @@ See `Samples`_ for lists of changes for the protocol-related samples.
 Bluetooth LE
 ------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 For details, see :ref:`nrfxlib:softdevice_controller_changelog`.
 
 Bluetooth mesh
 --------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 See `Bluetooth mesh samples`_ for the list of changes for the Bluetooth mesh samples.
 
 Matter
 ------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 See `Matter samples`_ for the list of changes for the Matter samples.
 
 Matter fork
 +++++++++++
 
-The Matter fork in the |NCS| (``sdk-connectedhomeip``) contains all commits from the upstream Matter repository up to, and including, ``41cb8220744f2587413d0723e24847f07d6ac59f``.
+The Matter fork in the limited sampling version of the |NCS| (``sdk-connectedhomeip``) contains all commits from the upstream Matter repository up to, and including, ``41cb8220744f2587413d0723e24847f07d6ac59f``.
 
 The following list summarizes the most important changes inherited from the upstream Matter:
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Thread
 ------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 See `Thread samples`_ for the list of changes for the Thread samples.
 
 Zigbee
 ------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 See `Zigbee samples`_ for the list of changes for the Zigbee samples.
 
 ESB
 ---
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 nRF IEEE 802.15.4 radio driver
 ------------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 RF Front-End Modules
 ====================
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Applications
 ============
@@ -108,37 +109,37 @@ This section provides detailed lists of changes by :ref:`application <applicatio
 nRF9160: Asset Tracker v2
 -------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 nRF9160: Serial LTE modem
 -------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 nRF5340 Audio
 -------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 nRF Machine Learning (Edge Impulse)
 -----------------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 nRF Desktop
 -----------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Thingy:53 Zigbee weather station
 --------------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Connectivity Bridge
 -------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Samples
 =======
@@ -149,32 +150,32 @@ For lists of protocol-specific changes, see `Protocols`_.
 Bluetooth samples
 -----------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Bluetooth mesh samples
 ----------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 nRF9160 samples
 ---------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Thread samples
 --------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Matter samples
 --------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 NFC samples
 -----------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 nRF5340 samples
 ---------------
@@ -186,12 +187,12 @@ nRF5340 samples
 Gazell samples
 --------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Zigbee samples
 --------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Other samples
 -------------
@@ -206,14 +207,14 @@ Devicetree configuration
 Thingy:91
 ---------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Drivers
 =======
 
 This section provides detailed lists of changes by :ref:`driver <drivers>`.
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Libraries
 =========
@@ -223,53 +224,53 @@ This section provides detailed lists of changes by :ref:`library <libraries>`.
 Binary libraries
 ----------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Bluetooth libraries and services
 --------------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Bootloader libraries
 --------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Modem libraries
 ---------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Libraries for networking
 ------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Libraries for NFC
 -----------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Other libraries
 ---------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 
 Common Application Framework (CAF)
 ----------------------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Shell libraries
 ---------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Libraries for Zigbee
 --------------------
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 sdk-nrfxlib
 -----------
@@ -281,44 +282,36 @@ Scripts
 
 This section provides detailed lists of changes by :ref:`script <scripts>`.
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Unity
 -----
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 MCUboot
 =======
 
-The MCUboot fork in |NCS| (``sdk-mcuboot``) contains all commits from the upstream MCUboot repository up to and including ``e86f575f68fdac2cab1898e0a893c8c6d8fd0fa1``, plus some |NCS| specific additions.
+The MCUboot fork in the limited sampling version of the |NCS| (``sdk-mcuboot``) contains all commits from the upstream MCUboot repository up to, and including, ``e86f575f68fdac2cab1898e0a893c8c6d8fd0fa1``, plus some |NCS| specific additions.
 
 The code for integrating MCUboot into |NCS| is located in the :file:`ncs/nrf/modules/mcuboot` folder.
 
 The following list summarizes both the main changes inherited from upstream MCUboot and the main changes applied to the |NCS| specific additions:
 
-* |no_changes_yet_note|
+* No changes since the latest nRF Connect SDK release.
 
 Zephyr
 ======
 
 .. NOTE TO MAINTAINERS: All the Zephyr commits in the below git commands must be handled specially after each upmerge and each NCS release.
 
-The Zephyr fork in |NCS| (``sdk-zephyr``) contains all commits from the upstream Zephyr repository up to and including ``fb802fb6c0af80dbd383e744065bcf1745ecbc66``, plus some |NCS| specific additions.
-
-For the list of upstream Zephyr commits (not including cherry-picked commits) incorporated into nRF Connect SDK since the most recent release, run the following command from the :file:`ncs/zephyr` repository (after running ``west update``):
-
-.. code-block:: none
-
-   git log --oneline fb802fb6c0 ^45ef0d2
+The Zephyr fork in the limited sampling version of the |NCS| (``fb802fb6c0af80dbd383e744065bcf1745ecbc66``) contains all commits from the |NCS| fork of the Zephyr repository (``sdk-zephyr`` sha ``eff20cfb43eb888511eb13b37cc131150cf5919c``), which is based on the upstream Zephyr Project sha ``e1e06d05fa8d1b6ac1b0dffb1712e94e308861f8``.
 
 For the list of |NCS| specific commits, including commits cherry-picked from upstream, run:
 
 .. code-block:: none
 
-   git log --oneline manifest-rev ^fb802fb6c0
-
-The current |NCS| main branch is based on revision ``fb802fb6c0`` of Zephyr.
+   git log --oneline manifest-rev  ^e1e06d05fa8d1b6ac1b0dffb1712e94e308861f8
 
 zcbor
 =====
@@ -331,16 +324,15 @@ Release notes for 0.5.0 and 0.5.1 can be found in :file:`ncs/nrf/modules/lib/zcb
 Trusted Firmware-M
 ==================
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 cJSON
 =====
 
-|no_changes_yet_note|
+No changes since the latest nRF Connect SDK release.
 
 Documentation
 =============
 
-|no_changes_yet_note|
-
-.. |no_changes_yet_note| replace:: No changes since the latest |NCS| release.
+The documentation was updated to add information regarding nRF54H20 and the initial limited sampling.
+The main updates are contained in the :ref:`ug_nrf54h` section.

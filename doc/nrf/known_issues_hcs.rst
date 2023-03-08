@@ -19,7 +19,7 @@ Use the drop-down filter to see known issues for previous releases and check if 
 
    <select name="versions" id="versions-select">
      <option value="all">All versions</option>
-     <option value="v2-3+HCS" selected>v2.3+HCS</option>
+     <option value="v2-2-99+HCS" selected>v2.2.99+HCS</option>
    </select>
 
 
@@ -43,12 +43,12 @@ Use the drop-down filter to see known issues for previous releases and check if 
 nRF54H20
 ********
 
-.. rst-class:: v2-3+HCS
+.. rst-class:: v2-2-99+HCS
 
 NRFX-2444: The ``ecall`` instruction cannot be executed on the VPR cores when in a trap handler
   Executing the ``ecall`` instruction when in a trap handler (like an interrupt or an exception) halts the execution of Zephyr on the VPR cores.
 
-.. rst-class:: v2-3+HCS
+.. rst-class:: v2-2-99+HCS
 
 NRFX-3037: The GNU Project Debugger (GDB) is not reliable for debugging the VPR cores.
   GDB could crash when connecting to the PDK through SEGGER J-Link and starting a debug session.

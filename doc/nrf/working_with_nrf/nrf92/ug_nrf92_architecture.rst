@@ -3,6 +3,13 @@
 Software Architecture for nRF9230
 #################################
 
+.. contents::
+   :local:
+   :depth: 2
+
+.. note::
+   This is a preliminary document and it might contain incomplete, incorrect, and outdated information.
+
 The nRF9230 is a multicore System-in-Package (SiP) that uses an asymmetric multiprocessing (AMP) configuration.
 Each core is tasked with specific responsibilities while they cooperate with each other to run the whole system use-cases efficiently.
 

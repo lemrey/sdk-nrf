@@ -3,13 +3,16 @@
 Welcome to the |NCS|!
 #####################
 
-The |NCS| is where you begin building low-power wireless applications with Nordic Semiconductor nRF52, nRF53, and nRF91 Series devices.
+The |NCS| is where you begin building low-power wireless applications with Nordic Semiconductor devices.
 
 The SDK contains optimized cellular IoT (LTE-M and NB-IoT), Bluetooth® Low Energy, Thread, Zigbee, and Bluetooth mesh stacks, a range of applications, samples, and reference implementations, as well as a full suite of drivers for Nordic Semiconductor's devices.
 The |NCS| includes the Zephyr™ real-time operating system (RTOS), which is built for connected low power products.
 
-To access different versions of the |NCS| documentation, use the version drop-down in the top right corner.
-A "99" at the end of the version number of this documentation indicates continuous updates on the main branch since the previous major.minor release.
+The "99" at the end of the version number of this documentation indicates continuous updates on the main branch since the previous major.minor release.
+
+.. note::
+   This version of the |NCS| is meant to be used with the nRF54H20 PDK.
+   For more information on this, visit :ref:`ncs_introduction`.
 
 .. toctree::
    :maxdepth: 2
@@ -22,8 +25,8 @@ A "99" at the end of the version number of this documentation indicates continuo
    security_chapter
    ug_nrf92
    ug_nrf91
-   ug_nrf70
    ug_nrf71
+   ug_nrf70
    ug_nrf54h
    ug_nrf53
    ug_nrf52
