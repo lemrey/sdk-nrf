@@ -22,3 +22,4 @@ The following pages briefly describes the responsibilities of the cores, their i
    ug_nrf54h20_architecture_memory
    ug_nrf54h20_architecture_ipc
    ug_nrf54h20_architecture_boot
+   ug_nrf54h20_architecture_lifecycle
