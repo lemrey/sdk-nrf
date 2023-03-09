@@ -6,7 +6,6 @@
 
 #include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
 #include "../../boards/shared/nrf54_ipc_shm_ram2sys.dtsi"
-#include "../../boards/shared/nrf54_uart_pinout.dtsi"
 
 / {
 	chosen {
@@ -28,11 +27,9 @@
 	status = "okay";
 };
 
-&uart136 {
-	status = "disabled";
-};
-
 &uart135 {
 	status = "okay";
+	tx-pin = < 0x24 >;
+	rx-pin = < 0x25 >;
 	memory-regions = <&ram3x_cpusys>;
 };

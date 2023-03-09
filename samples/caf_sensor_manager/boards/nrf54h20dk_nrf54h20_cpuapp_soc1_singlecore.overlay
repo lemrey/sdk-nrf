@@ -47,8 +47,6 @@
 
 &uart136 {
 	status = "okay";
-	tx-pin = < 0x5 >;
-	rx-pin = < 0x4 >;
 	memory-regions = <&ram3x_cpuapp>;
 };
 

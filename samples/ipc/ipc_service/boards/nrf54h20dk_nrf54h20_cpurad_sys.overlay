@@ -6,7 +6,6 @@
 
 #include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
 #include "shared/nrf54_ipc_shm_ram2.dtsi"
-#include "shared/nrf54_uart_pinout.dtsi"
 
 /{
 	chosen {

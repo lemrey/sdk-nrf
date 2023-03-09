@@ -42,6 +42,4 @@
 &uart135 {
 	status = "okay";
 	memory-regions = <&ram3x_cpuppr>;
-	tx-pin = <7>;
-	rx-pin = <6>;
 };
