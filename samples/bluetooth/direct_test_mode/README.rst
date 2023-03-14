@@ -292,6 +292,16 @@ Building and running
    The Remote IPC shell sample is built and programmed automatically by default.
    If you want to program your custom solution for the application core, unset the :kconfig:option:`CONFIG_NCS_SAMPLE_REMOTE_SHELL_CHILD_IMAGE` Kconfig option.
 
+.. note::
+   On the nRF54H20 PDK, the pins **P2.04** and **P2.05** are assigned to the 2-wire UART interface by default.
+   These pins are also connected to the virtual COM port of the MCU.
+   When testing this example with an external tester connected to the board, it is recommended that unused pins on the board are assigned to the UART interface.
+   You can use the device tree overlay file :file:`nrf54h20dk_uart_test.overlay` with pins **P0.04** and **P0.05** by running the following command:
+
+   .. code-block:: console
+
+      west build samples/bluetooth/direct_test_mode -b nrf54h20dk_nrf54h20_cpurad@soc1 -- -DDTC_OVERLAY_FILE="conf/nrf54h20dk_uart_test.overlay"
+
 USB CDC ACM transport variant
 =============================
 
