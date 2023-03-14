@@ -127,3 +127,16 @@ def add_google_analytics(app: Sphinx) -> None:
 
     app.add_js_file("https://www.googletagmanager.com/gtag/js?id=G-ZPVZRKFQJR")
     app.add_js_file("js/ga-tracker.js")
+
+def add_announcement_banner(options: dict) -> None:
+    """Add an announcement banner to the top of the page.
+
+    Args:
+        options: html theme options.
+    """
+
+    msg = "You are looking at the nRF Connect SDK documentation for the " \
+        "initial limited sampling of the nRF54H20."
+
+    options["set_default_announcement"] = True
+    options["default_announcement_message"] = msg

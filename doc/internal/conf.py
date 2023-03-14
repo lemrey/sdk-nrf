@@ -49,3 +49,4 @@ ncs_cache_manifest = NRF_BASE / "west.yml"
 
 def setup(app):
     utils.add_google_analytics(app)
+    utils.add_announcement_banner(html_theme_options)
