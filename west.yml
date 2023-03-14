@@ -33,7 +33,6 @@ manifest:
       url-base: https://github.com/memfault
     - name: ant-nrfconnect
       url-base: https://github.com/ant-nrfconnect
-
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
   defaults:
@@ -52,7 +51,7 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr-next
-      revision: d6e8d6f2aa40111081b372790dd955a586eeefb1
+      revision: 088f6b56162092a6602ce936a21f9285ada649a2
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
