@@ -19,6 +19,3 @@ module-str = caf module sensor event aggregator
 source "subsys/logging/Kconfig.template.log_config"
 
 endif # CAF_SENSOR_DATA_AGGREGATOR
-
-config CAF_SENSOR_DATA_AGGREGATOR_EVENTS
-	bool "Sensor data aggregator module events"
