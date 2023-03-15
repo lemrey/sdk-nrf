@@ -18,9 +18,9 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/clock_control/nrf_clock_control.h>
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
+#if !(defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX))
 #include <hal/nrf_nvmc.h>
-#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
+#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX) */
 
 #include <hal/nrf_egu.h>
 #include <hal/nrf_radio.h>
@@ -49,6 +49,11 @@
 	#define WAIT_TIMER_INSTANCE        021
 	#define RADIO_IRQn                 RADIO_0_IRQn
 	#define DTM_EGU                    NRF_EGU020
+#elif defined(CONFIG_SOC_SERIES_NRF54LX)
+	#define DEFAULT_TIMER_INSTANCE     10
+	#define WAIT_TIMER_INSTANCE        20
+	#define RADIO_IRQn                 RADIO_0_IRQn
+	#define DTM_EGU                    NRF_EGU10
 #else
 	#define DEFAULT_TIMER_INSTANCE     0
 	#define WAIT_TIMER_INSTANCE        1
@@ -1274,12 +1279,12 @@ static enum dtm_err_code  dtm_vendor_specific_pkt(uint32_t vendor_cmd,
 		 * carrier signal should be transmitted by the radio.
 		 */
 		radio_prepare(TX_MODE);
-#if defined(CONFIG_SOC_SERIES_NRF54HX)
+#if defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX)
 		nrf_radio_fast_ramp_up_enable_set(NRF_RADIO, false);
 #else
 		nrf_radio_modecnf0_set(NRF_RADIO, false,
 				       RADIO_MODECNF0_DTX_Center);
-#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
+#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX) */
 
 		/* Shortcut between READY event and START task */
 		nrf_radio_shorts_set(NRF_RADIO,
