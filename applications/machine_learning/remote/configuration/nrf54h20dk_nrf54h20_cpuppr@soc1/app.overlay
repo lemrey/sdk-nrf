@@ -10,23 +10,23 @@
 	};
 
 	reserved-memory {
-		ram31_agg_area0: memory@2fc06a00 {
-			reg = <0x2fc06a00 0x600>;
+		ram3x_agg_area0: memory@2fc05000 {
+			reg = <0x2fc05000 0x600>;
 		};
 
-		ram31_shared_rx: memory@2fc07000 {
-			reg = <0x2fc07000 0x0800>;
+		ram3x_shared_rx: memory@2fc06000 {
+			reg = <0x2fc06000 0x0800>;
 		};
 
-		ram31_shared_tx: memory@2fc07800 {
-			reg = <0x2fc07800 0x0800>;
+		ram3x_shared_tx: memory@2fc06800 {
+			reg = <0x2fc06800 0x0800>;
 		};
 	};
 
 	ipc0: ipc0 {
 		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&ram31_shared_tx>;
-		rx-region = <&ram31_shared_rx>;
+		tx-region = <&ram3x_shared_tx>;
+		rx-region = <&ram3x_shared_rx>;
 		mboxes = <&bellboard_cpuapp 12>,
 			 <&vevif_cpuppr 12>;
 		mbox-names = "tx", "rx";
@@ -39,7 +39,7 @@
 		buf_data_length = <240>;
 		sample_size = <3>;
 		buf_count = <6>;
-		memory-region = <&ram31_agg_area0>;
+		memory-region = <&ram3x_agg_area0>;
 		status = "okay";
 	};
 };
@@ -56,7 +56,7 @@
 
 /* Required for nrf54's sensor hub shield. */
 &spi130 {
-        memory-regions = <&ram3x_cpuppr>;
+	memory-regions = <&ram3x_cpuppr>;
 };
 
 &uart135 {
