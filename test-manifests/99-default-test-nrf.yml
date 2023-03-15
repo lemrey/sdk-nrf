@@ -11,7 +11,7 @@ manifest:
     - name: test_nrf
       remote: ncs-test
       repo-path: test-fw-nrfconnect-nrf
-      revision: sdk-nrf-pr-836
+      revision: master
       import:
         file: west-hcs.yml
         name-blocklist: [sdk-nrf]
