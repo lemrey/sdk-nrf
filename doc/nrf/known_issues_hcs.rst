@@ -50,8 +50,12 @@ NRFX-2444: The ``ecall`` instruction cannot be executed on the VPR cores when in
 
 .. rst-class:: v2-2-99+HCS
 
-NRFX-3037: The GNU Project Debugger (GDB) is not reliable for debugging the VPR cores.
+NRFX-3037: The GNU Project Debugger (GDB) is not reliable for debugging the VPR cores
   GDB could crash when connecting to the PDK through SEGGER J-Link and starting a debug session.
+
+
+HM-20886: The radio receiver sensitivity is too low when the radio PHY is set to the LE Coded ``S=2`` coding scheme
+  When using the ``S=2`` coding scheme, the value of the packet error rate is higher than expected.
 
 -----
 
