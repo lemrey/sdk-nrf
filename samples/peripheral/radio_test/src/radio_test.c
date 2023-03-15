@@ -9,9 +9,9 @@
 #include <string.h>
 #include <inttypes.h>
 
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
+#if !(defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX))
 #include <hal/nrf_power.h>
-#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
+#endif /* !(defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX)) */
 
 #ifdef NRF53_SERIES
 #include <hal/nrf_vreqctrl.h>
@@ -49,6 +49,11 @@
 	#define RADIO_TEST_EGU            NRF_EGU020
 	#define RADIO_TEST_TIMER_INSTANCE 020
 	#define RADIO_TEST_TIMER_IRQn     TIMER020_IRQn
+	#define RADIO_TEST_RADIO_IRQn     RADIO_0_IRQn
+#elif defined(CONFIG_SOC_SERIES_NRF54LX)
+	#define RADIO_TEST_EGU            NRF_EGU10
+	#define RADIO_TEST_TIMER_INSTANCE 10
+	#define RADIO_TEST_TIMER_IRQn     TIMER10_IRQn
 	#define RADIO_TEST_RADIO_IRQn     RADIO_0_IRQn
 #else
 	#define RADIO_TEST_EGU            NRF_EGU0
@@ -114,17 +119,21 @@ static uint16_t channel_to_frequency(nrf_radio_mode_t mode, uint8_t channel)
 #endif /* CONFIG_HAS_HW_NRF_RADIO_IEEE802154 */
 }
 
-static void radio_power_set(nrf_radio_mode_t mode, uint8_t channel, int8_t power)
+static void radio_power_set(nrf_radio_mode_t mode, uint8_t channel, int16_t power)
 {
-	int8_t output_power = power;
-	int8_t radio_power = power;
+	int16_t output_power = power;
+	int16_t radio_power = power;
 
 #if CONFIG_FEM
 	uint16_t frequency;
 
 	if (IS_ENABLED(CONFIG_RADIO_TEST_POWER_CONTROL_AUTOMATIC)) {
 		frequency = channel_to_frequency(mode, channel);
-		output_power = fem_tx_output_power_prepare(power, &radio_power, frequency);
+		/* Only nRF54l15 SoC has a power range above UINT8_MAX.
+		 * nRF54l15 does not use FEM so it is a safe cast.
+		 */
+		output_power = fem_tx_output_power_prepare(power, ((int8_t *)(&radio_power)),
+							   frequency);
 	}
 #else
 	ARG_UNUSED(mode);
@@ -287,11 +296,11 @@ static void radio_config(nrf_radio_mode_t mode, enum transmit_pattern pattern)
 	nrf_radio_packet_conf_t packet_conf;
 
 	/* Set fast ramp-up time. */
-#if defined(CONFIG_SOC_SERIES_NRF54HX)
+#if defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX)
 	nrf_radio_fast_ramp_up_enable_set(NRF_RADIO, true);
 #else
 	nrf_radio_modecnf0_set(NRF_RADIO, true, RADIO_MODECNF0_DTX_Center);
-#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
+#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) || defined(CONFIG_SOC_SERIES_NRF54LX) */
 
 	/* Disable CRC. */
 	nrf_radio_crc_configure(NRF_RADIO, RADIO_CRCCNF_LEN_Disabled,
@@ -499,7 +508,7 @@ static void radio_mode_set(NRF_RADIO_Type *reg, nrf_radio_mode_t mode)
 	nrf_radio_mode_set(reg, mode);
 }
 
-static void radio_unmodulated_tx_carrier(uint8_t mode, int8_t txpower, uint8_t channel)
+static void radio_unmodulated_tx_carrier(uint8_t mode, int16_t txpower, uint8_t channel)
 {
 	radio_disable();
 
@@ -520,7 +529,7 @@ static void radio_unmodulated_tx_carrier(uint8_t mode, int8_t txpower, uint8_t c
 	radio_start(false, sweep_processing);
 }
 
-static void radio_modulated_tx_carrier(uint8_t mode, int8_t txpower, uint8_t channel,
+static void radio_modulated_tx_carrier(uint8_t mode, int16_t txpower, uint8_t channel,
 				       enum transmit_pattern pattern)
 {
 	radio_disable();
@@ -640,7 +649,7 @@ static void radio_sweep_start(uint8_t channel, uint32_t delay_ms)
 	nrfx_timer_enable(&timer);
 }
 
-static void radio_modulated_tx_carrier_duty_cycle(uint8_t mode, int8_t txpower,
+static void radio_modulated_tx_carrier_duty_cycle(uint8_t mode, int16_t txpower,
 						  uint8_t channel,
 						  enum transmit_pattern pattern,
 						  uint32_t duty_cycle)

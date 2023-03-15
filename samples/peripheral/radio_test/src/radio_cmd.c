@@ -41,7 +41,7 @@ static struct radio_param_config {
 	nrf_radio_mode_t mode;
 
 	/** Radio output power. */
-	uint8_t txpower;
+	int16_t txpower;
 
 	/** Radio start channel (frequency). */
 	uint8_t channel_start;
@@ -936,12 +936,14 @@ static void cmd_neg20dbm(const struct shell *shell, size_t argc, char **argv)
 		    Z_STRINGIFY(RADIO_TXPOWER_TXPOWER_Neg20dBm));
 }
 
+#if defined(RADIO_TXPOWER_TXPOWER_Neg30dBm)
 static void cmd_neg30dbm(const struct shell *shell, size_t argc, char **argv)
 {
 	config.txpower = RADIO_TXPOWER_TXPOWER_Neg30dBm;
 	shell_print(shell, "TX power: %s",
 		    Z_STRINGIFY(RADIO_TXPOWER_TXPOWER_Neg30dBm));
 }
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg30dBm) */
 
 static void cmd_neg40dbm(const struct shell *shell, size_t argc, char **argv)
 {
@@ -1276,7 +1278,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_output_power,
 	SHELL_CMD(neg12dBm, NULL, "TX power: -12 dBm", cmd_neg12dbm),
 	SHELL_CMD(neg16dBm, NULL, "TX power: -16 dBm", cmd_neg16dbm),
 	SHELL_CMD(neg20dBm, NULL, "TX power: -20 dBm", cmd_neg20dbm),
+#if defined(RADIO_TXPOWER_TXPOWER_Neg30dBm)
 	SHELL_CMD(neg30dBm, NULL, "TX power: -30 dBm", cmd_neg30dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg30dBm) */
 	SHELL_CMD(neg40dBm, NULL, "TX power: -40 dBm", cmd_neg40dbm),
 	SHELL_SUBCMD_SET_END
 );
@@ -1338,12 +1342,12 @@ static int cmd_total_output_power_set(const struct shell *shell, size_t argc, ch
 
 	power = atoi(argv[1]);
 
-	if ((power > INT8_MAX) || (power < INT8_MIN)) {
+	if ((power > INT16_MAX) || (power < INT16_MIN)) {
 		shell_error(shell, "%s: Out of range power value", argv[0]);
 		return -EINVAL;
 	}
 
-	config.txpower = (int8_t)power;
+	config.txpower = (int16_t)power;
 
 	return 0;
 }

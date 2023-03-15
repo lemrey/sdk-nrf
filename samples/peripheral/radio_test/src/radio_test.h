@@ -91,7 +91,7 @@ struct radio_test_config {
 	union {
 		struct {
 			/** Radio output power. */
-			int8_t txpower;
+			int16_t txpower;
 
 			/** Radio channel. */
 			uint8_t channel;
@@ -99,7 +99,7 @@ struct radio_test_config {
 
 		struct {
 			/** Radio output power. */
-			int8_t txpower;
+			int16_t txpower;
 
 			/** Radio transmission pattern. */
 			enum transmit_pattern pattern;
@@ -127,7 +127,7 @@ struct radio_test_config {
 
 		struct {
 			/** Radio output power. */
-			int8_t txpower;
+			int16_t txpower;
 
 			/** Radio start channel (frequency). */
 			uint8_t channel_start;
@@ -152,7 +152,7 @@ struct radio_test_config {
 
 		struct {
 			/** Radio output power. */
-			int8_t txpower;
+			int16_t txpower;
 
 			/** Radio transmission pattern. */
 			enum transmit_pattern pattern;
