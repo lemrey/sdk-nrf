@@ -215,22 +215,12 @@ static bool handle_sensor_event(const struct sensor_event *event)
 
 static bool handle_sensor_data_aggregator_event(const struct sensor_data_aggregator_event *event)
 {
-	struct sensor_data_aggregator_release_buffer_event *release_evt;
-
-	if ((event->sensor_descr != handled_sensor_event_descr) &&
-	    strcmp(event->sensor_descr, handled_sensor_event_descr)) {
-		release_evt = new_sensor_data_aggregator_release_buffer_event();
-		release_evt->samples = event->samples;
-		release_evt->sensor_descr = event->sensor_descr;
-		APP_EVENT_SUBMIT(release_evt);
+	if (state != STATE_ACTIVE) {
 		return false;
 	}
 
-	if (state != STATE_ACTIVE) {
-		release_evt = new_sensor_data_aggregator_release_buffer_event();
-		release_evt->samples = event->samples;
-		release_evt->sensor_descr = event->sensor_descr;
-		APP_EVENT_SUBMIT(release_evt);
+	if ((event->sensor_descr != handled_sensor_event_descr) &&
+	    strcmp(event->sensor_descr, handled_sensor_event_descr)) {
 		return false;
 	}
 
@@ -249,11 +239,6 @@ static bool handle_sensor_data_aggregator_event(const struct sensor_data_aggrega
 		LOG_ERR("Cannot add data for EI wrapper (err %d)", err);
 		report_error();
 	}
-
-	release_evt = new_sensor_data_aggregator_release_buffer_event();
-	release_evt->samples = event->samples;
-	release_evt->sensor_descr = event->sensor_descr;
-	APP_EVENT_SUBMIT(release_evt);
 
 	return false;
 }
