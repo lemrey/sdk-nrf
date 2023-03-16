@@ -1,3 +1,5 @@
+:orphan:
+
 .. _ncs_release_notes_changelog_hcs:
 
 Changelog for |NCS| v2.2.99 + HCS
@@ -180,9 +182,7 @@ No changes since the latest nRF Connect SDK release.
 nRF5340 samples
 ---------------
 
-* Updated:
-
-  * Moved ``nRF5340: Multicore application`` sample to :ref:`multicore_hello_world`.
+No changes since the latest nRF Connect SDK release.
 
 Gazell samples
 --------------
@@ -197,9 +197,7 @@ No changes since the latest nRF Connect SDK release.
 Other samples
 -------------
 
-:ref:`ipc_service_sample` sample:
-
-* Added support for the nRF54H20 DK with board targets nrf54h20dk_nrf54h20_cpuapp@soc1 and nrf54h20dk_nrf54h20_cpurad@soc1.
+No changes since the latest nRF Connect SDK release.
 
 Devicetree configuration
 ========================
@@ -334,5 +332,4 @@ No changes since the latest nRF Connect SDK release.
 Documentation
 =============
 
-The documentation was updated to add information regarding nRF54H20 and the initial limited sampling.
-The main updates are contained in the :ref:`ug_nrf54h` section.
+No changes since the latest nRF Connect SDK release.

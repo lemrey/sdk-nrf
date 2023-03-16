@@ -9,6 +9,8 @@ Changelog for |NCS| v2.2.99
 
 The most relevant changes that are present on the main branch of the |NCS|, as compared to the latest official release, are tracked in this file.
 
+This changelog contains changes introduced into |NCS| 2.2.99 on top of the 2.2.0 release.
+
 .. note::
    This file is a work in progress and might not cover all relevant changes.
 
