@@ -15,7 +15,7 @@ tests:
       - nrf5340dk_nrf5340_cpuapp
     tags: ci_build
     extra_args: CONF_FILE=prj_icmsg.conf
-  sample.event_manager_proxy.fpga.icmsg:
+  sample.event_manager_proxy.nrf54h20.fpga.icmsg:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     integration_platforms:
@@ -24,3 +24,10 @@ tests:
     extra_args: CONF_FILE=prj_icmsg.conf remote_CONFIG_EMULATOR_FPGA=y
     extra_configs:
       - CONFIG_EMULATOR_FPGA=y
+  sample.event_manager_proxy.nrf54h20.icmsg:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ci_build
+    extra_args: CONF_FILE=prj_icmsg.conf
