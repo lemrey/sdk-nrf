@@ -77,6 +77,12 @@ See the following table for more details:
      - Incomplete verification
      - Not applicable.
 
+nRF54H20 initial limited sampling
+*********************************
+
+.. caution::
+   Support for nRF54H20 features during the initial limited sampling is Experimental.
+
 .. _api_deprecation:
 
 API deprecation
@@ -179,6 +185,8 @@ Protocol support
 The following table indicates the software maturity levels of the support for each :ref:`protocol <protocols>`:
 
 .. sml-table:: top_level
+   :add-columns: [("nRF54H20", "-")]
+   :insert-values: [("Bluetooth","nRF54H20","Experimental")]
 
 HomeKit features support
 ************************
@@ -188,6 +196,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: homekit
+     :add-columns: [("nRF54H20", "-")]
 
 Thread features support
 ***********************
@@ -197,6 +206,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: thread
+     :add-columns: [("nRF54H20", "-")]
 
 Matter features support
 ***********************
@@ -206,6 +216,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: matter
+     :add-columns: [("nRF54H20", "-")]
 
 Zigbee feature support
 **********************
@@ -215,6 +226,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: zigbee
+     :add-columns: [("nRF54H20", "-")]
 
 Security Feature Support
 ************************
@@ -232,6 +244,7 @@ Trusted Firmware-M support
 .. toggle::
 
   .. sml-table:: trusted_firmware_m
+     :add-columns: [("nRF54H20", "-")]
 
 PSA Crypto support
 ==================
@@ -239,6 +252,7 @@ PSA Crypto support
 .. toggle::
 
   .. sml-table:: psa_crypto
+     :add-columns: [("nRF54H20", "-")]
 
 |NSIB|
 ======
@@ -246,6 +260,7 @@ PSA Crypto support
 .. toggle::
 
   .. sml-table:: immutable_bootloader
+     :add-columns: [("nRF54H20", "-")]
 
 Hardware Unique Key
 ===================
@@ -253,3 +268,4 @@ Hardware Unique Key
 .. toggle::
 
   .. sml-table:: hw_unique_key
+     :add-columns: [("nRF54H20", "-")]
