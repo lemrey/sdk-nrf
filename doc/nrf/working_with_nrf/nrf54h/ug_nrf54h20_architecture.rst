@@ -1,7 +1,7 @@
 .. _ug_nrf54h20_architecture:
 
-Software Architecture for nRF54H20
-##################################
+Architecture of nRF54H20
+########################
 
 .. contents::
    :local:
@@ -9,8 +9,6 @@ Software Architecture for nRF54H20
 
 The nRF54H20 is a multicore System-on-Chip (SoC) that uses an asymmetric multiprocessing (AMP) configuration.
 Each core is tasked with specific responsibilities and optimized for different workloads.
-
-The software architecture documentation briefly describes the responsibilities of the cores and their interprocessor interactions.
 
 The following pages briefly describes the responsibilities of the cores, their interprocessor interactions, the memory mapping, and the boot sequence in nRF54H20.
 
@@ -23,3 +21,4 @@ The following pages briefly describes the responsibilities of the cores, their i
    ug_nrf54h20_architecture_ipc
    ug_nrf54h20_architecture_boot
    ug_nrf54h20_architecture_lifecycle
+   ug_nrf54h20_hardware_architecture
