@@ -1,7 +1,7 @@
 {
   "VERSIONS": [
     "latest",
-    "lcs-0.1.0-rc2"
+    "lcs-v0.1.0-rc2"
   ],
   "COMPONENTS_BY_VERSION": {
     "latest": {
@@ -13,7 +13,7 @@
       "tfm": "1.6.0",
       "matter": ""
     },
-    "lcs-0.1.0-rc2": {
+    "lcs-v0.1.0-rc2": {
       "ncs": "2.2.99",
       "nrfxlib": "2.2.99",
       "zephyr": "3.2.99",
