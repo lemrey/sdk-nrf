@@ -92,7 +92,17 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/ipc/ipc_service`
 
-.. include:: /includes/build_and_run.txt
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
+
+.. tabs::
+
+   .. group-tab:: nRF54H20 PDK
+
+      .. include:: /includes/build_and_run_54h.txt
+
+   .. group-tab:: nRF5340 DK
+
+      .. include:: /includes/build_and_run.txt
 
 You can use a set of configurations to get different test scenarios.
 
@@ -114,7 +124,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
 
    .. tabs::
 
-      .. tab:: nRF54H20 PDK
+      .. group-tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -125,7 +135,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
             -Dremote_CONF_FILE=prj_icmsg.conf -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 DK
+      .. group-tab:: nRF5340 DK
 
          .. code-block:: console
 
@@ -136,7 +146,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
 
    .. tabs::
 
-      .. tab:: nRF54H20 PDK
+      .. group-tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -147,7 +157,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
             -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 DK
+      .. group-tab:: nRF5340 DK
 
          .. code-block:: console
 
@@ -160,7 +170,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
 
    .. tabs::
 
-      .. tab:: nRF54H20 PDK
+      .. group-tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -170,7 +180,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
             -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 DK
+      .. group-tab:: nRF5340 DK
 
          .. code-block:: console
 
@@ -184,7 +194,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
 
    .. tabs::
 
-      .. tab:: nRF54H20 PDK
+      .. group-tab:: nRF54H20 PDK
 
          .. code-block:: console
 
@@ -202,7 +212,7 @@ For the nRF54H20 PDK, the following examples show the testing scenarios for ``cp
             -Dremote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf \
             -Dremote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
 
-      .. tab:: nRF5340 DK
+      .. group-tab:: nRF5340 DK
 
          .. code-block:: console
 

@@ -32,60 +32,69 @@ This module handles the data received from the :ref:`caf_sensor_data_aggregator`
 If you are running this sample on an SoC with multiple cores, the workload simulator module (``workload_sim``) is placed on the second core.
 All communication between the cores is done using :ref:`event_manager_proxy` and Zephyr subsystem :file:`include/ipc/ipc_service.h`.
 
-Sensor stub
-===========
-
-By default, the sensor manager sample uses :ref:`sensor_sim` for sensor data simulation.
-You can select the sensor stub module instead.
-The sensor stub module has a simple implementation that relates fully to the application implementing the function to generate the sensor data.
-This sample implements a simple generator for the sensor stub that uses no floating point mathematics.
-
-For more details on the sensor stub configuration, see the :ref:`sensor_stub_config` section.
-
 Configuration
 *************
 
 |config|
 
-Single core configuration
+Single-core configuration
 =========================
 
-For the MCU with multiple cores, the default configuration will use one core to simulate the sensor and the other core to process the sensor.
-These multiple core MCU can support single core configuration, where the sensor is simulated and processed on the single, selected core.
-The configuration is placed in the :file:`boards/<board>_singlecore.conf file`.
+For the MCU with multiple cores, the default configuration uses one core to simulate the sensor and the other core to process the sensor.
+The multicore MCUs can also support a single-core configuration, where the sensor is simulated and processed on a single, selected core.
+The configuration is placed in the :file:`boards/<board>_singlecore.conf` file.
 
-To use this configuration, specify the ``-DOVERLAY_CONFIG=boards/<board>_singlecore.conf`` parameter along with the build command when building the sample:
+To use this configuration, run the following command:
 
-   .. code-block:: console
+   .. tabs::
 
-      west build -b nrf5340dk_nrf5340_cpuapp -- -DOVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_nrf5340_singlecore.conf
+      .. group-tab:: nRF54H20 PDK
 
-.. _sensor_stub_config:
+         .. code-block:: console
 
-Sensor stub configuration
-=========================
+            west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_soc1_singlecore.conf -DDTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_soc1_singlecore.overlay
 
-The Sensor stub configuration is provided in the :file:`sensor_stub_overlay.conf` file.
-To use this configuration, specify the ``-DOVERLAY_CONFIG=sensor_stub_overlay.conf`` parameter along with the build command when building the sample.
+      .. group-tab:: nRF5340 DK
 
-For the multicore configuration, it would change to ``-Dremote_OVERLAY_CONFIG=sensor_stub_overlay.conf`` as shown in the following example:
+         .. code-block:: console
 
-   .. code-block:: console
-
-      west build -b nrf5340dk_nrf5340_cpuapp -- -Dremote_OVERLAY_CONFIG=sensor_stub_overlay.conf
-
-When single-core configuration is used on multicore MCU, add the sensor selection after the single-core configuration parameter as shown in the following example:
-
-   .. code-block:: console
-
-      west build -b nrf5340dk_nrf5340_cpuapp -- -DOVERLAY_CONFIG="boards/nrf5340dk_nrf5340_cpuapp_nrf5340_singlecore.conf;sensor_stub_overlay.conf"
+            west build -b nrf5340dk_nrf5340_cpuapp -- -DOVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_nrf5340_singlecore.conf
 
 Building and running
 ********************
 
+For the MCU with multiple cores, the default configuration ensures that all the required cores are built.
+You can build and flash all the required images by completing the following steps for all the required cores.
+
 .. |sample path| replace:: :file:`samples/caf_sensor_manager`
 
-.. include:: /includes/build_and_run.txt
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
+
+.. tabs::
+
+   .. group-tab:: nRF54H20 PDK
+
+      .. include:: /includes/build_and_run_54h.txt
+
+   .. group-tab:: nRF5340 DK
+
+      .. include:: /includes/build_and_run.txt
+
+      Complete the following steps to program the sample:
+
+      1. Go to the sample directory.
+      #. Open the command line terminal.
+      #. Run the following command to build the application code for the host and the remote:
+
+         .. code-block:: console
+
+            west build -b nrf5340dk_nrf5340_cpuapp
+
+      #. Program both the cores:
+
+         .. code-block:: console
+
+            west flash
 
 Testing
 =======

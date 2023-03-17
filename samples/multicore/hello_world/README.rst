@@ -53,26 +53,6 @@ After programming the sample to your development kit, complete the following ste
 
 .. tabs::
 
-   .. tab:: nRF5340
-
-      1. |connect_terminal|
-      #. Reset the kit.
-      #. Observe the console output for both cores:
-
-         * For the application core, the output should be as follows:
-
-            .. code-block:: console
-
-               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
-               Hello world from nrf5340dk_nrf5340_cpuapp
-
-         * For the network core, the output should be as follows:
-
-            .. code-block:: console
-
-               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
-               Hello world from nrf5340dk_nrf5340_cpunet
-
    .. tab:: nRF54H20
 
       1. |connect_terminal|
@@ -92,3 +72,23 @@ After programming the sample to your development kit, complete the following ste
 
                *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
                Hello world from nrf54h20dk_nrf54h20_cpuppr
+
+   .. tab:: nRF5340
+
+      1. |connect_terminal|
+      #. Reset the kit.
+      #. Observe the console output for both cores:
+
+         * For the application core, the output should be as follows:
+
+            .. code-block:: console
+
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf5340dk_nrf5340_cpuapp
+
+         * For the network core, the output should be as follows:
+
+            .. code-block:: console
+
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf5340dk_nrf5340_cpunet
