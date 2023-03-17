@@ -24,6 +24,9 @@ When classifying memories by a CPU association, the nRF54H20 contains the follow
 The MRAM is a global memory available to all CPUs in the system.
 Some RAM memories are, instead, tightly coupled to a specific CPU, while others are intended to be shared between multiple CPUs.
 
+.. note::
+   In the nRF54H20 initial limited sampling, TrustZone is disabled on all cores.
+
 RAM
 ***
 
@@ -31,7 +34,8 @@ There are multiple RAM banks in the system.
 Each local domain (like Application or Radio) contains its own RAM.
 There is also a large part of the RAM in the global domain to be shared between the cores in the system.
 
-TODO: diagram
+
+.. image:: images/nrf54h20_memorymap.png
 
 Local RAM
 =========
@@ -41,9 +45,8 @@ Local RAM is present in each of local domains
 Application Core RAM
 --------------------
 
-.. image:: images/nrf54h20_memory_map_app.png
+.. image:: images/nrf54h20_memory_map_app.svg
    :width: 300 px
-   :align: left
 
 The Application Core contains 32 KB of local RAM.
 Accessing this memory from the Application Core CPU has minimal latency, but accessing it from any other core adds significant latency.
@@ -70,9 +73,8 @@ Access control
 Radio Core RAM
 --------------
 
-.. image:: images/nrf54h20_memory_map_radio.png
+.. image:: images/nrf54h20_memory_map_radio.svg
    :width: 300 px
-   :align: left
 
 The Radio Core contains 96 KB of local RAM.
 Any access to this memory has minimal latency if originated either from Radio Core CPU or from peripherals with EasyDMA located in the Radio Core.
@@ -100,7 +102,8 @@ Access control
 BBPROC memory
 ^^^^^^^^^^^^^
 
-TODO: diagram
+.. image:: images/nrf54h20_memory_map_bbproc.svg
+   :width: 300 px
 
 The Lower 32 KB of local RAM in the Radio Domain (0x23010000 - 0x23018000) is tightly coupled with BBPROC.
 Any access to this memory has minimal latency if originated from BBPROC.
@@ -123,16 +126,15 @@ Access control
 Secure Domain
 -------------
 
-.. image:: images/nrf54h20_memory_map_secure.png
+.. image:: images/nrf54h20_memory_map_secure.svg
    :width: 300 px
-   :align: left
 
 The Secure Domain contains 64 KB of local RAM.
 Any access to this memory from the Secure Domain core has minimal latency, but accesses from any other core have significant latency.
 Because of this property, the local RAM in the Secure Domain should be used mainly to store data frequently accessed by its local core, or to store timing critical parts of the code executed by it.
 
 Address range
-   0x21000000 - 0x22010000
+   0x21000000 - 0x21008000
 
 Size
    64 KB
@@ -152,16 +154,13 @@ Global RAM
 The Global Domain RAM (or Global RAM, GRAM) is distributed in multiple instances across the system.
 Each of the instances has other properties and other purposes.
 
-TODO: access control
-
 .. _ug_nrf54h20_architecture_memory_gp_shared_ram:
 
 General-purpose shared RAM (RAM0x)
 ----------------------------------
 
-.. image:: images/nrf54h20_memory_map_ram0x.png
+.. image:: images/nrf54h20_memory_map_ram0x.svg
    :width: 300 px
-   :align: left
 
 The biggest part of the RAM memory in the system is located in the Global Domain as general-purpose shared RAM.
 Access to this memory is relatively fast from all the local domains (like the Application or the Radio ones).
@@ -196,14 +195,11 @@ Access control
    .. note::
       If TrustZone is disabled for a given core, the only available Processing Environment is Secure.
 
-TODO: secure domain usage of RAM0x, full partitioning, table with MPC OVERRIDEs
-
 SYSCTRL memory (RAM20)
 ----------------------
 
-.. image:: images/nrf54h20_memory_map_ram20.png
+.. image:: images/nrf54h20_memory_map_ram20.svg
    :width: 300 px
-   :align: left
 
 The SYSCTRL memory is a part of the global RAM tightly coupled with the System Controller.
 Access to this memory block from the System Controller has minimal latency and can be performed without powering up any other parts of the system.
@@ -234,9 +230,8 @@ Access control
 Fast global RAM (RAM21)
 -----------------------
 
-.. image:: images/nrf54h20_memory_map_ram21.png
+.. image:: images/nrf54h20_memory_map_ram21.svg
    :width: 300 px
-   :align: left
 
 The Fast global RAM is a part of the global RAM tightly coupled with the Fast Lightweight Processor.
 Access to this memory block from the FLPR and fast peripherals' DMA (I3C, CAN, PWM120, UARTE120, SPIS120, SPIM120, SPIM121) has minimal latency and can be performed without powering up any other parts of the system.
@@ -261,9 +256,8 @@ Access control
 Slow global RAM (RAM3x)
 -----------------------
 
-.. image:: images/nrf54h20_memory_map_ram3x.png
+.. image:: images/nrf54h20_memory_map_ram3x.svg
    :width: 300 px
-   :align: left
 
 The Slow global RAM is a part of the global RAM tightly coupled with the Peripheral Processor.
 Access to this memory block from the PPR and slow periperals' DMA has minimal latency and can be performed without powering up any other parts of the system.
@@ -285,7 +279,7 @@ Access control
 
   The security attribute of memory partitions must follow PPR and CMA engines security settings.
 
-MRAM (non volatile memory)
+MRAM (non-volatile memory)
 **************************
 
 The MRAM is divided in the following parts:
@@ -296,9 +290,8 @@ The MRAM is divided in the following parts:
 MRAM_10
 =======
 
-.. image:: images/nrf54h20_memory_map_mram10.png
+.. image:: images/nrf54h20_memory_map_mram10.svg
    :width: 300 px
-   :align: left
 
 The MRAM_10 is a part of the non-volatile memory intended to keep firmware images to execute.
 Access to this memory has minimal latency to avoid CPU stalls on instruction fetches.
@@ -334,9 +327,8 @@ Access control
 MRAM_11
 =======
 
-.. image:: images/nrf54h20_memory_map_mram11.png
+.. image:: images/nrf54h20_memory_map_mram11.svg
    :width: 300 px
-   :align: left
 
 The MRAM_11 is a part of the non-volatile memory intended to keep non-volatile writable data.
 Writing to MRAM_11 can increase access latency for other cores reading from MRAM_11.
@@ -400,7 +392,7 @@ OVERRIDE Id  Owner  Permissions  SECUREMASK  Regions
 
 .. note::
    SECUREMASK can be set to ``0`` for any secure memory partition.
-   However, beause of the hardware configuration, OVERRIDEs marked with * have SECUREMASK set to ``1``.
+   However, because of the hardware configuration, OVERRIDEs marked with ``*`` have SECUREMASK set to ``1``.
    Such configuration implies that addresses of this entry should have 28th bit cleared.
    It does not expose any security thread because permissions filtering denies access from non-secure masters.
 
@@ -436,14 +428,15 @@ OVERRIDE Id  Owner  Permissions  SECUREMASK  Regions
 3            Radio  RW           1           DMA buffers for Radio's fast peripherals (if any)
 ===========  =====  ===========  ==========  ===========================================================================
 
-.. TODO: Diagrams showing memory view from App's SPE, App's NSPE, maybe for other cores as well?
-
 SAU configuration
 *****************
 
+.. note::
+   In the nRF54H20 initial limited sampling, SAU is disabled and the entire memory is marked as secure.
+
 Each one of the Cortex-M33 CPUs in the system with the TrustZone feature enabled (specifically, the Application, Radio, and Secure Domain Cores) associates a Security Attribution Unit (SAU) peripheral.
 The Secure Domain configures the SAUs for itself during its initialization before it switches to the Non-Secure Processing Environment (NSPE).
-The Secure Domain configures the SAUs for other cores before it boots them (TODO: verify if that's correct or actually each SPE configures its SAU).
+The Secure Domain configures the SAUs for other cores before it boots them.
 
 SAU configuration provides the rights for the Non-Secure Processing Environment to access resources allocated for it.
 If the NSPE tries to access a memory address not allocated to it, the transaction fails.

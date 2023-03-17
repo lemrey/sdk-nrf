@@ -58,7 +58,7 @@ The Secure Domain boots the System Controller, the Application Core, and the Rad
 
 See the following overview of the boot sequence, where the left-most block indicates what starts first from when power-on reset is applied.
 
-.. figure:: images/TEMP_nRF54H20_bootsequence.png
+.. figure:: images/nRF54H20_bootsequence.svg
    :alt: Boot sequence of the nRF54H20
 
    Boot order of the nRF54H20

@@ -15,8 +15,8 @@ Security functions are centralized into the Secure Domain.
 
 The following image shows the domains in the nRF54H20:
 
-.. figure:: images/TEMP_nRF54H20_Domains.png
-   :alt: nRF54h20 Domains
+.. figure:: images/nRF54H20_Domains.svg
+   :alt: nRF54H20 Domains
 
    nRF54h20 Domains
 
@@ -32,7 +32,7 @@ Application Core
 
 The following image shows the Application Core in the final silicon:
 
-.. figure:: images/TEMP_nRF54H20_appcore.png
+.. figure:: images/nRF54H20_appcore.svg
    :alt: Application Core
 
    Application Core
@@ -61,7 +61,7 @@ Radio Core
 
 The following image shows the Radio Core in the final silicon:
 
-.. figure:: images/TEMP_nRF54H20_radiocore.png
+.. figure:: images/nRF54H20_radiocore.svg
    :alt: Radio Core
 
    Radio Core
@@ -70,7 +70,7 @@ The Radio Core is intended to run the radio protocol stacks, such as Bluetooth L
 It is also possible to implement a combination of protocols that use multiprotocol support.
 
 .. note::
-   IEEE 802.15.4 will be not be supported for the initial limited sampling.
+   IEEE 802.15.4 will not be supported for the initial limited sampling.
 
 Any remaining processing power of this core can be used for tasks other than the ones required by the radio protocol stacks.
 
@@ -99,7 +99,7 @@ Global Domain
 
 The following image shows the Global Domain in the final silicon:
 
-.. figure:: images/TEMP_nRF54H20_globaldomain.png
+.. figure:: images/nRF54H20_globaldomain.svg
    :alt: Global Domain
 
    Global Domain

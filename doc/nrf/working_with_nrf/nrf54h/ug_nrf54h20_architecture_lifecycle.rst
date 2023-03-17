@@ -44,7 +44,7 @@ The LCS available are the following:
 
 See the following diagram:
 
-.. figure:: images/TEMP_nRF54H20_lifecycle_states.png
+.. figure:: images/nRF54H20_lifecycle_states.svg
    :alt: nRF54H20 lifecycle states and transitions
 
    nRF54H20 lifecycle states and transitions available on the final silicon.
