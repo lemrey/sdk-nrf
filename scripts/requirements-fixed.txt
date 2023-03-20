@@ -52,7 +52,6 @@ mock==4.0.3
 mypy==0.921
 mypy-extensions==0.4.3
 naturalsort==1.5.1
-nrf-regtool==3.0.2
 packaging==20.8
 Pillow==9.0.1
 pluggy==0.13.1
