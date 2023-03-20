@@ -88,9 +88,9 @@ jobs:
             echo "publish2 dev PR-${{ github.event.number }} __FILE__" > monitor.txt
             echo "${{ github.event.number }}" > pr.txt
           else
-            VERSION_REGEX="^(lcs-)?v[0-9a-z\.\-]+$"
+            VERSION_REGEX="^(lcs-)?v([0-9a-z\.\-]+)$"
             if [[ ${GITHUB_REF#refs/tags/} =~ $VERSION_REGEX ]]; then
-              VERSION="${GITHUB_REF#refs/tags/}"
+              VERSION=${BASH_REMATCH[2]}
             elif [[ ${GITHUB_REF#refs/heads/} == "haltium-ncs" ]]; then
               VERSION="latest"
             else
