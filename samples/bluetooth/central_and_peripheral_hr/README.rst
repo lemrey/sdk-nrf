@@ -64,8 +64,9 @@ LED 3:
 Building and running
 ********************
 .. |sample path| replace:: :file:`samples/bluetooth/central_and_peripheral_hr`
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54h.txt
 
 
 .. _central_and_peripheral_hrs_testing:

@@ -1,0 +1,49 @@
+This sample can be found under |sample path| in the |NCS| folder structure.
+
+In the limited sampling release of the |NCS|, you need to use the command line to program the nRF54H20 PDK.
+See :ref:`gs_programming` for other building and programming scenarios and :ref:`gs_testing` for general information about testing and debugging in the |NCS|.
+
+   .. caution::
+      You should use west to program the nRF54H20 PDK during the limited sampling release.
+
+      Using the ``nrfjprog -e`` command to program the nRF54H20 PDK will brick the device.
+      Use the ``west flash --erase-storage`` command instead.
+
+Complete the following steps to program the nRF54H20 PDK:
+
+1. Open a terminal window in the |sample path| directory inside the |NCS| folder structure.
+#. Build the application using the west command:
+
+   .. parsed-literal::
+      :class: highlight
+
+      |build command|
+
+   If you want to configure your application, see :ref:`configure_application` for additional information.
+
+   After running the ``west build`` command, the build files can be found in :file:`build/zephyr`.
+   For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
+   For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
+
+#. Connect the PDK to your computer using a USB cable.
+#. Power on the PDK.
+#. Program the application to the kit using the following command:
+
+   .. code-block:: console
+
+      west flash --erase
+
+   This command clears the full flash memory before programming, which is the recommended approach.
+
+   As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
+   With this approach, the old data in other areas will be retained.
+
+   To erase only the areas of flash memory that are required for programming the new application, use the following command:
+
+   .. code-block:: console
+
+      west flash
+
+   The ``west flash`` command automatically resets the kit and starts the application.
+
+For more information on building and programming with the command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.

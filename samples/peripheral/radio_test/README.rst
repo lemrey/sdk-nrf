@@ -164,8 +164,9 @@ The behavior of the commands vary depending on the hardware configuration and Kc
 Building and running
 ********************
 .. |sample path| replace:: :file:`samples/peripheral/radio_test`
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_54h.txt
 
 .. note::
    On the nRF5340 or nRF7002 development kit, the Radio Test sample requires the :ref:`nrf5340_remote_shell` sample on the application core.

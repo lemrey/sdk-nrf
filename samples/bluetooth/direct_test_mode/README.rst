@@ -284,8 +284,9 @@ Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/bluetooth/direct_test_mode`
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_54h.txt
 
 .. note::
    On the nRF5340 development kit, this sample requires the :ref:`nrf5340_remote_shell` sample on the application core.

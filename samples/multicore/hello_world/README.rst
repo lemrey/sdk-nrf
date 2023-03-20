@@ -42,8 +42,9 @@ Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/multicore/hello_world`
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/build_and_run_54h.txt
 
 Testing
 =======
