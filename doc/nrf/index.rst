@@ -23,9 +23,7 @@ The "99" at the end of the version number of this documentation indicates contin
    ug_dev_model
    ug_app_dev
    security_chapter
-   ug_nrf92
    ug_nrf91
-   ug_nrf71
    ug_nrf70
    ug_nrf54h
    ug_nrf53
