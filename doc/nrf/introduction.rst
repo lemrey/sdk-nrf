@@ -17,8 +17,9 @@ nRF54H20 initial limited sampling
 *********************************
 
 This version of the |NCS| is dedicated to the initial limited sampling of the nRF54H20 SoC, and is based on the |NCS| version 2.2.99 (commit hash ``d69930b57ff79433c2fded560c6e7ecdb65b9886``).
+
 The documentation of this version is based on the publicly available |NCS| documentation, with an added :ref:`ug_nrf54h` section containing all the software documentation applicable to the nRF54H20 SoC and PDK.
-Refer exclusively to this section when using the nRF54H20 PDK.
+Refer exclusively to that section when using the nRF54H20 PDK.
 
 Repositories
 ************

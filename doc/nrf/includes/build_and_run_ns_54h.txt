@@ -1,22 +1,14 @@
 This sample can be found under |sample path| in the |NCS| folder structure.
 
-When built as firmware image for the ``_ns`` build target, the sample has Cortex-M Security Extensions (CMSE) enabled, and it separates the firmware between Non-Secure Processing Environment (NSPE) and Secure Processing Environment (SPE).
-Because of this, it automatically includes the :ref:`Trusted Firmware-M (TF-M) <ug_tfm>`.
-To read more about CMSE, see :ref:`app_boards_spe_nspe`.
+.. note::
+   In the initial limited sampling, TrustZone is not available for the nRF54H20 SoC.
 
 In the limited sampling release of the |NCS|, you need to use the command line to program the nRF54H20 PDK.
-See :ref:`gs_programming` for other building and programming scenarios and :ref:`gs_testing` for general information about testing and debugging in the |NCS|.
-
-   .. caution::
-      You should use west to program the nRF54H20 PDK during the limited sampling release.
-
-      Using the ``nrfjprog -e`` command to program the nRF54H20 PDK will brick the device.
-      Use the ``west flash --erase-storage`` command instead.
 
 Complete the following steps to program the nRF54H20 PDK:
 
 1. Open a terminal window in the |sample path| directory inside the |NCS| folder structure.
-#. Build the application using the west command:
+#. Build the application using the ``west`` command:
 
    .. parsed-literal::
       :class: highlight
@@ -35,9 +27,15 @@ Complete the following steps to program the nRF54H20 PDK:
 
    .. code-block:: console
 
-      west flash --erase
+      west flash --erase-storage
 
-   This command clears the full flash memory before programming, which is the recommended approach.
+   This command clears the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
+
+   .. caution::
+      You should use west to program the nRF54H20 PDK during the limited sampling release.
+
+      Do not use the ``nrfjprog -e`` command to program the nRF54H20 PDK, as it will brick the device.
+      Use the ``west flash --erase-storage`` command instead.
 
    As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
    With this approach, the old data in other areas will be retained.
@@ -51,3 +49,4 @@ Complete the following steps to program the nRF54H20 PDK:
    The ``west flash`` command automatically resets the kit and starts the application.
 
 For more information on building and programming with the command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.
+See :ref:`ug_nrf54h20_debugging` and :ref:`ug_nrf54h20_logging` for information about debugging and logging on the nRF54H20.

@@ -5,13 +5,13 @@ Welcome to the |NCS|!
 
 The |NCS| is where you begin building low-power wireless applications with Nordic Semiconductor devices.
 
-The SDK contains optimized cellular IoT (LTE-M and NB-IoT), Bluetooth® Low Energy, Thread, Zigbee, and Bluetooth mesh stacks, a range of applications, samples, and reference implementations, as well as a full suite of drivers for Nordic Semiconductor's devices.
+The SDK for the initial limited sampling of the nRF54H20 contains optimized Bluetooth® Low Energy stacks, a range of applications, samples, and reference implementations, as well as a suite of drivers for the nRF54H20 SoC.
 The |NCS| includes the Zephyr™ real-time operating system (RTOS), which is built for connected low power products.
 
 The "99" at the end of the version number of this documentation indicates continuous updates on the main branch since the previous major.minor release.
 
 .. note::
-   This version of the |NCS| is meant to be used with the nRF54H20 PDK.
+   This version of the |NCS| must be used only with the nRF54H20 PDK.
    For more information on this, visit :ref:`ncs_introduction`.
 
 .. toctree::

@@ -229,21 +229,7 @@ The RTT logs can be easily accessed, because the Development Kit has a built-in 
 Programming nRF54H20 PDK
 ========================
 
-When building for the nRF54H20 PDK for the single-core variant and invoking ``west build`` or ``cmake`` in the Machine Learning application, set the ``-DSHIELD=sensor_hub`` option.
-
-When building for an nRF54H20 board with an additional PPR core, add the ``-DremoteSHIELD`` parameter to build for the PPR core as well.
-
-To build the application for the nRF54H20 PDK with sensor sampling by PPR core (dual-core application), run the following command:
-
-.. code-block:: console
-
-   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DSHIELD=sensor_hub -Dremote_SHIELD=sensor_hub
-
-To build the application for the nRF54H20 DK with sensor sampling by Application core (single-core application), run following command:
-
-.. code-block:: console
-
-   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_singlecore.conf -DSHIELD=sensor_hub
+The nRF54H20 PDK has a J-Link debug IC that can be used to program the firmware.
 
 When building an application for the nRF54H20 PDK, you are building all domain images at once.
 During this process, the following images are built:
@@ -262,16 +248,7 @@ Additionally, the following UICR contents are generated for setup access for dom
 
 All of the HEX files need to be flashed into the device.
 
-The nRF54H20 PDK has a J-Link debug IC that can be used to program the firmware.
-Flash the sample using the standard |NCS| flash command:
-
-.. code-block:: console
-
-   west flash
-
-The command flashes all required binaries to the PDK from the build directory, then resets and runs the application.
-
-For more detailed information about working with the PDK, see the :ref:`ug_nrf54h20_gs` documentation.
+See the `Building and running`_ section for more information.
 
 Custom model requirements
 =========================
@@ -499,7 +476,39 @@ Building and running
 The nRF machine learning application is built the same way to any other |NCS| application or sample.
 Building the default configurations requires an Internet connection, because the machine learning model source files are downloaded from web during the application build.
 
-.. include:: /includes/build_and_run_ns.txt
+.. tabs::
+
+   .. tab:: nRF54H20 PDK
+
+      When building for the nRF54H20 PDK for the single-core variant and invoking ``west build`` or ``cmake`` in the Machine Learning application, add the ``-DCONF_FILE=prj_singlecore.conf`` and ``-DSHIELD=sensor_hub`` command line options.
+
+      When building for the nRF54H20 board with an additional PPR core, add the ``-DSHIELD=sensor_hub`` and ``-Dremote_SHIELD=sensor_hub`` command line options.
+
+      To build the application for the nRF54H20 PDK with the sensor sampling done by the PPR core (dual-core application), run the following command:
+
+      .. code-block:: console
+
+         west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DSHIELD=sensor_hub -Dremote_SHIELD=sensor_hub
+
+      To build the application for the nRF54H20 DK with the sensor sampling done by the Application core (single-core application), run the following command:
+
+      .. code-block:: console
+
+         west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_singlecore.conf -DSHIELD=sensor_hub
+
+      Flash the sample using the standard |NCS| flash command:
+
+      .. code-block:: console
+
+         west flash
+
+      The command flashes all required binaries to the PDK from the build directory, then resets and runs the application.
+
+      For more information about working with the nRF54H20 PDK, see the :ref:`ug_nrf54h` documentation.
+
+   .. tab:: nRF53 DK and Thingy:53
+
+      .. include:: /includes/build_and_run_ns.txt
 
 Selecting a build type
 ======================

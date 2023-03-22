@@ -7,35 +7,11 @@ Getting started with the nRF54H20 PDK
    :local:
    :depth: 2
 
-This section will get you started with your nRF54H20 PDK using the |NCS|.
-It first tells you how to test that your PDK is working correctly by using the :ref:`zephyr:blinky-sample` sample.
-After you have tested the PDK, this section tells you how to configure, build and program the :ref:`multicore_hello_world` sample to the development kit and read logs from it.
+This page will get you started with your nRF54H20 PDK using the |NCS|.
+It first tells you how to test that your PDK is working correctly by using the preflashed :ref:`zephyr:blinky-sample` sample.
+After the test, it will guide you on how to configure, build, and program the :ref:`multicore_hello_world` sample to the development kit and read logs from it.
 
 If you have already set up your nRF54H20 PDK and want to learn more, see the :ref:`ug_nrf54h20_architecture` documentation for an in-depth description of the architecture of the nRF54H20.
-
-.. _ug_nrf54h20_gs_test_blinky:
-
-Testing with the Blinky sample
-******************************
-
-In the limited sampling release, the nRF54H20 PDK comes preprogrammed with the :ref:`zephyr:blinky-sample` sample.
-
-Complete the following steps to test that the PDK works correctly:
-
-1. Turn the nRF54H20 PDK on.
-
-   **LED1** turns on.
-#. Press **Button 1**.
-   This changes the blinking interval, or makes the LED blink if it is not currently blinking.
-
-   You can keep pressing the button to go through the different intervals.
-   When you return to the original non-blinking interval, the LED will remain in the same state it was in, meaning that if the LED was off when you reached the state, it will remain off until you make it blink again.
-#. Press **Button 2**.
-   This turns on **LED2**, while **LED 1** will remain in the state it was in (on, off, or blinking).
-
-   If you press **Button 1** now, it will change the blinking interval of **LED 2**.
-
-If something does not work as expected, contact Nordic Semiconductor support.
 
 .. _ug_nrf54h20_gs_requirements:
 
@@ -61,10 +37,28 @@ On your computer, one of the following operating systems:
 |supported OS|
 
 .. note::
-   Note that macOS is not supported for the limited sampling release on day one.
+   macOS is not supported for the limited sampling release on day one.
    Support will be added in the future.
 
-On Windows, you must also install a terminal that supports cURL, such as Git Bash, which is installed as part of `Git for Windows`_.
+You also need to install `Git`_ or `Git for Windows`_ (on Linux or Windows, respectively).
+
+.. _ug_nrf54h20_gs_test_blinky:
+
+Testing with the Blinky sample
+******************************
+
+In the limited sampling release, the nRF54H20 PDK comes preprogrammed with the :ref:`zephyr:blinky-sample` sample.
+
+Complete the following steps to test that the PDK works correctly:
+
+1. Connect the USB-C end of the USB-C cable to the **IMCU USB** port the nRF54H20 PDK.
+#. Connect the other end of the USB-C cable to your PC.
+#. Move the **POWER** switch to **On** to turn the nRF54H20 PDK on.
+   The switch is located in the top left corner of the PDK PCB.
+
+**LED1** will turn on and start to blink.
+
+If something does not work as expected, contact Nordic Semiconductor support.
 
 .. _nrf54h20_gs_installing_software:
 
@@ -72,8 +66,7 @@ Installing the required software
 ********************************
 
 To work with the nRF54H20 PDK, you need to install the limited sampling version of the |NCS|.
-The limited sampling version needs many of the same tools as the regular |NCS| does, as well as its own toolchain.
-See the :ref:`nrf54h20_install_commandline` and the :ref:`nrf54h20_install_toolchain` sections to install nRF Command Line Tools and the toolchain, and the :ref:`nrf54h20_install_ncs` section for how to get the limited sampling version of the |NCS|.
+Follow the instructions in the next sections to install the required tools.
 
 .. _nrf54h20_install_commandline:
 
@@ -101,8 +94,6 @@ To install the nRF Command Line Tools, you need to download and install the vers
   * `ARMHF system, RPM`_
   * `ARMHF system, tar archive`_
 
-* `macOS, DMG file`_
-
 .. _nrf54h20_install_toolchain:
 
 Installing the toolchain
@@ -117,27 +108,60 @@ In addition, you need to have Git and curl installed.
 To install the toolchain, complete the following steps:
 
 1. Open a terminal window.
-   On Windows, make sure to use a terminal that supports cURL, such as Git Bash.
-#. Download and run the :file:`bootstrap.sh` script file using the following command:
+   On Windows, open Git Bash.
+#. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
 
    .. parsed-literal::
       :class: highlight
 
-      curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap.sh | sh
+      curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | sh
 
    Depending on your connection, this might take some time.
 
 #. Run the command provided to you by the script:
 
-   .. parsed-literal::
-      :class: highlight
+   .. tabs::
 
-      c:/nordic-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/nordic-lcs/west_working_dir" --ncs-version v2.2.99-cs1
+      .. tab:: Windows
 
-   This opens a new terminal window.
-   When working with the limited sampling release, you must use this window.
+            Run the following command in Git Bash:
 
-If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\nordic-lcs` directory, and start over.
+            .. parsed-literal::
+               :class: highlight
+
+               c:/nordic-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/nordic-lcs/west_working_dir" --ncs-version v2.2.99-cs1
+
+            This opens a new terminal window with the |NCS| toolchain environment, where west and other development tools are available.
+            Alternatively, you can run the following command::
+
+               c:/nordic-lcs/nrfutil.exe toolchain-manager env --as-script'
+
+            This gives all the necessary environmental variables you need to copy-paste and execute in the same terminal window to be able to run west directly there.
+
+            .. caution::
+               When working with the limited sampling release, you must always use the terminal window where the west environmental variables have been called.
+
+            If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\nordic-lcs` directory, and start over.
+
+            We recommend adding the path where nrfutil is located to your environmental variables.
+
+      .. tab:: Linux
+
+            Run the following command in your terminal:
+
+            .. parsed-literal::
+               :class: highlight
+
+               $HOME/nordic-lcs/nrfutil toolchain-manager launch --terminal --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.2.99-cs1
+
+            This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
+
+            .. caution::
+               When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
+
+            If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`nordic-lcs` directory, and start over.
+
+            We recommend adding the path where nrfutil is located to your environmental variables.
 
 .. _nrf54h20_install_ncs:
 
@@ -156,17 +180,40 @@ After you have installed nRF Command Line Tools 10.21.0 and the toolchain, compl
    A window pops up to ask you to select a credential helper.
    You can use any of the options.
 
+#. Set up GitHub authentication:
+
+   ``west update`` requires :ref:`west <zephyr:west>` to fetch from private repositories on GitHub.
+
+   Because the `west manifest file`_ uses ``https://`` URLs instead of ``ssh://``, you may be prompted to type your GitHub username and Personal Access Token multiple times.
+   GitHub has a comprehensive `documentation page <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github>`_ on the subject.
+   In many cases (including Windows), the Git installation includes `Git Credential Manager <https://github.com/git-ecosystem/git-credential-manager>`_, which will handle GitHub authentication and is the recommended method for handling GitHub authentication.
+
+   However, if you are already using `SSH-based authentication <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent>`_, you can reuse your SSH setup by adding the following to your :file:`~/.gitconfig` (or :file:`%userprofile%\\.gitconfig` on Windows):
+
+   .. parsed-literal::
+      :class: highlight
+
+         [url "ssh://git@github.com"]
+               insteadOf = https://github.com
+
+   This will rewrite the URLs on the fly so that Git uses ``ssh://`` for all network operations with GitHub.
+
+   Another option instead is to create a :file:`~/.git-credentials` (or :file:`%userprofile%\\.git-credentials` on Windows) and add this line to it::
+
+      https://<GitHub username>:<Personal Access Token>@github.com
+
 #. Enter the following command to clone the project repositories::
 
       west update
 
    Depending on your connection, this might take some time.
+
 #. Export a :ref:`Zephyr CMake package <zephyr:cmake_pkg>`.
    This allows CMake to automatically load the boilerplate code required for building |NCS| applications::
 
       west zephyr-export
 
-#. Install ``nrf-regtool`` using the following command::
+#. As an administrator (or superuser), install ``nrf-regtool`` using the following command::
 
       pip install modules/lib/nrf-regtool
 
@@ -190,16 +237,14 @@ The full set of repositories and folders is defined in the manifest file.
 Programming the sample
 **********************
 
-The :ref:`multicore_hello_world` sample is a multicore sample running on both the application core (``cpuapp``) and the ultra-low-power core (PPR, ``cpuppr``).
-It uses the following build targets:
-
-* ``nrf54h20dk_nrf54h20_cpuapp@soc1``
-* ``nrf54h20dk_nrf54h20_cpuppr@soc1``
+The :ref:`multicore_hello_world` sample is a multicore sample running on both the Application core (``cpuapp``) and the Peripheral Processor (PPR, ``cpuppr``).
+It uses the ``nrf54h20dk_nrf54h20_cpuapp@soc1`` build target.
 
 .. caution::
    You should use west to program the nRF54H20 PDK during the limited sampling release.
+   The ``west`` command is available from the terminal window you opened in Step 3 of `nrf54h20_install_toolchain`_.
 
-   Using the ``nrfjprog -e`` command on the nRF54H20 PDK will brick the device.
+   Do not use the ``nrfjprog -e`` command to program the nRF54H20 PDK, as it will brick the device.
    Use the ``west flash --erase-storage`` command instead.
 
 To build and program the sample to the nRF54H20 PDK, complete the following steps:
@@ -217,8 +262,7 @@ To build and program the sample to the nRF54H20 PDK, complete the following step
 
       west flash
 
-
-The sample will be automatically built and programmed on both the application and the ultra-low-power core of the nRF54H20.
+The sample will be automatically built and programmed on both the Application core and the Peripheral Processor (PPR) of the nRF54H20.
 
 .. _nrf54h20_sample_reading_logs:
 
@@ -238,7 +282,7 @@ To read the logs from the :ref:`multicore_hello_world` sample programmed to the 
    * No parity
    * HW flow control: None
 
-#. Reset the PDK.
+#. Press the **Reset** button on the PCB to reset the PDK.
 #. Observe the console output for both cores:
 
    * For the application core, the output should be as follows:
@@ -260,7 +304,7 @@ See the :ref:`ug_nrf54h20_logging` page for more information.
 Next steps
 **********
 
-You have now completed getting started with the nRF54H20 PDK.
+You are now all set to use the nRF54H20 PDK.
 See the following links for where to go next:
 
 * :ref:`ug_nrf54h20_architecture` for information about the multicore System-on-Chip, such as the responsibilities of the cores and their interprocessor interactions, the memory mapping, and the boot sequence.
