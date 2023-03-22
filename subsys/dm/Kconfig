@@ -20,23 +20,23 @@ choice DM_TIMER
 	prompt "Timer to use for the nrf_dm library."
 
 config DM_TIMER0
-	depends on HAS_HW_NRF_TIMER0
+	depends on $(dt_nodelabel_has_compat,timer0,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	bool "TIMER0"
 
 config DM_TIMER1
-	depends on HAS_HW_NRF_TIMER1
+	depends on $(dt_nodelabel_has_compat,timer1,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	bool "TIMER1"
 
 config DM_TIMER2
-	depends on HAS_HW_NRF_TIMER2
+	depends on $(dt_nodelabel_has_compat,timer2,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	bool "TIMER2"
 
 config DM_TIMER3
-	depends on HAS_HW_NRF_TIMER3
+	depends on $(dt_nodelabel_has_compat,timer3,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	bool "TIMER3"
 
 config DM_TIMER4
-	depends on HAS_HW_NRF_TIMER4
+	depends on $(dt_nodelabel_has_compat,timer4,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	bool "TIMER4"
 
 endchoice
