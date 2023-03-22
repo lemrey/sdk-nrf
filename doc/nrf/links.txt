@@ -1083,3 +1083,10 @@
 .. _`ARMHF system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0_Linux-armhf.tar.gz
 
 .. _`macOS, DMG file`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-Darwin.dmg
+
+
+.. _`Arborist`: https://github.com/nrfconnect/sdk-secdom/blob/main/doc/arborist.rst
+
+.. _`nrf-regtool`: https://github.com/nrfconnect/nrf-regtool/
+
+.. _`nRF Connect SDK Fundamentals`: https://academy.nordicsemi.com/courses/nrf-connect-sdk-fundamentals/
