@@ -1,7 +1,7 @@
 {
   "VERSIONS": [
     "latest",
-    "lcs-v0.1.0-rc2"
+    "2.2.99-cs1"
   ],
   "COMPONENTS_BY_VERSION": {
     "latest": {
@@ -13,12 +13,12 @@
       "tfm": "1.6.0",
       "matter": ""
     },
-    "lcs-v0.1.0-rc2": {
-      "ncs": "2.2.99",
-      "nrfxlib": "2.2.99",
+    "2.2.99-cs1": {
+      "ncs": "2.2.99-cs1",
+      "nrfxlib": "2.2.99-cs1",
       "zephyr": "3.2.99",
       "mcuboot": "1.9.99",
-      "nrfx": "2.10",
+      "nrfx": "3.0-beta-milestone-2",
       "tfm": "1.6.0",
       "matter": ""
     }
