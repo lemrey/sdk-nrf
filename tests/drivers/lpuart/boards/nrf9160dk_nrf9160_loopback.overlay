@@ -45,6 +45,7 @@
 
 &timer0 {
 	interrupts = <15 0>;
+	status = "okay";
 };
 
 / {
