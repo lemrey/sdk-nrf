@@ -1,9 +1,7 @@
-:orphan:
+.. _ncs_release_notes_changelog_lcs:
 
-.. _ncs_release_notes_changelog_hcs:
-
-Changelog for |NCS| v2.2.99 + HCS
-#################################
+Changelog for nRF54H20 customer sampling
+########################################
 
 .. contents::
    :local:

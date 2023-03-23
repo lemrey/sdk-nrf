@@ -36,6 +36,8 @@ The "99" at the end of the version number of this documentation indicates contin
    libraries/index
    scripts
    release_notes
+   known_issues
+   known_issues_lcs
    software_maturity
    documentation
    glossary
