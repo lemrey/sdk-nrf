@@ -134,7 +134,7 @@ To install the toolchain, complete the following steps:
             This opens a new terminal window with the |NCS| toolchain environment, where west and other development tools are available.
             Alternatively, you can run the following command::
 
-               c:/nordic-lcs/nrfutil.exe toolchain-manager env --as-script'
+               c:/nordic-lcs/nrfutil.exe toolchain-manager env --as-script
 
             This gives all the necessary environmental variables you need to copy-paste and execute in the same terminal window to be able to run west directly there.
 
@@ -152,7 +152,7 @@ To install the toolchain, complete the following steps:
             .. parsed-literal::
                :class: highlight
 
-               $HOME/nordic-lcs/nrfutil toolchain-manager launch --terminal --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.2.99-cs1
+               $HOME/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.2.99-cs1
 
             This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
 

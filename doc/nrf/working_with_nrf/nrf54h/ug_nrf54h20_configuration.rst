@@ -74,7 +74,7 @@ Additionally, the following user information configuration registers (UICR) cont
    Flashing both :file:`zephyr.hex` + :file:`uicr.hex` will result in the same configuration.
 
 All of the HEX files need to be flashed into the device.
-For more information on building images for the nRF54H20 PDK, see :ref:`ug_nrf54h20_gs`
+For more information on building images for the nRF54H20 PDK, see :ref:`ug_nrf54h20_gs`.
 For additional information on multi-image builds see :ref:`ug_multi_image`.
 
 Other revelant resources
