@@ -6,6 +6,7 @@
 
 / {
 	chosen {
+		ncs,zigbee-timer = &timer2;
 		zephyr,console = &cdc_acm_uart0;
 	};
 };
@@ -24,6 +25,10 @@
 		reg = <0x76>;
 		status = "okay";
 	};
+};
+
+&timer2 {
+	status = "okay";
 };
 
 /* Disable unused peripherals to reduce power consumption */
