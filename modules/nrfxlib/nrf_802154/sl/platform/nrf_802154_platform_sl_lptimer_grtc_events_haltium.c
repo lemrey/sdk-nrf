@@ -6,10 +6,10 @@
 
 #include <assert.h>
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/timer/nrf_grtc_timer.h>
 
 #include <haly/nrfy_dppi.h>
 #include <hal/nrf_ipct.h>
-#include "nrfx_missing_pieces.h" /* TODO: remove when nrfx is patched */
 
 #include "nrf_802154_platform_sl_lptimer_grtc_events.h"
 #include "platform/nrf_802154_platform_sl_lptimer.h"
@@ -68,8 +68,10 @@
 #endif
 
 void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dppi_ch,
-                                                                     nrf_grtc_task_t cc_channel)
+                                                                     uint32_t cc_channel)
 {
+    (void)cc_channel;
+
     // {a} Connection: RADIO.EVENT_{?} to DPPIC_020[dppi_ch]
     // It is the responsibility of the user of this platform to make the {a} connection
     // and pass the DPPI channel number as a parameter here.
@@ -80,14 +82,14 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dp
     nrfy_dppi_channels_enable(DPPIC_G2_INST, 1UL << DPPIC_G2_TS_CHANNEL);
 }
 
-void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(nrf_grtc_task_t cc_channel)
+void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_channel)
 {
     // {c} Connection: IPCT_radio to IPCT_130
     // It is assumed that this connection has already been made by SECURE-core as a result of
     // configuring of the UICR->IPCMAP[] registers.
 
     // Enable auto confirmations on destination IPCT_130
-    nrfy_ipct_shorts_enable(IPCT_G1_INST, IPCT_G1_SHORTS);
+    nrf_ipct_shorts_enable(IPCT_G1_INST, IPCT_G1_SHORTS);
 
     // {d} Connect: IPCT_130 to DPPIC_130
     nrf_ipct_publish_set(IPCT_G1_INST, IPCT_G1_EVENT_RECEIVE, DPPIC_G1_TS_CHANNEL);
@@ -107,7 +109,8 @@ void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(nrf_grtc_tas
     // configuring of the UICR->DPPI.GLOBAL[].CH.LINK.SINK registers.
 
     // {h} Connect: DPPIC_132 to GRTC.CC
-    nrfy_grtc_subscribe_set(NRF_GRTC, cc_channel, DPPIC_G2_TS_CHANNEL);
+    NRFX_DPPIC_ENDPOINT_SETUP(z_nrf_grtc_timer_capture_task_address_get(cc_channel),
+                              DPPIC_G2_TS_CHANNEL);
 
     // Enable: DPPIC_132
     nrfy_dppi_channels_enable(DPPIC_G2_INST, 1UL << DPPIC_G2_TS_CHANNEL);
@@ -166,7 +169,7 @@ void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(nrf_grtc_tas
 #endif
 
 void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_set(uint32_t dppi_ch,
-                                                                   nrf_grtc_event_t cc_channel)
+                                                                   uint32_t cc_channel)
 {
     nrf_ipct_event_clear(NRF_IPCT, IPCT_L_EVENT_RECEIVE);
 
@@ -185,14 +188,14 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_set(uint32_t dppi
     nrfy_dppi_channels_enable(DPPIC_G2_INST, 1UL << DPPIC_G2_HT_CHANNEL);
 }
 
-void nrf_802154_platform_sl_lptimer_static_event_for_hw_tasks_set(nrf_grtc_event_t cc_channel)
+void nrf_802154_platform_sl_lptimer_static_event_for_hw_tasks_set(uint32_t cc_channel)
 {
     // {c} Connection: IPCT_radio to IPCT_130
     // It is assumed that this connection has already been made by SECURE-core as a result of
     // configuring of the UICR->IPCMAP[] registers.
 
     // Enable auto confirmations on destination IPCT_radio
-    nrfy_ipct_shorts_enable(NRF_IPCT, IPCT_L_SHORTS);
+    nrf_ipct_shorts_enable(NRF_IPCT, IPCT_L_SHORTS);
 
     // {d} Connect: IPCT_130 to DPPIC_130
     nrf_ipct_subscribe_set(IPCT_G1_INST, IPCT_G1_TASK_SEND, DPPIC_G1_HT_CHANNEL);
@@ -212,7 +215,8 @@ void nrf_802154_platform_sl_lptimer_static_event_for_hw_tasks_set(nrf_grtc_event
     // configuring of the UICR->DPPI.GLOBAL[].CH.LINK.SINK registers.
 
     // {h} Connect: DPPIC_132 to GRTC.CC
-    nrfy_grtc_publish_set(NRF_GRTC, cc_channel, DPPIC_G2_HT_CHANNEL);
+    NRFX_DPPIC_ENDPOINT_SETUP(z_nrf_grtc_timer_compare_evt_address_get(cc_channel),
+                              DPPIC_G2_HT_CHANNEL);
 }
 
 void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_clear(void)

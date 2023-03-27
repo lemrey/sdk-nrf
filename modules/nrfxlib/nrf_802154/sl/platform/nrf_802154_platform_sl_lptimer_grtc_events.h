@@ -12,7 +12,6 @@
 #define NRF_802154_PLATFORM_SL_LPTIMER_EVENTS_H_
 
 #include <stdint.h>
-#include <haly/nrfy_grtc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +23,7 @@ extern "C" {
  * @param[in] cc_channel The GRTC capture channel that will capture the timestmap.
  */
 void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dppi_ch,
-                                                                     nrf_grtc_task_t cc_channel);
+                                                                     uint32_t cc_channel);
 
 /**@brief Sets up static DPPI connections for capturing a timestamp.
  *
@@ -33,7 +32,7 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dp
  *
  * @param[in] cc_channel The GRTC capture channel that will capture the timestmap.
  */
-void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(nrf_grtc_task_t cc_channel);
+void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_channel);
 
 /**@brief Sets up DPPI connections for triggering a hardware task using a GRTC event.
  *
@@ -41,7 +40,7 @@ void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(nrf_grtc_tas
  * @param[in] cc_channel The GRTC compare channel that will generate the event.
  */
 void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_set(uint32_t dppi_ch,
-                                                                   nrf_grtc_event_t cc_channel);
+                                                                   uint32_t cc_channel);
 
 /**@brief Sets up static DPPI connections for triggering a hardware task using a GRTC event.
  *
@@ -50,7 +49,7 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_set(uint32_t dppi
  *
  * @param[in] cc_channel The GRTC compare channel that will generate the event.
  */
-void nrf_802154_platform_sl_lptimer_static_event_for_hw_tasks_set(nrf_grtc_event_t cc_channel);
+void nrf_802154_platform_sl_lptimer_static_event_for_hw_tasks_set(uint32_t cc_channel);
 
 /**@brief Clears the DPPI connections for triggering a hardware task using a GRTC event.
  *
