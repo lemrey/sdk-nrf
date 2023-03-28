@@ -77,9 +77,6 @@ config CHIP_MALLOC_SYS_HEAP_SIZE
 config HWINFO_NRF
     default n
 
-config ASSERT
-    default y
-
 config NET_PKT_RX_COUNT
     default 10
 
@@ -97,11 +94,6 @@ config MBEDTLS_USER_CONFIG_ENABLE
 
 config MBEDTLS_USER_CONFIG_FILE
 	default "${ZEPHYR_BASE}/../nrf/samples/matter/lock/mbedtls_config.h"
-
-# Bluetooth settings should be moved out of this section
-# when Moonlight will support BLE
-config BT
-    default y
 
 config BT_L2CAP_TX_MTU
     default 247
@@ -154,28 +146,11 @@ endif #BOARD_NRF54H20DK_NRF54H20_CPUAPP
 ################################################
 # MOONLIGHT SECTION START
 ################################################
-
 if BOARD_NRF54L15DK_NRF54L15_CPUAPP
-
-##### FPGA LIMITATION START ####
-if EMULATOR_FPGA
 
 choice LOG_MODE
     default LOG_MODE_DEFERRED
 endchoice
-
-# Increased ACK timeouts, but it will be deleted
-# in the future, because Moonlight image will be 
-# able to work with normal ACK timeout.
-config NRF_802154_ACK_TIMEOUT_CUSTOM_US
-    default 2000
-
-endif # EMULATOR_FPGA
-##### FPGA LIMITATION END ####
-
-# Waiting for BLE support for Moonlight
-config BT
-    default n
 
 # This config should be deleted from here 
 # when radio driver will be fixed.
@@ -187,6 +162,19 @@ config NRF_802154_TEMPERATURE_UPDATE
 # This should be changed to y after fixes in radio driver.
 config ASSERT
     default n
+
+config FPU
+    default n
+
+if EMULATOR_FPGA
+
+# Increased ACK timeouts, but it will be deleted
+# in the future, because Moonlight image will be 
+# able to work with normal ACK timeout.
+config NRF_802154_ACK_TIMEOUT_CUSTOM_US
+    default 2000
+
+endif # EMULATOR_FPGA
 
 endif #BOARD_NRF54LFPGA_NRF54L15_SOC1_CPUAPP
 ################################################
