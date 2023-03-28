@@ -11,14 +11,14 @@ tests:
       - thingy53_nrf5340_cpuapp_ns
       - nrf5340dk_nrf5340_cpuapp
     tags: ci_build
-  applications.machine_learning.zdebug.singlecore:
+  applications.machine_learning.sensor_hub.zdebug.singlecore:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
     extra_args: CONF_FILE=prj_singlecore.conf SHIELD="sensor_hub"
-  applications.machine_learning.zdebug:
+  applications.machine_learning.sensor_hub.zdebug:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     integration_platforms:
