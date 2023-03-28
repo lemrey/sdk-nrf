@@ -8,6 +8,7 @@
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/fatal.h>
+#include <tdd/etr_dump.h>
 
 LOG_MODULE_REGISTER(fatal_error, CONFIG_FATAL_ERROR_LOG_LEVEL);
 
@@ -23,9 +24,21 @@ void k_sys_fatal_error_handler(unsigned int reason,
 
 	if (IS_ENABLED(CONFIG_RESET_ON_FATAL_ERROR)) {
 		LOG_ERR("Resetting system");
+		if (IS_ENABLED(CONFIG_ETR_DUMP)) {
+			/* Trigger processing of the content of ETR buffer.
+			 * It is placed here to ensure that last log is also processed.
+			 */
+			etr_dump_panic();
+		}
 		sys_arch_reboot(0);
 	} else {
 		LOG_ERR("Halting system");
+		if (IS_ENABLED(CONFIG_ETR_DUMP)) {
+			/* Trigger processing of the content of ETR buffer.
+			 * It is placed here to ensure that last log is also processed.
+			 */
+			etr_dump_panic();
+		}
 		for (;;) {
 			/* Spin endlessly */
 		}
