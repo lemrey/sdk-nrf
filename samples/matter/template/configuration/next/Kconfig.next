@@ -1,0 +1,182 @@
+#
+#   Copyright (c) 2022 Project CHIP Authors
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+
+# The purpose of this file is to define new default values of settings used when building Matter samples.
+# This file only changes defaults and thus all symbols here must be promptless
+# and safeguarded so that they only are applied when building Matter.
+
+if EMULATOR_FPGA
+
+config SHELL_ARGC_MAX
+    default 26
+
+config SHELL_CMD_BUFF_SIZE
+    default 416
+
+config CHIP_INCREASE_COMMISSIONING_TIMEOUTS
+    default y
+
+config CHIP_COMMISSIONING_TIMEOUTS_MULTIPLIER
+    default 8
+
+config HEAP_MEM_POOL_SIZE
+    default 2048
+
+config SYSTEM_WORKQUEUE_STACK_SIZE
+    default 2048
+
+endif # EMULATOR_FPGA
+
+################################################
+# LILIUM SPECIFIC SECTION START
+################################################
+if BOARD_NRF54H20DK_NRF54H20_CPUAPP
+
+# These configs should be moved out of this section, 
+# when Moonlight will work with assert and log_minimal enabled.
+choice LOG_MODE
+    default LOG_MODE_DEFERRED
+endchoice
+
+config CHIP_NFC_COMMISSIONING
+    default n
+
+# As long as there is no flash storage on FPGA DFUs must be disabled
+config CHIP_OTA_REQUESTOR
+    default n
+    
+config TEST_RANDOM_GENERATOR
+    default y
+
+choice OPENTHREAD_SECURITY
+    default OPENTHREAD_MBEDTLS_CHOICE
+endchoice
+
+config OPENTHREAD_NRF_SECURITY
+    default n
+
+config MAIN_STACK_SIZE
+    default 12288
+
+config CHIP_MALLOC_SYS_HEAP_SIZE
+    default 28672 # 28 kB
+
+config HWINFO_NRF
+    default n
+
+config NET_PKT_RX_COUNT
+    default 10
+
+config NET_BUF_RX_COUNT
+    default 16
+
+config NET_BUF_TX_COUNT
+    default 16
+
+config FPU
+    default n
+
+config MBEDTLS_USER_CONFIG_ENABLE
+	default y
+
+config MBEDTLS_USER_CONFIG_FILE
+	default "${ZEPHYR_BASE}/../nrf/samples/matter/template/mbedtls_config.h"
+
+config BT_L2CAP_TX_MTU
+    default 247
+
+config PRINTK_SYNC
+    default y
+
+# Settings needed to handle IPC service and
+# communication between domains
+config IPC_SERVICE_BACKEND_RPMSG_SHMEM_RESET
+    default y
+
+config MBOX
+    default y
+
+config MBOX_NRFX_IDS
+    default y
+
+# Generate TOML file during each build
+config NRF_REGTOOL_GENERATE_TOML_CONFIG
+    default y
+
+config CHIP_LIB_SHELL
+	default y
+
+# Temporary workaround for LEDS until nrfjprog does not support adding gpio to UICR
+config NRF_REGTOOL_TOML_CONFIG_FILES
+	default "boards/nrf54h20_pdk.toml"
+
+if EMULATOR_FPGA
+
+# TODO to check if it is still needed here
+config NRF_802154_SER_DEFAULT_RESPONSE_TIMEOUT
+    default 100000
+
+config BT_L2CAP_TX_MTU
+    default 41
+
+# TODO to check if it is still needed here
+config HEAP_MEM_POOL_SIZE
+    default 12288
+
+config GPIO_NRFX
+	default n
+
+endif # EMULATOR_FPGA
+endif #BOARD_NRF54H20DK_NRF54H20_CPUAPP
+
+
+################################################
+# MOONLIGHT SECTION START
+################################################
+if BOARD_NRF54L15DK_NRF54L15_CPUAPP
+
+choice LOG_MODE
+    default LOG_MODE_DEFERRED
+endchoice
+
+# This config should be deleted from here 
+# when radio driver will be fixed.
+config NRF_802154_TEMPERATURE_UPDATE
+    default n
+
+# There are some issues in IEEE802154 that cause assert, 
+# but it driver works with it.
+# This should be changed to y after fixes in radio driver.
+config ASSERT
+    default n
+
+config FPU
+    default n
+
+if EMULATOR_FPGA
+
+# Increased ACK timeouts, but it will be deleted
+# in the future, because Moonlight image will be 
+# able to work with normal ACK timeout.
+config NRF_802154_ACK_TIMEOUT_CUSTOM_US
+    default 2000
+
+endif # EMULATOR_FPGA
+
+endif #BOARD_NRF54LFPGA_NRF54L15_SOC1_CPUAPP
+################################################
+# MOONLIGHT SPECIFIC SECTION END
+################################################

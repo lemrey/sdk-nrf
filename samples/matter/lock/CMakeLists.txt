@@ -47,8 +47,7 @@ target_sources(app PRIVATE
 
 if(CONFIG_SOC_SERIES_NRF54HX)
 
-    # FIXME Disabled -Werror due to warning in zephyr/subsys/net/lib/openthread/platform/entropy.c
-    # Which warns that OpenThread uses NOT SAFE random generator due to lack of the Entropy Driver on FPGA board.
+    # FIXME Disabled -Werror due to warning in zephyr/drivers/ieee802154/ieee802154_nrf5.c
     # It is a workaround within sdk-nrf-next, and it should not be merged with sdk-nrf upstream.
     zephyr_compile_options(-Wno-error)
 

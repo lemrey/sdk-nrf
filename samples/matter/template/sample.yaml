@@ -36,3 +36,11 @@ tests:
       - nrf5340dk_nrf5340_cpuapp
     platform_allow: nrf5340dk_nrf5340_cpuapp
     tags: ci_build
+  sample.matter.template.lilium_pdk:
+    build_only: true
+    extra_args: CONF_FILE=prj_no_dfu.conf
+      DTC_OVERLAY_FILE="serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay"
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ci_build

@@ -1,0 +1,7 @@
+# Add the temporary configuration for GPIOs until it is not supported in global DTs
+
+[gpio_secure_0]
+PIN_8 = "NonSecure"
+PIN_9 = "NonSecure"
+PIN_10 = "NonSecure"
+PIN_11 = "NonSecure"
