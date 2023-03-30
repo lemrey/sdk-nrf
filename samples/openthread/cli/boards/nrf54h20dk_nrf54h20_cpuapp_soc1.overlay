@@ -12,12 +12,6 @@
     };
 };
 
-&uart136{
-    tx-pin = < 68 >; // P2.04
-    rx-pin = < 69 >; // P2.05
-    status = "okay";
- };
-
 &ipc_cpurad {
     zephyr,priority = <0 PRIO_COOP>;
 };
