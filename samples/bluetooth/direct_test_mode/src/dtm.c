@@ -1042,7 +1042,6 @@ static void anomaly_172_strict_mode_set(bool enable)
 }
 #endif
 
-#if defined(CONFIG_SOC_SERIES_NRF54HX)
 static void endpoints_clear(void)
 {
 	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_FORK_EGU_TIMER)) {
@@ -1055,7 +1054,7 @@ static void endpoints_clear(void)
 			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT),
 			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
 							    SUBSCRIBE_EXTRA_OFFSET);
-	} 
+	}
 	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_EGU_RADIO_RX)) {
 		nrfx_gppi_channel_endpoints_clear(
 			dtm_inst.ppi_radio_start,
@@ -1071,7 +1070,6 @@ static void endpoints_clear(void)
 							    SUBSCRIBE_EXTRA_OFFSET);
 	}
 }
-#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 static void radio_ppi_clear(void)
 {
@@ -1083,26 +1081,7 @@ static void radio_ppi_clear(void)
 			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
 
 	/* Break connection from timer to radio to stop transmit loop */
-#if defined(CONFIG_SOC_SERIES_NRF54HX)
 	endpoints_clear();
-#else 
-	nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
-			nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
-
-	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
-		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0));
-
-	if (dtm_inst.state == STATE_TRANSMITTER_TEST) {
-		nrfx_gppi_task_endpoint_clear(dtm_inst.ppi_radio_start,
-				nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN));
-	} else if (dtm_inst.state == STATE_RECEIVER_TEST) {
-		nrfx_gppi_task_endpoint_clear(dtm_inst.ppi_radio_start,
-				nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_RXEN));
-	}
-
-	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
-			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
-#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 }
 
 static void radio_ppi_configure(bool rx, uint32_t timer_short_mask)
@@ -1134,16 +1113,7 @@ static void radio_tx_ppi_reconfigure(void)
 		nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
 	}
 
-#if defined(CONFIG_SOC_SERIES_NRF54HX)
 	endpoints_clear();
-#else
-	nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
-		nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
-	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
-		nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
-	nrfx_gppi_event_endpoint_setup(dtm_inst.ppi_radio_start,
-		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0));
-#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 	nrfx_gppi_channel_endpoints_setup(
 		dtm_inst.ppi_radio_start,
