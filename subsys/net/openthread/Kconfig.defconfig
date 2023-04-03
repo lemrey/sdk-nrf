@@ -32,12 +32,8 @@ endchoice
 
 if SOC_NRF54H20_CPUAPP
 
-#To be removed after RNG is available in NCS
-choice RNG_GENERATOR_CHOICE
-	default TIMER_RANDOM_GENERATOR
-endchoice
-
-config TEST_RANDOM_GENERATOR
+#To be removed
+config ENTROPY_PRNG
 	bool
 	default y
 
@@ -57,7 +53,6 @@ config MBOX_NRFX_IDS
 	default y
 
 endif
-
 
 choice LIBC_IMPLEMENTATION
 	default NEWLIB_LIBC
@@ -108,8 +103,7 @@ config OPENTHREAD_MANUAL_START
 	default y
 
 choice OPENTHREAD_SECURITY
-	default OPENTHREAD_NRF_SECURITY_CHOICE if !SOC_NRF54H20_CPUAPP
-	default OPENTHREAD_MBEDTLS_CHOICE if SOC_NRF54H20_CPUAPP
+	default OPENTHREAD_NRF_SECURITY_CHOICE
 endchoice
 
 config MBEDTLS_SSL_PROTO_DTLS

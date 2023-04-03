@@ -12,6 +12,7 @@
     };
 };
 
+
 &ipc_cpurad {
     zephyr,priority = <0 PRIO_COOP>;
 };

@@ -4,7 +4,7 @@ sample:
 tests:
   sample.openthread.cli:
     build_only: true
-    platform_allow: nrf5340dk_nrf5340_cpuapp nrf5340dk_nrf5340_cpuapp_ns nrf52840dk_nrf52840 nrf21540dk_nrf52840 nrf54h20dk_nrf54h20_cpuapp@soc1
+    platform_allow: nrf5340dk_nrf5340_cpuapp nrf5340dk_nrf5340_cpuapp_ns nrf52840dk_nrf52840 nrf21540dk_nrf52840
     tags: ci_build
     extra_args: OVERLAY_CONFIG=overlay-ci.conf;overlay-multiprotocol.conf;overlay-tcp.conf
     integration_platforms:
@@ -12,7 +12,6 @@ tests:
       - nrf5340dk_nrf5340_cpuapp_ns
       - nrf52840dk_nrf52840
       - nrf21540dk_nrf52840
-      - nrf54h20dk_nrf54h20_cpuapp@soc1
   sample.openthread.cli_hadron:
     build_only: true
     platform_allow: nrf52833dk_nrf52833
@@ -56,7 +55,7 @@ tests:
   sample.openthread.cli_nrf54h20:
     build_only: true
     extra_args: OVERLAY_CONFIG=overlay-ci.conf
-                DTC_OVERLAY_FILE=serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay
+                DTC_OVERLAY_FILE=entropy_cpuapp.overlay;serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -64,7 +63,7 @@ tests:
   sample.openthread.cli_multiprotocol_nrf54h20:
     build_only: true
     extra_args: OVERLAY_CONFIG=overlay-ci.conf;overlay-multiprotocol.conf
-                DTC_OVERLAY_FILE=serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay
+                DTC_OVERLAY_FILE=entropy_cpuapp.overlay;serial_cpuapp.overlay;boards/nrf54h20dk_nrf54h20_cpuapp_soc1.overlay
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1

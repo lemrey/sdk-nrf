@@ -45,7 +45,7 @@ endif # EMULATOR_FPGA
 ################################################
 if BOARD_NRF54H20DK_NRF54H20_CPUAPP
 
-# These configs should be moved out of this section, 
+# These configs should be moved out of this section,
 # when Moonlight will work with assert and log_minimal enabled.
 choice LOG_MODE
     default LOG_MODE_DEFERRED
@@ -56,16 +56,6 @@ config CHIP_NFC_COMMISSIONING
 
 # As long as there is no flash storage on FPGA DFUs must be disabled
 config CHIP_OTA_REQUESTOR
-    default n
-    
-config TEST_RANDOM_GENERATOR
-    default y
-
-choice OPENTHREAD_SECURITY
-    default OPENTHREAD_MBEDTLS_CHOICE
-endchoice
-
-config OPENTHREAD_NRF_SECURITY
     default n
 
 config MAIN_STACK_SIZE
@@ -88,12 +78,6 @@ config NET_BUF_TX_COUNT
 
 config FPU
     default n
-
-config MBEDTLS_USER_CONFIG_ENABLE
-	default y
-
-config MBEDTLS_USER_CONFIG_FILE
-	default "${ZEPHYR_BASE}/../nrf/samples/matter/template/mbedtls_config.h"
 
 config BT_L2CAP_TX_MTU
     default 247
@@ -152,12 +136,12 @@ choice LOG_MODE
     default LOG_MODE_DEFERRED
 endchoice
 
-# This config should be deleted from here 
+# This config should be deleted from here
 # when radio driver will be fixed.
 config NRF_802154_TEMPERATURE_UPDATE
     default n
 
-# There are some issues in IEEE802154 that cause assert, 
+# There are some issues in IEEE802154 that cause assert,
 # but it driver works with it.
 # This should be changed to y after fixes in radio driver.
 config ASSERT
@@ -169,7 +153,7 @@ config FPU
 if EMULATOR_FPGA
 
 # Increased ACK timeouts, but it will be deleted
-# in the future, because Moonlight image will be 
+# in the future, because Moonlight image will be
 # able to work with normal ACK timeout.
 config NRF_802154_ACK_TIMEOUT_CUSTOM_US
     default 2000
