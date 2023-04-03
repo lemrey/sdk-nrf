@@ -33,8 +33,8 @@ K_THREAD_STACK_DEFINE(gnss_workq_stack_area, GNSS_WORKQ_THREAD_STACK_SIZE);
 #if !defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE)
 #include "assistance.h"
 
-static struct nrf_modem_gnss_agps_data_frame last_agps;
-static struct k_work agps_data_get_work;
+static struct nrf_modem_gnss_agnss_data_frame last_agnss;
+static struct k_work agnss_data_get_work;
 static volatile bool requesting_assistance;
 #endif /* !CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE */
 
@@ -164,13 +164,13 @@ static void gnss_event_handler(int event)
 		}
 		break;
 
-	case NRF_MODEM_GNSS_EVT_AGPS_REQ:
+	case NRF_MODEM_GNSS_EVT_AGNSS_REQ:
 #if !defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE)
-		retval = nrf_modem_gnss_read(&last_agps,
-					     sizeof(last_agps),
-					     NRF_MODEM_GNSS_DATA_AGPS_REQ);
+		retval = nrf_modem_gnss_read(&last_agnss,
+					     sizeof(last_agnss),
+					     NRF_MODEM_GNSS_DATA_AGNSS_REQ);
 		if (retval == 0) {
-			k_work_submit_to_queue(&gnss_work_q, &agps_data_get_work);
+			k_work_submit_to_queue(&gnss_work_q, &agnss_data_get_work);
 		}
 #endif /* !CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE */
 		break;
@@ -232,20 +232,26 @@ void lte_disconnect(void)
 }
 #endif /* CONFIG_GNSS_SAMPLE_LTE_ON_DEMAND */
 
-static void agps_data_get_work_fn(struct k_work *item)
+static void agnss_data_get_work_fn(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
 	int err;
 
+	/* GPS data need is always expected to be present and first in list. */
+	__ASSERT(last_agnss.system_count > 0,
+		 "GNSS system data need not found");
+	__ASSERT(last_agnss.system[0].system_id == NRF_MODEM_GNSS_SYSTEM_GPS,
+		 "GPS data need not found");
+
 #if defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_SUPL)
 	/* SUPL doesn't usually provide NeQuick ionospheric corrections and satellite real time
 	 * integrity information. If GNSS asks only for those, the request should be ignored.
 	 */
-	if (last_agps.sv_mask_ephe == 0 &&
-	    last_agps.sv_mask_alm == 0 &&
-	    (last_agps.data_flags & ~(NRF_MODEM_GNSS_AGPS_NEQUICK_REQUEST |
-				      NRF_MODEM_GNSS_AGPS_INTEGRITY_REQUEST)) == 0) {
+	if (last_agnss.system[0].sv_mask_ephe == 0 &&
+	    last_agnss.system[0].sv_mask_alm == 0 &&
+	    (last_agnss.data_flags & ~(NRF_MODEM_GNSS_AGNSS_NEQUICK_REQUEST |
+				       NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST)) == 0) {
 		LOG_INF("Ignoring assistance request for only NeQuick and/or integrity");
 		return;
 	}
@@ -255,8 +261,8 @@ static void agps_data_get_work_fn(struct k_work *item)
 	/* With minimal assistance, the request should be ignored if no GPS time or position
 	 * is requested.
 	 */
-	if (!(last_agps.data_flags & NRF_MODEM_GNSS_AGPS_SYS_TIME_AND_SV_TOW_REQUEST) &&
-	    !(last_agps.data_flags & NRF_MODEM_GNSS_AGPS_POSITION_REQUEST)) {
+	if (!(last_agnss.data_flags & NRF_MODEM_GNSS_AGNSS_GPS_SYS_TIME_AND_SV_TOW_REQUEST) &&
+	    !(last_agnss.data_flags & NRF_MODEM_GNSS_AGNSS_POSITION_REQUEST)) {
 		LOG_INF("Ignoring assistance request because no GPS time or position is requested");
 		return;
 	}
@@ -265,15 +271,15 @@ static void agps_data_get_work_fn(struct k_work *item)
 	requesting_assistance = true;
 
 	LOG_INF("Assistance data needed, ephe 0x%08x, alm 0x%08x, flags 0x%02x",
-		last_agps.sv_mask_ephe,
-		last_agps.sv_mask_alm,
-		last_agps.data_flags);
+		(uint32_t)last_agnss.system[0].sv_mask_ephe,
+		(uint32_t)last_agnss.system[0].sv_mask_alm,
+		last_agnss.data_flags);
 
 #if defined(CONFIG_GNSS_SAMPLE_LTE_ON_DEMAND)
 	lte_connect();
 #endif /* CONFIG_GNSS_SAMPLE_LTE_ON_DEMAND */
 
-	err = assistance_request(&last_agps);
+	err = assistance_request(&last_agnss);
 	if (err) {
 		LOG_ERR("Failed to request assistance data");
 	}
@@ -341,20 +347,20 @@ static void ttff_test_prepare_work_fn(struct k_work *item)
 
 #if !defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE)
 	if (IS_ENABLED(CONFIG_GNSS_SAMPLE_MODE_TTFF_TEST_COLD_START)) {
-		/* All A-GPS data is always requested before GNSS is started. */
-		last_agps.sv_mask_ephe = 0xffffffff;
-		last_agps.sv_mask_alm = 0xffffffff;
-		last_agps.data_flags =
-			NRF_MODEM_GNSS_AGPS_GPS_UTC_REQUEST |
-			NRF_MODEM_GNSS_AGPS_KLOBUCHAR_REQUEST |
-			NRF_MODEM_GNSS_AGPS_NEQUICK_REQUEST |
-			NRF_MODEM_GNSS_AGPS_SYS_TIME_AND_SV_TOW_REQUEST |
-			NRF_MODEM_GNSS_AGPS_POSITION_REQUEST |
-			NRF_MODEM_GNSS_AGPS_INTEGRITY_REQUEST;
+		/* All A-GNSS data is always requested before GNSS is started. */
+		last_agnss.sv_mask_ephe = 0xffffffff;
+		last_agnss.sv_mask_alm = 0xffffffff;
+		last_agnss.data_flags =
+			NRF_MODEM_GNSS_AGNSS_GPS_UTC_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_KLOBUCHAR_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_NEQUICK_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_GPS_SYS_TIME_AND_SV_TOW_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_POSITION_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
 
-		k_work_submit_to_queue(&gnss_work_q, &agps_data_get_work);
+		k_work_submit_to_queue(&gnss_work_q, &agnss_data_get_work);
 	} else {
-		/* Start and stop GNSS to trigger possible A-GPS data request. If new A-GPS
+		/* Start and stop GNSS to trigger possible A-GNSS data request. If new A-GNSS
 		 * data is needed it is fetched before GNSS is started.
 		 */
 		nrf_modem_gnss_start();
@@ -442,7 +448,7 @@ static int sample_init(void)
 #endif /* !CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE || CONFIG_GNSS_SAMPLE_MODE_TTFF_TEST */
 
 #if !defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE)
-	k_work_init(&agps_data_get_work, agps_data_get_work_fn);
+	k_work_init(&agnss_data_get_work, agnss_data_get_work_fn);
 
 	err = assistance_init(&gnss_work_q);
 #endif /* !CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE */
