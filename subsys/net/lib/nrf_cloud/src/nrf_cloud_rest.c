@@ -729,7 +729,7 @@ int nrf_cloud_rest_agps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 	}
 
 	if ((request->type == NRF_CLOUD_REST_AGPS_REQ_CUSTOM) &&
-	    (request->agps_req == NULL)) {
+	    (request->agnss_req == NULL)) {
 		LOG_ERR("Custom request type requires A-GPS request data");
 		ret = -EINVAL;
 		goto clean_up;
@@ -757,7 +757,7 @@ int nrf_cloud_rest_agps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 	/* Get the A-GPS type array */
 	switch (request->type) {
 	case NRF_CLOUD_REST_AGPS_REQ_CUSTOM:
-		type_count = nrf_cloud_agps_type_array_get(request->agps_req,
+		type_count = nrf_cloud_agps_type_array_get(request->agnss_req,
 							   types, ARRAY_SIZE(types));
 		break;
 	case NRF_CLOUD_REST_AGPS_REQ_LOCATION:
@@ -765,9 +765,19 @@ int nrf_cloud_rest_agps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 		types[0] = NRF_CLOUD_AGPS_LOCATION;
 		break;
 	case NRF_CLOUD_REST_AGPS_REQ_ASSISTANCE: {
-		struct nrf_modem_gnss_agps_data_frame assist;
-		/* Set all request flags */
-		memset(&assist, 0xFF, sizeof(assist));
+		struct nrf_modem_gnss_agnss_data_frame assist = { 0 };
+		/* Set all request flags for GPS */
+		assist.data_flags =
+			NRF_MODEM_GNSS_AGNSS_GPS_UTC_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_KLOBUCHAR_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_NEQUICK_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_GPS_SYS_TIME_AND_SV_TOW_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_POSITION_REQUEST |
+			NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
+		assist.system_count = 1;
+		assist.system[0].system_id = NRF_MODEM_GNSS_SYSTEM_GPS;
+		assist.system[0].sv_mask_ephe = 0xFFFFFFFF;
+		assist.system[0].sv_mask_alm = 0xFFFFFFFF;
 		type_count = nrf_cloud_agps_type_array_get(&assist, types, ARRAY_SIZE(types));
 		break;
 	}
