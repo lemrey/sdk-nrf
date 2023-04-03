@@ -15,14 +15,8 @@
 extern "C" {
 #endif
 
-#if defined(NRF52_SERIES) || defined(NRF53_SERIES)
-#define RTC_INPUT_FREQ 32768
-#else
-#error Unknown device, set correct input frequency
-#endif
-
-#define TICKS_TO_US(ticks) ((uint32_t)((((uint64_t) ticks) * (1000000)) / (RTC_INPUT_FREQ)))
-#define US_TO_RTC_TICKS(time) ((uint32_t)((((uint64_t)time) * (RTC_INPUT_FREQ)) / (1000000)))
+#define TICKS_TO_US(ticks) ((uint32_t)((((uint64_t) ticks) * (1000000)) / (NRF_RTC_INPUT_FREQ)))
+#define US_TO_RTC_TICKS(time) ((uint32_t)((((uint64_t)time) * (NRF_RTC_INPUT_FREQ)) / (1000000)))
 #define RTC_COUNTER_MAX (RTC_COUNTER_COUNTER_Msk >> RTC_COUNTER_COUNTER_Pos)
 
 /** @brief Get current time tick
