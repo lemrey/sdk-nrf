@@ -284,7 +284,7 @@ Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/bluetooth/direct_test_mode`
-.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpurad\@soc1
 
 .. include:: /includes/build_and_run_54h.txt
 
