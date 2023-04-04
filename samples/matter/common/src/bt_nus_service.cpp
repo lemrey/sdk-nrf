@@ -71,9 +71,6 @@ bool NUSService::Init(uint8_t priority, uint16_t minInterval, uint16_t maxInterv
 #if defined(CONFIG_BT_FIXED_PASSKEY)
 	VerifyOrReturnError(bt_passkey_set(CONFIG_CHIP_NUS_FIXED_PASSKEY) == 0, false);
 #endif
-	VerifyOrReturnError(bt_conn_auth_cb_register(&sConnAuthCallbacks) == 0, false);
-	VerifyOrReturnError(bt_conn_auth_info_cb_register(&sConnAuthInfoCallbacks) == 0, false);
-	VerifyOrReturnError(bt_nus_init(&sNusCallbacks) == 0, false);
 
 	return true;
 }
@@ -84,6 +81,10 @@ void NUSService::StartServer()
 		LOG_WRN("NUS service was already started");
 		return;
 	}
+
+	VerifyOrReturn(bt_conn_auth_cb_register(&sConnAuthCallbacks) == 0);
+	VerifyOrReturn(bt_conn_auth_info_cb_register(&sConnAuthInfoCallbacks) == 0);
+	VerifyOrReturn(bt_nus_init(&sNusCallbacks) == 0);
 
 	PlatformMgr().LockChipStack();
 	CHIP_ERROR ret = BLEAdvertisingArbiter::InsertRequest(mAdvertisingRequest);
@@ -100,6 +101,10 @@ void NUSService::StartServer()
 void NUSService::StopServer()
 {
 	VerifyOrReturn(mIsStarted);
+
+	VerifyOrReturn(bt_conn_auth_info_cb_unregister(&sConnAuthInfoCallbacks) == 0);
+	VerifyOrReturn(bt_conn_auth_cb_register(NULL) == 0);
+	VerifyOrReturn(bt_nus_init(NULL) == 0);
 
 	PlatformMgr().LockChipStack();
 	BLEAdvertisingArbiter::CancelRequest(mAdvertisingRequest);
@@ -158,7 +163,7 @@ bool NUSService::SendData(const char *const data, size_t length)
 
 void NUSService::Connected(bt_conn *conn, uint8_t err)
 {
-	if (err || !conn) {
+	if (err || !conn || !GetNUSService().mIsStarted) {
 		LOG_ERR("NUS Connection failed (err %u)", err);
 		return;
 	}
@@ -177,6 +182,8 @@ void NUSService::Disconnected(bt_conn *conn, uint8_t reason)
 
 void NUSService::SecurityChanged(bt_conn *conn, bt_security_t level, enum bt_security_err err)
 {
+	VerifyOrReturn(GetNUSService().mIsStarted);
+
 	if (!err) {
 		LOG_DBG("NUS BT Security changed: %s level %u", LogAddress(conn), level);
 	} else {
@@ -198,11 +205,13 @@ void NUSService::AuthCancel(bt_conn *conn)
 
 void NUSService::PairingComplete(bt_conn *conn, bool bonded)
 {
+	VerifyOrReturn(GetNUSService().mIsStarted);
 	LOG_DBG("NUS BT Pairing completed: %s, bonded: %d", LogAddress(conn), bonded);
 }
 
 void NUSService::PairingFailed(bt_conn *conn, enum bt_security_err reason)
 {
+	VerifyOrReturn(GetNUSService().mIsStarted);
 	LOG_ERR("NUS BT Pairing failed to %s : reason %d", LogAddress(conn), static_cast<uint8_t>(reason));
 }
 

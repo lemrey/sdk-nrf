@@ -528,6 +528,10 @@ void AppTask::StartBLEAdvertisementHandler(const AppEvent &)
 		return;
 	}
 
+#ifdef CONFIG_CHIP_NUS
+	GetNUSService().StopServer();
+#endif
+
 	if (Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow() != CHIP_NO_ERROR) {
 		LOG_ERR("OpenBasicCommissioningWindow() failed");
 	}
@@ -572,7 +576,12 @@ void AppTask::UpdateStatusLED()
 void AppTask::ChipEventHandler(const ChipDeviceEvent *event, intptr_t /* arg */)
 {
 	switch (event->Type) {
-	case DeviceEventType::kCHIPoBLEAdvertisingChange:
+#ifdef CONFIG_CHIP_NUS
+	case DeviceEventType::kCHIPoBLEConnectionClosed:
+		GetNUSService().StartServer();
+		break;
+#endif
+	case DeviceEventType::kCHIPoBLEAdvertisingChange:  
 #ifdef CONFIG_CHIP_NFC_COMMISSIONING
 		if (event->CHIPoBLEAdvertisingChange.Result == kActivity_Started) {
 			if (NFCMgr().IsTagEmulationStarted()) {
