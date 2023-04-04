@@ -28,7 +28,7 @@ void k_sys_fatal_error_handler(unsigned int reason,
 			/* Trigger processing of the content of ETR buffer.
 			 * It is placed here to ensure that last log is also processed.
 			 */
-			etr_dump_panic();
+			etr_dump_flush(true);
 		}
 		sys_arch_reboot(0);
 	} else {
@@ -37,7 +37,7 @@ void k_sys_fatal_error_handler(unsigned int reason,
 			/* Trigger processing of the content of ETR buffer.
 			 * It is placed here to ensure that last log is also processed.
 			 */
-			etr_dump_panic();
+			etr_dump_flush(true);
 		}
 		for (;;) {
 			/* Spin endlessly */
