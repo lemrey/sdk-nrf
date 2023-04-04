@@ -335,6 +335,8 @@ Matter samples
   * Added `thread_wifi_switched` build type that enables switching between Thread and Wi-Fi network support in the field.
   * Added the Matter Nordic UART Service (NUS) feature, which allows controlling the door lock device remotely through Bluetooth LE using two simple commands: ``Lock`` and ``Unlock``.
     This feature is dedicated for the nRF52840 and the nRF5340 DKs.
+    The sample supports one Bluetooth LE connection at a time.
+    Matter commissioning, DFU, and NUS over Bluetooth LE must be run separately.
 
 NFC samples
 -----------

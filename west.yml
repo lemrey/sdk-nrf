@@ -144,7 +144,7 @@ manifest:
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: b66b4bb5d06058d35fbb60c7bf39c785177435e3
+      revision: 39436db7a196caa3c41e348cc5aa558b239c6c3a
       submodules:
         - name: nlio
           path: third_party/nlio/repo
