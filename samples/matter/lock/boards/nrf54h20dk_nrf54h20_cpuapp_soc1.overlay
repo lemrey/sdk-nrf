@@ -20,6 +20,11 @@
         zephyr,console = &uart136;
         zephyr,shell-uart = &uart136;
     };
+
+    aliases {
+        factory-data = &factory_data;
+        factory-data-memory-region = &mram1;
+	};
 };
 
 &ipc_cpurad {
@@ -35,6 +40,7 @@ ipc0: &ipc_cpurad { };
 
 /delete-node/ &slot0_partition;
 /delete-node/ &cpuapp_uicr_ext;
+/delete-node/ &storage_partition;
 
 &mram0 {
     reg = <0x1e0aa000 DT_SIZE_K(1000)>;
@@ -50,5 +56,21 @@ ipc0: &ipc_cpurad { };
     cpuapp_uicr_ext: uicr@1e1a3800 {
         compatible = "nordic,nrf-uicr";
         reg = <0x1e1a3800 DT_SIZE_K(2)>;
+    };
+};
+
+&mram1 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = < 0x1 >;
+		#size-cells = < 0x1 >;
+        storage_partition: partition@1f4000 {
+            label = "storage";
+            reg = < 0x1f4000 0x5000 >;
+        };
+        factory_data: partition@1f9000 {
+            label = "factory-data";
+            reg = < 0x1f9000 DT_SIZE_K(4) >;
+        };
     };
 };
