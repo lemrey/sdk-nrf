@@ -1,0 +1,15 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config TEST_PRINT_CACHE_CONTENT
+	bool "Enable cache content printing"
+	help
+	  This option enables the debug printing of the cache tags and status
+	  in every cache set.
+	  This option may be used to what is the real state of the cache
+	  when the test failed.
+
+source "Kconfig.zephyr"

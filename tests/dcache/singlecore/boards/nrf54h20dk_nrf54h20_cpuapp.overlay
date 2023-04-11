@@ -1,0 +1,54 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/ {
+	chosen {
+		zephyr,console = &uart136;
+		zephyr,sram = &sram0;
+	};
+	
+	allocatable_ram {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Configure PPR memory region. Allow to use defined RAM3x
+		 * region by App and cores owned by App.
+		 */
+		ram3x_app_ppr: memory@2fc00000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc00000 DT_SIZE_K(32)>;
+			perm-read;
+			perm-write;
+		};
+	};
+
+	reserved-memory {
+		/delete-node/ memory@2f002000;
+
+		/* Test block aligned to dcache size (8KB) */
+		test_mem_block0: memory@2f002000 {
+			reg = <0x2f002000 DT_SIZE_K(8)>;
+		};
+		test_mem_block1: memory@2f004000 {
+			reg = <0x2f004000 DT_SIZE_K(8)>;
+		};
+		test_mem_block2: memory@2f006000 {
+			reg = <0x2f006000 DT_SIZE_K(8)>;
+		};
+		test_mem_block3: memory@2f008000 {
+			reg = <0x2f008000 DT_SIZE_K(8)>;
+		};
+	};
+};
+
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuapp>;
+};
