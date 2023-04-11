@@ -42,7 +42,7 @@ static void measure(void)
 	APP_EVENT_SUBMIT(event);
 }
 
-static void sensor_simulated_thread_fn(void* p1, void* p2, void* p3)
+static void sensor_simulated_thread_fn(void *p1, void *p2, void *p3)
 {
 	while (true) {
 		measure();
