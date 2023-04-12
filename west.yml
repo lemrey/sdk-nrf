@@ -11,7 +11,7 @@
 # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/west/index.html
 
 manifest:
-  version: "0.12"
+  version: "0.13"
 
   # "remotes" is a list of locations where git repositories are cloned
   # and fetched from.
@@ -29,19 +29,25 @@ manifest:
       url-base: https://github.com/ARMmbed
     - name: nordicsemi
       url-base: https://github.com/NordicSemiconductor
+    - name: dragoon
+      url-base: https://projecttools.nordicsemi.no/bitbucket/scm/drgn
     - name: memfault
       url-base: https://github.com/memfault
     - name: ant-nrfconnect
       url-base: https://github.com/ant-nrfconnect
+
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
   defaults:
     remote: ncs
 
-  group-filter: [-homekit, -nrf-802154, -find-my, -doc-internal]
+  group-filter: [-homekit, -nrf-802154, -dragoon, -find-my, -doc-internal]
 
   # "projects" is a list of git repositories which make up the NCS
   # source code.
+  #
+  # For 'userdata' fields in the projects area, please refer to:
+  # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/dm_code_base.html
   projects:
 
     # The Zephyr RTOS fork in the NCS, along with the subset of its
@@ -160,6 +166,14 @@ manifest:
       revision: c601469f41ecc4546cd1feb04d49b611cc872161
       groups:
         - nrf-802154
+    - name: dragoon
+      # Only for internal Nordic development
+      repo-path: dragoon.git
+      remote: dragoon
+      revision: b093384fc4663a2da582811314e13db2a52c81ac
+      submodules: true
+      groups:
+        - dragoon
     - name: cjson
       repo-path: sdk-cjson
       path: modules/lib/cjson
