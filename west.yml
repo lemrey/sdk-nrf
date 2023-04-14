@@ -179,7 +179,6 @@ manifest:
       path: modules/lib/azure-sdk-for-c
       revision: 308c171cb4b5eed266649012a68406487ec81fb2
     - name: suit-processor
-      remote: nordicsemi
       revision: 614838e61f1a118e1c1695f61dd0b8ec156bdabc
       path: modules/lib/suit-processor
     # Other third-party repositories.
