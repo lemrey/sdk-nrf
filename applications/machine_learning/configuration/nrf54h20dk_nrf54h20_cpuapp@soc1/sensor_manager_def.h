@@ -16,10 +16,18 @@
 const struct {} sensor_manager_def_include_once;
 
 
-static const struct sm_sampled_channel accel_chan[] = {
+static const struct caf_sampled_channel accel_chan[] = {
 	{
-		.chan = SENSOR_CHAN_ACCEL_XYZ,
-		.data_cnt = 3,
+		.chan = SENSOR_CHAN_ACCEL_X,
+		.data_cnt = 1,
+	},
+	{
+		.chan = SENSOR_CHAN_ACCEL_Y,
+		.data_cnt = 1,
+	},
+	{
+		.chan = SENSOR_CHAN_ACCEL_Z,
+		.data_cnt = 1,
 	},
 };
 
