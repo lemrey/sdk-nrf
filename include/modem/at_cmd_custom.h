@@ -48,26 +48,18 @@ extern "C" {
 int at_cmd_custom_respond(char *buf, size_t buf_size,
 		const char *response, ...);
 
-/* Custom command filter is paused. */
-#define AT_CMD_CUSTOM_PAUSED 1
-/* Custom command filter is active, default. */
-#define AT_CMD_CUSTOM_ACTIVE 0
-
 /**
  * @brief Define an custom AT command callback.
  *
  * @param entry The entry name.
  * @param _filter The (partial) AT command on which the callback should trigger.
  * @param _callback The AT command callback function.
- * @param ... Optional initial state ( @c AT_CMD_CUSTOM_PAUSED or @c AT_CMD_CUSTOM_ACTIVE ).
- *	      The default is @c AT_CMD_CUSTOM_ACTIVE .
  */
-#define AT_CMD_CUSTOM(entry, _filter, _callback, ...)                                              \
+#define AT_CMD_CUSTOM(entry, _filter, _callback)                                              \
 	static int _callback(char *buf, size_t len, char *at_cmd);                                 \
 	static STRUCT_SECTION_ITERABLE(nrf_modem_at_cmd_custom, entry) = {                         \
 		.cmd = _filter,                                                                    \
 		.callback = _callback,                                                             \
-		COND_CODE_1(__VA_ARGS__, (.paused = __VA_ARGS__,), ())                             \
 	}
 
 /**

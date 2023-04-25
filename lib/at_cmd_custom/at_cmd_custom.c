@@ -56,16 +56,4 @@ int at_cmd_custom_respond(char *buf, size_t buf_size,
 	return 0;
 }
 
-void at_cmd_custom_pause(struct nrf_modem_at_cmd_custom *entry)
-{
-	entry->paused = true;
-	LOG_DBG("%s(%s)", __func__, entry->cmd);
-}
-
-void at_cmd_custom_resume(struct nrf_modem_at_cmd_custom *entry)
-{
-	entry->paused = false;
-	LOG_DBG("%s(%s)", __func__, entry->cmd);
-}
-
 SYS_INIT(at_cmd_custom_sys_init, APPLICATION, 0);

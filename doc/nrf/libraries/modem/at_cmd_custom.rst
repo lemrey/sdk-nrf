@@ -88,33 +88,6 @@ The following code snippet shows how responses can be added to the ``+MYCOMMAND`
 		}
 	}
 
-
-Pausing and resuming
-====================
-
-A custom AT command is active by default.
-A custom AT command can be paused and resumed with the :c:func:`at_cmd_custom_pause` and :c:func:`at_cmd_custom_resume` functions, respectively.
-You can pause a custom command at declaration by appending :c:macro:`AT_CMD_CUSTOM_PAUSED` to the filter definition.
-
-The following code snippet shows how to resume a custom command that is paused by default:
-
-.. code-block:: c
-
-	/* Callback for +MYCOMMAND calls */
-	AT_CMD_CUSTOM(my_command_filter, "AT+MYCOMMAND", my_command_callback, AT_CMD_CUSTOM_PAUSED);
-
-	int resume_my_command_filter(void)
-	{
-		/* resume the filter */
-		at_cmd_custom_resume(&my_command_filter);
-	}
-
-	int my_command_callback(char *buf, size_t len, char *at_cmd);
-	{
-		return at_cmd_custom_respond(buf, len "OK\r\n");
-	}
-
-
 API documentation
 *****************
 

@@ -457,8 +457,9 @@ Modem libraries
   * Updated:
 
     * Renamed the :c:macro:`AT_CUSTOM_CMD` macro to :c:macro:`AT_CMD_CUSTOM`.
-    * Renamed the :c:macro:`AT_CUSTOM_CMD_PAUSED` and :c:macro:`AT_CUSTOM_CMD_ACTIVE` macros to :c:macro:`AT_CMD_CUSTOM_PAUSED` and :c:macro:`AT_CMD_CUSTOM_ACTIVE`, respectively.
-    * Renamed the :c:func:`at_custom_cmd_respond`, :c:func:`at_custom_cmd_pause` and :c:func:`at_custom_cmd_active` functions to :c:func:`at_cmd_custom_respond`, :c:func:`at_cmd_custom_pause` and :c:func:`at_cmd_custom_active`, respectively.
+    * Renamed the :c:func:`at_custom_cmd_respond` function to :c:func:`at_cmd_custom_respond`.
+    * Removed the :c:macro:`AT_CUSTOM_CMD_PAUSED` and :c:macro:`AT_CUSTOM_CMD_ACTIVE` macros.
+    * Removed the :c:func:`at_custom_cmd_pause` and :c:func:`at_custom_cmd_active` functions.
 
 * :ref:`nrf_modem_lib_readme` library:
 
