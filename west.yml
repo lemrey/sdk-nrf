@@ -114,7 +114,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 8fc34ee32d9d0ec959d7b47c9b0e02466e0faf0d
+      revision: 6f47360980b0d71142d2a29642b329addcb45e9c
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
@@ -157,7 +157,7 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: 4c6fa1bba61746141fe38605cb0fb0b90995b5df
+      revision: c601469f41ecc4546cd1feb04d49b611cc872161
       groups:
         - nrf-802154
     - name: cjson
