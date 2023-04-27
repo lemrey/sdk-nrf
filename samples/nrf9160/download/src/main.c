@@ -173,7 +173,7 @@ void main(void)
 {
 	int err;
 
-	printk("Download client sample started\n");
+	printk("Download client sample started!\n");
 
 #if CONFIG_SAMPLE_SECURE_SOCKET
 	/* Provision certificates before connecting to the network */
