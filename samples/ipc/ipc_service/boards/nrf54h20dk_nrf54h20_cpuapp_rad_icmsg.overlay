@@ -4,22 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
 
 /{
 	chosen {
 		zephyr,console = &uart136;
-	};
-
-	allocatable_ram {
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		ram3x_app_mem: memory@2fc00000 {
-			compatible = "nordic,allocatable-ram";
-			reg = <0x2fc00000 DT_SIZE_K(32)>;
-			perm-read;
-			perm-write;
-		};
 	};
 };
 

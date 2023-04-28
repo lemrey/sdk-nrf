@@ -6,7 +6,6 @@
 
  / {
 	chosen {
-		/delete-property/ nordic,vevif-cpuppr;
 		zephyr,console = &uart135;
 	};
 

@@ -6,8 +6,6 @@
 
  / {
 	chosen {
-		/delete-property/ nordic,bellboard-cpuapp;
-		/delete-property/ nordic,vevif-cpuppr;
 		zephyr,console = &uart136;
 	};
 
