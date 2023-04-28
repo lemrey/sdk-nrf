@@ -5,7 +5,6 @@
  */
 
 #include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
-#include "../../boards/shared/nrf54_ipc_shm_ram0.dtsi"
 
 / {
 	chosen {
@@ -15,8 +14,8 @@
 
 &ipc_cpuapp {
 	compatible = "zephyr,ipc-icmsg";
-	tx-region = <&ipc_shm_local>;
-	rx-region = <&ipc_shm_remote>;
+	tx-region = <&ipc_shm_cpurad_cpuapp>;
+	rx-region = <&ipc_shm_cpuapp_cpurad>;
 	status = "okay";
 	/delete-property/ memory-region;
 	/delete-property/ role;

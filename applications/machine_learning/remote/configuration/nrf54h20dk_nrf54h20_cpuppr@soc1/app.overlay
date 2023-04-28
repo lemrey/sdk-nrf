@@ -13,20 +13,12 @@
 		ram3x_agg_area0: memory@2fc05000 {
 			reg = <0x2fc05000 0x600>;
 		};
-
-		ram3x_shared_rx: memory@2fc06000 {
-			reg = <0x2fc06000 0x0800>;
-		};
-
-		ram3x_shared_tx: memory@2fc06800 {
-			reg = <0x2fc06800 0x0800>;
-		};
 	};
 
 	ipc0: ipc0 {
 		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&ram3x_shared_tx>;
-		rx-region = <&ram3x_shared_rx>;
+		tx-region = <&ipc_shm_cpuppr_cpuapp>;
+		rx-region = <&ipc_shm_cpuapp_cpuppr>;
 		mboxes = <&bellboard_cpuapp 12>,
 			 <&vevif_cpuppr 12>;
 		mbox-names = "tx", "rx";

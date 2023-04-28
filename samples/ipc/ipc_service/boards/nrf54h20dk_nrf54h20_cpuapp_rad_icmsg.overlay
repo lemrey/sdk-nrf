@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "shared/nrf54_ipc_shm_ram0.dtsi"
 
 /{
 	chosen {
@@ -26,8 +25,8 @@
 
 &ipc_cpurad {
 	compatible = "zephyr,ipc-icmsg";
-	tx-region = <&ipc_shm_remote>;
-	rx-region = <&ipc_shm_local>;
+	tx-region = <&ipc_shm_cpuapp_cpurad>;
+	rx-region = <&ipc_shm_cpurad_cpuapp>;
 	status = "okay";
 	/delete-property/ memory-region;
 	/delete-property/ role;
