@@ -195,6 +195,9 @@ manifest:
     - name: suit-processor
       revision: 614838e61f1a118e1c1695f61dd0b8ec156bdabc
       path: modules/lib/suit-processor
+    - name: suit-generator
+      revision: c6aa83655cc3da70c0dd67b9a77855f5fa92300a
+      path: modules/lib/suit-generator
     # Other third-party repositories.
     - name: cmock
       path: test/cmock
