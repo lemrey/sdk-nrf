@@ -330,4 +330,6 @@ No changes since the latest nRF Connect SDK release.
 Documentation
 =============
 
-No changes since the latest nRF Connect SDK release.
+Added:
+
+* The :ref:`ug_nrf54h20_matter_thread` page describing Matter and Thread support in the limited customer sampling release.

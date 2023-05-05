@@ -7,7 +7,7 @@ OpenThread architectures
    :local:
    :depth: 2
 
-This page describes the OpenThread stack architecture and platform designs that are possible with the OpenThread network stack on Nordic Semiconductor devices in |NCS|.
+This page describes the OpenThread stack architecture and platform designs that are possible with the OpenThread network stack on Nordic Semiconductor devices in the |NCS|.
 
 The designs are described from the least complex to the most complex, starting with System-on-Chip designs.
 These are simple applications that consist of a single chip running a single protocol or multiple protocols.
@@ -129,7 +129,7 @@ Network co-processor (NCP)
 ==========================
 
 .. note::
-   This platform design is currently discontinued by |NCS|.
+   This platform design is currently discontinued by the |NCS|.
 
 In the standard NCP design, the full OpenThread stack runs on the processor that provides the Thread radio (the *network processor*), and the application layer runs on a host processor.
 The host processor is typically more capable than the network processor, but it has greater power demands.
@@ -195,10 +195,10 @@ This platform design is suitable for the following development kits:
 
 .. _thread_architectures_designs_cp_uart:
 
-UART recommendations for NCP
-============================
+UART recommendations for co-processor designs
+=============================================
 
-Use the following recommended default UART settings for configuration based on :ref:`thread_architectures_designs_cp_ncp` architecture:
+Use the following recommended default UART settings for a configuration based on :ref:`thread_architectures_designs_cp` architecture:
 
 * Bit rate: 1000000
 * Start bits: 1
@@ -213,11 +213,11 @@ Flow control
 
 Hardware reset
    Use the Arduino-style hardware reset, where the DTR signal is coupled to the RES pin through a 0.01 µF capacitor.
-   This causes the NCP to automatically reset whenever the serial port is opened.
+   This causes the co-processor to automatically reset whenever the serial port is opened.
 
    .. note::
       This hardware reset method is not used in Nordic Semiconductor's solution.
-      Dedicate one of your host pins to control the RES pin on the NCP, so that you can easily perform a hardware reset if necessary.
+      Dedicate one of your host pins to control the RES pin on the co-processor, so that you can easily perform a hardware reset if necessary.
 
 Recommended UART signals
 ------------------------

@@ -10,6 +10,8 @@ Matter tools
 
 Use tools listed on this page to test :ref:`matter_samples` and develop Matter applications in the |NCS|.
 
+.. _ug_matter_gs_tools_gn:
+
 GN tool
 *******
 
