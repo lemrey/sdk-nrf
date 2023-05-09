@@ -1,0 +1,29 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/ {
+	chosen {
+		zephyr,console = &uart135;
+	};
+};
+
+/* Configure permission of RAM3X DMA node used by Radio core UART driver. */
+&ram3x_dma_region {
+	compatible = "nordic,allocatable-ram";
+	perm-write;
+	perm-read;
+};
+
+/* Enable RAM3X DMA CPURAD subnode used by Radio core UART driver. */
+&ram3x_cpurad {
+	status = "okay";
+};
+
+/* Configure Radio core UART. */
+&uart135 {
+	status = "okay";
+	memory-regions = <&ram3x_cpurad>;
+};
