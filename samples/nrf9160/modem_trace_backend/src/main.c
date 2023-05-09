@@ -4,19 +4,37 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <zephyr/kernel.h>
+#include <modem/at_cmd_hook.h>
 #include <modem/lte_lc.h>
 #include <modem/nrf_modem_lib.h>
 #include <nrf_modem_at.h>
 
-/* define callback */
-LTE_LC_ON_CFUN(cfun_hook, on_cfun, NULL);
-
-/* callback implementation */
-static void on_cfun(enum lte_lc_func_mode mode, void *context)
+#if defined(CONFIG_AT_CMD_HOOK)
+static void pdn_cfun_evt(const char *cmd, int err)
 {
+	int mode;
+	char *mode_str;
+
+	if (err) {
+		return;
+	}
+
+	mode_str = (char *)cmd + strlen("AT+CFUN=");
+
+	if (mode_str[0] < '0' || mode_str[0] > '9') {
+		return;
+	}
+
+	mode = atoi(mode_str);
+
 	printk("LTE mode changed to %d\n", mode);
 }
+
+AT_CMD_HOOK(pdn_athook_cfun, "AT+CFUN=", NULL, pdn_cfun_evt);
+#endif /* AT_CMD_HOOK */
 
 int main(void)
 {

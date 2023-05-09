@@ -6,7 +6,7 @@
 
 menuconfig PDN
 	bool "Packet Domain Network library"
-	depends on NRF_MODEM_LIB && AT_MONITOR
+	depends on NRF_MODEM_LIB && AT_MONITOR && AT_CMD_HOOK
 	# library uses heap
 	depends on HEAP_MEM_POOL_SIZE > 0
 
