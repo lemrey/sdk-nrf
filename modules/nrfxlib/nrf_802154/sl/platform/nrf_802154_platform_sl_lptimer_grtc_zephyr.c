@@ -179,7 +179,6 @@ void nrf_802154_platform_sl_lptimer_disable(void)
 void nrf_802154_timer_coord_init(void)
 {
     nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(GRTC_TASK_CAPTURE_TIMESTAMP);
-    nrf_dppi_channels_enable(NRF_802154_SL_DPPIC_INSTANCE, (1UL << PPI_TIMESTAMP));
 }
 
 void nrf_802154_timer_coord_uninit(void)
@@ -189,12 +188,12 @@ void nrf_802154_timer_coord_uninit(void)
 
 void nrf_802154_timer_coord_start(void)
 {
-    // Intentionally empty
+    nrf_dppi_channels_enable(NRF_802154_SL_DPPIC_INSTANCE, (1UL << PPI_TIMESTAMP));
 }
 
 void nrf_802154_timer_coord_stop(void)
 {
-    // Intentionally empty
+    nrf_dppi_channels_disable(NRF_802154_SL_DPPIC_INSTANCE, (1UL << PPI_TIMESTAMP));
 }
 
 void nrf_802154_timer_coord_timestamp_prepare(const nrf_802154_sl_event_handle_t * p_event)
