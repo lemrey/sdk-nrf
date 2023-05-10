@@ -34,7 +34,7 @@ IPv6 network support
 
 The development kits for this sample offer the following IPv6 network support for Matter:
 
-* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, and ``nrf21540dk_nrf52840``.
+* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, ``nrf21540dk_nrf52840``, and ``nrf54h20dk_nrf54h20_cpuapp@soc1``.
 * Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp`` with the ``nrf7002_ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
 
 Overview
@@ -84,7 +84,7 @@ In the door lock sample, you can use the following commands with the Bluetooth L
 
 If the device is already connected to the Matter network, the notification about changing the lock state will be send to the Bluetooth controller.
 
-Currently, the door lock's Bluetooth LE service extension with NUS is only available for the nRF52840 and the nRF5340 DKs in the :ref:`Matter over Thread <ug_matter_gs_testing>` network variant.
+Currently, the door lock's Bluetooth LE service extension with NUS is only available for the nRF52840 DK, the nRF5340 DK, and the nRF54H20 PDK in the :ref:`Matter over Thread <ug_matter_gs_testing>` network variant.
 However, you can use the Bluetooth LE service extension regardless of whether the device is connected to a Matter over Thread network or not.
 
 See `Enabling Matter Bluetooth LE with Nordic UART Service`_ and `Testing door lock using Bluetooth LE with Nordic UART Service`_ for more information about how to configure and test this feature with this sample.
@@ -129,10 +129,24 @@ This sample supports the following build types, depending on the selected board:
 
 .. matter_door_lock_sample_configuration_file_types_end
 
+Matter door lock build types for the nRF54H20 PDK
+=================================================
+
+.. matter_door_lock_sample_build_types_nrf54h20_start
+
+For the nRF54H20 PDK, the following build types are available:
+
+* ``no_dfu`` -- The Device Firmware Upgrade feature is not yet supported on the nRF54H20 PDK.
+
+.. matter_door_lock_sample_build_types_nrf54h20_end
+
 .. _matter_lock_sample_configuration_dfu:
 
 Device Firmware Upgrade support
 ===============================
+
+.. note::
+   The Device Firmware Update feature is not yet available on the nRF54H20 PDK.
 
 .. matter_door_lock_sample_build_with_dfu_start
 
@@ -203,6 +217,20 @@ The PIN code is different depending on the build type:
 
 See `Testing door lock using Bluetooth LE with Nordic UART Service`_ for more information about how to test this feature.
 
+Enabling Matter Bluetooth LE with Nordic UART Service on the nRF54H20 PDK
+-------------------------------------------------------------------------
+
+For the nRF54H20 PDK, use the ``no_dfu`` build type.
+Other build types are not supported yet.
+The secure PIN code is generated randomly and printed in the log console as mentioned in the standard procedure.
+To request setting the secure PIN code statically, enable the :kconfig:option:`CONFIG_BT_FIXED_PASSKEY` Kconfig option and then set the desired secure PIN using :kconfig:option:`CONFIG_CHIP_NUS_FIXED_PASSKEY`.
+
+See the following example:
+
+   .. code-block:: console
+      
+      west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf -DCONFIG_BT_FIXED_PASSKEY=y -DCONFIG_CHIP_NUS_FIXED_PASSKEY=112233
+
 User interface
 **************
 
@@ -243,7 +271,7 @@ Button 1:
 .. matter_door_lock_sample_button1_end
 
 Button 2:
-    * On nRF52840 DK, nRF5340 DK, and nRF21540 DK: Changes the lock state to the opposite one.
+    * On nRF52840 DK, nRF5340 DK, nRF54H20 PDK, and nRF21540 DK: Changes the lock state to the opposite one.
     * On nRF7002 DK:
 
       * If pressed for less than three seconds, it changes the lock state to the opposite one.
@@ -256,7 +284,7 @@ Button 3:
 .. matter_door_lock_sample_button4_start
 
 Button 4:
-    * On nRF52840 DK, nRF5340 DK, and nRF21540 DK: Starts the NFC tag emulation, enables Bluetooth LE advertising for the predefined period of time (15 minutes by default), and makes the device discoverable over Bluetooth LE.
+    * On nRF52840 DK, nRF5340 DK, nRF54H20 PDK, and nRF21540 DK: Starts the NFC tag emulation, enables Bluetooth LE advertising for the predefined period of time (15 minutes by default), and makes the device discoverable over Bluetooth LE.
       This button is used during the :ref:`commissioning procedure <matter_lock_sample_remote_control_commissioning>`.
 
     * On nRF7002 DK: Not available.
@@ -317,6 +345,21 @@ The ``build_nrf52840dk_nrf52840`` parameter specifies the output directory for t
    .. code-block:: console
 
       File not found: ./ncs/nrf/samples/matter/lock/configuration/nrf52840dk_nrf52840/prj_shell.conf
+
+Building command example for nRF54H20 PDK
+-----------------------------------------
+
+.. matter_door_lock_sample_build_nrf54h20_start
+
+Use the following building command to select the build type for the nRF54H20 PDK:
+
+.. code-block:: console
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf
+
+See :ref:`ug_nrf54h20_gs_sample` in the nRF54H20 user guide for more information.
+
+.. matter_door_lock_sample_build_nrf54h20_end
 
 Testing
 =======
@@ -491,8 +534,8 @@ To test the :ref:`matter_lock_sample_ble_nus` feature, complete the following st
    The Bluetooth Pairing Request with an input field for passkey appears as a notification (Android) or on the screen (iOS).
 #. Depending on the build type you are using:
 
-   * For the ``release`` build type: Enter the passkey ``123456``.
-   * For the ``debug`` build type, complete the following steps:
+   * For the ``release`` build type, enter the passkey ``123456``.
+   * For the ``debug`` build type (or on the nRF54H20 PDK), complete the following steps:
 
      a. Search the device's logs to find ``PROVIDE THE FOLLOWING CODE IN YOUR MOBILE APP:`` phrase.
      #. Read the randomly generated passkey from the console logs.

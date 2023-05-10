@@ -32,7 +32,7 @@ IPv6 network support
 
 The development kits for this sample offer the following IPv6 network support for Matter:
 
-* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, and ``nrf21540dk_nrf52840``.
+* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, ``nrf21540dk_nrf52840``, and ``nrf54h20dk_nrf54h20_cpuapp@soc1``.
 * Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp`` with the ``nrf7002_ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
 
 Overview
@@ -100,8 +100,21 @@ Matter template build types
     :start-after: matter_door_lock_sample_configuration_file_types_start
     :end-before: matter_door_lock_sample_configuration_file_types_end
 
+.. note::
+    For the nRF54H20 PDK, only the ``no_dfu`` target is supported due to the lack of the Device Firmware Upgrade feature support.
+
+Matter template build types for the nRF54H20 PDK
+================================================
+
+.. include:: ../lock/README.rst
+    :start-after: matter_door_lock_sample_build_types_nrf54h20_start
+    :end-before: matter_door_lock_sample_build_types_nrf54h20_end
+
 Device Firmware Upgrade support
 ===============================
+
+.. note::
+   The Device Firmware Update feature is not yet available on the nRF54H20 PDK.
 
 .. include:: ../lock/README.rst
     :start-after: matter_door_lock_sample_build_with_dfu_start
@@ -169,6 +182,13 @@ The ``build_nrf52840dk_nrf52840`` parameter specifies the output directory for t
    .. code-block:: console
 
       File not found: ./ncs/nrf/samples/matter/template/configuration/nrf52840dk_nrf52840/prj_shell.conf
+
+Building command example for nRF54H20 PDK
+-----------------------------------------
+
+.. include:: ../lock/README.rst
+    :start-after: matter_door_lock_sample_build_nrf54h20_start
+    :end-before: matter_door_lock_sample_build_nrf54h20_end
 
 Testing
 =======
