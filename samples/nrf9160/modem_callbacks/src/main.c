@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <zephyr/kernel.h>
 #include <modem/nrf_modem_lib.h>
 #include <modem/at_cmd_hook.h>
@@ -31,18 +33,28 @@ static void cfun_before_cb(const char *cmd)
 
 static void cfun_after_cb(const char *cmd, int err)
 {
+	int mode;
+	char *mode_str;
+
 	printk("> Received callback after %s was sent %s to the modem\n",
 	       cmd, err ? "unsuccessfully" : "successfully");
+
+	if (err) {
+		return;
+	}
+
+	mode_str = (char *)cmd + strlen("AT+CFUN=");
+
+	if (mode_str[0] < '0' || mode_str[0] > '9') {
+		return;
+	}
+
+	mode = atoi(mode_str);
+
+	printk("> Functional mode has changed to %d\n", mode);
 }
 
 AT_CMD_HOOK(cfun_hook, "AT+CFUN", cfun_before_cb, cfun_after_cb);
-
-LTE_LC_ON_CFUN(cfun_monitor, on_cfun, NULL);
-
-static void on_cfun(enum lte_lc_func_mode mode, void *ctx)
-{
-	printk("> Functional mode has changed to %d\n", mode);
-}
 
 int main(void)
 {
