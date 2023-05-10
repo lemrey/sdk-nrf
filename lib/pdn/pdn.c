@@ -16,6 +16,7 @@
 #include <zephyr/logging/log.h>
 #include <nrf_modem_at.h>
 #include <modem/pdn.h>
+#include <modem/at_cmd_hook.h>
 #include <modem/at_monitor.h>
 #include <modem/nrf_modem_lib.h>
 #if defined(CONFIG_LTE_LINK_CONTROL)
@@ -517,12 +518,22 @@ int pdn_default_apn_get(char *buf, size_t len)
 	return 0;
 }
 
-#if defined(CONFIG_LTE_LINK_CONTROL)
-LTE_LC_ON_CFUN(pdn_cfun_hook, on_cfun, NULL);
-
-static void on_cfun(enum lte_lc_func_mode mode, void *ctx)
+static void pdn_cfun_evt(const char *cmd, int err)
 {
-	int err;
+	int mode;
+	char *mode_str;
+
+	if (err) {
+		return;
+	}
+
+	mode_str = (char *)cmd + strlen("AT+CFUN=");
+
+	if (mode_str[0] < '0' || mode_str[0] > '9') {
+		return;
+	}
+
+	mode = atoi(mode_str);
 
 	if (mode == LTE_LC_FUNC_MODE_NORMAL ||
 	    mode == LTE_LC_FUNC_MODE_ACTIVATE_LTE) {
@@ -537,7 +548,8 @@ static void on_cfun(enum lte_lc_func_mode mode, void *ctx)
 		}
 	}
 }
-#endif /* CONFIG_LTE_LINK_CONTROL */
+
+AT_CMD_HOOK(pdn_athook_cfun, "AT+CFUN=", NULL, pdn_cfun_evt);
 
 static int pdn_sys_init(void)
 {
