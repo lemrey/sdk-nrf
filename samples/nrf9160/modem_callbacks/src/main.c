@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <zephyr/kernel.h>
 #include <modem/nrf_modem_lib.h>
-#include <modem/at_cmd_hook.h>
 #include <modem/lte_lc.h>
 
 NRF_MODEM_LIB_ON_INIT(init_hook, on_modem_init, NULL);
@@ -23,19 +22,6 @@ static void on_modem_shutdown(void *ctx)
 {
 	printk("> Shutting down\n");
 }
-
-static void cfun_before_cb(const char *cmd)
-{
-	printk("> Received callback before %s is sent to the modem\n", cmd);
-}
-
-static void cfun_after_cb(const char *cmd, int err)
-{
-	printk("> Received callback after %s was sent %s to the modem\n",
-	       cmd, err ? "unsuccessfully" : "successfully");
-}
-
-AT_CMD_HOOK(cfun_hook, "AT+CFUN", cfun_before_cb, cfun_after_cb);
 
 LTE_LC_ON_CFUN(cfun_monitor, on_cfun, NULL);
 

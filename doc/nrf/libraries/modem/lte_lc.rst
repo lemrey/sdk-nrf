@@ -229,9 +229,6 @@ You can use the following configuration options to configure the connection fall
 Functional mode changes callback
 ================================
 
-.. note::
-	This feature is deprecated. Use :ref:`_at_cmd_hook_readme` instead.
-
 The library allows the application to define compile-time callbacks to receive the modem's functional mode changes.
 These callbacks allow any part of the application to perform certain operations when the modem enters or re-enters a certain functional mode using the library :c:func:`lte_lc_func_mode_set` API.
 For example, one kind of operation that the application or a library may need to perform and repeat, whenever the modem enters a certain functional mode is the subscription to AT notifications.

@@ -29,7 +29,7 @@ When returning from the callback, the content of the provided buffer is treated 
 Adding a custom command
 =======================
 
-The application can define a custom command to receive a callback using the :c:macro:`AT_CMD_CUSTOM` macro.
+The application can define an custom command to receive a callback using the :c:macro:`AT_CMD_CUSTOM` macro.
 A custom AT command has a name, a filter string, a callback function, and a state.
 Multiple parts of the application can define their own custom commands.
 However, there can be only one callback per filter match.
@@ -44,7 +44,7 @@ The following code snippet shows how to add a custom command that triggers on ``
 
 .. code-block:: c
 
-   /* Callback for +MYCOMMAND calls */
+   /* AT filter callback for +MYCOMMAND calls */
    AT_CMD_CUSTOM(my_command_filter, "AT+MYCOMMAND", my_command_callback);
 
 	int my_command_callback(char *buf, size_t len, char *at_cmd);
@@ -69,7 +69,7 @@ The following code snippet shows how responses can be added to the ``+MYCOMMAND`
 
 .. code-block:: c
 
-	/* Callback for +MYCOMMAND calls */
+	/* AT filter callback for +MYCOMMAND calls */
 	AT_CMD_CUSTOM(my_command_filter, "AT+MYCOMMAND", my_command_callback);
 
 	int my_command_callback(char *buf, size_t len, char *at_cmd);

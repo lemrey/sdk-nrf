@@ -846,14 +846,11 @@ struct lte_lc_cfun_cb {
 /**
  * @brief Define a callback for functional mode changes through @ref lte_lc_func_mode_set.
  *
- * @deprecated After nRF Connect SDK v2.4.0. Use AT command hooks instead.
- *
  * @param name Callback name
  * @param _callback Callback function
  * @param _context User-defined context
  */
 #define LTE_LC_ON_CFUN(name, _callback, _context)                                                  \
-	__DEPRECATED_MACRO                                                                         \
 	static void _callback(enum lte_lc_func_mode, void *ctx);                                   \
 	STRUCT_SECTION_ITERABLE(lte_lc_cfun_cb, lte_lc_cfun_cb_##name) = {                         \
 		.callback = _callback,                                                             \

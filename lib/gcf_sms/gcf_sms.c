@@ -60,13 +60,13 @@ AT_CMD_CUSTOM(CMMS, "AT+CMMS", gcf_sms_filter_callback);
 AT_CMD_CUSTOM(CMGF0, "AT+CMGF=0", gcf_sms_filter_callback);
 
 /*
- * Internal GCF SMS callbacks
+ * Internal GCF SMS callbacks and filters
  *
- * note: We use internal callbacks and a common AT custom command callback to support
+ * note: We use internal filters and a common AT filter callback to support
  * multiple commands in the same call, e.g. "AT+CMMS=1;+CMSS=0;+CMSS=1".
  */
 
-/* Custom AT command callback declarations. */
+/* Custom AT filter callback declarations. */
 static int at_cmd_callback_cpms(char *buf, size_t len, char *at_cmd);
 static int at_cmd_callback_csms(char *buf, size_t len, char *at_cmd);
 static int at_cmd_callback_csca(char *buf, size_t len, char *at_cmd);
@@ -218,7 +218,7 @@ int gcf_sms_filter_callback(char *buf, size_t len, char *at_cmd)
 }
 
 /*
- * Custom AT command callback functions.
+ * AT Filter callback functions.
  */
 
 static int at_cmd_callback_cpms(char *buf, size_t len, char *at_cmd)

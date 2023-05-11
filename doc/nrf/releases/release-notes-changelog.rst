@@ -450,8 +450,6 @@ Bootloader libraries
 Modem libraries
 ---------------
 
-* Added the :ref:`at_cmd_hook_readme` library to add application callbacks for AT commands.
-
 * :ref:`_at_cmd_custom_readme` library:
 
   * Updated:
