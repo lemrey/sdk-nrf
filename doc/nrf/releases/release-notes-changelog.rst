@@ -179,6 +179,11 @@ Bluetooth mesh samples
 
 |no_changes_yet_note|
 
+Cryptography samples
+--------------------
+
+* Added the :ref:`crypto_ecjpake` sample demonstrating usage of EC J-PAKE.
+
 nRF9160 samples
 ---------------
 
