@@ -45,7 +45,7 @@ ipc0: &ipc_cpurad { };
 /delete-node/ &storage_partition;
 
 &mram0 {
-    reg = <0x1e0aa000 DT_SIZE_K(1000)>;
+    reg = <0xe0aa000 DT_SIZE_K(1000)>;
     partitions {
         compatible = "fixed-partitions";
         #address-cells = < 0x1 >;
@@ -55,9 +55,9 @@ ipc0: &ipc_cpurad { };
             reg = < 0xaa000 DT_SIZE_K(998) >;
         };
     };
-    cpuapp_uicr_ext: uicr@1e1a3800 {
+    cpuapp_uicr_ext: uicr@e1a3800 {
         compatible = "nordic,nrf-uicr";
-        reg = <0x1e1a3800 DT_SIZE_K(2)>;
+        reg = <0xe1a3800 DT_SIZE_K(2)>;
     };
 };
 
