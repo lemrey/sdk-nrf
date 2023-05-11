@@ -35,6 +35,10 @@ LOG_MODULE_REGISTER(pdn, CONFIG_PDN_LOG_LEVEL);
 
 static K_MUTEX_DEFINE(list_mutex);
 
+static int mode;
+static void pdn_at_hook_work_handle(struct k_work *item);
+static K_WORK_DELAYABLE_DEFINE(pdn_at_hook_work, pdn_at_hook_work_handle);
+
 static sys_slist_t pdn_contexts;
 struct pdn {
 	sys_snode_t node; /* list handling */
@@ -518,9 +522,26 @@ int pdn_default_apn_get(char *buf, size_t len)
 	return 0;
 }
 
+static void pdn_at_hook_work_handle(struct k_work *item)
+{
+	int err;
+
+	if (mode == LTE_LC_FUNC_MODE_NORMAL ||
+	    mode == LTE_LC_FUNC_MODE_ACTIVATE_LTE) {
+		LOG_DBG("Subscribing to +CNEC=16 and +CGEREP=1");
+		err = nrf_modem_at_printf("AT+CNEC=16");
+		if (err) {
+			LOG_ERR("Unable to subscribe to +CNEC=16, err %d", err);
+		}
+		err = nrf_modem_at_printf("AT+CGEREP=1");
+		if (err) {
+			LOG_ERR("Unable to subscribe to +CGEREP=1, err %d", err);
+		}
+	}
+}
+
 static void pdn_cfun_evt(const char *cmd, int err)
 {
-	int mode;
 	char *mode_str;
 
 	if (err) {
@@ -535,18 +556,7 @@ static void pdn_cfun_evt(const char *cmd, int err)
 
 	mode = atoi(mode_str);
 
-	if (mode == LTE_LC_FUNC_MODE_NORMAL ||
-	    mode == LTE_LC_FUNC_MODE_ACTIVATE_LTE) {
-		LOG_DBG("Subscribing to +CNEC=16 and +CGEREP=1");
-		err = nrf_modem_at_printf("AT+CNEC=16");
-		if (err) {
-			LOG_ERR("Unable to subscribe to +CNEC=16, err %d", err);
-		}
-		err = nrf_modem_at_printf("AT+CGEREP=1");
-		if (err) {
-			LOG_ERR("Unable to subscribe to +CGEREP=1, err %d", err);
-		}
-	}
+	k_work_reschedule(&pdn_at_hook_work, K_MSEC(100));
 }
 
 AT_CMD_HOOK(pdn_athook_cfun, "AT+CFUN=", NULL, pdn_cfun_evt);

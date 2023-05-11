@@ -136,9 +136,20 @@ static bool is_cellid_valid(uint32_t cellid)
 	return true;
 }
 
+static int mode;
+static void lte_lc_cfun_evt_work_handle(struct k_work *item);
+static K_WORK_DELAYABLE_DEFINE(lte_lc_cfun_evt_work, lte_lc_cfun_evt_work_handle);
+
+static void lte_lc_cfun_evt_work_handle(struct k_work *item)
+{
+	STRUCT_SECTION_FOREACH(lte_lc_cfun_cb, e) {
+		LOG_DBG("CFUN monitor callback: %p", e->callback);
+		e->callback(mode, e->context);
+	}
+}
+
 static void lte_lc_cfun_evt(const char *cmd, int err)
 {
-	int mode;
 	const char *mode_str;
 
 	if (err) {
@@ -153,10 +164,7 @@ static void lte_lc_cfun_evt(const char *cmd, int err)
 
 	mode = atoi(mode_str);
 
-	STRUCT_SECTION_FOREACH(lte_lc_cfun_cb, e) {
-		LOG_DBG("CFUN monitor callback: %p", e->callback);
-		e->callback(mode, e->context);
-	}
+	k_work_reschedule(&lte_lc_cfun_evt_work, K_MSEC(100));
 }
 
 AT_CMD_HOOK(ltelc_athook_cfun, "AT+CFUN=", NULL, lte_lc_cfun_evt);
