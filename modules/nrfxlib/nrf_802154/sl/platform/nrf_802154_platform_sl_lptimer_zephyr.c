@@ -262,7 +262,6 @@ nrf_802154_sl_lptimer_platform_result_t nrf_802154_platform_sl_lptimer_hw_task_p
 	uint64_t fire_lpticks,
 	uint32_t ppi_channel)
 {
-	bool done_on_time;
 	uint32_t evt_address;
 	nrf_802154_sl_mcu_critical_state_t mcu_cs_state;
 
@@ -305,22 +304,18 @@ nrf_802154_sl_lptimer_platform_result_t nrf_802154_platform_sl_lptimer_hw_task_p
 		cc_unbind(m_hw_task.chan, ppi_channel);
 		m_hw_task.ppi = NRF_802154_SL_HW_TASK_PPI_INVALID;
 		z_nrf_rtc_timer_abort(m_hw_task.chan);
-		done_on_time = false;
-	} else {
-		if (ppi_channel != NRF_802154_SL_HW_TASK_PPI_INVALID) {
-			nrfx_gppi_event_endpoint_setup(ppi_channel, evt_address);
-		}
-		m_hw_task.ppi = ppi_channel;
-		m_hw_task.fire_lpticks = fire_lpticks;
-		nrf_802154_sl_mcu_critical_exit(mcu_cs_state);
-		done_on_time = true;
+		hw_task_state_set(HW_TASK_STATE_SETTING_UP, HW_TASK_STATE_IDLE);
+		return NRF_802154_SL_LPTIMER_PLATFORM_TOO_LATE;
 	}
 
-	hw_task_state_set(HW_TASK_STATE_SETTING_UP,
-			  done_on_time ? HW_TASK_STATE_READY : HW_TASK_STATE_IDLE);
-
-	return done_on_time ? NRF_802154_SL_LPTIMER_PLATFORM_SUCCESS :
-	       NRF_802154_SL_LPTIMER_PLATFORM_TOO_LATE;
+	if (ppi_channel != NRF_802154_SL_HW_TASK_PPI_INVALID) {
+		nrfx_gppi_event_endpoint_setup(ppi_channel, evt_address);
+	}
+	m_hw_task.ppi = ppi_channel;
+	m_hw_task.fire_lpticks = fire_lpticks;
+	nrf_802154_sl_mcu_critical_exit(mcu_cs_state);
+	hw_task_state_set(HW_TASK_STATE_SETTING_UP, HW_TASK_STATE_READY);
+	return NRF_802154_SL_LPTIMER_PLATFORM_SUCCESS;
 }
 
 nrf_802154_sl_lptimer_platform_result_t nrf_802154_platform_sl_lptimer_hw_task_cleanup(void)

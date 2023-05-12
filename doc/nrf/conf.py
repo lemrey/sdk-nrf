@@ -1,3 +1,9 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
 # nrf documentation build configuration file
 
 import os
@@ -10,16 +16,18 @@ import sys
 NRF_BASE = Path(__file__).absolute().parents[2]
 
 sys.path.insert(0, str(NRF_BASE / "doc" / "_utils"))
+import redirects
 import utils
 
 ZEPHYR_BASE = utils.get_projdir("zephyr")
+MCUBOOT_BASE = utils.get_projdir("mcuboot")
 
 # General configuration --------------------------------------------------------
 
 project = "nRF Connect SDK"
 copyright = "2019-2023, Nordic Semiconductor"
 author = "Nordic Semiconductor"
-version = release = "2.2.99-dev1"
+version = release = "2.3.99"
 
 sys.path.insert(0, str(ZEPHYR_BASE / "doc" / "_extensions"))
 sys.path.insert(0, str(NRF_BASE / "doc" / "_extensions"))
@@ -36,7 +44,6 @@ extensions = [
     "zephyr.html_redirects",
     "zephyr.warnings_filter",
     "zephyr.kconfig",
-    "ncs_cache",
     "zephyr.external_content",
     "zephyr.doxyrunner",
     "zephyr.link-roles",
@@ -45,6 +52,7 @@ extensions = [
     "sphinx_togglebutton",
     "sphinx_copybutton",
     "notfound.extension",
+    "ncs_tool_versions",
 ]
 
 linkcheck_ignore = [
@@ -69,7 +77,6 @@ linkcheck_anchors_ignore = [r"page="]
 rst_epilog = """
 .. include:: /links.txt
 .. include:: /shortcuts.txt
-.. include:: /versions.txt
 """
 
 # Options for HTML output ------------------------------------------------------
@@ -142,12 +149,7 @@ ncs_include_mapping = {
 
 # Options for html_redirect ----------------------------------------------------
 
-html_redirect_pages = [
-    ("gs_ins_windows", "gs_installing"),
-    ("gs_ins_linux", "gs_installing"),
-    ("gs_ins_mac", "gs_installing"),
-    ("examples", "samples"),
-]
+html_redirect_pages = redirects.NRF
 
 # -- Options for zephyr.warnings_filter ----------------------------------------
 
@@ -175,6 +177,22 @@ external_content_keep = ["versions.txt"]
 table_from_rows_base_dir = NRF_BASE
 table_from_sample_yaml_board_reference = "/includes/sample_board_rows.txt"
 
+# Options for ncs_tool_versions ------------------------------------------------
+
+ncs_tool_versions_host_deps = [
+    NRF_BASE / "scripts" / "tools-versions-win10.txt",
+    NRF_BASE / "scripts" / "tools-versions-linux.txt",
+    NRF_BASE / "scripts" / "tools-versions-darwin.txt",
+]
+ncs_tool_versions_python_deps = [
+    ZEPHYR_BASE / "scripts" / "requirements-base.txt",
+    ZEPHYR_BASE / "scripts" / "requirements-doc.txt",
+    MCUBOOT_BASE / "scripts" / "requirements.txt",
+    NRF_BASE / "scripts" / "requirements-base.txt",
+    NRF_BASE / "scripts" / "requirements-doc.txt",
+    NRF_BASE / "scripts" / "requirements-build.txt",
+]
+
 # Options for options_from_kconfig ---------------------------------------------
 
 options_from_kconfig_base_dir = NRF_BASE
@@ -183,13 +201,6 @@ options_from_kconfig_zephyr_dir = ZEPHYR_BASE
 # Options for manifest_revisions_table -----------------------------------------
 
 manifest_revisions_table_manifest = NRF_BASE / "west.yml"
-
-# Options for ncs_cache --------------------------------------------------------
-
-ncs_cache_docset = "nrf"
-ncs_cache_build_dir = utils.get_builddir()
-ncs_cache_config = NRF_BASE / "doc" / "cache.yml"
-ncs_cache_manifest = NRF_BASE / "west.yml"
 
 # Options for sphinx_notfound_page ---------------------------------------------
 
@@ -200,5 +211,4 @@ notfound_urls_prefix = "/nRF_Connect_SDK/doc/{}/nrf/".format(
 def setup(app):
     app.add_css_file("css/nrf.css")
 
-    utils.add_google_analytics(app)
-    utils.add_announcement_banner(html_theme_options)
+    utils.add_google_analytics(app, html_theme_options)

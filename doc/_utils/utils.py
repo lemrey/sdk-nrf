@@ -21,7 +21,7 @@ _MANIFEST = Manifest.from_file(_NRF_BASE / "west.yml")
 
 ALL_DOCSETS = {
     "nrf": ("nRF Connect SDK", "index", "manifest"),
-    "nrfx": ("nrfx", "index", "sdk-hal_nordic-next"),
+    "nrfx": ("nrfx", "index", "hal_nordic"),
     "nrfxlib": ("nrfxlib", "README", "nrfxlib"),
     "zephyr": ("Zephyr Project", "index", "zephyr"),
     "mcuboot": ("MCUboot", "wrapper", "mcuboot"),
@@ -30,20 +30,6 @@ ALL_DOCSETS = {
     "kconfig": ("Kconfig Reference", "index", None),
 }
 """All supported docsets (name: title, home page, manifest project name)."""
-
-OPTIONAL_DOCSETS = {
-    "internal": ("Internal Documentation", "index", "doc-internal"),
-}
-"""Optional docsets (name: title, home page, manifest project name)."""
-
-
-# append optional docsets if they exist
-for docset, props in OPTIONAL_DOCSETS.items():
-    for p in _MANIFEST.projects:
-        if p.name != props[2] or not (Path(p.topdir) / Path(p.path)).exists():
-            continue
-
-        ALL_DOCSETS[docset] = props
 
 
 def get_projdir(docset: str) -> Path:
@@ -124,25 +110,21 @@ def get_intersphinx_mapping(docset: str) -> Optional[Tuple[str, str]]: # pylint:
     return (str(Path("..") / docset), str(inventory))
 
 
-def add_google_analytics(app: Sphinx) -> None:
+def add_google_analytics(app: Sphinx, options: dict) -> None:
     """Add Google Analytics to a docset.
 
     Args:
         app: Sphinx instance.
+        options: HTML theme options
     """
 
-    app.add_js_file("https://www.googletagmanager.com/gtag/js?id=G-ZPVZRKFQJR")
-    app.add_js_file("js/ga-tracker.js")
+    app.add_js_file("js/gtm-insert.js")
+    app.add_js_file(
+        "https://policy.app.cookieinformation.com/uc.js",
+        id="CookieConsent",
+        type="text/javascript",
+        **{"data-culture": "EN"},
+    )
 
-def add_announcement_banner(options: dict) -> None:
-    """Add an announcement banner to the top of the page.
-
-    Args:
-        options: html theme options.
-    """
-
-    msg = "You are looking at the nRF Connect SDK documentation for the " \
-        "initial limited sampling of the nRF54H20."
-
-    options["set_default_announcement"] = True
-    options["default_announcement_message"] = msg
+    options["add_gtm"] = True
+    options["gtm_id"] = "GTM-WF4CVFX"

@@ -1,21 +1,10 @@
 #
-# Copyright (c) 2022 Nordic Semiconductor ASA
+# Copyright (c) 2023 Nordic Semiconductor ASA
 #
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
 source "Kconfig.zephyr"
 
-config APP_INCLUDE_REMOTE_IMAGE
-	bool "Include net image as sub image"
-	depends on SOC_NRF5340_CPUAPP || SOC_NRF54H20_CPUAPP
+config BOARD_ENABLE_CPUNET
 	default y if (BOARD_NRF5340DK_NRF5340_CPUAPP || BOARD_NRF5340DK_NRF5340_CPUAPP_NS)
-	default y if BOARD_NRF54H20DK_NRF54H20_CPUAPP
-	select PARTITION_MANAGER_ENABLED if SOC_NRF5340_CPUAPP
-	select BOARD_ENABLE_CPUNET if (BOARD_NRF5340DK_NRF5340_CPUAPP || BOARD_NRF5340DK_NRF5340_CPUAPP_NS)
-
-config APP_REMOTE_BOARD
-	string "The name of the CORE to be used by remote image"
-	depends on APP_INCLUDE_REMOTE_IMAGE
-	default DOMAIN_CPUNET_BOARD if (BOARD_NRF5340DK_NRF5340_CPUAPP || BOARD_NRF5340DK_NRF5340_CPUAPP_NS)
-	default "nrf54h20dk_nrf54h20_cpuppr@soc1" if (BOARD_NRF54H20DK_NRF54H20_CPUAPP && HW_REVISION_SOC1)

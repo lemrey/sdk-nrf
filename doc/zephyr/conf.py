@@ -1,3 +1,9 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
 # Zephyr documentation build configuration file
 
 import os
@@ -28,10 +34,7 @@ locals().update(conf)
 
 sys.path.insert(0, str(NRF_BASE / "doc" / "_extensions"))
 
-extensions = [
-    "sphinx.ext.intersphinx",
-    "ncs_cache",
-] + extensions
+extensions = ["sphinx.ext.intersphinx"] + extensions
 
 # Options for HTML output ------------------------------------------------------
 
@@ -42,6 +45,7 @@ html_static_path.append(str(NRF_BASE / "doc" / "_static"))
 html_last_updated_fmt = "%b %d, %Y"
 html_show_sourcelink = True
 html_logo = None
+html_title = "Zephyr Project documentation (nRF Connect SDK)"
 
 html_context = {
     "show_license": True,
@@ -49,7 +53,11 @@ html_context = {
     "is_release": is_release,
 }
 
-html_theme_options = {"docset": "zephyr", "docsets": utils.ALL_DOCSETS}
+html_theme_options = {
+    "docset": "zephyr",
+    "docsets": utils.ALL_DOCSETS,
+    "subtitle": "nRF Connect SDK",
+}
 
 # Options for intersphinx ------------------------------------------------------
 
@@ -67,18 +75,10 @@ warnings_filter_silent = True
 
 kconfig_generate_db = False
 
-# Options for ncs_cache --------------------------------------------------------
-
-ncs_cache_docset = "zephyr"
-ncs_cache_build_dir = utils.get_builddir()
-ncs_cache_config = NRF_BASE / "doc" / "cache.yml"
-ncs_cache_manifest = NRF_BASE / "west.yml"
-
 # pylint: enable=undefined-variable,used-before-assignment
 
 
 def setup(app):
     app.add_css_file("css/zephyr.css")
 
-    utils.add_google_analytics(app)
-    utils.add_announcement_banner(html_theme_options)
+    utils.add_google_analytics(app, html_theme_options)

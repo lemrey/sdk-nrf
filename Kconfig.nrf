@@ -4,6 +4,12 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+# Usually BOARD_DIR is an absolute path and sourced through '<ZEPHYR_ROOT>/boards/Kconfig'.
+# But for compliance and doc generation it's a glob and this line ensures that
+# boards in sdk-nrf are sourced properly in those occasions.
+orsource "./$(BOARD_DIR)/Kconfig.board"
+orsource "./$(BOARD_DIR)/Kconfig"
+
 rsource "subsys/net/openthread/Kconfig.defconfig"
 
 menu "Nordic nRF Connect"
@@ -65,8 +71,10 @@ config ZTEST_STACK_SIZE
 config PRIVILEGED_STACK_SIZE
 	default 2048 if ZTEST
 
-# nRF Connect SDK needs larger mcumgr buffers when supporting multi-image DFU.
-config MCUMGR_BUF_SIZE
+# nRF Connect SDK needs larger mcumgr buffers when supporting multi-image DFU
+# or when the Bluetooth Reassembly feature is enabled.
+config MCUMGR_TRANSPORT_NETBUF_SIZE
+	default 2475 if MCUMGR_TRANSPORT_BT_REASSEMBLY
 	default 1024 if UPDATEABLE_IMAGE_NUMBER > 1
 
 # When using HCI on the nRF5340 we need a larger command buffer.
@@ -98,13 +106,8 @@ config NORDIC_QSPI_NOR_FLASH_LAYOUT_PAGE_SIZE
 	  chosen Zephyr flash devicetree node to ensure that swapping can be
 	  performed.
 
-config FPGA_TIMING_COMPATIBILITY
-	bool "NRF54 FPGA timing compatibility"
-	depends on SOC_SERIES_NRF52X
-	help
-	  Enable relaxed timings in the radio driver. This configuration
-	  should only be used for testing against NRF54 FPGA board as it can't
-	  meet the timing requirements on FPGA.
+config GETOPT
+	default n
 
 rsource "samples/Kconfig"
 rsource "subsys/Kconfig"

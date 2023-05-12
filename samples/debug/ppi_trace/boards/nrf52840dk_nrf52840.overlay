@@ -10,7 +10,3 @@
 		ppi-trace-rtc = <&rtc2>;
 	};
 };
-
-&rtc2 {
-	status = "okay";
-};

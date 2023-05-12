@@ -12,7 +12,7 @@ tests:
       - nrf5340dk_nrf5340_cpuapp_ns
       - nrf52840dk_nrf52840
       - nrf21540dk_nrf52840
-  sample.openthread.cli_hadron:
+  sample.openthread.cli_nrf52833:
     build_only: true
     platform_allow: nrf52833dk_nrf52833
     tags: ci_build
@@ -44,28 +44,15 @@ tests:
       - nrf21540dk_nrf52840
   sample.openthread.cli.low_power:
     build_only: true
-    platform_allow: nrf5340dk_nrf5340_cpuapp nrf52840dk_nrf52840 nrf21540dk_nrf52840
+    platform_allow: nrf5340dk_nrf5340_cpuapp nrf5340dk_nrf5340_cpuapp_ns nrf52840dk_nrf52840 nrf21540dk_nrf52840
     tags: ci_build
     extra_args: OVERLAY_CONFIG=overlay-ci.conf;overlay-low_power.conf
                 DTC_OVERLAY_FILE=low_power.overlay
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
+      - nrf5340dk_nrf5340_cpuapp_ns
       - nrf52840dk_nrf52840
       - nrf21540dk_nrf52840
-  sample.openthread.cli_nrf54h20:
-    build_only: true
-    extra_args: OVERLAY_CONFIG=overlay-ci.conf
-    integration_platforms:
-      - nrf54h20dk_nrf54h20_cpuapp@soc1
-    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
-    tags: ci_build
-  sample.openthread.cli_multiprotocol_nrf54h20:
-    build_only: true
-    extra_args: OVERLAY_CONFIG=overlay-ci.conf;overlay-multiprotocol.conf
-    integration_platforms:
-      - nrf54h20dk_nrf54h20_cpuapp@soc1
-    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
-    tags: ci_build
   # Build integration regression protection.
   sample.nrf_security.openthread.integration:
       build_only: true

@@ -6,7 +6,6 @@
 
 menu "Application modules"
 
-rsource "Kconfig.data_aggregator_release"
 rsource "Kconfig.ei_data_forwarder"
 rsource "Kconfig.led_state"
 rsource "Kconfig.ml_app_mode"
@@ -14,5 +13,13 @@ rsource "Kconfig.ml_runner"
 rsource "Kconfig.usb_state"
 rsource "Kconfig.sensor_sim_ctrl"
 rsource "Kconfig.ei_result_nsms"
+
+config APP_SENSOR_SLEEP_TO
+	int "Sensor default time in seconds before sensor goes to sleep"
+	default 10
+	help
+	  The number of seconds of inactivity before sensor goes into sleep mode.
+	  This configuration is used only for physical sensors that have triggers configured.
+	  It is ignored for simulated sensors.
 
 endmenu

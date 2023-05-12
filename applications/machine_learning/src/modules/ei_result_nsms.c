@@ -56,15 +56,16 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 #endif
 };
 
-static void guesture_changed(const char* label)
+static void guesture_changed(const char *label)
 {
-	static const char* last_label=0;
-	if(label != last_label) {
-		/* Contents under `label` pointer are copied 
+	static const char *last_label;
+
+	if (label != last_label) {
+		/* Contents under `label` pointer are copied
 		 * by bt_nsms_set_status().
 		 */
 		last_label = label;
-		bt_nsms_set_status(&nsms_gesture,label);
+		bt_nsms_set_status(&nsms_gesture, label);
 	}
 }
 
@@ -73,6 +74,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 	if (is_ml_result_event(aeh)) {
 		/* Accessing event data. */
 		struct ml_result_event *event = cast_ml_result_event(aeh);
+
 		guesture_changed(event->label);
 
 		return false;

@@ -16,27 +16,15 @@ LOG_MODULE_REGISTER(MODULE);
 
 #include "event_proxy_init.h"
 
-#if defined(CONFIG_BOARD_NRF54H20DK_NRF54H20_CPUAPP) && \
-	defined(CONFIG_APP_INCLUDE_REMOTE_IMAGE)
-#define PPR_START_ADDR DT_REG_ADDR(DT_NODELABEL(ppr_code))
-#include <hal/nrf_vpr.h>
-#endif
-
-void main(void)
+int main(void)
 {
-#if defined(CONFIG_BOARD_NRF54H20DK_NRF54H20_CPUAPP) && \
-	defined(CONFIG_APP_INCLUDE_REMOTE_IMAGE)
-	/* Enable PPr core */
-	nrf_vpr_initpc_set(NRF_VPR130, PPR_START_ADDR);
-	nrf_vpr_cpurun_set(NRF_VPR130, true);
-#endif
 	int ret;
 
 	ret = app_event_manager_init();
 	if (ret) {
 		LOG_ERR("Event Manager not initialized, err: %d", ret);
 		__ASSERT_NO_MSG(false);
-		return;
+		return 0;
 	}
 	LOG_INF("Event manager initialized");
 
@@ -44,8 +32,10 @@ void main(void)
 	if (ret) {
 		LOG_ERR("Event Manager Proxy not initialized, err: %d", ret);
 		__ASSERT_NO_MSG(false);
-		return;
+		return 0;
 	}
 
 	module_set_state(MODULE_STATE_READY);
+
+	return 0;
 }

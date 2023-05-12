@@ -1,13 +1,4 @@
 # This is the Jenkins ci variant of the .github/labler.yaml
-"CI-run-twister": # Not supported in Jenkinsfile yet
- - any:
-    - "!.github/**/*"
-    - "!.vscode/**/*"
-    - "!test-manifests/**/*"
-    - "!CODEOWNERS"
-    - "!LICENSE"
-    - "!VERSION"
-    - "!ncs_version.h.in"
 
 "CI-run-twister":
  - any:
@@ -33,13 +24,20 @@
   - "scripts/requirements*.txt"
   - "scripts/tools-versions-darwin.txt"
 
-# to build doc, twister must be also executed
-# thus removing "!doc/**/*" and "!**/*.rst" from CI-run-twister
-
-"CI-sdk-nrf-next-doc":
-  - "doc/**/*"
-  - "**/*.rst"
-  - "scripts/*.txt"
+"CI-iot-serial-lte-modem-test":
+  - "applications/serial_lte_modem/**/*"
+  - "lib/at_cmd_parser/**/*"
+  - "lib/at_monitor/**/*"
+  - "lib/date_time/**/*"
+  - "lib/modem_info/**/*"
+  - "lib/modem_jwt/**/*"
+  - "lib/nrf_modem_lib/**/*"
+  - "lib/sms/**/*"
+  - "subsys/dfu/dfu_target/**/*"
+  - "subsys/net/lib/download_client/**/*"
+  - "subsys/net/lib/fota_download/**/*"
+  - "subsys/net/lib/ftp_client/**/*"
+  - "subsys/net/lib/nrf_cloud/**/*"
 
 "CI-iot-zephyr-lwm2m-test":
   - "lib/nrf_modem_lib/**/*"
@@ -55,6 +53,7 @@
   - "subsys/dfu/dfu_target/**/*"
   - "subsys/dfu/fmfu_fdev/**/*"
   - "subsys/fw_info/**/*"
+  - "samples/nrf9160/lwm2m_client/**/*"
 
 "CI-audio-test":
   - "applications/nrf5340_audio/**/*"
@@ -62,6 +61,15 @@
   - "tests/nrf5340_audio/**/*"
   - "tests/lib/contin_array/**/*"
   - "tests/lib/pcm_mix/**/*"
+  - "tests/lib/data_fifo/**/*"
+  - "tests/lib/pcm_stream_channel_modifier/**/*"
+  - "tests/lib/tone/**/*"
+  - "lib/contin_array/**/*"
+  - "lib/pcm_mix/**/*"
+  - "lib/data_fifo/**/*"
+  - "lib/pcm_stream_channel_modifier/**/*"
+  - "lib/tone/**/*"
+  - "lib/bin/bt_ll_acs_nrf53/**/*"
 
 "CI-iot-samples-test":
   - "include/modem/at_monitor.h"
@@ -86,22 +94,6 @@
   - "samples/nrf9160/mqtt_simple/**/*"
   - "samples/nrf9160/sms/**/*"
   - "subsys/net/lib/download_client/**/*"
-
-"CI-iot-lwm2m-client-test":
-  - "lib/nrf_modem_lib/**/*"
-  - "lib/at_monitor/**/*"
-  - "lib/at_cmd_parser/**/*"
-  - "lib/lte_link_control/**/*"
-  - "lib/modem_info/**/*"
-  - "lib/modem_key_mgmt/**/*"
-  - "lib/date_time/**/*"
-  - "subsys/net/lib/download_client/**/*"
-  - "subsys/net/lib/fota_download/**/*"
-  - "subsys/net/lib/lwm2m_client_utils/**/*"
-  - "subsys/dfu/dfu_target/**/*"
-  - "subsys/dfu/fmfu_fdev/**/*"
-  - "subsys/fw_info/**/*"
-  - "samples/nrf9160/lwm2m_client/**/*"
 
 "CI-iot-libraries-test":
   - "include/modem/at_monitor.h"
@@ -228,14 +220,6 @@
   - "subsys/bluetooth/*"
   - "subsys/caf/**/*"
   - "subsys/partition_manager/**/*"
-
-"CI-apps-fpga-test":
-  - "applications/machine_learning/**/*"
-  - "samples/caf_sensor_manager/**/*"
-  - "samples/event_manager_proxy/**/*"
-  - "samples/ipc/ipc_service/**/*"
-  - "samples/multicore/hello_world/**/*"
-  - "tests/subsys/event_manager_proxy/**/*"
 
 "CI-desktop-test":
   - "applications/nrf_desktop/**/*"
@@ -417,7 +401,8 @@
   - "include/net/multicell_location.h"
   - "include/net/nrf_cloud.h"
   - "include/net/nrf_cloud_agps.h"
-  - "include/net/nrf_cloud_cell_pos.h"
+  - "include/net/nrf_cloud_location.h"
+  - "include/net/nrf_cloud_os.h"
   - "include/net/nrf_cloud_pgps.h"
   - "include/net/nrf_cloud_rest.h"
   - "include/net/rest_client.h"
@@ -456,7 +441,8 @@
   - "include/net/multicell_location.h"
   - "include/net/nrf_cloud.h"
   - "include/net/nrf_cloud_agps.h"
-  - "include/net/nrf_cloud_cell_pos.h"
+  - "include/net/nrf_cloud_location.h"
+  - "include/net/nrf_cloud_os.h"
   - "include/net/nrf_cloud_pgps.h"
   - "include/net/nrf_cloud_rest.h"
   - "include/net/rest_client.h"
@@ -481,21 +467,7 @@
   - "drivers/wifi/**/*"
   - "samples/wifi/**/*"
 
-"CI-test_sdk_hcs":
-  - any:
-    - "!doc/**/*"
-    - "!applications/**/*"
-    - "!samples/**/*"
-    - "!tests/**/*"
-
-"CI-test_sdk_sysctrl":
-  - any:
-    - "!doc/**/*"
-    - "!applications/**/*"
-    - "!samples/**/*"
-    - "!tests/**/*"
-
-"CI-test_secdomfw_build":
-  - "include/nrf_rpc/*"
-  - "lib/fatal_error/*"
-  - "subsys/nrf_rpc/**/*"
+"CI-cloud-test":
+  - "include/net/nrf_cloud*"
+  - "samples/nrf9160/nrf_cloud_*/**/*"
+  - "subsys/net/lib/nrf_cloud/**/*"

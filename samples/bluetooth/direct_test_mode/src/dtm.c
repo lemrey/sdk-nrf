@@ -17,13 +17,17 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/clock_control.h>
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 #include <zephyr/drivers/clock_control/nrf_clock_control.h>
-#include <hal/nrf_nvmc.h>
-#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
+#include <zephyr/sys/__assert.h>
 
 #include <hal/nrf_egu.h>
+#include <hal/nrf_nvmc.h>
 #include <hal/nrf_radio.h>
+
+#ifdef NRF53_SERIES
+#include <hal/nrf_vreqctrl.h>
+#endif /* NRF53_SERIES */
+
 #include <helpers/nrfx_gppi.h>
 #include <nrfx_timer.h>
 #include <nrf_erratas.h>
@@ -33,6 +37,7 @@
 #if DT_NODE_HAS_PROP(DTM_UART, current_speed)
 /* UART Baudrate used to communicate with the DTM library. */
 #define DTM_UART_BAUDRATE DT_PROP(DTM_UART, current_speed)
+
 /* The UART poll cycle in micro seconds.
  * A baud rate of e.g. 19200 bits / second, and 8 data bits, 1 start/stop bit,
  * no flow control, give the time to transmit a byte:
@@ -44,25 +49,8 @@
 #error "DTM UART node not found"
 #endif /* DT_NODE_HAS_PROP(DTM_UART, currrent_speed) */
 
-#if defined(CONFIG_SOC_SERIES_NRF54HX)
-	#define DEFAULT_TIMER_INSTANCE     020
-	#define WAIT_TIMER_INSTANCE        021
-	#define RADIO_IRQn                 RADIO_0_IRQn
-	#define DTM_EGU                    NRF_EGU020
-	/* The radio peripheral for Haltium has a different
-	 * offset of the SUBSCRIBE registers to nrf52 and nrf53.
-	 * A temporary solution until nrfx is adapted.
-	 */
-	#define SUBSCRIBE_EXTRA_OFFSET     0x80
-#else
-	#define DEFAULT_TIMER_INSTANCE     0
-	#define WAIT_TIMER_INSTANCE        1
-	#define RADIO_IRQn                 RADIO_IRQn
-	#define DTM_EGU                    NRF_EGU0
-	#define SUBSCRIBE_EXTRA_OFFSET     0x00
-#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
-
 /* Default timer used for timing. */
+#define DEFAULT_TIMER_INSTANCE     0
 #define DEFAULT_TIMER_IRQ          NRFX_CONCAT_3(TIMER,			 \
 						 DEFAULT_TIMER_INSTANCE, \
 						 _IRQn)
@@ -70,6 +58,7 @@
 						 DEFAULT_TIMER_INSTANCE, \
 						 _irq_handler)
 /* Timer used for measuring UART poll cycle wait time. */
+#define WAIT_TIMER_INSTANCE        1
 #define WAIT_TIMER_IRQ             NRFX_CONCAT_3(TIMER,			 \
 						 WAIT_TIMER_INSTANCE,    \
 						 _IRQn)
@@ -78,7 +67,7 @@
 						 _irq_handler)
 /* Note that the timer instance 2 is used in the FEM driver. */
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 /* Timer used for the workaround for errata 172 on affected nRF5 devices. */
 #define ANOMALY_172_TIMER_INSTANCE     3
 #define ANOMALY_172_TIMER_IRQ          NRFX_CONCAT_3(TIMER,		    \
@@ -87,7 +76,7 @@
 #define ANOMALY_172_TIMER_IRQ_HANDLER  NRFX_CONCAT_3(nrfx_timer_,	    \
 						ANOMALY_172_TIMER_INSTANCE, \
 						_irq_handler)
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 /* Helper macro for labeling timer instances. */
 #define NRFX_TIMER_CONFIG_LABEL(_num) NRFX_CONCAT_3(CONFIG_, NRFX_TIMER, _num)
@@ -96,18 +85,14 @@ BUILD_ASSERT(NRFX_TIMER_CONFIG_LABEL(DEFAULT_TIMER_INSTANCE) == 1,
 	     "Core DTM timer needs additional KConfig configuration");
 BUILD_ASSERT(NRFX_TIMER_CONFIG_LABEL(WAIT_TIMER_INSTANCE) == 1,
 	     "Wait DTM timer needs additional KConfig configuration");
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 BUILD_ASSERT(NRFX_TIMER_CONFIG_LABEL(ANOMALY_172_TIMER_INSTANCE) == 1,
 	     "Anomaly DTM timer needs additional KConfig configuration");
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
+#define DTM_EGU       NRF_EGU0
 #define DTM_EGU_EVENT NRF_EGU_EVENT_TRIGGERED0
 #define DTM_EGU_TASK  NRF_EGU_TASK_TRIGGER0
-
-#define ENDPOINT_EGU_RADIO_TX    BIT(1)
-#define ENDPOINT_EGU_RADIO_RX    BIT(2)
-#define ENDPOINT_TIMER_RADIO_TX  BIT(3)
-#define ENDPOINT_FORK_EGU_TIMER  BIT(4)
 
 /* Values that for now are "constants" - they could be configured by a function
  * setting them, but most of these are set by the BLE DTM standard, so changing
@@ -376,13 +361,13 @@ static struct dtm_instance {
 	/* Semaphore for synchronizing UART poll cycle wait time.*/
 	struct k_sem wait_sem;
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 	/* Timer to be used to handle Anomaly 172. */
 	const nrfx_timer_t anomaly_timer;
 
 	/* Enable or disable the workaround for Errata 172. */
 	bool anomaly_172_wa_enabled;
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 	/* Enable or disable strict mode to workaround Errata 172. */
 	bool strict_mode;
@@ -401,9 +386,6 @@ static struct dtm_instance {
 
 	/* Radio Enable PPI channel. */
 	uint8_t ppi_radio_start;
-
-	/* PPI endpoint status.*/
-	atomic_t endpoint_state;
 } dtm_inst = {
 	.state = STATE_UNINITIALIZED,
 	.packet_hdr_plen = NRF_RADIO_PREAMBLE_LENGTH_8BIT,
@@ -411,9 +393,9 @@ static struct dtm_instance {
 	.timer = NRFX_TIMER_INSTANCE(DEFAULT_TIMER_INSTANCE),
 	.wait_timer = NRFX_TIMER_INSTANCE(WAIT_TIMER_INSTANCE),
 	.wait_sem = Z_SEM_INITIALIZER(dtm_inst.wait_sem, 0, 1),
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 	.anomaly_timer = NRFX_TIMER_INSTANCE(ANOMALY_172_TIMER_INSTANCE),
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 	.radio_mode = NRF_RADIO_MODE_BLE_1MBIT,
 	.txpower = NRF_RADIO_TXPOWER_0DBM,
 	.fem.gain = FEM_USE_DEFAULT_GAIN,
@@ -460,9 +442,10 @@ static uint8_t const dtm_prbs_content[] = {
 };
 
 #if DIRECTION_FINDING_SUPPORTED
+
 static void radio_gpio_pattern_clear(void)
 {
-	nrf_radio_dfe_pattern_clear(NRF_RADIO);
+	NRF_RADIO->CLEARPATTERN = RADIO_CLEARPATTERN_CLEARPATTERN_Clear;
 }
 
 static void antenna_radio_pin_config(void)
@@ -574,15 +557,14 @@ static void radio_cte_prepare(bool rx)
 }
 #endif /* DIRECTION_FINDING_SUPPORTED */
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 static void anomaly_timer_handler(nrf_timer_event_t event_type, void *context);
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 static void wait_timer_handler(nrf_timer_event_t event_type, void *context);
 static void dtm_timer_handler(nrf_timer_event_t event_type, void *context);
 static void radio_handler(const void *context);
 
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 static int clock_init(void)
 {
 	int err;
@@ -614,19 +596,13 @@ static int clock_init(void)
 
 	return err;
 }
-#else
-static int clock_init(void)
-{
-	return 0;
-}
-#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 static int timer_init(void)
 {
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
-		.frequency = NRFX_MHZ_TO_HZ(1),
-		.mode      = NRF_TIMER_MODE_TIMER,
+		.frequency = NRF_TIMER_FREQ_1MHz,
+		.mode = NRF_TIMER_MODE_TIMER,
 		.bit_width = NRF_TIMER_BIT_WIDTH_16,
 	};
 
@@ -646,8 +622,8 @@ static int wait_timer_init(void)
 {
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
-		.frequency = NRFX_MHZ_TO_HZ(1),
-		.mode      = NRF_TIMER_MODE_TIMER,
+		.frequency = NRF_TIMER_FREQ_1MHz,
+		.mode = NRF_TIMER_MODE_TIMER,
 		.bit_width = NRF_TIMER_BIT_WIDTH_16,
 	};
 
@@ -668,13 +644,13 @@ static int wait_timer_init(void)
 	return 0;
 }
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 static int anomaly_timer_init(void)
 {
 	nrfx_err_t err;
 	nrfx_timer_config_t timer_cfg = {
-		.frequency = NRFX_KHZ_TO_HZ(125),
-		.mode      = NRF_TIMER_MODE_TIMER,
+		.frequency = NRF_TIMER_FREQ_125kHz,
+		.mode = NRF_TIMER_MODE_TIMER,
 		.bit_width = NRF_TIMER_BIT_WIDTH_16,
 	};
 
@@ -698,7 +674,7 @@ static int anomaly_timer_init(void)
 
 	return 0;
 }
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 static int gppi_init(void)
 {
@@ -713,13 +689,120 @@ static int gppi_init(void)
 	return 0;
 }
 
-static void radio_reset(void)
+#if CONFIG_DTM_POWER_CONTROL_AUTOMATIC
+static int8_t dtm_radio_min_power_get(uint16_t frequency)
 {
-	if (nrfx_gppi_channel_check(dtm_inst.ppi_radio_start))
-	{
-		nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
+	return fem_tx_output_power_min_get(frequency);
+}
+
+static int8_t dtm_radio_max_power_get(uint16_t frequency)
+{
+	return fem_tx_output_power_max_get(frequency);
+}
+
+static int8_t dtm_radio_nearest_power_get(int8_t tx_power, uint16_t frequency)
+{
+	int8_t tx_power_floor = fem_tx_output_power_check(tx_power, frequency, false);
+	int8_t tx_power_ceiling = fem_tx_output_power_check(tx_power, frequency, true);
+	int8_t output_power;
+
+	output_power = (abs(tx_power_floor - tx_power) > abs(tx_power_ceiling - tx_power)) ?
+		       tx_power_ceiling : tx_power_floor;
+
+	return output_power;
+}
+
+#else
+static int8_t dtm_radio_min_power_get(uint16_t frequency)
+{
+	ARG_UNUSED(frequency);
+
+	return dtm_hw_radio_min_power_get();
+}
+
+static int8_t dtm_radio_max_power_get(uint16_t frequency)
+{
+	ARG_UNUSED(frequency);
+
+	return dtm_hw_radio_max_power_get();
+}
+
+static int8_t dtm_radio_nearest_power_get(int8_t tx_power, uint16_t frequency)
+{
+	int8_t output_power = INT8_MAX;
+	const size_t size = dtm_hw_radio_power_array_size_get();
+	const uint32_t *power = dtm_hw_radio_power_array_get();
+
+	ARG_UNUSED(frequency);
+
+	for (size_t i = 1; i < size; i++) {
+		if (((int8_t) power[i]) > tx_power) {
+			int8_t diff = abs((int8_t) power[i] - tx_power);
+
+			if (diff <  abs((int8_t) power[i - 1] - tx_power)) {
+				output_power = power[i];
+			} else {
+				output_power = power[i - 1];
+			}
+
+			break;
+		}
 	}
 
+	__ASSERT_NO_MSG(output_power != INT8_MAX);
+
+	return output_power;
+}
+#endif /* CONFIG_DTM_POWER_CONTROL_AUTOMATIC */
+
+static uint16_t radio_frequency_get(uint8_t channel)
+{
+	static const uint16_t base_frequency = 2402;
+
+	__ASSERT_NO_MSG(channel <= PHYS_CH_MAX);
+
+	/* Actual frequency (MHz): 2402 + 2N */
+	return (channel << 1) + base_frequency;
+}
+
+static void radio_tx_power_set(uint8_t channel, int8_t tx_power)
+{
+	int8_t radio_power = tx_power;
+
+#if CONFIG_FEM
+	uint16_t frequency;
+
+	if (IS_ENABLED(CONFIG_DTM_POWER_CONTROL_AUTOMATIC)) {
+		frequency = radio_frequency_get(channel);
+
+		/* Adjust output power to nearest possible value for the given frequency.
+		 * Due to limitations of the DTM specification output power level set command check
+		 * Tx output power level for channel 0. That is why output Tx power needs to be
+		 * aligned for final transmission channel.
+		 */
+		tx_power = dtm_radio_nearest_power_get(tx_power, frequency);
+		(void)fem_tx_output_power_prepare(tx_power, &radio_power, frequency);
+	}
+#else
+	ARG_UNUSED(channel);
+#endif /* CONFIG_FEM */
+
+#ifdef NRF53_SERIES
+	bool high_voltage_enable = false;
+
+	if (radio_power > 0) {
+		high_voltage_enable = true;
+		radio_power -= RADIO_TXPOWER_TXPOWER_Pos3dBm;
+	}
+
+	nrf_vreqctrl_radio_high_voltage_set(NRF_VREQCTRL, high_voltage_enable);
+#endif /* NRF53_SERIES */
+
+	nrf_radio_txpower_set(NRF_RADIO, (nrf_radio_txpower_t)radio_power);
+}
+
+static void radio_reset(void)
+{
 	nrf_radio_shorts_set(NRF_RADIO, 0);
 	nrf_radio_event_clear(NRF_RADIO, NRF_RADIO_EVENT_DISABLED);
 
@@ -742,7 +825,8 @@ static int radio_init(void)
 {
 	nrf_radio_packet_conf_t packet_conf;
 
-	if (!dtm_hw_radio_validate(dtm_inst.txpower, dtm_inst.radio_mode)) {
+	if ((!dtm_hw_radio_validate(dtm_inst.txpower, dtm_inst.radio_mode)) &&
+	    (!IS_ENABLED(CONFIG_DTM_POWER_CONTROL_AUTOMATIC))) {
 		printk("Incorrect settings for radio mode and TX power\n");
 
 		dtm_inst.event = LE_TEST_STATUS_EVENT_ERROR;
@@ -752,7 +836,7 @@ static int radio_init(void)
 	/* Turn off radio before configuring it */
 	radio_reset();
 
-	nrf_radio_txpower_set(NRF_RADIO, dtm_inst.txpower);
+	radio_tx_power_set(dtm_inst.phys_ch, dtm_inst.txpower);
 	nrf_radio_mode_set(NRF_RADIO, dtm_inst.radio_mode);
 
 	/* Set the access address, address0/prefix0 used for both Rx and Tx
@@ -815,7 +899,7 @@ int dtm_init(void)
 		return err;
 	}
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 	/* Enable the timer used by nRF52840 anomaly 172 if running on an
 	 * affected device.
 	 */
@@ -823,7 +907,7 @@ int dtm_init(void)
 	if (err) {
 		return err;
 	}
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 	err = gppi_init();
 	if (err) {
@@ -838,10 +922,18 @@ int dtm_init(void)
 	}
 #endif /* CONFIG_FEM */
 
+#if CONFIG_DTM_POWER_CONTROL_AUTOMATIC
+	/* When front-end module is used, set output power to the front-end module
+	 * default gain.
+	 */
+	dtm_inst.txpower = fem_default_tx_gain_get();
+#endif /* CONFIG_DTM_POWER_CONTROL_AUTOMATIC */
+
 	/** Connect radio interrupts. */
 	IRQ_CONNECT(RADIO_IRQn, CONFIG_DTM_RADIO_IRQ_PRIORITY, radio_handler,
 		    NULL, 0);
 	irq_enable(RADIO_IRQn);
+
 
 	err = radio_init();
 	if (err) {
@@ -967,29 +1059,7 @@ static bool check_pdu(const struct dtm_pdu *pdu)
 	return true;
 }
 
-#if NRF53_ERRATA_117_ENABLE_WORKAROUND
-/* Workaround for Errata 117 "RADIO: Changing MODE requires additional
- * configuration" found at the Errata document for your device located at
- * https://infocenter.nordicsemi.com/index.jsp
- */
-static void errata_117_handle(bool enable)
-{
-	if (enable) {
-		*((volatile uint32_t *)0x41008588) = *((volatile uint32_t *)0x01FF0084);
-	} else {
-		*((volatile uint32_t *)0x41008588) = *((volatile uint32_t *)0x01FF0080);
-	}
-}
-
-#else
-
-static void errata_117_handle(bool enable)
-{
-
-}
-#endif /* NRF53_ERRATA_117_ENABLE_WORKAROUND */
-
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 /* Radio configuration used as a workaround for nRF52840 anomaly 172 */
 static void anomaly_172_radio_operation(void)
 {
@@ -1040,48 +1110,81 @@ static void anomaly_172_strict_mode_set(bool enable)
 
 	dtm_inst.strict_mode = enable;
 }
-#endif
 
-static void endpoints_clear(void)
+static void errata_172_handle(bool enable)
 {
-	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_FORK_EGU_TIMER)) {
-		nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
-			nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
+	if (!nrf52_errata_172()) {
+		return;
 	}
-	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_EGU_RADIO_TX)) {
-		nrfx_gppi_channel_endpoints_clear(
-			dtm_inst.ppi_radio_start,
-			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT),
-			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
-							    SUBSCRIBE_EXTRA_OFFSET);
+
+	if (enable) {
+		if ((*(volatile uint32_t *)0x40001788) == 0) {
+			dtm_inst.anomaly_172_wa_enabled = true;
+		}
+	} else {
+		anomaly_172_strict_mode_set(false);
+		nrfx_timer_disable(&dtm_inst.anomaly_timer);
+		dtm_inst.anomaly_172_wa_enabled = false;
 	}
-	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_EGU_RADIO_RX)) {
-		nrfx_gppi_channel_endpoints_clear(
-			dtm_inst.ppi_radio_start,
-			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT),
-			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_RXEN) +
-							    SUBSCRIBE_EXTRA_OFFSET);
+}
+#else
+static void errata_172_handle(bool enable)
+{
+	ARG_UNUSED(enable);
+}
+#endif /* NRF52_ERRATA_172_PRESENT */
+
+static void errata_117_handle(bool enable)
+{
+	if (!nrf52_errata_117()) {
+		return;
 	}
-	if (atomic_test_and_clear_bit(&dtm_inst.endpoint_state, ENDPOINT_TIMER_RADIO_TX)) {
-		nrfx_gppi_channel_endpoints_clear(
-			dtm_inst.ppi_radio_start,
-			nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0),
-			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
-							    SUBSCRIBE_EXTRA_OFFSET);
+
+	if (enable) {
+		*((volatile uint32_t *)0x41008588) = *((volatile uint32_t *)0x01FF0084);
+	} else {
+		*((volatile uint32_t *)0x41008588) = *((volatile uint32_t *)0x01FF0080);
+	}
+}
+
+static void errata_191_handle(bool enable)
+{
+	if (!nrf52_errata_191()) {
+		return;
+	}
+
+	if (enable) {
+		*(volatile uint32_t *)0x40001740 =
+			((*((volatile uint32_t *)0x40001740)) & 0x7FFF00FF) |
+			0x80000000 | (((uint32_t)(196)) << 8);
+	} else {
+		*(volatile uint32_t *)0x40001740 =
+			((*((volatile uint32_t *)0x40001740)) & 0x7FFFFFFF);
 	}
 }
 
 static void radio_ppi_clear(void)
 {
-	if (nrfx_gppi_channel_check(dtm_inst.ppi_radio_start)) {
-		nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
-	}
-
+	nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
 	nrf_egu_event_clear(DTM_EGU,
-			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
+			    nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
 
 	/* Break connection from timer to radio to stop transmit loop */
-	endpoints_clear();
+	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
+		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0));
+
+	if (dtm_inst.state == STATE_TRANSMITTER_TEST) {
+		nrfx_gppi_task_endpoint_clear(dtm_inst.ppi_radio_start,
+				nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN));
+	} else if (dtm_inst.state == STATE_RECEIVER_TEST) {
+		nrfx_gppi_task_endpoint_clear(dtm_inst.ppi_radio_start,
+				nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_RXEN));
+	}
+
+	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
+			nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
+	nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
+			nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
 }
 
 static void radio_ppi_configure(bool rx, uint32_t timer_short_mask)
@@ -1090,16 +1193,9 @@ static void radio_ppi_configure(bool rx, uint32_t timer_short_mask)
 		dtm_inst.ppi_radio_start,
 		nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT),
 		nrf_radio_task_address_get(NRF_RADIO,
-					   rx ? NRF_RADIO_TASK_RXEN : NRF_RADIO_TASK_TXEN) +
-					   SUBSCRIBE_EXTRA_OFFSET);
-
-	atomic_set_bit(&dtm_inst.endpoint_state,
-		       (rx ? ENDPOINT_EGU_RADIO_RX : ENDPOINT_EGU_RADIO_TX));
-
+					   rx ? NRF_RADIO_TASK_RXEN : NRF_RADIO_TASK_TXEN));
 	nrfx_gppi_fork_endpoint_setup(dtm_inst.ppi_radio_start,
 		nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
-	atomic_set_bit(&dtm_inst.endpoint_state, ENDPOINT_FORK_EGU_TIMER);
-
 	nrfx_gppi_channels_enable(BIT(dtm_inst.ppi_radio_start));
 
 	if (timer_short_mask) {
@@ -1109,18 +1205,18 @@ static void radio_ppi_configure(bool rx, uint32_t timer_short_mask)
 
 static void radio_tx_ppi_reconfigure(void)
 {
-	if (nrfx_gppi_channel_check(dtm_inst.ppi_radio_start)) {
-		nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
-	}
-
-	endpoints_clear();
+	nrfx_gppi_channels_disable(BIT(dtm_inst.ppi_radio_start));
+	nrfx_gppi_fork_endpoint_clear(dtm_inst.ppi_radio_start,
+		nrf_timer_task_address_get(dtm_inst.timer.p_reg, NRF_TIMER_TASK_START));
+	nrfx_gppi_event_endpoint_clear(dtm_inst.ppi_radio_start,
+		nrf_egu_event_address_get(DTM_EGU, DTM_EGU_EVENT));
+	nrfx_gppi_event_endpoint_setup(dtm_inst.ppi_radio_start,
+		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0));
 
 	nrfx_gppi_channel_endpoints_setup(
 		dtm_inst.ppi_radio_start,
 		nrf_timer_event_address_get(dtm_inst.timer.p_reg, NRF_TIMER_EVENT_COMPARE0),
-		nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
-						    SUBSCRIBE_EXTRA_OFFSET);
-	atomic_set_bit(&dtm_inst.endpoint_state, ENDPOINT_TIMER_RADIO_TX);
+		nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN));
 	nrfx_gppi_channels_enable(BIT(dtm_inst.ppi_radio_start));
 }
 
@@ -1136,9 +1232,9 @@ static void dtm_test_done(void)
 
 	nrfx_timer_clear(&dtm_inst.timer);
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 	nrfx_timer_disable(&dtm_inst.anomaly_timer);
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 	radio_reset();
 
@@ -1175,7 +1271,7 @@ static void radio_prepare(bool rx)
 #endif /* DIRECTION_FINDING_SUPPORTED */
 
 	/* Actual frequency (MHz): 2402 + 2N */
-	nrf_radio_frequency_set(NRF_RADIO, (dtm_inst.phys_ch << 1) + 2402);
+	nrf_radio_frequency_set(NRF_RADIO, radio_frequency_get(dtm_inst.phys_ch));
 
 	/* Setting packet pointer will start the radio */
 	nrf_radio_packetptr_set(NRF_RADIO, dtm_inst.current_pdu);
@@ -1216,12 +1312,12 @@ static void radio_prepare(bool rx)
 			NRF_RADIO_INT_END_MASK);
 
 	if (rx) {
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 		/* Enable strict mode for anomaly 172 */
 		if (dtm_inst.anomaly_172_wa_enabled) {
 			anomaly_172_strict_mode_set(true);
 		}
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 		nrf_radio_event_clear(NRF_RADIO, NRF_RADIO_EVENT_END);
 
@@ -1235,9 +1331,9 @@ static void radio_prepare(bool rx)
 
 		radio_start(rx, false);
 	} else { /* tx */
-		nrf_radio_txpower_set(NRF_RADIO, dtm_inst.txpower);
+		radio_tx_power_set(dtm_inst.phys_ch, dtm_inst.txpower);
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 		/* Stop the timer used by anomaly 172 */
 		if (dtm_inst.anomaly_172_wa_enabled) {
 			nrfx_timer_disable(&dtm_inst.anomaly_timer);
@@ -1248,10 +1344,11 @@ static void radio_prepare(bool rx)
 			nrf_timer_event_clear(dtm_inst.anomaly_timer.p_reg,
 					      NRF_TIMER_EVENT_COMPARE1);
 		}
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 	}
 }
 
+#if !CONFIG_DTM_POWER_CONTROL_AUTOMATIC
 static bool dtm_set_txpower(uint32_t new_tx_power)
 {
 	/* radio->TXPOWER register is 32 bits, low octet a tx power value,
@@ -1281,6 +1378,7 @@ static bool dtm_set_txpower(uint32_t new_tx_power)
 
 	return true;
 }
+#endif /* !CONFIG_DTM_POWER_CONTROL_AUTOMATIC */
 
 static enum dtm_err_code  dtm_vendor_specific_pkt(uint32_t vendor_cmd,
 						  uint32_t vendor_option)
@@ -1295,19 +1393,17 @@ static enum dtm_err_code  dtm_vendor_specific_pkt(uint32_t vendor_cmd,
 		 * carrier signal should be transmitted by the radio.
 		 */
 		radio_prepare(TX_MODE);
-#if defined(CONFIG_SOC_SERIES_NRF54HX)
-		nrf_radio_fast_ramp_up_enable_set(NRF_RADIO, false);
-#else
+
 		nrf_radio_modecnf0_set(NRF_RADIO, false,
 				       RADIO_MODECNF0_DTX_Center);
-#endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 		/* Shortcut between READY event and START task */
 		nrf_radio_shorts_set(NRF_RADIO,
 				     NRF_RADIO_SHORT_READY_START_MASK);
 
 #if CONFIG_FEM
-		if (dtm_inst.fem.gain != FEM_USE_DEFAULT_GAIN) {
+		if ((dtm_inst.fem.gain != FEM_USE_DEFAULT_GAIN) &&
+		    (!IS_ENABLED(CONFIG_DTM_POWER_CONTROL_AUTOMATIC))) {
 			if (fem_tx_gain_set(dtm_inst.fem.gain) != 0) {
 				dtm_inst.event = LE_TEST_STATUS_EVENT_ERROR;
 				return DTM_ERROR_ILLEGAL_CONFIGURATION;
@@ -1324,12 +1420,14 @@ static enum dtm_err_code  dtm_vendor_specific_pkt(uint32_t vendor_cmd,
 		dtm_inst.state = STATE_CARRIER_TEST;
 		break;
 
+#if !CONFIG_DTM_POWER_CONTROL_AUTOMATIC
 	case SET_TX_POWER:
 		if (!dtm_set_txpower(vendor_option)) {
 			dtm_inst.event = LE_TEST_STATUS_EVENT_ERROR;
 			return DTM_ERROR_ILLEGAL_CONFIGURATION;
 		}
 		break;
+#endif /* !CONFIG_DTM_POWER_CONTROL_AUTOMATIC */
 
 #if CONFIG_FEM
 	case FEM_ANTENNA_SELECT:
@@ -1340,10 +1438,12 @@ static enum dtm_err_code  dtm_vendor_specific_pkt(uint32_t vendor_cmd,
 
 		break;
 
+#if !CONFIG_DTM_POWER_CONTROL_AUTOMATIC
 	case FEM_GAIN_SET:
 		dtm_inst.fem.gain = vendor_option;
 
 		break;
+#endif /* !CONFIG_DTM_POWER_CONTROL_AUTOMATIC */
 
 	case FEM_RAMP_UP_SET:
 		dtm_inst.fem.vendor_ramp_up_time = vendor_option;
@@ -1479,18 +1579,9 @@ static enum dtm_err_code phy_set(uint8_t phy)
 		dtm_inst.radio_mode = NRF_RADIO_MODE_BLE_1MBIT;
 		dtm_inst.packet_hdr_plen =
 			NRF_RADIO_PREAMBLE_LENGTH_8BIT;
-#ifdef NRF52840_XXAA
-		/* Workaround for Errata 191 "Radio: High packet error rate in BLE Long Range mode"
-		 * found at the Errata document for your device located at https://infocenter.nordicsemi.com/index.jsp
-		 */
-		*(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFFFFFF);
 
-		/* Disable the workaround anomaly 172 */
-		anomaly_172_strict_mode_set(false);
-		nrfx_timer_disable(&dtm_inst.anomaly_timer);
-		dtm_inst.anomaly_172_wa_enabled = false;
-#endif /* NRF52840_XXAA */
-
+		errata_191_handle(false);
+		errata_172_handle(false);
 		errata_117_handle(false);
 
 		return radio_init();
@@ -1500,18 +1591,8 @@ static enum dtm_err_code phy_set(uint8_t phy)
 		dtm_inst.packet_hdr_plen =
 			NRF_RADIO_PREAMBLE_LENGTH_16BIT;
 
-#ifdef NRF52840_XXAA
-		/* Workaround for Errata 191 "Radio: High packet error rate in BLE Long Range mode"
-		 * found at the Errata document for your device located at https://infocenter.nordicsemi.com/index.jsp
-		 */
-		*(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFFFFFF);
-
-		/* Disable the workaround anomaly 172 */
-		anomaly_172_strict_mode_set(false);
-		nrfx_timer_disable(&dtm_inst.anomaly_timer);
-		dtm_inst.anomaly_172_wa_enabled = false;
-#endif /* NRF52840_XXAA */
-
+		errata_191_handle(false);
+		errata_172_handle(false);
 		errata_117_handle(true);
 
 		return radio_init();
@@ -1522,19 +1603,9 @@ static enum dtm_err_code phy_set(uint8_t phy)
 			NRF_RADIO_MODE_BLE_LR125KBIT;
 		dtm_inst.packet_hdr_plen =
 			NRF_RADIO_PREAMBLE_LENGTH_LONG_RANGE;
-#ifdef NRF52840_XXAA
-		/* Workaround for Errata 191 "Radio: High packet error rate in BLE Long Range mode"
-		 * found at the Errata document for your device located at https://infocenter.nordicsemi.com/index.jsp
-		 */
-		*(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFF00FF) |
-		0x80000000 | (((uint32_t) (196)) << 8);
 
-		/* Enable the workaround for anomaly 172. */
-		if ((*(volatile uint32_t *) 0x40001788) == 0) {
-			dtm_inst.anomaly_172_wa_enabled = true;
-		}
-#endif /* NRF52840_XXAA */
-
+		errata_191_handle(true);
+		errata_172_handle(true);
 		errata_117_handle(false);
 
 		return radio_init();
@@ -1550,19 +1621,8 @@ static enum dtm_err_code phy_set(uint8_t phy)
 		dtm_inst.packet_hdr_plen =
 			NRF_RADIO_PREAMBLE_LENGTH_LONG_RANGE;
 
-#ifdef NRF52840_XXAA
-		/* Workaround for Errata 191 "Radio: High packet error rate in BLE Long Range mode"
-		 * found at the Errata document for your device located at https://infocenter.nordicsemi.com/index.jsp
-		 */
-		*(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFF00FF) |
-		0x80000000 | (((uint32_t) (196)) << 8);
-
-		/* Enable the workaround for anomaly 172. */
-		if ((*(volatile uint32_t *) 0x40001788) == 0) {
-			dtm_inst.anomaly_172_wa_enabled = true;
-		}
-#endif /* NRF52840_XXAA */
-
+		errata_191_handle(true);
+		errata_172_handle(true);
 		errata_117_handle(false);
 
 		return radio_init();
@@ -1748,92 +1808,43 @@ static uint32_t constant_tone_setup(uint8_t cte_info)
 
 static uint32_t transmit_power_set(int8_t parameter)
 {
-	size_t size = dtm_hw_radio_power_array_size_get();
-	const uint32_t *power = dtm_hw_radio_power_array_get();
+	static const uint8_t channel;
 
-	if (parameter == LE_TRANSMIT_POWER_LVL_SET_MIN) {
-		dtm_inst.txpower = dtm_hw_radio_min_power_get();
-		dtm_inst.event =
-			((dtm_inst.txpower <<
-			  LE_TRANSMIT_POWER_RESPONSE_LVL_POS) &
-			 LE_TRANSMIT_POWER_RESPONSE_LVL_MASK) |
-			LE_TRANSMIT_POWER_MIN_LVL_BIT;
+	uint32_t dtm_err = DTM_SUCCESS;
+	const uint16_t frequency = radio_frequency_get(channel);
+	const int8_t tx_power_min = dtm_radio_min_power_get(frequency);
+	const int8_t tx_power_max = dtm_radio_max_power_get(frequency);
 
-		return DTM_SUCCESS;
-	}
+	if ((parameter == LE_TRANSMIT_POWER_LVL_SET_MIN) ||
+	    (parameter <= tx_power_min)) {
+		dtm_inst.txpower = tx_power_min;
+		dtm_inst.event = LE_TRANSMIT_POWER_MIN_LVL_BIT;
+	} else if ((parameter == LE_TRANSMIT_POWER_LVL_SET_MAX) ||
+		   (parameter >= tx_power_max))  {
+		dtm_inst.txpower = tx_power_max;
+		dtm_inst.event = LE_TRANSMIT_POWER_MAX_LVL_BIT;
+	} else if ((parameter < LE_TRANSMIT_POWER_LVL_MIN) ||
+		   (parameter > LE_TRANSMIT_POWER_LVL_MAX)) {
+		dtm_inst.event = LE_TEST_STATUS_EVENT_ERROR;
 
-	if (parameter == LE_TRANSMIT_POWER_LVL_SET_MAX) {
-		dtm_inst.txpower = dtm_hw_radio_max_power_get();
-		dtm_inst.event =
-			((dtm_inst.txpower <<
-			  LE_TRANSMIT_POWER_RESPONSE_LVL_POS) &
-			 LE_TRANSMIT_POWER_RESPONSE_LVL_MASK) |
-			LE_TRANSMIT_POWER_MAX_LVL_BIT;
-
-		return DTM_SUCCESS;
-	}
-
-	if ((parameter < LE_TRANSMIT_POWER_LVL_MIN) ||
-	    (parameter > LE_TRANSMIT_POWER_LVL_MAX)) {
-		dtm_inst.event =
-			((dtm_inst.txpower <<
-			  LE_TRANSMIT_POWER_RESPONSE_LVL_POS) &
-			 LE_TRANSMIT_POWER_RESPONSE_LVL_MASK) |
-			LE_TEST_STATUS_EVENT_ERROR;
-
-		if (dtm_inst.txpower == dtm_hw_radio_min_power_get()) {
+		if (dtm_inst.txpower == tx_power_min) {
 			dtm_inst.event |= LE_TRANSMIT_POWER_MIN_LVL_BIT;
-		} else if (dtm_inst.txpower == dtm_hw_radio_max_power_get()) {
+		} else if (dtm_inst.txpower == tx_power_max) {
 			dtm_inst.event |= LE_TRANSMIT_POWER_MAX_LVL_BIT;
 		} else {
 			/* Do nothing. */
 		}
 
-		return DTM_ERROR_ILLEGAL_CONFIGURATION;
+		dtm_err = DTM_ERROR_ILLEGAL_CONFIGURATION;
+	} else {
+		/* Look for the nearest tansmit power level and set it. */
+		dtm_inst.txpower = dtm_radio_nearest_power_get(parameter, frequency);
 	}
 
-	if (parameter <= ((int8_t) dtm_hw_radio_min_power_get())) {
-		dtm_inst.txpower = dtm_hw_radio_min_power_get();
-		dtm_inst.event =
-			((dtm_inst.txpower <<
-			  LE_TRANSMIT_POWER_RESPONSE_LVL_POS) &
-			 LE_TRANSMIT_POWER_RESPONSE_LVL_MASK) |
-			LE_TRANSMIT_POWER_MIN_LVL_BIT;
+	dtm_inst.event |= (dtm_inst.txpower << LE_TRANSMIT_POWER_RESPONSE_LVL_POS) &
+			  LE_TRANSMIT_POWER_RESPONSE_LVL_MASK;
 
-		return DTM_SUCCESS;
-	}
-
-	if (parameter >= ((int8_t) dtm_hw_radio_max_power_get())) {
-		dtm_inst.txpower = dtm_hw_radio_max_power_get();
-		dtm_inst.event =
-			((dtm_inst.txpower <<
-			  LE_TRANSMIT_POWER_RESPONSE_LVL_POS) &
-			 LE_TRANSMIT_POWER_RESPONSE_LVL_MASK) |
-			LE_TRANSMIT_POWER_MAX_LVL_BIT;
-
-		return DTM_SUCCESS;
-	}
-
-	/* Look for the nearest tansmit power level and set it. */
-	for (size_t i = 1; i < size; i++) {
-		if (((int8_t) power[i]) > parameter) {
-			int8_t diff = abs((int8_t) power[i] - parameter);
-
-			if (diff <  abs((int8_t) power[i - 1] - parameter)) {
-				dtm_inst.txpower = power[i];
-			} else {
-				dtm_inst.txpower = power[i - 1];
-			}
-
-			break;
-		}
-	}
-
-	dtm_inst.event =
-		(dtm_inst.txpower << LE_TRANSMIT_POWER_RESPONSE_LVL_POS) &
-		LE_TRANSMIT_POWER_RESPONSE_LVL_MASK;
-
-	return DTM_SUCCESS;
+	return dtm_err;
 }
 
 static enum dtm_err_code on_test_setup_cmd(enum dtm_ctrl_code control,
@@ -1861,18 +1872,8 @@ static enum dtm_err_code on_test_setup_cmd(enum dtm_ctrl_code control,
 		memset(&dtm_inst.cte_info, 0, sizeof(dtm_inst.cte_info));
 #endif /* DIRECTION_FINDING_SUPPORTED */
 
-#ifdef NRF52840_XXAA
-		/* Workaround for Errata 191 "Radio: High packet error rate in BLE Long Range mode"
-		 * found at the Errata document for your device located at https://infocenter.nordicsemi.com/index.jsp
-		 */
-		*(volatile uint32_t *) 0x40001740 = ((*((volatile uint32_t *) 0x40001740)) & 0x7FFFFFFF);
-
-		/* Disable the workaround anomaly 172 */
-		anomaly_172_strict_mode_set(false);
-		nrfx_timer_disable(&dtm_inst.anomaly_timer);
-		dtm_inst.anomaly_172_wa_enabled = false;
-#endif
-
+		errata_191_handle(false);
+		errata_172_handle(false);
 		errata_117_handle(false);
 
 		radio_init();
@@ -2048,7 +2049,8 @@ static enum dtm_err_code on_test_transmit_cmd(uint32_t length, uint32_t freq)
 			NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK, false);
 
 #if CONFIG_FEM
-	if (dtm_inst.fem.gain != FEM_USE_DEFAULT_GAIN) {
+	if ((dtm_inst.fem.gain != FEM_USE_DEFAULT_GAIN) &&
+	    (!IS_ENABLED(CONFIG_DTM_POWER_CONTROL_AUTOMATIC))) {
 		if (fem_tx_gain_set(dtm_inst.fem.gain) != 0) {
 			dtm_inst.event = LE_TEST_STATUS_EVENT_ERROR;
 			return DTM_ERROR_ILLEGAL_CONFIGURATION;
@@ -2204,7 +2206,7 @@ static void on_radio_end_event(void)
 
 	radio_start(true, false);
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 	if (dtm_inst.anomaly_172_wa_enabled) {
 		nrfx_timer_compare(&dtm_inst.anomaly_timer,
 			NRF_TIMER_CC_CHANNEL0,
@@ -2225,7 +2227,7 @@ static void on_radio_end_event(void)
 		nrfx_timer_clear(&dtm_inst.anomaly_timer);
 		nrfx_timer_enable(&dtm_inst.anomaly_timer);
 	}
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 
 	if (nrf_radio_crc_status_check(NRF_RADIO) &&
 	    check_pdu(received_pdu)) {
@@ -2247,12 +2249,12 @@ static void radio_handler(const void *context)
 {
 	if (nrf_radio_event_check(NRF_RADIO, NRF_RADIO_EVENT_ADDRESS)) {
 		nrf_radio_event_clear(NRF_RADIO, NRF_RADIO_EVENT_ADDRESS);
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 		if (dtm_inst.state == STATE_RECEIVER_TEST &&
 		    dtm_inst.anomaly_172_wa_enabled) {
 			nrfx_timer_disable(&dtm_inst.anomaly_timer);
 		}
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 	}
 
 	if (nrf_radio_event_check(NRF_RADIO, NRF_RADIO_EVENT_END)) {
@@ -2266,7 +2268,7 @@ static void radio_handler(const void *context)
 	if (nrf_radio_event_check(NRF_RADIO, NRF_RADIO_EVENT_READY)) {
 		nrf_radio_event_clear(NRF_RADIO, NRF_RADIO_EVENT_READY);
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 		if (dtm_inst.state == STATE_RECEIVER_TEST &&
 		    dtm_inst.anomaly_172_wa_enabled) {
 			nrfx_timer_clear(&dtm_inst.anomaly_timer);
@@ -2274,7 +2276,7 @@ static void radio_handler(const void *context)
 				nrfx_timer_enable(&dtm_inst.anomaly_timer);
 			}
 		}
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */
 	}
 }
 
@@ -2291,7 +2293,7 @@ static void wait_timer_handler(nrf_timer_event_t event_type, void *context)
 	k_sem_give(&dtm_inst.wait_sem);
 }
 
-#ifdef NRF52840_XXAA
+#if NRF52_ERRATA_172_PRESENT
 static void anomaly_timer_handler(nrf_timer_event_t event_type, void *context)
 {
 	switch (event_type) {
@@ -2371,4 +2373,4 @@ static void anomaly_timer_handler(nrf_timer_event_t event_type, void *context)
 		break;
 	}
 }
-#endif
+#endif /* NRF52_ERRATA_172_PRESENT */

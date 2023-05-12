@@ -70,16 +70,16 @@ ssize_t bt_nsms_status_read(struct bt_conn *conn,
 #define BT_NSMS_SECURITY_LEVEL_ENCRYPT	1
 #define BT_NSMS_SECURITY_LEVEL_AUTHEN	2
 
-#define _BT_NSMS_CH_READ_PERM(_slevel) ((_slevel == BT_NSMS_SECURITY_LEVEL_AUTHEN)? \
+#define _BT_NSMS_CH_READ_PERM(_slevel) ((_slevel == BT_NSMS_SECURITY_LEVEL_AUTHEN) ?  \
 					(BT_GATT_PERM_READ_AUTHEN) : \
-					(_slevel == BT_NSMS_SECURITY_LEVEL_ENCRYPT)? \
+					(_slevel == BT_NSMS_SECURITY_LEVEL_ENCRYPT) ? \
 					(BT_GATT_PERM_READ_ENCRYPT) : \
 					(BT_GATT_PERM_READ) \
 					)
 
-#define _BT_NSMS_CH_WRITE_PERM(_slevel) ((_slevel == BT_NSMS_SECURITY_LEVEL_AUTHEN)? \
+#define _BT_NSMS_CH_WRITE_PERM(_slevel) ((_slevel == BT_NSMS_SECURITY_LEVEL_AUTHEN) ? \
 					(BT_GATT_PERM_WRITE_AUTHEN) : \
-					(_slevel == BT_NSMS_SECURITY_LEVEL_ENCRYPT)? \
+					(_slevel == BT_NSMS_SECURITY_LEVEL_ENCRYPT) ? \
 					(BT_GATT_PERM_WRITE_ENCRYPT) : \
 					(BT_GATT_PERM_WRITE) \
 					)
@@ -94,15 +94,15 @@ ssize_t bt_nsms_status_read(struct bt_conn *conn,
 /** @brief Create the Nordic Status Message Service instance
  *
  * This macro creates the Nordic Status Message Service instance and prepares it to work.
- * Note that it allows to implement multiple instances and the only differnce between them would be
+ * Note that it allows to implement multiple instances and the only difference between them would be
  * the name.
  *
  * @param _nsms        Name of Status Message Service instance.
  * @param _name        NULL terminated string used as a CUD for Status Message Characteristic.
  * @param _slevel      Security level to use the characteristic.
- *			- BT_NSMS_SECURITY_LEVEL_AUTHEN 		- requires authentication
+ *			- BT_NSMS_SECURITY_LEVEL_AUTHEN			- requires authentication
  *			- BT_NSMS_SECURITY_LEVEL_ENCRYPT		- encryption is sufficient
- *			- BT_NSMS_SECURITY_LEVEL_NONE and other values 	- none
+ *			- BT_NSMS_SECURITY_LEVEL_NONE and other values	- none
  * @param _status_init Initial message.
  * @param _len_max     Maximal size of the message. The size of the message buffer.
  */
