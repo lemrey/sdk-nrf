@@ -120,7 +120,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: d576e1f2a2f73877af7cdef3999169fea2de9eea
+      revision: 57fc2996b0c3ce7da99fda6f36ef8476c35d43ef
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
@@ -130,7 +130,7 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 378a859be028519771cbd0cc8fb9fa53f0db67eb
+      revision: f41b5bad93f100ebf26a479bf9ccc4908c5c2e8e
     - name: sdk-secdom
       revision: 9ec9275e6124445932f6208148a7484d1cf1d065
       path: core_fw/secdom
