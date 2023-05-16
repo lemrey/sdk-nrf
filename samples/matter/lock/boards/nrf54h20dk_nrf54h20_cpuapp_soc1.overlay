@@ -6,6 +6,8 @@
 
 #include <zephyr/dt-bindings/ipc_service/static_vrings.h>
 #include <common/nordic_nrf_next/nrf54h20_ram0x.dtsi>
+#include <arm/nordic_nrf_next/overlays/entropy_cpuapp.overlay>
+#include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
 
 /*
  * Chosen dts configs description:
