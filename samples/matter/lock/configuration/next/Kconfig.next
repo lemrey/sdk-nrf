@@ -64,6 +64,9 @@ config MAIN_STACK_SIZE
 config CHIP_MALLOC_SYS_HEAP_SIZE
     default 28672 # 28 kB
 
+config BT_MAX_CONN
+    default 1
+
 config HWINFO_NRF
     default n
 
