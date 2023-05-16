@@ -25,3 +25,4 @@ nRF54H20 samples
    ../../../samples/event_manager_proxy/README
    ../../../samples/matter/lock/README
    ../../../samples/matter/template/README
+   ../../../samples/openthread/cli/README
