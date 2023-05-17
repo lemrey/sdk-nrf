@@ -213,9 +213,17 @@ After you have installed nRF Command Line Tools 10.21.0 and the toolchain, compl
 
       west zephyr-export
 
-#. As an administrator (or superuser), install ``nrf-regtool`` using the following command::
+#. Install ``nrf-regtool`` using the following command:
 
-      pip install modules/lib/nrf-regtool
+   .. tabs::
+
+      .. group-tab:: Windows
+
+            python -m pip install modules/lib/nrf-regtool
+
+      .. group-tab:: Linux
+
+            python3 -m pip install modules/lib/nrf-regtool
 
 Your directory structure now looks similar to this::
 
