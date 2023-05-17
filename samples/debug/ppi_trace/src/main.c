@@ -17,12 +17,14 @@ LOG_MODULE_REGISTER(app);
 
 #define ALARM_PERIOD_US 50000
 
-#if IS_ENABLED(CONFIG_USE_RTC2)
-#define RTC       NRF_RTC2
-#define RTC_NODE  DT_NODELABEL(rtc2)
+#define ZEPHYR_USER_NODE DT_PATH(zephyr_user)
+#if DT_NODE_HAS_PROP(ZEPHYR_USER_NODE, ppi_trace_rtc)
+#define RTC_NODE DT_PROP(ZEPHYR_USER_NODE, ppi_trace_rtc)
+#define RTC ((NRF_RTC_Type*)DT_REG_ADDR(RTC_NODE))
 #else
-#define RTC       NRF_RTC0
-#define RTC_NODE  DT_NODELABEL(rtc0)
+#error "You must define a ppi-trace-rtc property in the /zephyr,user node; see the boards/ subdirectory for example overlays."
+#define RTC_NODE DT_INVALID_NODE
+#define RTC ((NRF_RTC_Type*)0)
 #endif
 
 static void alarm_callback(const struct device *dev, uint8_t chan_id, uint32_t ticks,

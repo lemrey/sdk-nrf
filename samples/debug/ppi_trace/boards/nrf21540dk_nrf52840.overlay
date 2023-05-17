@@ -1,16 +1,15 @@
+/ {
+        chosen {
+                zephyr,entropy = &rng;
+        };
+};
+
 &rtc2 {
 	status = "okay";
 };
 
 / {
-        chosen {
-                zephyr,entropy = &rng;
-        };
 	zephyr,user {
 		ppi-trace-rtc = <&rtc2>;
 	};
-};
-
-&rtc2 {
-	status = "okay";
 };
