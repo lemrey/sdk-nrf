@@ -7,6 +7,5 @@
 menu "Common modules"
 
 rsource "Kconfig.event_proxy"
-rsource "Kconfig.sensor_stub_gen"
 
 endmenu
