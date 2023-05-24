@@ -17,8 +17,8 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/clock_control.h>
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 #include <zephyr/drivers/clock_control/nrf_clock_control.h>
+#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 #include <hal/nrf_nvmc.h>
 #endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
@@ -582,7 +582,6 @@ static void wait_timer_handler(nrf_timer_event_t event_type, void *context);
 static void dtm_timer_handler(nrf_timer_event_t event_type, void *context);
 static void radio_handler(const void *context);
 
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 static int clock_init(void)
 {
 	int err;
@@ -614,12 +613,6 @@ static int clock_init(void)
 
 	return err;
 }
-#else
-static int clock_init(void)
-{
-	return 0;
-}
-#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 static int timer_init(void)
 {
