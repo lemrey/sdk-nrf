@@ -362,7 +362,7 @@ Depending on what development kit you use, you need to select the respective con
 
       .. table-from-rows:: /includes/sample_board_rows.txt
          :header: heading
-         :rows: nrf52840dk_nrf52840, nrf52833dk_nrf52833, nrf52833dk_nrf52820, nrf5340dk_nrf5340_cpuapp
+         :rows: nrf52840dk_nrf52840, nrf52833dk_nrf52833, nrf52833dk_nrf52820, nrf5340dk_nrf5340_cpuapp, nrf54h20dk_nrf54h20_cpuapp@soc1
 
       Depending on the configuration, a DK may act either as mouse, keyboard or dongle.
       You can check supported configurations for each board in the :ref:`nrf_desktop_board_configuration_files` section.
@@ -1270,6 +1270,21 @@ Sample dongle (nrf5340dk_nrf5340)
       * Bluetooth uses Nordic's SoftDevice link layer without LLPM and is configured to act as a central.
         Input data comes from Bluetooth and is retransmitted to USB.
       * The configuration with the B0 bootloader is set as default.
+
+Sample gaming mouse (nrf54h20dk_nrf54h20_cpuapp\@soc1)
+      * The configuration uses the nRF54H20 Preview Development Kit.
+      * The application is configured to act as a gaming mouse.
+      * Both Bluetooth LE and USB transports are enabled.
+      * USB uses High-Speed mode to achieve better HID report rate (up to 8000 HID reports per second).
+      * Bluetooth LE is configured to use Nordic's SoftDevice Link Layer without LLPM.
+        The LLPM is currently not supported for this SoC.
+      * Inputs are simulated based on the hardware button presses.
+        By default, the device generates ``1000`` motion per second of pressing a button.
+        This is done to limit the speed of the mouse cursor, but it could also lead to motion set to ``0`` in some of the HID reports for USB High-Speed use case.
+        See the :ref:`nrf_desktop_motion_report_rate` documentation section for details.
+      * The configuration does not use any bootloader.
+      * In ``debug`` configuration, logs are provided through the UART.
+        For detailed information on working with the nRF54H20 PDK, see the :ref:`ug_nrf54h20_gs` documentation.
 
 .. _porting_guide_adding_board:
 
