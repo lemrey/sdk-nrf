@@ -12,12 +12,14 @@ tests:
     tags: ci_build
   sample.multicore.hello_world.nrf54h20:
     build_only: true
+    sysbuild: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
   sample.multicore.hello_world.nrf54h20.stm_logging_fsc_frontend:
     build_only: true
+    sysbuild: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -33,6 +35,7 @@ tests:
       - CONFIG_CONSOLE=n
   sample.multicore.hello_world.nrf54h20.fpga:
     build_only: true
+    sysbuild: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -42,6 +45,7 @@ tests:
       - CONFIG_EMULATOR_FPGA=y
   sample.multicore.hello_world.nrf54h20.fpga.stm_logging_fsc_frontend:
     build_only: true
+    sysbuild: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
