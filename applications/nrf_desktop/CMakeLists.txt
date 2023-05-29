@@ -17,8 +17,9 @@ endif()
 ################################################################################
 
 # The application uses the configuration/<board> scheme for configuration files.
+# Configuring here to ensure BOARD contains BOARD_REVISION
 set(APPLICATION_CONFIG_DIR "configuration/\${BOARD}")
-
+string(CONFIGURE ${APPLICATION_CONFIG_DIR} APPLICATION_CONFIG_DIR)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project("nRF52 Desktop"
@@ -43,7 +44,7 @@ zephyr_library_include_directories(
 
 zephyr_include_directories(
   configuration/common
-  configuration/${BOARD}
+  ${APPLICATION_CONFIG_DIR}
   )
 
 # Application sources
