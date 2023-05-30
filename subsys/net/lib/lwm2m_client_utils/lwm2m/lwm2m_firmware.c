@@ -107,11 +107,13 @@ static struct update_data {
 
 void client_acknowledge(void);
 
-NRF_MODEM_LIB_ON_INIT(lwm2m_firmware_init_hook,
-		      on_modem_lib_init, NULL);
+NRF_MODEM_LIB_ON_INIT(lwm2m_firmware_init_hook, on_modem_lib_init, NULL);
 
 /* Initialized to value different than success (0) */
 static int modem_lib_init_result = -1;
+
+uint32_t dfu_result;
+NRF_MODEM_LIB_ON_DFU_RES(lwm2m_firmware_dfu_hook, on_modem_lib_dfu, NULL);
 
 #ifdef CONFIG_ZTEST
 /* Only for unit test for emulate modem lib init hook */
@@ -211,6 +213,20 @@ static int firmware_request_linked_update(int instance_id)
 
 #endif
 	return postpone_update;
+}
+
+static void on_modem_lib_dfu(int32_t dfu_res, void *ctx)
+{
+	switch (dfu_res) {
+	case NRF_MODEM_DFU_RESULT_OK:
+		LOG_INF("MODEM UPDATE OK. Running new firmware");
+		dfu_result = RESULT_SUCCESS;
+		break;
+	default:
+		LOG_INF("MODEM UPDATE fail %d", ret);
+		dfu_result = RESULT_UPDATE_FAILED;
+		break;
+	}
 }
 
 static void on_modem_lib_init(int ret, void *ctx)
@@ -557,20 +573,11 @@ static uint8_t apply_firmware_delta_modem_update(void)
 	lte_lc_deinit();
 	nrf_modem_lib_shutdown();
 	ret = nrf_modem_lib_init();
-
-	ret = modem_lib_init_result;
-	switch (ret) {
-	case NRF_MODEM_DFU_RESULT_OK:
-		LOG_INF("MODEM UPDATE OK. Will run new firmware");
-		result = RESULT_SUCCESS;
-		break;
-	default:
-		LOG_INF("MODEM UPDATE fail %d", ret);
-		result = RESULT_UPDATE_FAILED;
-		break;
+	if (ret) {
+		return RESULT_UPDATE_FAILED;
 	}
 
-	return result;
+	return dfu_result;
 }
 
 static void update_work_handler(struct k_work *work)

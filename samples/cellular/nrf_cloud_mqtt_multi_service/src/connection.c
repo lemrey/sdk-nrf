@@ -714,14 +714,11 @@ static int setup_modem(void)
 	if (ret < 0) {
 		LOG_ERR("Modem library initialization failed, error: %d", ret);
 		return ret;
-	} else if (ret == NRF_MODEM_DFU_RESULT_OK) {
-		LOG_DBG("Modem library initialized after "
-			"successful modem firmware update.");
 	} else if (ret > 0) {
 		LOG_ERR("Modem library initialized after "
 			"failed modem firmware update, error: %d", ret);
 	} else {
-		LOG_DBG("Modem library initialized.");
+		LOG_DBG("nRF Modem Library initialized successfully");
 	}
 
 	/* Register to be notified when the modem has figured out the current time. */
