@@ -16,6 +16,8 @@
 
 #define I2S_NL DT_NODELABEL(i2s0)
 
+static nrfx_i2s_t i2s_inst = NRFX_I2S_INSTANCE(0);
+
 #define HFCLKAUDIO_12_288_MHZ 0x9BAE
 
 enum audio_i2s_state {
@@ -55,7 +57,7 @@ static nrfx_i2s_config_t cfg = {
 #else
 #error Invalid bit depth selected
 #endif /* (CONFIG_AUDIO_BIT_DEPTH_16) */
-	.channels = NRF_I2S_CHANNELS_STEREO,
+		.channels = NRF_I2S_CHANNELS_STEREO,
 	.clksrc = NRF_I2S_CLKSRC_ACLK,
 	.enable_bypass = false,
 };
@@ -90,7 +92,7 @@ void audio_i2s_set_next_buf(const uint8_t *tx_buf, uint32_t *rx_buf)
 
 	nrfx_err_t ret;
 
-	ret = nrfx_i2s_next_buffers_set(&i2s_buf);
+	ret = nrfx_i2s_next_buffers_set(&i2s_inst, &i2s_buf);
 	__ASSERT_NO_MSG(ret == NRFX_SUCCESS);
 }
 
@@ -111,7 +113,7 @@ void audio_i2s_start(const uint8_t *tx_buf, uint32_t *rx_buf)
 	nrfx_err_t ret;
 
 	/* Buffer size in 32-bit words */
-	ret = nrfx_i2s_start(&i2s_buf, I2S_SAMPLES_NUM, 0);
+	ret = nrfx_i2s_start(&i2s_inst, &i2s_buf, I2S_SAMPLES_NUM, 0);
 	__ASSERT_NO_MSG(ret == NRFX_SUCCESS);
 
 	state = AUDIO_I2S_STATE_STARTED;
@@ -121,7 +123,7 @@ void audio_i2s_stop(void)
 {
 	__ASSERT_NO_MSG(state == AUDIO_I2S_STATE_STARTED);
 
-	nrfx_i2s_stop();
+	nrfx_i2s_stop(&i2s_inst);
 
 	state = AUDIO_I2S_STATE_IDLE;
 }
@@ -149,10 +151,10 @@ void audio_i2s_init(void)
 	ret = pinctrl_apply_state(PINCTRL_DT_DEV_CONFIG_GET(I2S_NL), PINCTRL_STATE_DEFAULT);
 	__ASSERT_NO_MSG(ret == 0);
 
-	IRQ_CONNECT(DT_IRQN(I2S_NL), DT_IRQ(I2S_NL, priority), nrfx_isr, nrfx_i2s_irq_handler, 0);
+	IRQ_CONNECT(DT_IRQN(I2S_NL), DT_IRQ(I2S_NL, priority), nrfx_isr, nrfx_i2s_0_irq_handler, 0);
 	irq_enable(DT_IRQN(I2S_NL));
 
-	ret = nrfx_i2s_init(&cfg, i2s_comp_handler);
+	ret = nrfx_i2s_init(&i2s_inst, &cfg, i2s_comp_handler);
 	__ASSERT_NO_MSG(ret == NRFX_SUCCESS);
 
 	state = AUDIO_I2S_STATE_IDLE;
