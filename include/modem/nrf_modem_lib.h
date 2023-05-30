@@ -38,8 +38,7 @@ extern "C" {
  * Use @ref nrf_modem_lib_init() to initialize in normal mode and
  * @ref nrf_modem_lib_bootloader_init() to initialize the Modem library in bootloader mode.
  *
- * @return int Zero on success, a positive value @em nrf_modem_dfu when executing
- *         Modem firmware updates, and negative errno on other failures.
+ * @return int Zero on success, non-zero otherwise.
  */
 int nrf_modem_lib_init(void);
 
@@ -68,6 +67,20 @@ int nrf_modem_lib_bootloader_init(void);
 int nrf_modem_lib_shutdown(void);
 
 /**
+ * @brief Modem library dfu callback struct.
+ */
+struct nrf_modem_lib_dfu_cb {
+	/**
+	 * @brief Callback function.
+	 * @param dfu_res The return value of nrf_modem_init()
+	 * @param ctx User-defined context
+	 */
+	void (*callback)(int dfu_res, void *ctx);
+	/** User defined context */
+	void *context;
+};
+
+/**
  * @brief Modem library initialization callback struct.
  */
 struct nrf_modem_lib_init_cb {
@@ -93,6 +106,25 @@ struct nrf_modem_lib_shutdown_cb {
 	/** User defined context */
 	void *context;
 };
+
+/**
+ * @brief Define a callback for DFU result @ref nrf_modem_lib_init calls.
+ *
+ * The callback function @p _callback is invoked after the library has been initialized.
+ *
+ * @note The @c NRF_MODEM_LIB_ON_DFU_RES callback can be used to subscribe to the result of a modem
+ * DFU operation.
+ *
+ * @param name Callback name
+ * @param _callback Callback function name
+ * @param _context User-defined context for the callback
+ */
+#define NRF_MODEM_LIB_ON_DFU_RES(name, _callback, _context)                                        \
+	static void _callback(int dfu_res, void *ctx);                                             \
+	STRUCT_SECTION_ITERABLE(nrf_modem_lib_dfu_cb, nrf_modem_dfu_hook_##name) = {               \
+		.callback = _callback,                                                             \
+		.context = _context,                                                               \
+	};
 
 /**
  * @brief Define a callback for @ref nrf_modem_lib_init calls.

@@ -331,7 +331,7 @@ static int trace_init(void)
 
 static void trace_init_callback(int err, void *ctx)
 {
-	if (err) {
+	if (err != 0) {
 		return;
 	}
 

@@ -250,16 +250,17 @@ static int handle_at_modemreset(enum at_cmd_type type)
 		++step;
 
 		ret = nrf_modem_lib_init();
+
+		/* nrf_modem_dfu_res() is called in nrf_modem_lib_init with the DFU result.  */
+		if ((fota_stage != FOTA_STAGE_INIT &&
+		     fota_type == DFU_TARGET_IMAGE_TYPE_MODEM_DELTA)) {
+			slm_fota_post_process();
+		}
+
 		if (ret < 0) {
 			break;
 		}
 		++step;
-
-		if (ret > 0 || (fota_stage != FOTA_STAGE_INIT
-					&& fota_type == DFU_TARGET_IMAGE_TYPE_MODEM_DELTA)) {
-			slm_finish_modem_fota(ret);
-			slm_fota_post_process();
-		}
 
 		/* Success. */
 		rsp_send("\r\n#XMODEMRESET: 0\r\n");

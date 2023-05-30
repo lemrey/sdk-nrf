@@ -372,19 +372,3 @@ void slm_fota_post_process(void)
 		slm_settings_fota_save();
 	}
 }
-
-void slm_finish_modem_fota(int modem_lib_init_ret)
-{
-	if (handle_nrf_modem_lib_init_ret(modem_lib_init_ret)) {
-
-		LOG_INF("Re-initializing the modem due to"
-				" ongoing modem firmware update.");
-
-		/* The second init needs to be done regardless of the return value.
-		 * Refer to the below link for more information on the procedure.
-		 * https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrfxlib/nrf_modem/doc/delta_dfu.html#reinitializing-the-modem-to-run-the-new-firmware
-		 */
-		modem_lib_init_ret = nrf_modem_lib_init();
-		handle_nrf_modem_lib_init_ret(modem_lib_init_ret);
-	}
-}

@@ -641,7 +641,7 @@ ZTEST(lwm2m_client_utils_firmware, test_firmware_update)
 	printf("State %d\r\n", state);
 	zassert_equal(state, STATE_DOWNLOADED, "wrong result value");
 
-	lwm2m_firmware_emulate_modem_lib_init(NRF_MODEM_DFU_RESULT_AUTH_ERROR);
+	lwm2m_firmware_emulate_modem_lib_init(-NRF_EAGAIN);
 	do_firmware_update(modem_instance);
 	result = get_modem_result();
 	state = get_app_state();
@@ -662,7 +662,7 @@ ZTEST(lwm2m_client_utils_firmware, test_firmware_update)
 	printf("State %d\r\n", state);
 	zassert_equal(state, STATE_DOWNLOADED, "wrong result value");
 
-	lwm2m_firmware_emulate_modem_lib_init(NRF_MODEM_DFU_RESULT_OK);
+	lwm2m_firmware_emulate_modem_lib_init(0);
 	do_firmware_update(modem_instance);
 	result = get_modem_result();
 	zassert_equal(boot_img_num, 0, "wrong img num");
@@ -787,7 +787,7 @@ ZTEST(lwm2m_client_utils_firmware, test_firmware_multinstace_download)
 	printf("Update %d\r\n", rc);
 	zassert_equal(rc, 0, "wrong result value");
 	/* Stub Linked write for update */
-	lwm2m_firmware_emulate_modem_lib_init(NRF_MODEM_DFU_RESULT_OK);
+	lwm2m_firmware_emulate_modem_lib_init(0);
 	k_sleep(K_SECONDS(6));
 	state = get_modem_state();
 	zassert_equal(state, STATE_IDLE, "wrong result value");

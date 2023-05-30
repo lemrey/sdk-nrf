@@ -174,38 +174,47 @@ static void sub_state_set(enum sub_state_type new_state)
 }
 
 #if defined(CONFIG_NRF_MODEM_LIB)
+
+static void on_modem_lib_dfu(int dfu_res, void *ctx)
+{
+	switch (dfu_res) {
+	case NRF_MODEM_DFU_RESULT_OK:
+		LOG_DBG("nRF Modem firmware update succeeded");
+		/* Fallthrough */
+	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
+	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
+		LOG_ERR("MODEM UPDATE ERROR %d. Running old firmware", dfu_res);
+		break;
+	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
+	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
+		LOG_ERR("MODEM UPDATE FATAL ERROR %d. Modem failure", dfu_res);
+		break;
+	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
+		LOG_ERR("MODEM UPDATE CANCELLED %d.", dfu_res);
+		LOG_ERR("Please reboot once you have sufficient power for the DFU");
+		break;
+	default:
+		/* Unknown DFU result code */
+		LOG_ERR("nRF modem DFU failed, error: %d", dfu_res);
+		break;
+	}
+}
+
+NRF_MODEM_LIB_ON_DFU_RES(main_dfu_hook, on_modem_lib_dfu, NULL);
+
 /* Check the return code from nRF modem library initialization to ensure that
- * the modem is rebooted if a modem firmware update is ready to be applied or
- * an error condition occurred during firmware update or library initialization.
+ * the modem is rebooted or an error condition occurred during library initialization.
  */
 static void modem_init(void)
 {
 	int ret = nrf_modem_lib_init();
 
-	/* Handle return values relating to modem firmware update */
+	/* Handle return values */
 	switch (ret) {
 	case 0:
-		/* Initialization successful, no action required. */
+		LOG_DBG("nRF Modem Library initialized successfully");
 		return;
-	case NRF_MODEM_DFU_RESULT_OK:
-		LOG_DBG("MODEM UPDATE OK. Will run new modem firmware after reboot");
-		break;
-	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
-	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
-		LOG_ERR("MODEM UPDATE ERROR %d. Will run old firmware", ret);
-		break;
-	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
-	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
-		LOG_ERR("MODEM UPDATE FATAL ERROR %d. Modem failure", ret);
-		break;
-	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
-		LOG_ERR("MODEM UPDATE CANCELLED %d.", ret);
-		LOG_ERR("Please reboot once you have sufficient power for the DFU");
-		break;
 	default:
-		/* All non-zero return codes other than DFU result codes are
-		 * considered irrecoverable and a reboot is needed.
-		 */
 		LOG_ERR("nRF modem lib initialization failed, error: %d", ret);
 		break;
 	}
