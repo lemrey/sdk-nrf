@@ -57,7 +57,7 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dp
     nrf_ppib_publish_set(PPIB_P_INST, nrf_ppib_receive_event_get(dppi_ch), dppi_ch);
 
     // {e} Connect: DPPIC_20[dppi_ch] to GRTC.CC[cc_channel]
-    NRFX_DPPIC_ENDPOINT_SETUP(z_nrf_grtc_timer_capture_task_address_get(cc_channel),
+    NRF_DPPI_ENDPOINT_SETUP(z_nrf_grtc_timer_capture_task_address_get(cc_channel),
                               dppi_ch);
 
     nrfy_dppi_channels_enable(DPPIC_P_INST, 1UL << dppi_ch);
@@ -85,7 +85,7 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_set(uint32_t dppi
     nrf_ppib_publish_set(PPIB_R_INST, nrf_ppib_receive_event_get(dppi_ch), dppi_ch);
     nrf_ppib_subscribe_set(PPIB_P_INST, nrf_ppib_send_task_get(dppi_ch), dppi_ch);
 
-    NRFX_DPPIC_ENDPOINT_SETUP(z_nrf_grtc_timer_compare_evt_address_get(cc_channel),
+    NRF_DPPI_ENDPOINT_SETUP(z_nrf_grtc_timer_compare_evt_address_get(cc_channel),
                               dppi_ch);
 
     nrfy_dppi_channels_enable(DPPIC_P_INST, 1UL << dppi_ch);

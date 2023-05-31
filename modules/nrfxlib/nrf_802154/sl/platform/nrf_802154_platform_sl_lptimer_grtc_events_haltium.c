@@ -113,8 +113,8 @@ void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_
     // configuring of the UICR->DPPI.GLOBAL[].CH.LINK.SINK registers.
 
     // {h} Connect: DPPIC_132 to GRTC.CC
-    NRFX_DPPIC_ENDPOINT_SETUP(z_nrf_grtc_timer_capture_task_address_get(cc_channel),
-                              DPPIC_G2_TS_CHANNEL);
+    NRF_DPPI_ENDPOINT_SETUP(z_nrf_grtc_timer_capture_task_address_get(cc_channel),
+                            DPPIC_G2_TS_CHANNEL);
 
     // Enable: DPPIC_132
     nrfy_dppi_channels_enable(DPPIC_G2_INST, 1UL << DPPIC_G2_TS_CHANNEL);
@@ -223,8 +223,8 @@ void nrf_802154_platform_sl_lptimer_static_event_for_hw_tasks_set(uint32_t cc_ch
     // configuring of the UICR->DPPI.GLOBAL[].CH.LINK.SINK registers.
 
     // {h} Connect: DPPIC_132 to GRTC.CC
-    NRFX_DPPIC_ENDPOINT_SETUP(z_nrf_grtc_timer_compare_evt_address_get(cc_channel),
-                              DPPIC_G2_HT_CHANNEL);
+    NRF_DPPI_ENDPOINT_SETUP(z_nrf_grtc_timer_compare_evt_address_get(cc_channel),
+                            DPPIC_G2_HT_CHANNEL);
 }
 
 void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_clear(void)
