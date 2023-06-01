@@ -1216,3 +1216,14 @@
 .. _`nrf-regtool`: https://github.com/nrfconnect/nrf-regtool/
 
 .. _`nRF Connect SDK Fundamentals`: https://academy.nordicsemi.com/courses/nrf-connect-sdk-fundamentals/
+
+.. ### Source: nRF54H repositories and documents
+
+.. _`UICR overlay`: https://github.com/nrfconnect/sdk-nrf-next/tree/haltium-ncs/applications/machine_learning/configuration/nrf54h20dk_nrf54h20_cpuapp%40soc1/uicr
+.. _`nRF54H20 common SoC files`: https://github.com/nrfconnect/sdk-ic-next/tree/haltium/soc
+.. _`ARM cores configuration files`: https://github.com/nrfconnect/sdk-ic-next/tree/haltium/boards/arm/nrf54h20dk_nrf54h20
+.. _`Risc-V cores configuration files`: https://github.com/nrfconnect/sdk-ic-next/tree/haltium/boards/riscv/nrf54h20dk_nrf54h20
+.. _`Objective Product Specification`: https://res.developer.nordicsemi.com/res/nrf54H20/OPS/nRF54H20_OPS_v0.3.pdf
+.. _`Introduction to nRF54H20`: https://res.developer.nordicsemi.com/res/nrf54H20/intro/Introduction%20to%20nRF54H20%20v1_0_1.pdf
+.. _`nRF54H20 prototype difference`: https://res.developer.nordicsemi.com/res/nrf54H20/other/nRF54H20_proto_diff.pdf
+.. _`BICR register's PDF file`: https://res.developer.nordicsemi.com/res/nrf54H20/BICR/nRF54H20_BICR_0_11_0.pdf
