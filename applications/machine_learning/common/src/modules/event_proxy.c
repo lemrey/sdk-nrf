@@ -35,8 +35,7 @@ static int event_proxy_init(void)
 		}
 
 		for (size_t e_idx = 0; e_idx < pcfg->events_cnt; e_idx++) {
-			ret = event_manager_proxy_subscribe(inst, pcfg->events[e_idx],
-							    pcfg->events[e_idx]->name);
+			ret = event_manager_proxy_subscribe(inst, pcfg->events[e_idx]);
 			if (ret) {
 				LOG_ERR("Can not subscribe to remote %s: %d",
 					pcfg->events[e_idx]->name, ret);
