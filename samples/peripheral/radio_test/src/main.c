@@ -6,11 +6,8 @@
 
 #include <zephyr/sys/printk.h>
 #include <zephyr/drivers/clock_control.h>
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 #include <zephyr/drivers/clock_control/nrf_clock_control.h>
-#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
-#if !defined(CONFIG_SOC_SERIES_NRF54HX)
 static void clock_init(void)
 {
 	int err;
@@ -42,11 +39,6 @@ static void clock_init(void)
 
 	printk("Clock has started\n");
 }
-#else
-static void clock_init(void)
-{
-}
-#endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 int main(void)
 {
