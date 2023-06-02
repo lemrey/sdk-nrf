@@ -618,3 +618,107 @@
   platforms:
     - all
   comment: "ANT samples fail to build; need to change main()'s signature to int main(void)"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.location_service_ext_pgps_nrf7002ek_wifi
+    - sample.nrf9160.modem_shell.location_cellular_no_wifi_no_gnss
+    - sample.nrf9160.modem_shell.location_wifi_cellular_no_gnss
+    - sample.nrf9160.modem_shell.nrf7002ek_wifi-debug
+    - sample.nrf9160.modem_shell.nrf7002ek_wifi
+    - sample.nrf9160.modem_shell.lwm2m_carrier
+    - sample.nrf9160.modem_shell.lwm2m_pgps
+    - gcf_sms.functionality_test
+    - asset_tracker_v2.nrf_cloud_codec_test
+    - applications.asset_tracker_v2.nrf7002ek_wifi
+    - sample.hw_id.device_id
+    - sample.hw_id.imei
+    - sample.nrf9160.modem_shell.location_service_ext
+    - asset_tracker_v2.location_module_test.tester
+    - boot_chains.secure_boot_and_bootloader_mcuboot
+    - boot_chains.bootloader_mcuboot
+    - applications.asset_tracker_v2.nrf_cloud-no-agps
+    - sample.nrf9160.modem_shell.location_gnss_wifi_no_cellular
+    - asset_tracker_v2.nrf_cloud_codec_mocked_cjson_test
+    - at_custom_cmd.functionality_test
+    - sample.nrf9160.modem_shell.lwm2m_bootstrap
+    - sample.net.mqtt
+    - applications.asset_tracker_v2.lwm2m.memfault
+    - tfm.psa_test_internal_trusted_storage_lvl2
+    - tfm.psa_test_protected_storage_lvl2
+    - tfm.psa_test_protected_storage_lvl1
+    - tfm.psa_test_storage_lvl1
+    - tfm.psa_test_storage_lvl2
+    - tfm.psa_test_initial_attestation_lvl2
+    - tfm.psa_test_crypto_lvl2
+    - tfm.psa_test_crypto_lvl1
+    - tfm.regression_sfn_lvl1
+    - sample.nrf9160.location.nrf7002ek_wifi
+    - samples.nrf9160.nidd
+    - sample.nrf7002.shell.scan_only_9160
+    - tfm.psa_test_internal_trusted_storage_lvl1
+    - sample.nrf9160.modem_shell_debug
+    - net.lib.nrf_cloud.cloud
+    - sample.net.mqtt.nrf9160.tls
+    - caf_sensor_manager.core
+    - sample.tfm.hello_world.bootloaders_debug
+    - fast_pair.storage.factory_reset.default
+    - sample.nrf9160.http_update.application_update.lwm2m_carrier
+    - sample.nrf9160.modem_shell.memfault_modem_trace_ram
+    - sample.nrf9160.modem_shell.memfault_modem_trace
+    - sample.nrf9160.modem_shell.location_wifi_no_cellular_no_gnss
+    - sample.nrf9160.modem_shell.location_gnss_no_wifi_no_cellular
+    - fast_pair.storage.account_key_storage.default
+    - tfm.psa_test_initial_attestation_lvl1
+    - sample.hw_id.uuid
+    - applications.nrf9160.serial_lte_modem.lwm2m_carrier
+    - sample.nrf9160.modem_trace_flash
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "TFM-M doesn't build in HCS"
+
+- scenarios:
+    - sample.openthread.cli.low_power
+    - tfm.psa_test_crypto_lvl1
+    - tfm.psa_test_crypto_lvl2
+    - tfm.psa_test_storage_lvl2
+    - tfm.psa_test_storage_lvl1
+    - tfm.psa_test_protected_storage_lvl2
+    - sample.hw_id
+    - sample.hw_id.ble
+    - sample.hw_id.device_id
+    - tfm.regression_sfn_lvl1
+    - tfm.psa_test_internal_trusted_storage_lvl1
+    - sample.bluetooth.peripheral_nsms_no_security
+    - tfm.psa_test_initial_attestation_lvl1
+    - tfm.psa_test_initial_attestation_lvl2
+    - sample.tfm.hello_world.bootloaders_debug
+    - sample.app_event_manager_shell
+    - sample.app_event_manager
+    - sample.bluetooth.peripheral_cgm
+    - sample.bluetooth.peripheral_nsms
+    - tfm.psa_test_protected_storage_lvl1
+    - tfm.psa_test_internal_trusted_storage_lvl2
+    - sample.bluetooth.peripheral_lbs_bt_ota_dfu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "TFM-M doesn't build in HCS"
+
+- scenarios:
+    - sample.bluetooth.peripheral_nsms
+    - sample.bluetooth.peripheral_nsms_no_security
+  platforms:
+    - thingy53_nrf5340_cpuapp_ns
+  comment: "TFM-M doesn't build in HCS"
+
+- scenarios:
+    - sample.net.mqtt
+    - samples.nrf9160.nidd
+    - applications.asset_tracker_v2.lwm2m.memfault
+    - applications.asset_tracker_v2.nrf_cloud-no-agps
+    - applications.nrf9160.serial_lte_modem.lwm2m_carrier
+    - sample.net.mqtt.nrf9160.tls
+    - sample.bluetooth.peripheral_nsms_no_security
+    - sample.bluetooth.peripheral_nsms
+  platforms:
+    - thingy91_nrf9160_ns
+  comment: "TFM-M doesn't build in HCS"
