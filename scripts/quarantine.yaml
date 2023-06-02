@@ -7,6 +7,13 @@
 #  platforms:
 #    - None
 
+- scenarios:
+    - sample.homekit.lock.multiprotocol.mtd.eui.nfc.hdfu.release
+    - sample.homekit.light_bulb.multiprotocol.ftd.eui.qrc.ndfu.release
+    - sample.homekit.lock.multiprotocol.mtd.eui.nfc.ndfu.debug
+  platforms:
+    - all
+  comment: "Disable HomeKit tests since their integration will be performed at a later point."
 
 - scenarios:
     - sample.tfm.psa_test_crypto
