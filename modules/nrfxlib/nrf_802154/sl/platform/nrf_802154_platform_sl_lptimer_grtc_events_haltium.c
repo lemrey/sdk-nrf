@@ -41,7 +41,11 @@
 /*   - IPCT_G1 : IPCT130_S */
 #define IPCT_G1_INST                 NRF_IPCT130_S
 #define IPCT_G1_TS_CHANNEL           0
+#if defined(NRF54H20_ENGA_XXAA)
 #define IPCT_G1_SHORTS               IPCT_SHORTS_RECEIVE0_ACK0_Msk
+#else
+#define IPCT_G1_SHORTS               IPCT_SHORTS_RECEIVE0_FLUSH0_Msk
+#endif
 #define IPCT_G1_EVENT_RECEIVE        NRFX_CONCAT_2(NRF_IPCT_EVENT_RECEIVE_, IPCT_G1_TS_CHANNEL)
 
 /*   - DPPIC_G1 : DPPIC130_S */
@@ -142,7 +146,11 @@ void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_
 /*   - DPPIC_L : DPPIC020 (RADIOCORE.DPPIC020) */
 /*   - IPCT_L : NRF_IPCT (RADIOCORE.IPCT) */
 #define IPCT_L_HT_CHANNEL            1
+#if defined(NRF54H20_ENGA_XXAA)
 #define IPCT_L_SHORTS                IPCT_SHORTS_RECEIVE1_ACK1_Msk
+#else
+#define IPCT_L_SHORTS                IPCT_SHORTS_RECEIVE1_FLUSH1_Msk
+#endif
 #define IPCT_L_EVENT_RECEIVE         NRFX_CONCAT_2(NRF_IPCT_EVENT_RECEIVE_, IPCT_L_HT_CHANNEL)
 
 /* Peripherals used for timestamping - located in global "Main power domain" (_G1_) */
