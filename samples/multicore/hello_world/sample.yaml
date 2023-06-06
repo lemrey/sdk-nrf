@@ -32,6 +32,7 @@ tests:
       CONFIG_SECDOM_STM_LOGGING_SUPPORT=y
       CONFIG_SERIAL=n
       CONFIG_CONSOLE=n
+      remote_CONFIG_XIP=y
   sample.multicore.hello_world.nrf54h20.fpga:
     build_only: true
     sysbuild: true
@@ -57,3 +58,4 @@ tests:
       CONFIG_SECDOM_STM_LOGGING_SUPPORT=y
       CONFIG_SERIAL=n
       CONFIG_CONSOLE=n
+      remote_CONFIG_XIP=y

@@ -17,6 +17,7 @@
 			reg = <0x2fc00000 DT_SIZE_K(32)>;
 			perm-read;
 			perm-write;
+			perm-execute;
 		};
 	};
 
@@ -25,7 +26,7 @@
 	 */
 	ppr_code: memory@e12a000 {
 		compatible = "zephyr,memory-region", "mmio-sram";
-		reg = <0xe12a000 DT_SIZE_K(64)>;
+		reg = <0xe12a000 DT_SIZE_K(28)>;
 		zephyr,memory-region = "PPR_CODE";
 	};
 
@@ -36,7 +37,21 @@
 
 &mram0 {
 	/* Expand to include PPR */
-	reg = <0xe0aa000 DT_SIZE_K(576)>;
+	reg = <0xe0aa000 DT_SIZE_K(540)>;
+};
+
+/* Remove shared area node and use its space for extending cpuppr_sram */
+/delete-node/ &ipc_shm_area_cpuapp_cpuppr;
+
+&cpuppr_sram {
+	reg = <0x0 DT_SIZE_K(28)>;
+	ranges = <0x0 0x0 DT_SIZE_K(28)>;
+};
+
+&cpuppr {
+	loader-img-src = <&ppr_code>;
+	loader-img-dst = <&cpuppr_sram>;
+	status = "okay";
 };
 
 /* ram3x_cpuapp buffer is used by App core UART driver. */
@@ -59,11 +74,6 @@
 	/* Channels 6 and 7 are owned by App but used by PPR. */
 	child-owned-channels = <6 7>;
 	nonsecure-channels = <6 7>;
-};
-
-/* Enable PPR clic so App could start PPR. */
-&clic_cpuppr {
-	status = "okay";
 };
 
 /* Disable systick for App core, GRTC is used as tick source. */
