@@ -124,7 +124,7 @@ No changes since the latest nRF Connect SDK release.
 nRF Machine Learning (Edge Impulse)
 -----------------------------------
 
-No changes since the latest nRF Connect SDK release.
+* Updated the machine learning models (:kconfig:option:`CONFIG_EDGE_IMPULSE_URI`) used by the application so that they are now hosted by Nordic Semiconductor.
 
 nRF Desktop
 -----------
