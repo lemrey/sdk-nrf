@@ -7,27 +7,8 @@
 # This TOML configuration adds configurations for UICR that are currently
 # unable to be set through devicetree.
 
-[gpio_secure_0]
-PIN_8 = "NonSecure"
-PIN_9 = "NonSecure"
-PIN_10 = "NonSecure"
-PIN_11 = "NonSecure"
-
-[grtc_cc_secure_0]
-CC_6 = "NonSecure"
-CC_7 = "NonSecure"
-
-[gpio_own_1]
-PIN_2 = "Own"
-
-[gpio_secure_1]
-PIN_2 = "NonSecure"
-
 # Fix SPIM130 configuration in UICR, set processor id to PPR.
 # Note that id of configured peripheral may change if additional peripherals are enabled in the configuration
 [periph_config_2]
 PROCESSOR = 13
 ADDRESS = 0x5f9a5000
-
-[initnsvtor_0]
-INITNSVTOR = 0x0e099000
