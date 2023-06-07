@@ -25,7 +25,7 @@ locals().update(conf)
 
 sys.path.insert(0, str(ZEPHYR_BASE / "doc" / "_extensions"))
 sys.path.insert(0, str(NRF_BASE / "doc" / "_extensions"))
-extensions.extend(["ncs_cache", "zephyr.external_content"])
+extensions.extend(["zephyr.external_content"])
 
 # Options for HTML output ------------------------------------------------------
 
@@ -36,13 +36,6 @@ html_theme_options = {"docset": "internal", "docsets": utils.ALL_DOCSETS}
 external_content_contents = [
     (DOC_INTERNAL_BASE, "**/*"),
 ]
-
-# Options for ncs_cache --------------------------------------------------------
-
-ncs_cache_docset = "internal"
-ncs_cache_build_dir = utils.get_builddir()
-ncs_cache_config = NRF_BASE / "doc" / "cache.yml"
-ncs_cache_manifest = NRF_BASE / "west.yml"
 
 # pylint: enable=undefined-variable
 
