@@ -103,10 +103,6 @@ config NRF_REGTOOL_GENERATE_TOML_CONFIG
 config CHIP_LIB_SHELL
 	default y
 
-# Temporary workaround for LEDS until nrfjprog does not support adding gpio to UICR
-config NRF_REGTOOL_TOML_CONFIG_FILES
-	default "boards/nrf54h20_pdk.toml"
-
 if EMULATOR_FPGA
 
 # TODO to check if it is still needed here
