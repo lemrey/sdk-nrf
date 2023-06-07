@@ -38,12 +38,6 @@ config BT_LL_SOFTDEVICE
 
 endchoice
 
-config BT_LL_SOFTDEVICE_HEADERS_INCLUDE
-	bool
-	default y if !BT_LL_SOFTDEVICE
-	help
-	  Include SoftDevice header files provided with the library.
-
 if BT_LL_SOFTDEVICE
 menu "SoftDevice Controller"
 
