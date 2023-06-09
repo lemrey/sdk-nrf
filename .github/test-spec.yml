@@ -274,6 +274,8 @@
   - "modules/trusted-firmware-m/**/*"
 
 "CI-rs-test":
+  - "subsys/bluetooth/Kconfig"
+  - "subsys/bluetooth/controller/Kconfig"
   - "subsys/mpsl/**/*"
   - "subsys/ieee802154/**/*"
   - "subsys/nrf_rpc/**/*"
@@ -284,6 +286,8 @@
   - "samples/CMakeLists.txt"
 
 "CI-fem-test":
+  - "subsys/bluetooth/Kconfig"
+  - "subsys/bluetooth/controller/Kconfig"
   - "subsys/mpsl/**/*"
   - "subsys/ieee802154/**/*"
   - "subsys/nrf_rpc/**/*"
