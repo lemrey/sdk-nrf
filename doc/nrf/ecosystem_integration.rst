@@ -16,6 +16,7 @@ In the case of HomeKit and Find My, MFi licensees can get access to the reposito
    :maxdepth: 1
    :caption: Subpages:
 
+   external_comp/bt_coex
    external_comp/bt_fast_pair
    external_comp/edge_impulse
    external_comp/avsystem
