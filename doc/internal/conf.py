@@ -41,5 +41,5 @@ external_content_contents = [
 
 
 def setup(app):
-    utils.add_google_analytics(app)
+    utils.add_google_analytics(app, html_theme_options)
     utils.add_announcement_banner(html_theme_options)
