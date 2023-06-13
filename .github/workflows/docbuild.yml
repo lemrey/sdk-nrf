@@ -4,24 +4,24 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - main
-      - 'v*-branch'
+      - haltium-ncs
     paths:
       - '.github/workflows/docbuild.yml'
       - '**.rst'
       - '**/Kconfig'
-      - '**/sample.yaml'
       - 'doc/**'
       - 'include/**'
       - 'scripts/requirements-doc.txt'
-      - 'scripts/tools-versions-*.txt'
       - 'west.yml'
   push:
     branches:
-      - main
-      - 'v*-branch'
+      - haltium-ncs
     tags:
       - v*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/haltium-ncs' }}
 
 jobs:
   build:
@@ -38,6 +38,8 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-doc-pip
+      # Doxygen >= 1.8.18 is required. This can be removed once ubuntu-latest ships
+      # a compatible version. More details: https://github.com/doxygen/doxygen/issues/7411.
       - name: Install packages
         run: |
           sudo apt update
@@ -56,6 +58,11 @@ jobs:
       - name: West init and update
         working-directory: ncs
         run: |
+          # add credentials
+          git config --global credential.helper ""
+          git config --global --add credential.helper store
+          echo "https://x-access-token:${{ secrets.NCS_GITHUB_TOKEN }}@github.com" >> ~/.git-credentials
+          # init & update
           west init -l nrf
           west update
           west zephyr-export
@@ -71,41 +78,34 @@ jobs:
           cmake -GNinja -Bdoc/_build -Sdoc -DSPHINXOPTS_EXTRA="-W"
           ninja -C doc/_build
 
-      - name: Prepare archive
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') || contains(github.event.pull_request.labels.*.name, 'CI-trusted-author') }}
+      - name: Prepare extra cache files
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') }}
         working-directory: ncs/nrf
         run: |
-          MONITOR="monitor_${{ github.run_id }}.txt"
-          ARCHIVE="doc_build_${{ github.run_id }}.zip"
-
+          mkdir -p cache/extra && cd cache/extra
           # Create documentation upload files
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "publish2 dev PR-${{ github.event.number }} ${ARCHIVE}" > "${MONITOR}"
+            echo "publish2 dev PR-${{ github.event.number }} __FILE__" > monitor.txt
             echo "${{ github.event.number }}" > pr.txt
           else
             VERSION_REGEX="^v([0-9a-z\.\-]+)$"
             if [[ ${GITHUB_REF#refs/tags/} =~ $VERSION_REGEX ]]; then
               VERSION=${BASH_REMATCH[1]}
-            elif [[ ${GITHUB_REF#refs/heads/} == "main" ]]; then
+            elif [[ ${GITHUB_REF#refs/heads/} == "haltium-ncs" ]]; then
               VERSION="latest"
             else
               echo "Not a release or latest, skipping publish"
               exit 0
             fi
-            echo "publish2 main ${VERSION} ${ARCHIVE}" > "${MONITOR}"
+            echo "publish2 main ${VERSION} __FILE__" > monitor.txt
           fi
 
-          # compress
-          cd doc/_build/html
-          zip -rq "${ARCHIVE}" .
-          mv "${ARCHIVE}" ../../../
+          cd ../../doc/_build
+          zip -rq ../../cache/html.zip html
 
-      - name: Store
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') || contains(github.event.pull_request.labels.*.name, 'CI-trusted-author') }}
+      - name: Archive cache
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') }}
         uses: actions/upload-artifact@v2
         with:
-          name: docs
-          path: |
-            ncs/nrf/*.zip
-            ncs/nrf/monitor*.txt
-            ncs/nrf/pr.txt
+          name: cache
+          path: ncs/nrf/cache

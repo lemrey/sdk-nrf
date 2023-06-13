@@ -54,13 +54,8 @@ html_last_updated_fmt = None
 html_show_sourcelink = True
 html_show_sphinx = False
 html_show_copyright = False
-html_title = "Trusted Firmware-M documentation (nRF Connect SDK)"
 
-html_theme_options = {
-    "docset": "tfm",
-    "docsets": utils.ALL_DOCSETS,
-    "subtitle": "nRF Connect SDK",
-}
+html_theme_options = {"docset": "tfm", "docsets": utils.ALL_DOCSETS}
 
 # Options for autosectionlabel -------------------------------------------------
 
@@ -81,3 +76,4 @@ def setup(app):
     app.add_css_file("css/tfm.css")
 
     utils.add_google_analytics(app, html_theme_options)
+    utils.add_announcement_banner(html_theme_options)

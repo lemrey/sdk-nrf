@@ -37,3 +37,4 @@ Those samples are a good starting point for understanding how to put together yo
    samples/zigbee
    samples/wifi
    samples/other
+   samples/nrf54h20.rst

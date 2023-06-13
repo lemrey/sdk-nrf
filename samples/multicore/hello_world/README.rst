@@ -23,6 +23,11 @@ Overview
 The sample demonstrates how to build a multicore Hello World application with the :ref:`zephyr:sysbuild`.
 When building with Zephyr Sysbuild, the build system adds child images based on the options selected in the project's additional configuration and build files.
 This sample shows how to inform the build system about dedicated sources for additional images.
+Depending on the development kit, different cores are involved:
+
+* On the nRF5340 SoC, the sample utilizes the application core and the network core.
+* On the nRF54H20 SoC, the sample utilizes the application core and the PPR core.
+
 The sample comes with the following additional files:
 
 * :file:`Kconfig.sysbuild` - This file is used to add Sysbuild configuration that is passed to all the images.
@@ -34,14 +39,41 @@ Both the application and remote cores use the same :file:`main.c` that prints th
 
 Building and running
 ********************
+
 .. |sample path| replace:: :file:`samples/multicore/hello_world`
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
 .. include:: /includes/build_and_run_sb.txt
+.. include:: /includes/build_and_run_54h.txt
 
 Testing
 =======
 
 After programming the sample to your development kit, complete the following steps to test it:
+
+.. tabs::
+
+   .. tab:: nRF54H20
+
+      1. |connect_terminal|
+      #. Reset the kit.
+      #. Observe the console output for both cores:
+
+         * For the application core, the output should be as follows:
+
+            .. code-block:: console
+
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf54h20dk_nrf54h20_cpuapp
+
+         * For the PPR core, the output should be as follows:
+
+            .. code-block:: console
+
+               *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
+               Hello world from nrf54h20dk_nrf54h20_cpuppr
+
+   .. tab:: nRF5340
 
       1. |connect_terminal|
       #. Reset the kit.

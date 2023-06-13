@@ -1,3 +1,9 @@
+/ {
+        chosen {
+                zephyr,entropy = &rng;
+        };
+};
+
 &rtc2 {
 	status = "okay";
 };

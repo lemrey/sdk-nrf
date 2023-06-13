@@ -93,7 +93,8 @@ BUILD_ASSERT(!IS_ENABLED(CONFIG_BT_PERIPHERAL) ||
 		IS_ENABLED(CONFIG_BT_CTLR_SDC_PERIODIC_ADV_RSP_RX_FAILURE_REPORTING)
 #define SDC_PERIODIC_ADV_RSP_MEM_SIZE \
 	(CONFIG_BT_CTLR_SDC_PAWR_ADV_COUNT * \
-	 SDC_MEM_PER_PERIODIC_ADV_RSP_SET(CONFIG_BT_CTLR_SDC_PERIODIC_ADV_RSP_TX_BUFFER_COUNT, \
+		SDC_MEM_PER_PERIODIC_ADV_RSP_SET(CONFIG_BT_CTLR_ADV_DATA_LEN_MAX, \
+				CONFIG_BT_CTLR_SDC_PERIODIC_ADV_RSP_TX_BUFFER_COUNT, \
 				CONFIG_BT_CTLR_SDC_PERIODIC_ADV_RSP_RX_BUFFER_COUNT, \
 				CONFIG_BT_CTLR_SDC_PERIODIC_ADV_RSP_TX_MAX_DATA_SIZE, \
 				PERIODIC_ADV_RSP_ENABLE_FAILURE_REPORTING))
@@ -725,6 +726,15 @@ static int configure_memory_usage(void)
 	}
 #endif
 
+	cfg.fal_size = CONFIG_BT_CTLR_FAL_SIZE;
+	required_memory =
+		sdc_cfg_set(SDC_DEFAULT_RESOURCE_CFG_TAG,
+					   SDC_CFG_TYPE_FAL_SIZE,
+					   &cfg);
+	if (required_memory < 0) {
+		return required_memory;
+	}
+
 	cfg.buffer_cfg.rx_packet_size = MAX_RX_PACKET_SIZE;
 	cfg.buffer_cfg.tx_packet_size = MAX_TX_PACKET_SIZE;
 	cfg.buffer_cfg.rx_packet_count = CONFIG_BT_CTLR_SDC_RX_PACKET_COUNT;
@@ -887,6 +897,8 @@ static int configure_memory_usage(void)
 static int hci_driver_open(void)
 {
 	LOG_DBG("Open");
+
+	k_work_init(&receive_work, receive_work_handler);
 
 	k_work_init(&receive_work, receive_work_handler);
 

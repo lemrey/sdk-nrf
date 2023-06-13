@@ -22,13 +22,7 @@ LOG_MODULE_REGISTER(app);
 #define RTC_NODE DT_PROP(ZEPHYR_USER_NODE, ppi_trace_rtc)
 #define RTC ((NRF_RTC_Type*)DT_REG_ADDR(RTC_NODE))
 #else
-/*
- * This sample now relies on the /zephyr,user node having a
- * ppi-trace-rtc property that is a phandle to the RTC node you wish
- * to use on your board. See the overlay files in the boards/
- * subdirectory of this sample for examples.
- */
-#error "Missing ppi-trace-rtc property in /zephyr,user; see source comments for details"
+#error "You must define a ppi-trace-rtc property in the /zephyr,user node; see the boards/ subdirectory for example overlays."
 #define RTC_NODE DT_INVALID_NODE
 #define RTC ((NRF_RTC_Type*)0)
 #endif

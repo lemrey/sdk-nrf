@@ -62,25 +62,42 @@ To provide the ICMSG backend configuration, specify the ``-DCONF_FILE=prj_icmsg.
 
 Building and running
 ********************
+
 .. |sample path| replace:: :file:`samples/event_manager_proxy`
 
-.. include:: /includes/build_and_run.txt
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1 -- CONF_FILE=prj_icmsg.conf
 
-Complete the following steps to program the sample:
+In the current sample version, you must separately build and program the firmware for the host and the remote cores.
+This can be done by completing the following steps for all the required cores.
 
-1. Go to the sample directory.
-#. Open the command line terminal.
-#. Run the following command to build the application code for the host and the remote:
+.. tabs::
 
-   .. code-block:: console
+   .. tab:: nRF54H20 PDK
 
-      west build -b nrf5340dk_nrf5340_cpuapp
+      .. note::
+         To program the sample using the nRF54H20 :term:`Preview Development Kit (PDK)`, you must provide ICMSG backend configuration.
 
-#. Program both the cores:
+      .. include:: /includes/build_and_run_54h.txt
 
-   .. code-block:: console
+   .. tab:: nRF5340 DK
 
-      west flash
+      .. include:: /includes/build_and_run.txt
+
+      Complete the following steps to program the sample:
+
+      1. Go to the sample directory.
+      #. Open the command line terminal.
+      #. Run the following command to build the application code for the host and the remote:
+
+         .. code-block:: console
+
+            west build -b nrf5340dk_nrf5340_cpuapp
+
+      #. Program both the cores:
+
+         .. code-block:: console
+
+            west flash
 
 Testing
 =======

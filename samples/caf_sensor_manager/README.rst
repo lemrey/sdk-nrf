@@ -46,9 +46,19 @@ The configuration is placed in the :file:`boards/<board>_singlecore.conf` file.
 
 To use this configuration, run the following command:
 
-.. code-block:: console
+   .. tabs::
 
-   west build -b nrf5340dk_nrf5340_cpuapp -- -DOVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_nrf5340_singlecore.conf
+      .. group-tab:: nRF54H20 PDK
+
+         .. code-block:: console
+
+            west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_soc1_singlecore.conf -DDTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_soc1_singlecore.overlay
+
+      .. group-tab:: nRF5340 DK
+
+         .. code-block:: console
+
+            west build -b nrf5340dk_nrf5340_cpuapp -- -DOVERLAY_CONFIG=boards/nrf5340dk_nrf5340_cpuapp_nrf5340_singlecore.conf
 
 Building and running
 ********************
@@ -58,9 +68,19 @@ You can build and flash all the required images by completing the following step
 
 .. |sample path| replace:: :file:`samples/caf_sensor_manager`
 
-.. include:: /includes/build_and_run.txt
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-Complete the following steps to program the sample:
+.. tabs::
+
+   .. group-tab:: nRF54H20 PDK
+
+      .. include:: /includes/build_and_run_54h.txt
+
+   .. group-tab:: nRF5340 DK
+
+      .. include:: /includes/build_and_run.txt
+
+      Complete the following steps to program the sample:
 
       1. Go to the sample directory.
       #. Open the command line terminal.

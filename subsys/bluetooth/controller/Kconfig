@@ -31,7 +31,8 @@ config BT_LL_SOFTDEVICE
 	select BT_CTLR_PHY_CODED_SUPPORT if HAS_HW_NRF_RADIO_BLE_CODED
 	select BT_HAS_HCI_VS
 	select BT_CTLR_DF_CTE_TX_SUPPORT if HAS_HW_NRF_RADIO_DFE
-	depends on (SOC_SERIES_BSIM_NRFXX || SOC_SERIES_NRF52X || SOC_NRF5340_CPUNET)
+	depends on (SOC_SERIES_BSIM_NRFXX || SOC_SERIES_NRF52X || SOC_NRF5340_CPUNET ||\
+			    SOC_NRF54H20_CPURAD || SOC_SERIES_NRF54LX || SOC_SERIES_NRF54HX)
 	help
 	  Use SoftDevice Link Layer implementation.
 
@@ -45,6 +46,7 @@ choice BT_LL_SOFTDEVICE_BUILD_TYPE
 
 config BT_LL_SOFTDEVICE_BUILD_TYPE_LIB
 	bool "Use library"
+	select BT_LL_SOFTDEVICE_HEADERS_INCLUDE
 
 endchoice
 
@@ -96,7 +98,7 @@ config SYSTEM_WORKQUEUE_STACK_SIZE
 
 config BT_CTLR_SDC_LLPM
 	bool "Enable Low Latency Packet Mode support"
-	depends on SOC_SERIES_NRF52X
+	depends on (SOC_SERIES_NRF52X || SOC_SERIES_NRF54LX || SOC_SERIES_NRF54HX)
 	help
 	  Low Latency Packet Mode (LLPM) is a Nordic proprietary addition
 	  which lets the application use connection intervals down to 1 ms.
@@ -210,7 +212,8 @@ choice BT_LL_SOFTDEVICE_VARIANT
 						     BT_CTLR_SCA_UPDATE || \
 						     BT_CTLR_SDC_PAWR_ADV || \
 						     BT_CTLR_SDC_PAWR_SYNC || \
-						     SOC_NRF5340_CPUNET)
+						     SOC_NRF5340_CPUNET || \
+						     SOC_NRF54H20_CPURAD)
 	default BT_LL_SOFTDEVICE_CENTRAL if BT_OBSERVER
 	default BT_LL_SOFTDEVICE_PERIPHERAL if BT_BROADCASTER
 	help
@@ -298,17 +301,17 @@ config BT_UNINIT_MPSL_ON_DISABLE
 	  override any interrupt handlers used by MPSL.
 
 config BT_CTLR_SDC_PAWR_ADV
-	bool "LE Periodic Advertising with Responses Advertising State [EXPERIMENTAL]"
-	select EXPERIMENTAL
+	bool "LE Periodic Advertising with Responses Advertising State"
 	depends on BT_PER_ADV
 	depends on BT_CTLR_SYNC_TRANSFER_SENDER
+	default y if BT_PER_ADV_RSP
 	help
 	  Enable support for Periodic Advertising with Responses - Advertiser.
 
 if BT_CTLR_SDC_PAWR_ADV
 config BT_CTLR_SDC_PAWR_ADV_COUNT
 	int "Periodic Advertising with Responses - Advertiser sets"
-	range 0 10
+	range 0 BT_EXT_ADV_MAX_ADV_SET
 	default 1
 	help
 	  Maximum number of concurrent Periodic Advertising with Responses
@@ -352,11 +355,11 @@ endif
 
 
 config BT_CTLR_SDC_PAWR_SYNC
-	bool "LE Periodic Advertising with Responses Synchronization State [EXPERIMENTAL]"
-	select EXPERIMENTAL
+	bool "LE Periodic Advertising with Responses Synchronization State"
 	depends on BT_CTLR_SYNC_PERIODIC
 	depends on BT_CTLR_SYNC_TRANSFER_SENDER
 	depends on BT_CTLR_SYNC_TRANSFER_RECEIVER
+	default y if BT_PER_ADV_SYNC_RSP
 	help
 	  Enable support for Periodic Advertising with Responses - Scanner.
 

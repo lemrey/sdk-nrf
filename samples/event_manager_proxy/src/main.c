@@ -22,8 +22,18 @@ LOG_MODULE_REGISTER(MODULE);
 
 #define INIT_VALUE1 3
 
+#if defined(CONFIG_BOARD_NRF54H20DK_NRF54H20_CPUAPP)
+#define PPR_START_ADDR DT_REG_ADDR(DT_NODELABEL(ppr_code))
+#include <hal/nrf_vpr.h>
+#endif
+
 int main(void)
 {
+#if defined(CONFIG_BOARD_NRF54H20DK_NRF54H20_CPUAPP)
+	/* Enable PPR core */
+	nrf_vpr_initpc_set(NRF_VPR130, PPR_START_ADDR);
+	nrf_vpr_cpurun_set(NRF_VPR130, true);
+#endif
 	int ret;
 	const struct device *ipc_instance  = DEVICE_DT_GET(DT_NODELABEL(ipc0));
 

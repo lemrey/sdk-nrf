@@ -277,17 +277,25 @@ Avoiding re-writing credentials to modem
 ----------------------------------------
 
 Every time the sample starts, it provisions the keys to the modem and this is only needed once.
-To speed up the start up, you can prevent the provisioning by completing the following steps using |VSC|:
+To speed up the start up, you can prevent the provisioning by completing the following steps:
 
-1. In |nRFVSC|, `build the sample <How to build an application_>`_.
-#. Under **Actions**, click :guilabel:`Kconfig`.
-#. Click :guilabel:`Application sample`.
-#. Under **LwM2M objects**, remove the key value next to :guilabel:`LwM2M pre-shared key for communication`.
-#. Save and close the configuration.
+.. tabs::
 
-The provisioning can also be prevented by setting the :kconfig:option:`CONFIG_APP_LWM2M_PSK` Kocnfig option to an empty string in the :file:`prj.conf` file.
+   .. group-tab:: Using |VSC|
+
+      a. In |VSC|, select `Add an existing application <Migrating IDE_>`_ and select the sample folder.
+      #. Under **Actions**, click :guilabel:`Kconfig`.
+      #. Click :guilabel:`Application sample`.
+      #. Under **LwM2M objects**, remove the key value next to :guilabel:`LwM2M pre-shared key for communication`.
+      #. Save and close the configuration.
+
+   .. group-tab:: Using :file:`src/prj.conf`
+
+      a. Open :file:`src/prj.conf`.
+      #. Set :kconfig:option:`CONFIG_APP_LWM2M_PSK` to an empty string.
+
 You can also edit this configuration using menuconfig.
-|config|
+For more information, see |config|.
 
 For the changes to be added, rebuild the sample.
 

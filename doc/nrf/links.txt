@@ -39,7 +39,7 @@
 .. _`sdk-mbedtls`: https://github.com/nrfconnect/sdk-mbedtls
 
 .. _`nrfconnect GitHub organization`: https://github.com/nrfconnect
-.. |ncs_repo| replace:: https://github.com/nrfconnect/sdk-nrf
+.. |ncs_repo| replace:: https://github.com/nrfconnect/sdk-nrf-next
 .. _`sdk-nrf`: https://github.com/nrfconnect/sdk-nrf
 .. _`ncs-example-application`: https://github.com/nrfconnect/ncs-example-application
 .. _`manifest group filter`: https://github.com/nrfconnect/sdk-nrf/blob/20f40501f69bc9bfd2b321704917da1769411936/west.yml#L42
@@ -164,7 +164,6 @@
 .. _`nRF Asset Tracker Memfault integration for Azure IoT Hub`: https://github.com/NordicSemiconductor/asset-tracker-cloud-memfault-azure-js
 .. _`nRF Asset Tracker Memfault integration`: https://nordicsemiconductor.github.io/asset-tracker-cloud-docs/v2.2.x/docs/memfault/Index.html
 
-
 .. _`latest release notes for nRF Connect for Visual Studio Code`: https://nrfconnect.github.io/vscode-nrf-connect/release_notes/connect/2022.11.140.html
 .. _`nRF Connect for Visual Studio Code`: https://nrfconnect.github.io/vscode-nrf-connect
 .. _`Configuring with nRF Kconfig`: https://nrfconnect.github.io/vscode-nrf-connect/guides/ncs_configure_app.html
@@ -174,6 +173,7 @@
 .. _`Migrating IDE`: https://nrfconnect.github.io/vscode-nrf-connect/reference/ui_sidebar_welcome.html#open-an-existing-application
 .. _`How to debug an application`:
 .. _`How to connect to the terminal`: https://nrfconnect.github.io/vscode-nrf-connect/get_started/quick_debug.html
+.. _`nRF Terminal documentation`: https://nrfconnect.github.io/vscode-nrf-connect/terminal/nrfterminal.html
 .. _`Debugging applications for a multi-core System on Chip`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_use.html#how-to-debug-applications-for-a-multi-core-system-on-chip
 .. _`west module management`: https://nrfconnect.github.io/vscode-nrf-connect/guides/west_module_management.html
 .. _`Custom launch and debug configurations`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_advanced.html#custom-launch-and-debug-configurations
@@ -202,6 +202,7 @@
 .. _`nRF Connect SDK latest documentation`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html
 
 .. _`known issues page on the main branch`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html
+.. _`known issues for nRF54H20 limited customer sampling v2.2.99-cs1`: https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/known_issues_lcs.html?v=v2-2-99-cs1
 .. _`known issues for nRF Connect SDK v2.3.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html?v=v2-3-0
 .. _`known issues for nRF Connect SDK v2.2.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html?v=v2-2-0
 .. _`known issues for nRF Connect SDK v2.1.4`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/known_issues.html?v=v2-1-4
@@ -276,6 +277,7 @@
 .. _`TF-M documentation`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/tfm/index.html
 .. _`TF-M secure partition integration guide`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/tfm/integration_guide/services/tfm_secure_partition_addition.html
 
+.. _`Repositories and revisions for limited customer sampling v2.2.99-cs1`: https://res.developer.nordicsemi.com/ncs/doc/2.2.99-cs1/nrf/introduction.html#repositories-and-revisions
 .. _`Repositories and revisions for v2.3.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.3.0/nrf/introduction.html#ncs-repository-revisions
 .. _`Repositories and revisions for v2.2.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.2.0/nrf/introduction.html#ncs-repository-revisions
 .. _`Repositories and revisions for v2.1.4`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.4/nrf/introduction.html#repositories-and-revisions
@@ -369,7 +371,6 @@
 .. _`iBasis network coverage spreadsheet`: https://www.nordicsemi.com/-/media/Software-and-other-downloads/3rd-party/iBasis-simplified-coverage-map-for-web.pdf?la=en&hash=CA7DBF400243D8A7A7BDA94873B50E73C26B4FAC
 
 .. _`Contact Us`: https://www.nordicsemi.com/About-us/Contact-Us
-
 .. _`Nordic Semiconductor Wi-Fi products`: https://www.nordicsemi.com/Products/WiFi
 
 .. _`Nordic third-party modules`: https://www.nordicsemi.com/Nordic-Partners/3rd-party-modules
@@ -504,7 +505,6 @@
 .. _`AP-Protect for nRF52811`: https://infocenter.nordicsemi.com/topic/ps_nrf52811/dif.html#concept_udr_mns_1s
 .. _`AP-Protect for nRF52810`: https://infocenter.nordicsemi.com/topic/ps_nrf52810/dif.html#concept_udr_mns_1s
 .. _`AP-Protect for nRF52805`: https://infocenter.nordicsemi.com/topic/ps_nrf52805/dif.html#concept_udr_mns_1s
-
 .. _`Mobile network operator certifications`: https://infocenter.nordicsemi.com/topic/comp_matrix_nrf9160/COMP/nrf9160/nrf9160_operator_certifications.html
 .. _`Modem firmware compatibility matrix`: https://infocenter.nordicsemi.com/topic/comp_matrix_nrf9160/COMP/nrf9160/nrf9160_modem_fw.html
 
@@ -524,6 +524,7 @@
 
 .. _`nRF Thread Topology Monitor`: https://infocenter.nordicsemi.com/topic/ug_nrf_ttm/UG/nrf_ttm/ttm_introduction.html
 .. _`nRF Sniffer for 802.15.4`: https://infocenter.nordicsemi.com/topic/ug_sniffer_802154/UG/sniffer_802154/intro_802154.html
+.. _`nRF Sniffer for Bluetooth LE`: https://infocenter.nordicsemi.com/index.jsp?topic=%2Fug_sniffer_ble%2FUG%2Fsniffer_ble%2Fintro.html
 .. _`Configuring Wireshark for Zigbee`: https://infocenter.nordicsemi.com/topic/ug_sniffer_802154/UG/sniffer_802154/configuring_sniffer_802154_zigbee.html
 
 .. _`Power Profiler Kit II (PPK2)`: https://infocenter.nordicsemi.com/topic/ug_ppk2/UG/ppk/PPK_user_guide_Intro.html
@@ -1122,6 +1123,7 @@
 
 .. _`Git`: https://git-scm.com/
 .. _`Git revisions`: https://git-scm.com/docs/gitrevisions
+.. _`Git for Windows`: https://git-scm.com/download/win
 
 .. _`Go language package`: https://golang.org/doc/install
 
@@ -1148,6 +1150,7 @@
 .. _`DigiCert Global Root G2`: https://cacerts.digicert.com/DigiCertGlobalG2TLSRSASHA2562020CA1.crt.pem
 
 .. _`SKY66112-11 page`: https://www.skyworksinc.com/en/Products/Front-end-Modules/SKY66112-11
+
 .. _`SKY66114-11 page`: https://www.skyworksinc.com/en/Products/Front-end-Modules/SKY66114-11
 
 .. _`Matter`: https://buildwithmatter.com/
@@ -1160,6 +1163,7 @@
 .. _`Leshan Demo Server web UI`:
 .. _`public Leshan Demo Server`: https://leshan.eclipseprojects.io
 .. _`Leshan homepage`: https://www.eclipse.org/leshan/
+
 .. _`public Leshan Bootstrap Server Demo`: https://leshan.eclipseprojects.io/bs
 
 .. _`Silvair EnOcean Switch Mesh Proxy Server`: https://silvair.com/resources/product-documents/
@@ -1182,8 +1186,33 @@
 
 .. _`SIGMA`: https://link.springer.com/chapter/10.1007/978-3-540-45146-4_24
 
+.. ### Source: res.developer.nordicsemi.com
+
+.. _`64-bit Windows, executable`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nRF-Command-Line-Tools-10.21.0-x64.exe
+
+.. _`x86 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools_10.21.0_amd64.deb
+.. _`x86 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-1.x86_64.rpm
+.. _`x86 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0_Linux-amd64.tar.gz
+
+.. _`ARM64 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools_10.21.0_arm64.deb
+.. _`ARM64 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-1.arm64.rpm
+.. _`ARM64 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0_Linux-arm64.tar.gz
+
+.. _`ARMHF system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools_10.21.0_armhf.deb
+.. _`ARMHF system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-1.armhf.rpm
+.. _`ARMHF system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0_Linux-armhf.tar.gz
+
+.. _`macOS, DMG file`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-Darwin.dmg
+
+
 .. _`WPA Supplicant`: https://w1.fi/wpa_supplicant/
 
 .. _`IEEE 802.11 Working Group`: https://www.ieee802.org/11/
 
 .. _`Samsung SmartThings integration with Matter`: https://support.smartthings.com/hc/en-us/articles/11219700390804-SmartThings-x-Matter-Integration-
+
+.. _`Arborist`: https://github.com/nrfconnect/sdk-secdom/blob/main/doc/arborist.rst
+
+.. _`nrf-regtool`: https://github.com/nrfconnect/nrf-regtool/
+
+.. _`nRF Connect SDK Fundamentals`: https://academy.nordicsemi.com/courses/nrf-connect-sdk-fundamentals/
