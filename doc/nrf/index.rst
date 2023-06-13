@@ -26,8 +26,8 @@ The "99" at the end of the version number of this documentation indicates contin
    ecosystem_integration
    nrf91
    nrf70
+   nrf54h
    nrf53
-   ug_nrf54h
    nrf52
    protocols
    applications
