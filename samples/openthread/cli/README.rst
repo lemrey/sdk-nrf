@@ -520,8 +520,6 @@ To test the Thread 1.2 and Thread 1.3 features, complete the following steps:
             addresses: [fdde:ad00:beef:0:e0fc:dc28:1d12:8c2]
          Done
 
-.. _ot_cli_sample_low_power:
-
 Power consumption measurements
 ==============================
 

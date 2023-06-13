@@ -172,7 +172,7 @@ See the :ref:`west_sbom` documentation for more information.
 Documentation pages
 *******************
 
-.. include:: documentation/structure.rst
+.. include:: doc_structure.rst
    :start-after: doc_structure_start
    :end-before: doc_structure_end
 

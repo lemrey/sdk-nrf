@@ -10,13 +10,12 @@ They introduce you to concepts that are important to work with the protocol and 
    :maxdepth: 1
    :caption: Subpages:
 
-   protocols/ble/index
-   protocols/bt_mesh/index
-   protocols/esb/index
-   protocols/gazell/index
-   protocols/matter/index
-   protocols/multiprotocol/index
-   protocols/nfc/index
-   protocols/thread/index
-   protocols/wifi/index
-   protocols/zigbee/index
+   ug_ble_controller
+   ug_bt_mesh
+   ug_esb
+   ug_gz
+   ug_matter
+   ug_multiprotocol_support
+   ug_nfc
+   ug_thread
+   ug_zigbee
