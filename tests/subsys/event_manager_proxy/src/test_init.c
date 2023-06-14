@@ -21,9 +21,8 @@ LOG_MODULE_REGISTER(MODULE);
 #define PPR_START_ADDR DT_REG_ADDR(DT_NODELABEL(ppr_code))
 #include <hal/nrf_vpr.h>
 
-static int vpr_initialization(const struct device *d)
+static int vpr_initialization(void)
 {
-	ARG_UNUSED(d);
 	/* Enable PPR core */
 	nrf_vpr_initpc_set(NRF_VPR130, PPR_START_ADDR);
 	nrf_vpr_cpurun_set(NRF_VPR130, true);
@@ -34,10 +33,8 @@ static int vpr_initialization(const struct device *d)
 SYS_INIT(vpr_initialization, APPLICATION, CONFIG_APP_SYSTEM_INIT_PRIO);
 #endif
 
-static int test_event_manager_proxy_init(const struct device *d)
+static int test_event_manager_proxy_init(void)
 {
-	ARG_UNUSED(d);
-
 	int ret;
 	const struct device *ipc_instance  = REMOTE_IPC_DEV;
 
@@ -55,10 +52,8 @@ static int test_event_manager_proxy_init(const struct device *d)
 
 SYS_INIT(test_event_manager_proxy_init, APPLICATION, CONFIG_APP_PROXY_INIT_PRIO);
 
-static int test_event_manager_proxy_start(const struct device *d)
+static int test_event_manager_proxy_start(void)
 {
-	ARG_UNUSED(d);
-
 	int ret;
 
 	ret = event_manager_proxy_start();

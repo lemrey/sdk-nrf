@@ -119,10 +119,8 @@ static bool simple_event_handler(const struct app_event_header *aeh)
 APP_EVENT_LISTENER(MODULE, simple_event_handler);
 APP_EVENT_SUBSCRIBE(MODULE, simple_pong_event);
 
-int test_simple_events_register(const struct device *d)
+int test_simple_events_register(void)
 {
-	ARG_UNUSED(d);
-
 	const struct device *ipc_instance  = REMOTE_IPC_DEV;
 
 	REMOTE_EVENT_SUBSCRIBE(ipc_instance, simple_pong_event);

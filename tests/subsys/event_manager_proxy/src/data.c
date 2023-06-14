@@ -297,10 +297,8 @@ APP_EVENT_LISTENER(MODULE, data_event_handler);
 APP_EVENT_SUBSCRIBE(MODULE, data_response_event);
 APP_EVENT_SUBSCRIBE(MODULE, data_big_response_event);
 
-static int test_data_events_register(const struct device *d)
+static int test_data_events_register(void)
 {
-	ARG_UNUSED(d);
-
 	const struct device *ipc_instance  = REMOTE_IPC_DEV;
 
 	REMOTE_EVENT_SUBSCRIBE(ipc_instance, data_response_event);
