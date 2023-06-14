@@ -699,6 +699,7 @@
     - tfm.psa_test_protected_storage_lvl1
     - tfm.psa_test_internal_trusted_storage_lvl2
     - sample.bluetooth.peripheral_lbs_bt_ota_dfu
+    - boot_chains.bootloader_mcuboot
   platforms:
     - nrf5340dk_nrf5340_cpuapp_ns
   comment: "TFM-M doesn't build in HCS"
@@ -722,3 +723,13 @@
   platforms:
     - thingy91_nrf9160_ns
   comment: "TFM-M doesn't build in HCS"
+
+- scenarios:
+    - sample.bluetooth.mesh.light
+    - sample.bluetooth.mesh.light_ctrl.emds
+    - sample.bluetooth.mesh.light_switch
+    - sample.bluetooth.mesh.light_ctrl
+    - sample.bluetooth.mesh.sensor_server
+  platforms:
+    - thingy53_nrf5340_cpuapp
+  comment: "RAM region overflow"
