@@ -193,7 +193,7 @@ manifest:
       path: modules/lib/azure-sdk-for-c
       revision: 308c171cb4b5eed266649012a68406487ec81fb2
     - name: suit-processor
-      revision: dd72b4829b0f613d89001d8843e6a8bf22f6bdcf
+      revision: c2b3d445f82be95a56b18df5269ed801abb70f50
       path: modules/lib/suit-processor
     - name: suit-generator
       revision: c6aa83655cc3da70c0dd67b9a77855f5fa92300a
