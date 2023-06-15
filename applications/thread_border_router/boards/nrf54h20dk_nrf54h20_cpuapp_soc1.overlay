@@ -1,0 +1,89 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+#include <zephyr/dt-bindings/ipc_service/static_vrings.h>
+#include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
+
+/{
+	chosen {
+		zephyr,console = &uart136;
+		zephyr,shell-uart = &uart136;
+	};
+};
+
+/delete-node/ &cpuapp_uicr_ext;
+
+&mram0 {
+    reg = <0xe0aa000 DT_SIZE_K(1000)>;
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = < 0x1 >;
+        #size-cells = < 0x1 >;
+        slot0_partition: partition@aa000 {
+            label = "image-0";
+            reg = < 0xaa000 DT_SIZE_K(998) >;
+        };
+    };
+    cpuapp_uicr_ext: uicr@e1a3800 {
+        compatible = "nordic,nrf-uicr";
+        reg = <0xe1a3800 DT_SIZE_K(2)>;
+    };
+};
+
+/* ram3x_cpuapp buffer is used by App core UART driver. */
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuapp>;
+};
+
+&pinctrl {
+	spi130_default: spi130_default {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 1, 1)>,
+			        <NRF_PSEL(SPIM_MISO, 1, 6)>,
+			        <NRF_PSEL(SPIM_MOSI, 1, 7)>;
+		};
+	};
+
+	spi130_sleep: spi130_sleep {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 1, 1)>,
+			        <NRF_PSEL(SPIM_MISO, 1, 6)>,
+			        <NRF_PSEL(SPIM_MOSI, 1, 7)>;
+			low-power-enable;
+		};
+	};
+};
+
+&spi130 {
+	cs-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+	status = "okay";
+	pinctrl-0 = <&spi130_default>;
+	pinctrl-1 = <&spi130_sleep>;
+	pinctrl-names = "default", "sleep";
+	memory-regions = <&ram3x_cpuapp>;
+
+	enc424j600_link_board_eth: enc424j600@0 {
+		compatible = "microchip,enc424j600";
+		spi-max-frequency = < 0xd59f80 >;
+		int-gpios = < &gpio1 0x2 0x1 >;
+		status = "okay";
+		reg = < 0x0 >;
+	};
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&ipc_cpurad {
+	zephyr,priority = <0 PRIO_COOP>;
+};
+
+ipc0: &ipc_cpurad {};

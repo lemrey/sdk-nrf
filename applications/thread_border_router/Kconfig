@@ -1,0 +1,19 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "nRF Thread Border Router"
+
+module = NRF_TBR
+module-str = Log level for nRF TBR
+module-dep=LOG
+module-help=Enables nRF TBR log messages.
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu
+
+endmenu
