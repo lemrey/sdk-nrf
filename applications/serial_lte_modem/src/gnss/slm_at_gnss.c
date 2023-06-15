@@ -150,12 +150,12 @@ static int gnss_shutdown(void)
 }
 
 #if defined(CONFIG_NRF_CLOUD_AGPS) || defined(CONFIG_NRF_CLOUD_PGPS)
-static int read_agps_req(struct nrf_modem_gnss_agps_data_frame *req)
+static int read_agps_req(struct nrf_modem_gnss_agnss_data_frame *req)
 {
 	int err;
 
 	err = nrf_modem_gnss_read((void *)req, sizeof(*req),
-					NRF_MODEM_GNSS_DATA_AGPS_REQ);
+					NRF_MODEM_GNSS_DATA_AGNSS_REQ);
 	if (err) {
 		LOG_ERR("Failed to read GNSS AGPS req, error %d", err);
 		return -EAGAIN;
@@ -169,7 +169,7 @@ static int read_agps_req(struct nrf_modem_gnss_agps_data_frame *req)
 static void agps_req_wk(struct k_work *work)
 {
 	int err;
-	struct nrf_modem_gnss_agps_data_frame req;
+	struct nrf_modem_gnss_agnss_data_frame req;
 
 	ARG_UNUSED(work);
 
@@ -221,10 +221,10 @@ static void pgps_event_handler(struct nrf_cloud_pgps_event *event)
 		break;
 	/* A P-GPS prediction is available now for the current date and time. */
 	case PGPS_EVT_AVAILABLE: {
-		struct nrf_modem_gnss_agps_data_frame req;
+		struct nrf_modem_gnss_agnss_data_frame req;
 
 		LOG_INF("PGPS_EVT_AVAILABLE");
-		/* read out previous NRF_MODEM_GNSS_EVT_AGPS_REQ */
+		/* read out previous NRF_MODEM_GNSS_EVT_AGNSS_REQ */
 		err = read_agps_req(&req);
 		if (err) {
 			/* Ephemerides assistance only */
@@ -458,8 +458,8 @@ static void gnss_event_handler(int event)
 			on_gnss_evt_nmea();
 		}
 		break;
-	case NRF_MODEM_GNSS_EVT_AGPS_REQ:
-		LOG_INF("GNSS_EVT_AGPS_REQ");
+	case NRF_MODEM_GNSS_EVT_AGNSS_REQ:
+		LOG_INF("GNSS_EVT_AGNSS_REQ");
 		on_gnss_evt_agps_req();
 		break;
 	case NRF_MODEM_GNSS_EVT_BLOCKED:
