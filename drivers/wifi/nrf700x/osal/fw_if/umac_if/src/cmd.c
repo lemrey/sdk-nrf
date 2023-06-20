@@ -38,8 +38,8 @@ out:
 
 
 enum wifi_nrf_status umac_cmd_cfg(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
-				  void *params,
-				  int len)
+				void *params,
+				int len)
 {
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct host_rpu_msg *umac_cmd = NULL;
@@ -82,16 +82,18 @@ out:
 
 enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 #ifndef CONFIG_NRF700X_RADIO_TEST
-				   unsigned char *def_mac_addr,
-				   unsigned char def_vif_idx,
 				   unsigned char *rf_params,
 				   bool rf_params_valid,
-				   struct nrf_wifi_data_config_params config,
+				   struct nrf_wifi_data_config_params *config,
 #endif /* !CONFIG_NRF700X_RADIO_TEST */
 #ifdef CONFIG_NRF_WIFI_LOW_POWER
 				   int sleep_type,
 #endif /* CONFIG_NRF_WIFI_LOW_POWER */
-				   unsigned int phy_calib)
+				   unsigned int phy_calib,
+				   unsigned char ant_gain_2g,
+				   unsigned char ant_gain_5g_band1,
+				   unsigned char ant_gain_5g_band2,
+				   unsigned char ant_gain_5g_band3)
 {
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct host_rpu_msg *umac_cmd = NULL;
@@ -117,12 +119,6 @@ enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 	umac_cmd_data->sys_head.len = len;
 
 #ifndef CONFIG_NRF700X_RADIO_TEST
-	wifi_nrf_osal_mem_cpy(fmac_dev_ctx->fpriv->opriv,
-			      umac_cmd_data->sys_params.mac_addr,
-			      def_mac_addr,
-			      NRF_WIFI_ETH_ADDR_LEN);
-
-	umac_cmd_data->wdev_id = def_vif_idx;
 	umac_cmd_data->sys_params.rf_params_valid = rf_params_valid;
 
 	if (rf_params_valid) {
@@ -141,6 +137,9 @@ enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 #ifdef CONFIG_NRF_WIFI_LOW_POWER
 	umac_cmd_data->sys_params.sleep_enable = sleep_type;
 #endif /* CONFIG_NRF_WIFI_LOW_POWER */
+#ifdef CONFIG_NRF700X_TCP_IP_CHECKSUM_OFFLOAD
+	umac_cmd_data->sys_params.tcp_ip_checksum_offload = 1;
+#endif /* CONFIG_NRF700X_TCP_IP_CHECKSUM_OFFLOAD */
 	wifi_nrf_osal_log_info(fmac_dev_ctx->fpriv->opriv, "RPU LPM type: %s\n",
 		umac_cmd_data->sys_params.sleep_enable == 2 ? "HW" :
 		umac_cmd_data->sys_params.sleep_enable == 1 ? "SW" : "DISABLED");
@@ -149,7 +148,12 @@ enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 			      umac_cmd_data->rx_buf_pools,
 			      fmac_dev_ctx->fpriv->rx_buf_pools,
 			      sizeof(umac_cmd_data->rx_buf_pools));
-	umac_cmd_data->data_config_params = config;
+
+	wifi_nrf_osal_mem_cpy(fmac_dev_ctx->fpriv->opriv,
+			      &umac_cmd_data->data_config_params,
+			      config,
+			      sizeof(umac_cmd_data->data_config_params));
+
 	umac_cmd_data->temp_vbat_config_params.temp_based_calib_en = NRF_WIFI_TEMP_CALIB_ENABLE;
 	umac_cmd_data->temp_vbat_config_params.temp_calib_bitmap = NRF_WIFI_DEF_PHY_TEMP_CALIB;
 	umac_cmd_data->temp_vbat_config_params.vbat_calibp_bitmap = NRF_WIFI_DEF_PHY_VBAT_CALIB;
@@ -157,7 +161,18 @@ enum wifi_nrf_status umac_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 	umac_cmd_data->temp_vbat_config_params.vth_low = NRF_WIFI_VBAT_LOW;
 	umac_cmd_data->temp_vbat_config_params.vth_hi = NRF_WIFI_VBAT_HIGH;
 	umac_cmd_data->temp_vbat_config_params.temp_threshold = NRF_WIFI_TEMP_CALIB_THRESHOLD;
+	umac_cmd_data->temp_vbat_config_params.vth_very_low = NRF_WIFI_VBAT_VERYLOW;
 #endif /* !CONFIG_NRF700X_RADIO_TEST */
+
+	umac_cmd_data->ant_gain_2g = ant_gain_2g;
+	umac_cmd_data->ant_gain_5g_band1 = ant_gain_5g_band1;
+	umac_cmd_data->ant_gain_5g_band2 = ant_gain_5g_band2;
+	umac_cmd_data->ant_gain_5g_band3 = ant_gain_5g_band3;
+
+	wifi_nrf_osal_mem_cpy(fmac_dev_ctx->fpriv->opriv,
+					umac_cmd_data->country_code,
+					CONFIG_NRF700X_REG_DOMAIN,
+					NRF_WIFI_COUNTRY_CODE_LEN);
 
 	status = wifi_nrf_hal_ctrl_cmd_send(fmac_dev_ctx->hal_dev_ctx,
 					    umac_cmd,
@@ -197,14 +212,14 @@ out:
 
 
 enum wifi_nrf_status umac_cmd_btcoex(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
-				     struct rpu_btcoex *params)
+				void *cmd, unsigned int cmd_len)
 {
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct host_rpu_msg *umac_cmd = NULL;
 	struct nrf_wifi_cmd_coex_config *umac_cmd_data = NULL;
 	int len = 0;
 
-	len = sizeof(*umac_cmd_data) + sizeof(struct rpu_btcoex);
+	len = sizeof(*umac_cmd_data)+cmd_len;
 
 	umac_cmd = umac_cmd_alloc(fmac_dev_ctx,
 				  NRF_WIFI_HOST_RPU_MSG_TYPE_SYSTEM,
@@ -221,12 +236,12 @@ enum wifi_nrf_status umac_cmd_btcoex(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 
 	umac_cmd_data->sys_head.cmd_event = NRF_WIFI_CMD_BTCOEX;
 	umac_cmd_data->sys_head.len = len;
-	umac_cmd_data->coex_config_info.len = sizeof(struct rpu_btcoex);
+	umac_cmd_data->coex_config_info.len = cmd_len;
 
 	wifi_nrf_osal_mem_cpy(fmac_dev_ctx->fpriv->opriv,
 			      umac_cmd_data->coex_config_info.coex_cmd,
-			      params,
-			      sizeof(struct rpu_btcoex));
+			      cmd,
+			      cmd_len);
 
 	status = wifi_nrf_hal_ctrl_cmd_send(fmac_dev_ctx->hal_dev_ctx,
 					    umac_cmd,
@@ -289,6 +304,45 @@ out:
 }
 
 #ifdef CONFIG_NRF700X_RADIO_TEST
+enum wifi_nrf_status umac_cmd_prog_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
+					struct nrf_wifi_radio_test_init_info *init_params)
+{
+	struct host_rpu_msg *umac_cmd = NULL;
+	struct nrf_wifi_cmd_radio_test_init *umac_cmd_data = NULL;
+	int len = 0;
+	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
+
+	len = sizeof(*umac_cmd_data);
+
+	umac_cmd = umac_cmd_alloc(fmac_dev_ctx,
+				  NRF_WIFI_HOST_RPU_MSG_TYPE_SYSTEM,
+				  len);
+
+	if (!umac_cmd) {
+		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+				      "%s: umac_cmd_alloc failed\n",
+				      __func__);
+		goto out;
+	}
+
+	umac_cmd_data = (struct nrf_wifi_cmd_radio_test_init *)(umac_cmd->msg);
+
+	umac_cmd_data->sys_head.cmd_event = NRF_WIFI_CMD_RADIO_TEST_INIT;
+	umac_cmd_data->sys_head.len = len;
+
+	wifi_nrf_osal_mem_cpy(fmac_dev_ctx->fpriv->opriv,
+			      &umac_cmd_data->conf,
+			      init_params,
+			      sizeof(umac_cmd_data->conf));
+
+	status = wifi_nrf_hal_ctrl_cmd_send(fmac_dev_ctx->hal_dev_ctx,
+					    umac_cmd,
+					    (sizeof(*umac_cmd) + len));
+out:
+	return status;
+}
+
+
 enum wifi_nrf_status umac_cmd_prog_tx(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 				      struct rpu_conf_params *params)
 {

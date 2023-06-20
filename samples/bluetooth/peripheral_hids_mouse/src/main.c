@@ -381,7 +381,7 @@ static void hid_init(void)
 	int err;
 	struct bt_hids_init_param hids_init_param = { 0 };
 	struct bt_hids_inp_rep *hids_inp_rep;
-	static const uint8_t mouse_movement_mask[ceiling_fraction(INPUT_REP_MOVEMENT_LEN, 8)] = {0};
+	static const uint8_t mouse_movement_mask[DIV_ROUND_UP(INPUT_REP_MOVEMENT_LEN, 8)] = {0};
 
 	static const uint8_t report_map[] = {
 		0x05, 0x01,     /* Usage Page (Generic Desktop) */
@@ -639,7 +639,8 @@ static struct bt_conn_auth_info_cb conn_auth_info_callbacks = {
 };
 #else
 static struct bt_conn_auth_cb conn_auth_callbacks;
-#endif
+static struct bt_conn_auth_info_cb conn_auth_info_callbacks;
+#endif /* defined(CONFIG_BT_HIDS_SECURITY_ENABLED) */
 
 
 static void num_comp_reply(bool accept)
@@ -677,17 +678,19 @@ void button_changed(uint32_t button_state, uint32_t has_changed)
 
 	memset(&pos, 0, sizeof(struct mouse_pos));
 
-	if (k_msgq_num_used_get(&mitm_queue)) {
-		if (buttons & KEY_PAIRING_ACCEPT) {
-			num_comp_reply(true);
+	if (IS_ENABLED(CONFIG_BT_HIDS_SECURITY_ENABLED)) {
+		if (k_msgq_num_used_get(&mitm_queue)) {
+			if (buttons & KEY_PAIRING_ACCEPT) {
+				num_comp_reply(true);
 
-			return;
-		}
+				return;
+			}
 
-		if (buttons & KEY_PAIRING_REJECT) {
-			num_comp_reply(false);
+			if (buttons & KEY_PAIRING_REJECT) {
+				num_comp_reply(false);
 
-			return;
+				return;
+			}
 		}
 	}
 
@@ -752,7 +755,7 @@ static void bas_notify(void)
 }
 
 
-void main(void)
+int main(void)
 {
 	int err;
 
@@ -762,30 +765,32 @@ void main(void)
 		err = bt_conn_auth_cb_register(&conn_auth_callbacks);
 		if (err) {
 			printk("Failed to register authorization callbacks.\n");
-			return;
+			return 0;
 		}
 
 		err = bt_conn_auth_info_cb_register(&conn_auth_info_callbacks);
 		if (err) {
 			printk("Failed to register authorization info callbacks.\n");
-			return;
+			return 0;
 		}
 	}
-
-	err = bt_enable(NULL);
-	if (err) {
-		printk("Bluetooth init failed (err %d)\n", err);
-		return;
-	}
-
-	printk("Bluetooth initialized\n");
 
 	/* DIS initialized at system boot with SYS_INIT macro. */
 	hid_init();
 
+	err = bt_enable(NULL);
+	if (err) {
+		printk("Bluetooth init failed (err %d)\n", err);
+		return 0;
+	}
+
+	printk("Bluetooth initialized\n");
+
 	k_work_init(&hids_work, mouse_handler);
-	k_work_init(&pairing_work, pairing_process);
 	k_work_init(&adv_work, advertising_process);
+	if (IS_ENABLED(CONFIG_BT_HIDS_SECURITY_ENABLED)) {
+		k_work_init(&pairing_work, pairing_process);
+	}
 
 	if (IS_ENABLED(CONFIG_SETTINGS)) {
 		settings_load();

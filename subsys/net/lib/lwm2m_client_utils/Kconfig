@@ -86,13 +86,6 @@ config LWM2M_CLIENT_UTILS_FIRMWARE_UPDATE_OBJ_SUPPORT
 
 if LWM2M_CLIENT_UTILS_FIRMWARE_UPDATE_OBJ_SUPPORT
 
-config LWM2M_CLIENT_UTILS_FIRMWARE_UPDATE_REBOOT
-	bool "Reboot after image has been applied"
-	default y
-	help
-	  Reboot after the FOTA image has been applied.
-	  If this option is disabled it is the applications responsibility to reboot the device.
-
 config LWM2M_CLIENT_UTILS_MCUBOOT_FLASH_BUF_SIZE
 	int "Size of buffer used for flash write operations during MCUboot updates"
 	depends on DFU_TARGET_MCUBOOT
@@ -254,6 +247,15 @@ config LWM2M_CLIENT_UTILS_RAI
 	  This option enables RAI for access stratum (AS) which was introduced in REL14.
 	  When AS RAI is configured, device may indicate that no further data is
 	  expected in the near future and the connection may be released.
+
+config LWM2M_CLIENT_UTILS_LTE_CONNEVAL
+	bool "Enable connection pre-evaluation [EXPERIMENTAL]"
+	select EXPERIMENTAL
+	help
+	  Connection pre-evaluation allows the application to get an estimation of the
+	  energy efficiency in a cell that the modem would use for data transmission.
+	  The information is used to determine when the actual data transmission is
+	  started.
 
 module = LWM2M_CLIENT_UTILS
 module-dep = LOG

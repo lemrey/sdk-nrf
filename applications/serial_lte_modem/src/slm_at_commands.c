@@ -15,6 +15,7 @@
 #include <modem/at_cmd_parser.h>
 #include <modem/modem_jwt.h>
 #include <zephyr/sys/reboot.h>
+#include "nrf_modem.h"
 #include "ncs_version.h"
 
 #include "slm_util.h"
@@ -49,6 +50,9 @@
 #if defined(CONFIG_SLM_NRF52_DFU)
 #include "slm_at_dfu.h"
 #endif
+#if defined(CONFIG_SLM_CARRIER)
+#include "slm_at_carrier.h"
+#endif
 
 LOG_MODULE_REGISTER(slm_at, CONFIG_SLM_LOG_LEVEL);
 
@@ -73,7 +77,6 @@ static struct slm_work_info {
 
 /* global variable defined in different files */
 extern struct at_param_list at_param_list;
-extern char rsp_buf[SLM_AT_CMD_RESPONSE_MAX_LEN];
 extern uint16_t datamode_time_limit;
 extern struct uart_config slm_uart;
 
@@ -121,14 +124,9 @@ static int handle_at_slmver(enum at_cmd_type type)
 	int ret = -EINVAL;
 
 	if (type == AT_CMD_TYPE_SET_COMMAND) {
-#if defined(CONFIG_SLM_CUSTOMIZED)
-		sprintf(rsp_buf, "\r\n#XSLMVER: %s-CUSTOMIZED\r\n",
-			STRINGIFY(NCS_VERSION_STRING));
-#else
-		sprintf(rsp_buf, "\r\n#XSLMVER: %s\r\n",
-			STRINGIFY(NCS_VERSION_STRING));
-#endif
-		rsp_send(rsp_buf, strlen(rsp_buf));
+		char *libmodem = nrf_modem_build_version();
+
+		rsp_send("\r\n#XSLMVER: %s,\"%s\"\r\n", STRINGIFY(NCS_VERSION_STRING), libmodem);
 		ret = 0;
 	}
 
@@ -171,8 +169,7 @@ static int handle_at_sleep(enum at_cmd_type type)
 			ret = -EINVAL;
 		}
 	} else if (type == AT_CMD_TYPE_TEST_COMMAND) {
-		sprintf(rsp_buf, "\r\n#XSLEEP: (%d,%d)\r\n", SLEEP_MODE_DEEP, SLEEP_MODE_IDLE);
-		rsp_send(rsp_buf, strlen(rsp_buf));
+		rsp_send("\r\n#XSLEEP: (%d,%d)\r\n", SLEEP_MODE_DEEP, SLEEP_MODE_IDLE);
 		ret = 0;
 	}
 
@@ -187,10 +184,9 @@ static int handle_at_sleep(enum at_cmd_type type)
 static int handle_at_shutdown(enum at_cmd_type type)
 {
 	int ret = -EINVAL;
-	char ok_str[] = "\r\nOK\r\n";
 
 	if (type == AT_CMD_TYPE_SET_COMMAND) {
-		rsp_send(ok_str, strlen(ok_str));
+		rsp_send_ok();
 		k_sleep(K_MSEC(SLM_UART_RESPONSE_DELAY));
 		slm_at_host_uninit();
 		modem_power_off();
@@ -208,10 +204,9 @@ static int handle_at_shutdown(enum at_cmd_type type)
 static int handle_at_reset(enum at_cmd_type type)
 {
 	int ret = -EINVAL;
-	char ok_str[] = "\r\nOK\r\n";
 
 	if (type == AT_CMD_TYPE_SET_COMMAND) {
-		rsp_send(ok_str, strlen(ok_str));
+		rsp_send_ok();
 		k_sleep(K_MSEC(SLM_UART_RESPONSE_DELAY));
 		slm_at_host_uninit();
 		modem_power_off();
@@ -240,8 +235,7 @@ static int handle_at_uuid(enum at_cmd_type type)
 	if (ret) {
 		LOG_ERR("Get device UUID error: %d", ret);
 	} else {
-		sprintf(rsp_buf, "\r\n#XUUID: %s\r\n", dev.str);
-		rsp_send(rsp_buf, strlen(rsp_buf));
+		rsp_send("\r\n#XUUID: %s\r\n", dev.str);
 	}
 
 	return ret;
@@ -319,19 +313,17 @@ static int handle_at_slmuart(enum at_cmd_type type)
 		}
 	}
 	if (type == AT_CMD_TYPE_READ_COMMAND) {
-		sprintf(rsp_buf, "\r\n#XSLMUART: %d,%d\r\n", slm_uart.baudrate, slm_uart.flow_ctrl);
-		rsp_send(rsp_buf, strlen(rsp_buf));
+		rsp_send("\r\n#XSLMUART: %d,%d\r\n", slm_uart.baudrate, slm_uart.flow_ctrl);
 		ret = 0;
 	}
 	if (type == AT_CMD_TYPE_TEST_COMMAND) {
 #if defined(CONFIG_SLM_UART_HWFC_RUNTIME)
-		sprintf(rsp_buf, "\r\n#XSLMUART: (1200,2400,4800,9600,14400,19200,38400,57600,"
-				 "115200,230400,460800,921600,1000000),(0,1)\r\n");
+		rsp_send("\r\n#XSLMUART: (1200,2400,4800,9600,14400,19200,38400,57600,"
+			 "115200,230400,460800,921600,1000000),(0,1)\r\n");
 #else
-		sprintf(rsp_buf, "\r\n#XSLMUART: (1200,2400,4800,9600,14400,19200,38400,57600,"
-				 "115200,230400,460800,921600,1000000)\r\n");
+		rsp_send("\r\n#XSLMUART: (1200,2400,4800,9600,14400,19200,38400,57600,"
+			 "115200,230400,460800,921600,1000000)\r\n");
 #endif
-		rsp_send(rsp_buf, strlen(rsp_buf));
 		ret = 0;
 	}
 	return ret;
@@ -362,13 +354,11 @@ static int handle_at_datactrl(enum at_cmd_type cmd_type)
 
 	case AT_CMD_TYPE_READ_COMMAND:
 		(void)verify_datamode_control(datamode_time_limit, &time_limit_min);
-		sprintf(rsp_buf, "\r\n#XDATACTRL: %d,%d\r\n", datamode_time_limit, time_limit_min);
-		rsp_send(rsp_buf, strlen(rsp_buf));
+		rsp_send("\r\n#XDATACTRL: %d,%d\r\n", datamode_time_limit, time_limit_min);
 		break;
 
 	case AT_CMD_TYPE_TEST_COMMAND:
-		sprintf(rsp_buf, "\r\n#XDATACTRL=<time_limit>\r\n");
-		rsp_send(rsp_buf, strlen(rsp_buf));
+		rsp_send("\r\n#XDATACTRL=<time_limit>\r\n");
 		break;
 
 	default:
@@ -435,6 +425,7 @@ int handle_at_agps(enum at_cmd_type cmd_type);
 int handle_at_pgps(enum at_cmd_type cmd_type);
 int handle_at_gps_delete(enum at_cmd_type cmd_type);
 int handle_at_cellpos(enum at_cmd_type cmd_type);
+int handle_at_wifipos(enum at_cmd_type cmd_type);
 #endif
 
 #if defined(CONFIG_SLM_FTPC)
@@ -472,6 +463,10 @@ int handle_at_gpio_operate(enum at_cmd_type cmd_type);
 int handle_at_dfu_get(enum at_cmd_type cmd_type);
 int handle_at_dfu_size(enum at_cmd_type cmd_type);
 int handle_at_dfu_run(enum at_cmd_type cmd_type);
+#endif
+
+#if defined(CONFIG_SLM_CARRIER)
+int handle_at_carrier(enum at_cmd_type cmd_type);
 #endif
 
 static struct slm_at_cmd {
@@ -541,8 +536,9 @@ static struct slm_at_cmd {
 	{"AT#XPGPS", handle_at_pgps},
 #endif
 	{"AT#XGPSDEL", handle_at_gps_delete},
-#if defined(CONFIG_SLM_CELL_POS)
+#if defined(CONFIG_SLM_LOCATION)
 	{"AT#XCELLPOS", handle_at_cellpos},
+	{"AT#XWIFIPOS", handle_at_wifipos},
 #endif
 #endif
 
@@ -584,6 +580,11 @@ static struct slm_at_cmd {
 	{"AT#XDFUSIZE", handle_at_dfu_size},
 	{"AT#XDFURUN", handle_at_dfu_run},
 #endif
+
+#if defined(CONFIG_SLM_CARRIER)
+	{"AT#XCARRIER", handle_at_carrier},
+#endif
+
 };
 
 int handle_at_clac(enum at_cmd_type cmd_type)
@@ -594,8 +595,7 @@ int handle_at_clac(enum at_cmd_type cmd_type)
 		int total = ARRAY_SIZE(slm_at_cmd_list);
 
 		for (int i = 0; i < total; i++) {
-			sprintf(rsp_buf, "%s\r\n", slm_at_cmd_list[i].string);
-			rsp_send(rsp_buf, strlen(rsp_buf));
+			rsp_send("%s\r\n", slm_at_cmd_list[i].string);
 		}
 		ret = 0;
 	}
@@ -721,6 +721,13 @@ int slm_at_init(void)
 		return -EFAULT;
 	}
 #endif
+#if defined(CONFIG_SLM_CARRIER)
+	err = slm_at_carrier_init();
+	if (err) {
+		LOG_ERR("LwM2M carrier could not be initialized: %d", err);
+		return -EFAULT;
+	}
+#endif
 
 	return err;
 }
@@ -801,6 +808,12 @@ void slm_at_uninit(void)
 	err = slm_at_dfu_uninit();
 	if (err) {
 		LOG_ERR("DFU could not be uninitialized: %d", err);
+	}
+#endif
+#if defined(CONFIG_SLM_CARRIER)
+	err = slm_at_carrier_uninit();
+	if (err) {
+		LOG_ERR("LwM2M carrier could not be uninitialized: %d", err);
 	}
 #endif
 }

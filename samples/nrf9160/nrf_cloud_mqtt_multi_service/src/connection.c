@@ -236,6 +236,9 @@ static void cloud_event_handler(const struct nrf_cloud_evt *nrf_cloud_evt)
 	case NRF_CLOUD_EVT_TRANSPORT_CONNECTING:
 		LOG_DBG("NRF_CLOUD_EVT_TRANSPORT_CONNECTING");
 		break;
+	case NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR:
+		LOG_DBG("NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR: %d", nrf_cloud_evt->status);
+		break;
 	case NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST:
 		LOG_DBG("NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST");
 		/* This event indicates that the user must associate the device with their
@@ -656,7 +659,8 @@ static int connect_cloud(void)
 	}
 
 	LOG_INF("Connected to nRF Cloud");
-	return 0;
+
+	return err;
 }
 
 /**
@@ -666,28 +670,27 @@ static int connect_cloud(void)
  */
 static int setup_modem(void)
 {
-	/* Initialize the modem library if required */
-	if (!IS_ENABLED(CONFIG_NRF_MODEM_LIB_SYS_INIT)) {
-		/*
-		 * If there is a pending modem delta firmware update stored, nrf_modem_lib_init will
-		 * attempt to install it before initializing the modem library, and return a
-		 * positive value to indicate that this occurred. This code can be used to
-		 * determine whether the update was successful.
-		 */
-		int ret = nrf_modem_lib_init(NORMAL_MODE);
+	int ret;
 
-		if (ret < 0) {
-			LOG_ERR("Modem library initialization failed, error: %d", ret);
-			return ret;
-		} else if (ret == MODEM_DFU_RESULT_OK) {
-			LOG_DBG("Modem library initialized after "
-				"successful modem firmware update.");
-		} else if (ret > 0) {
-			LOG_ERR("Modem library initialized after "
-				"failed modem firmware update, error: %d", ret);
-		} else {
-			LOG_DBG("Modem library initialized.");
-		}
+	/*
+	 * If there is a pending modem delta firmware update stored, nrf_modem_lib_init will
+	 * attempt to install it before initializing the modem library, and return a
+	 * positive value to indicate that this occurred. This code can be used to
+	 * determine whether the update was successful.
+	 */
+	ret = nrf_modem_lib_init();
+
+	if (ret < 0) {
+		LOG_ERR("Modem library initialization failed, error: %d", ret);
+		return ret;
+	} else if (ret == NRF_MODEM_DFU_RESULT_OK) {
+		LOG_DBG("Modem library initialized after "
+			"successful modem firmware update.");
+	} else if (ret > 0) {
+		LOG_ERR("Modem library initialized after "
+			"failed modem firmware update, error: %d", ret);
+	} else {
+		LOG_DBG("Modem library initialized.");
 	}
 
 	/* Register to be notified when the modem has figured out the current time. */
@@ -707,7 +710,8 @@ static int setup_cloud(void)
 	/* Initialize nrf_cloud library. */
 	struct nrf_cloud_init_param params = {
 		.event_handler = cloud_event_handler,
-		.fmfu_dev_inf = get_full_modem_fota_fdev()
+		.fmfu_dev_inf = get_full_modem_fota_fdev(),
+		.application_version = CONFIG_APP_VERSION
 	};
 
 	int err = nrf_cloud_init(&params);
@@ -732,11 +736,6 @@ static int setup_lte(void)
 	int err;
 
 	/* Perform Configuration */
-	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
-		/* Do nothing, modem is already configured and LTE connected. */
-		return 0;
-	}
-
 	if (IS_ENABLED(CONFIG_POWER_SAVING_MODE_ENABLE)) {
 		/* Requesting PSM before connecting allows the modem to inform
 		 * the network about our wish for certain PSM configuration

@@ -218,6 +218,17 @@ static enum wifi_nrf_status umac_event_ctrl_process(struct wifi_nrf_fmac_dev_ctx
 
 		vif_ctx->ifflags = true;
 		break;
+	case NRF_WIFI_UMAC_EVENT_TWT_SLEEP:
+		if (callbk_fns->twt_sleep_callbk_fn)
+			callbk_fns->twt_sleep_callbk_fn(vif_ctx->os_vif_ctx,
+							event_data,
+							event_len);
+		else
+			wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+					      "%s: No callback registered for event %d\n",
+					      __func__,
+					      umac_hdr->cmd_evnt);
+		break;
 #ifdef CONFIG_WPA_SUPP
 	case NRF_WIFI_UMAC_EVENT_SCAN_RESULT:
 		if (umac_hdr->seq != 0)
@@ -416,6 +427,28 @@ static enum wifi_nrf_status umac_event_ctrl_process(struct wifi_nrf_fmac_dev_ctx
 	case NRF_WIFI_UMAC_EVENT_CONNECT:
 	case NRF_WIFI_UMAC_EVENT_DISCONNECT:
 		/* Nothing to be done */
+		break;
+	case NRF_WIFI_UMAC_EVENT_GET_REG:
+		if (callbk_fns->event_get_reg)
+			callbk_fns->event_get_reg(vif_ctx->os_vif_ctx,
+						      event_data,
+						      event_len);
+		else
+			wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+					      "%s: No callback registered for event %d\n",
+					      __func__,
+					      umac_hdr->cmd_evnt);
+		break;
+	case NRF_WIFI_UMAC_EVENT_GET_POWER_SAVE_INFO:
+		if (callbk_fns->event_get_ps_info)
+			callbk_fns->event_get_ps_info(vif_ctx->os_vif_ctx,
+						      event_data,
+						      event_len);
+		else
+			wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+					      "%s: No callback registered for event %d\n",
+					      __func__,
+					      umac_hdr->cmd_evnt);
 		break;
 #ifdef CONFIG_WPA_SUPP
 	case NRF_WIFI_UMAC_EVENT_NEW_STATION:
@@ -725,9 +758,19 @@ static enum wifi_nrf_status umac_process_sys_events(struct wifi_nrf_fmac_dev_ctx
 		status = umac_event_rf_test_process(fmac_dev_ctx,
 						    sys_head);
 		break;
+	case NRF_WIFI_EVENT_RADIOCMD_STATUS:
+		struct nrf_wifi_umac_event_err_status *umac_status =
+			((struct nrf_wifi_umac_event_err_status *)sys_head);
+		fmac_dev_ctx->radio_cmd_status = umac_status->status;
+		fmac_dev_ctx->radio_cmd_done = true;
+		status = WIFI_NRF_STATUS_SUCCESS;
+		break;
 #endif /* CONFIG_NRF700X_RADIO_TEST */
 	default:
-		status = WIFI_NRF_STATUS_FAIL;
+		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+				      "%s: Unknown event recd: %d\n",
+				      __func__,
+				      ((struct nrf_wifi_sys_head *)sys_head)->cmd_event);
 		break;
 	}
 

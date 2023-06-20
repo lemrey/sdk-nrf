@@ -66,6 +66,108 @@ endchoice
 
 endif # TFM_SECURE_UART
 
+menu "TF-M UART pins"
+	visible if BUILD_WITH_TFM
+
+config TFM_UART0_TXD_PIN
+	int "UART0 TXD pin"
+	default 29 if BOARD_NRF9160DK_NRF9160_NS
+	default 20 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART0 TXD pin.
+	  UART0 is used by TF-M as the log output for the non-secure image.
+
+	  Note: The non-secure image is only ever used when running the
+	        TF-M regression tests.
+
+config TFM_UART0_RXD_PIN
+	int "UART0 RXD pin"
+	default 28 if BOARD_NRF9160DK_NRF9160_NS
+	default 22 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART0 RXD pin.
+	  UART0 is used by TF-M as the log output for the non-secure image.
+
+	  Note: The non-secure image is only ever used when running the
+	        TF-M regression tests.
+
+config TFM_UART0_RTS_PIN
+	int "UART0 RTS pin"
+	default 27 if BOARD_NRF9160DK_NRF9160_NS
+	default 19 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART0 RTS pin.
+	  UART0 is used by TF-M as the log output for the non-secure image.
+
+	  Note: The non-secure image is only ever used when running the
+	        TF-M regression tests.
+
+config TFM_UART0_CTS_PIN
+	int "UART0 CTS pin"
+	default 26 if BOARD_NRF9160DK_NRF9160_NS
+	default 21 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART0 CTS pin.
+	  UART0 is used by TF-M as the log output for the non-secure image.
+
+	  Note: The non-secure image is only ever used when running the
+	        TF-M regression tests.
+
+config TFM_UART0_HWFC_ENABLED
+	bool "UART0 hardware flow control"
+	help
+	  Enable hardware flow control on UART0 in the TFM build system.
+
+config TFM_UART1_TXD_PIN
+	int "UART1 TXD pin"
+	depends on TFM_SECURE_UART1
+	default 1 if BOARD_NRF9160DK_NRF9160_NS
+	default 25 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART1 TXD pin.
+	  UART1 is used by TF-M as the log output for the secure image.
+
+config TFM_UART1_RXD_PIN
+	int "UART1 RXD pin"
+	depends on TFM_SECURE_UART1
+	default 0 if BOARD_NRF9160DK_NRF9160_NS
+	default 26 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART1 RXD pin.
+	  UART1 is used by TF-M as the log output for the secure image.
+
+config TFM_UART1_RTS_PIN
+	int "UART1 RTS pin"
+	default 14 if BOARD_NRF9160DK_NRF9160_NS
+	default 5 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART1 RTS pin.
+	  UART1 is used by TF-M as the log output for the secure image.
+
+config TFM_UART1_CTS_PIN
+	int "UART1 CTS pin"
+	default 15 if BOARD_NRF9160DK_NRF9160_NS
+	default 6 if BOARD_NRF5340DK_NRF5340_CPUAPP_NS
+	default 4294967295 # 0xffffffff i.e. disconnected
+	help
+	  The GPIO pin the TFM build system will use for UART1 CTS pin.
+	  UART1 is used by TF-M as the log output for the secure image.
+
+config TFM_UART1_HWFC_ENABLED
+	bool "UART1 hardware flow control"
+	help
+	  Enable hardware flow control on UART1 in the TFM build system.
+
+endmenu
+
+
 choice TFM_PROFILE_TYPE
 	default TFM_PROFILE_TYPE_MINIMAL
 
@@ -88,9 +190,14 @@ config TFM_EXPERIMENTAL
 
 config TFM_PARTITION_INITIAL_ATTESTATION
 	bool
+	default y if !TFM_PROFILE_TYPE_MINIMAL
 	help
 	   We select "implementation ID" because it is a mandatory claim
 	   in the IAT.
+
+config TFM_QCBOR_PATH
+	string
+	default "$(ZEPHYR_TRUSTED_FIRMWARE_M_MODULE_DIR)/../qcbor"
 
 if TFM_PARTITION_CRYPTO
 
@@ -122,7 +229,6 @@ config TFM_CRYPTO_CONC_OPER_NUM
 config TFM_CRYPTO_IOVEC_BUFFER_SIZE
 	int
 	prompt "TF-M Crypto - PSA FF IO vector buffer size" if !TFM_PROFILE_TYPE_MINIMAL
-	depends on !TFM_LIBRARY
 	default 1024 if TFM_PROFILE_TYPE_MINIMAL
 	default 16384 if TFM_REGRESSION_S || TFM_REGRESSION_NS
 	default 5120
@@ -140,6 +246,14 @@ config TFM_CRYPTO_PARTITION_STACK_SIZE
 	default 0x2000
 	help
 	  The stack size of the Crypto Secure Partition
+
+config TFM_CRYPTO_NV_SEED
+	# Hidden option to set value based on TF-M minimal profile
+	bool
+	default y if !TFM_PROFILE_TYPE_MINIMAL
+	help
+	  Prompt-less configuration controlling NV Seed support.
+	  Not set when TFM_PROFILE_TYPE_MINIMAL is used
 
 endif # TFM_PARTITION_CRYPTO
 
@@ -202,6 +316,13 @@ config TFM_ALLOW_NON_SECURE_RESET
 	  to issue a system reset of the chip without going through a secure
 	  service.
 
+config TFM_S_CODE_VECTOR_TABLE_SIZE
+	hex
+	default 0x144 if SOC_NRF9160
+	default 0x154 if SOC_NRF5340_CPUAPP
+	default 0xffffffff # Invalid value to discover missing SOC support.
+	help
+	  The TF-M interrupt vector table size.
 
 config BOOTLOADER_MCUBOOT
 	bool
@@ -246,12 +367,16 @@ config PM_PARTITION_SIZE_BL2
 config PM_PARTITION_SIZE_TFM
 	hex
 	prompt  "Memory reserved for TFM" if !TFM_PROFILE_TYPE_MINIMAL
+	default 0xFE00 if TFM_PROFILE_TYPE_MINIMAL && TFM_CMAKE_BUILD_TYPE_DEBUG && \
+		BOOTLOADER_MCUBOOT
 	default 0x10000 if TFM_PROFILE_TYPE_MINIMAL && TFM_CMAKE_BUILD_TYPE_DEBUG
-	default 0xC000 if TFM_PROFILE_TYPE_MINIMAL && SOC_NRF9160 && BOOTLOADER_MCUBOOT && !SECURE_BOOT
+	default 0x7E00 if TFM_PROFILE_TYPE_MINIMAL && BOOTLOADER_MCUBOOT
 	default 0x8000 if TFM_PROFILE_TYPE_MINIMAL
 	# NCSDK-13503: Temporarily bump size while regressions are being fixed
 	default 0x60000 if TFM_REGRESSION_S
+	default 0x4FE00 if TFM_CMAKE_BUILD_TYPE_DEBUG && BOOTLOADER_MCUBOOT
 	default 0x50000 if TFM_CMAKE_BUILD_TYPE_DEBUG
+	default 0x3FE00 if BOOTLOADER_MCUBOOT
 	default 0x40000
 	help
 	  Memory set aside for the TFM partition. This size is fixed if

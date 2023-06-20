@@ -65,27 +65,27 @@ choice ESB_SYS_TIMER
 
 config ESB_SYS_TIMER0
 	bool "TIMER0"
-	depends on HAS_HW_NRF_TIMER0
+	depends on $(dt_nodelabel_has_compat,timer0,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	select NRFX_TIMER0
 
 config ESB_SYS_TIMER1
 	bool "TIMER1"
-	depends on HAS_HW_NRF_TIMER1
+	depends on $(dt_nodelabel_has_compat,timer1,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	select NRFX_TIMER1
 
 config ESB_SYS_TIMER2
 	bool "TIMER2"
-	depends on HAS_HW_NRF_TIMER2
+	depends on $(dt_nodelabel_has_compat,timer2,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	select NRFX_TIMER2
 
 config ESB_SYS_TIMER3
 	bool "TIMER3"
-	depends on HAS_HW_NRF_TIMER3
+	depends on $(dt_nodelabel_has_compat,timer3,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	select NRFX_TIMER3
 
 config ESB_SYS_TIMER4
 	bool "TIMER4"
-	depends on HAS_HW_NRF_TIMER4
+	depends on $(dt_nodelabel_has_compat,timer4,$(DT_COMPAT_NORDIC_NRF_TIMER))
 	select NRFX_TIMER4
 
 endchoice
@@ -107,6 +107,16 @@ config ESB_DYNAMIC_INTERRUPTS
 	  This option configures ESB IRQ handlers using direct dynamic
 	  interrupts. This allows reconfiguring ESB_SYS_TIMER_IRQn, ESB_EVT_IRQ,
 	  and RADIO_IRQn handlers during runtime when ESB is uninitialized.
+
+config ESB_NEVER_DISABLE_TX
+	select EXPERIMENTAL
+	bool "Never disable radio transmission stage"
+	help
+	  This option changes the radio behavior so that the
+	  transmitter remains IDLE between transmissions instead of being disabled.
+	  This is applicable only when the packet is not acknowledged. Otherwise,
+	  the radio emitter needs to be turned off to enable the radio receiver.
+	  This reduces delay between consecutive transmissions but consumes more energy.
 
 endif # NRF_ENHANCED_SHOCKBURST
 

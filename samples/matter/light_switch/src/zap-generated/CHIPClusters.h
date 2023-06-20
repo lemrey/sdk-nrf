@@ -35,7 +35,7 @@ namespace Controller
 	public:
 		IdentifyCluster(Messaging::ExchangeManager &exchangeManager, const SessionHandle &session,
 				EndpointId endpoint)
-			: ClusterBase(exchangeManager, session, app::Clusters::Identify::Id, endpoint)
+			: ClusterBase(exchangeManager, session, endpoint)
 		{
 		}
 		~IdentifyCluster() {}
@@ -45,7 +45,7 @@ namespace Controller
 	public:
 		ScenesCluster(Messaging::ExchangeManager &exchangeManager, const SessionHandle &session,
 			      EndpointId endpoint)
-			: ClusterBase(exchangeManager, session, app::Clusters::Scenes::Id, endpoint)
+			: ClusterBase(exchangeManager, session, endpoint)
 		{
 		}
 		~ScenesCluster() {}
@@ -55,7 +55,7 @@ namespace Controller
 	public:
 		OnOffCluster(Messaging::ExchangeManager &exchangeManager, const SessionHandle &session,
 			     EndpointId endpoint)
-			: ClusterBase(exchangeManager, session, app::Clusters::OnOff::Id, endpoint)
+			: ClusterBase(exchangeManager, session, endpoint)
 		{
 		}
 		~OnOffCluster() {}
@@ -65,7 +65,7 @@ namespace Controller
 	public:
 		LevelControlCluster(Messaging::ExchangeManager &exchangeManager, const SessionHandle &session,
 				    EndpointId endpoint)
-			: ClusterBase(exchangeManager, session, app::Clusters::LevelControl::Id, endpoint)
+			: ClusterBase(exchangeManager, session, endpoint)
 		{
 		}
 		~LevelControlCluster() {}
@@ -75,7 +75,7 @@ namespace Controller
 	public:
 		OtaSoftwareUpdateProviderCluster(Messaging::ExchangeManager &exchangeManager,
 						 const SessionHandle &session, EndpointId endpoint)
-			: ClusterBase(exchangeManager, session, app::Clusters::OtaSoftwareUpdateProvider::Id, endpoint)
+			: ClusterBase(exchangeManager, session, endpoint)
 		{
 		}
 		~OtaSoftwareUpdateProviderCluster() {}

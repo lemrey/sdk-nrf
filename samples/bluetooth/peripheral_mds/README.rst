@@ -10,6 +10,8 @@ Bluetooth: Peripheral Memfault Diagnostic Service (MDS)
 The Peripheral Memfault Diagnostic Service sample demonstrates how to use the :ref:`mds_readme` with the `Memfault SDK`_ in an |NCS| Bluetooth application to collect core dumps and metrics.
 The Memfault diagnostic data is sent through a Bluetooth gateway.
 
+To get started with Memfault integration in |NCS|, see :ref:`ug_memfault`.
+
 Requirements
 ************
 
@@ -20,9 +22,6 @@ The sample supports the following development kits:
 .. include:: /includes/tfm.txt
 
 .. include:: /includes/hci_rpmsg_overlay.txt
-
-Before using the Memfault platform, you must register an account in the `Memfault registration page`_ and `create a new project in Memfault`_.
-After the registration, you can connect up to 100 devices for free.
 
 Overview
 ********
@@ -59,8 +58,8 @@ The following metrics are enabled by default in this sample:
 * Stack usage metrics shows the free stack space in bytes.
   Configurable by the :kconfig:option:`CONFIG_MEMFAULT_NCS_STACK_METRICS` Kconfig option.
 
-  * ``NcsBtRxUnusedStack`` - HCI Rx thread stack.
-  * ``NcsBtTxUnusedStack`` - HCI Tx thread stack.
+  * ``NcsBtRxUnusedStack`` - HCI RX thread stack.
+  * ``NcsBtTxUnusedStack`` - HCI TX thread stack.
 
 Error tracking with trace events
 ================================
@@ -100,7 +99,7 @@ The sample supports a simple user interface.
 You can control the sample using predefined buttons, while LEDs are used to display information.
 
 LED 1:
-   Blinks when the main loop is running (that is, the device is advertising) with a period of two seconds, duty cycle 50%.
+   Blinks, toggling on/off every second, when the main loop is running and the device is advertising.
 
 LED 2:
    Lit when the development kit is connected.
@@ -132,11 +131,9 @@ The Memfault SDK allows configuring some of its options using Kconfig.
 For the options not configurable using Kconfig, use the :file:`samples/bluetooth/peripheral_mds/memfault_config/memfault_platform_config.h` file.
 See `Memfault SDK`_ for more information.
 
-To send data to the Memfault cloud through a Bluetooth gateway, you must configure a project key using the :kconfig:option:`CONFIG_MEMFAULT_NCS_PROJECT_KEY` option.
+To send data to the Memfault cloud through a Bluetooth gateway, you must configure a project key using the :kconfig:option:`CONFIG_MEMFAULT_NCS_PROJECT_KEY` Kconfig option.
 You can find your project key in the project settings at `Memfault Dashboards`_.
-You also need to set the following static configuration option for this sample:
-
-* :kconfig:option:`CONFIG_MEMFAULT_NCS_DEVICE_ID` - Memfault device ID.
+You also need to set the :kconfig:option:`CONFIG_MEMFAULT_NCS_DEVICE_ID` static Kconfig option for this sample
 
 Building and running
 ********************

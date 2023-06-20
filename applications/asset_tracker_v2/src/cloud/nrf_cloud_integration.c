@@ -57,12 +57,11 @@ static struct dfu_target_fmfu_fdev ext_flash_dev = {
 	.dev = DEVICE_DT_GET_ONE(jedec_spi_nor)
 };
 
-static int fmfu_and_modem_init(const struct device *dev)
+static int fmfu_and_modem_init(void)
 {
 	enum nrf_cloud_fota_type fota_type = NRF_CLOUD_FOTA_TYPE__INVALID;
 	int ret;
 
-	ARG_UNUSED(dev);
 
 	/* Check if a full modem FOTA job is pending */
 	ret = nrf_cloud_fota_pending_job_type_get(&fota_type);
@@ -81,9 +80,6 @@ static int fmfu_and_modem_init(const struct device *dev)
 			}
 		}
 	}
-
-	/* Ignore the result, it will be checked later */
-	(void)nrf_modem_lib_init(NORMAL_MODE);
 
 	return 0;
 }
@@ -174,6 +170,9 @@ static void nrf_cloud_event_handler(const struct nrf_cloud_evt *evt)
 		break;
 	case NRF_CLOUD_EVT_TRANSPORT_CONNECTED:
 		LOG_DBG("NRF_CLOUD_EVT_TRANSPORT_CONNECTED");
+		break;
+	case NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR:
+		LOG_ERR("NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR: %d", evt->status);
 		break;
 	case NRF_CLOUD_EVT_READY:
 		LOG_DBG("NRF_CLOUD_EVT_READY");
@@ -289,6 +288,7 @@ int cloud_wrap_init(cloud_wrap_evt_handler_t event_handler)
 	int err;
 	struct nrf_cloud_init_param config = {
 		.event_handler = nrf_cloud_event_handler,
+		.application_version = CONFIG_ASSET_TRACKER_V2_APP_VERSION,
 #if defined(CONFIG_NRF_CLOUD_FOTA_FULL_MODEM_UPDATE)
 		.fmfu_dev_inf = &ext_flash_dev
 #endif
@@ -397,7 +397,8 @@ int cloud_wrap_batch_send(char *buf, size_t len, bool ack, uint32_t id)
 	return 0;
 }
 
-int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id,
+		       const struct lwm2m_obj_path path_list[])
 {
 	ARG_UNUSED(path_list);
 
@@ -419,7 +420,7 @@ int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id, char *path_
 	return 0;
 }
 
-int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id)
+int cloud_wrap_cloud_location_send(char *buf, size_t len, bool ack, uint32_t id)
 {
 	int err;
 	struct nrf_cloud_tx_data msg = {
@@ -469,7 +470,8 @@ int cloud_wrap_state_get(bool ack, uint32_t id)
 	return -ENOTSUP;
 }
 
-int cloud_wrap_data_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_data_send(char *buf, size_t len, bool ack, uint32_t id,
+			 const struct lwm2m_obj_path path_list[])
 {
 	ARG_UNUSED(path_list);
 	/* Not supported, all data is sent to the bulk topic. */

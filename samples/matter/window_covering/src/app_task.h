@@ -16,8 +16,12 @@
 #include <platform/nrfconnect/FactoryDataProvider.h>
 #endif
 
-#ifdef CONFIG_MCUMGR_SMP_BT
+#ifdef CONFIG_MCUMGR_TRANSPORT_BT
 #include "dfu_over_smp.h"
+#endif
+
+#ifdef CONFIG_CHIP_ICD_SUBSCRIPTION_HANDLING
+#include "icd_util.h"
 #endif
 
 struct k_timer;

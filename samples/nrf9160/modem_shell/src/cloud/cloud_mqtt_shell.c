@@ -23,7 +23,7 @@ extern struct k_work_q mosh_common_work_q;
 extern const struct shell *mosh_shell;
 
 static struct k_work_delayable cloud_reconnect_work;
-static struct k_work cloud_cmd_work;
+static struct k_work cloud_cmd_execute_work;
 static struct k_work shadow_update_work;
 
 static char shell_cmd[CLOUD_CMD_MAX_LENGTH + 1];
@@ -55,11 +55,15 @@ static void cloud_reconnect_work_fn(struct k_work *work)
 	}
 }
 
-static void cloud_cmd_execute(struct k_work *work)
+static K_WORK_DELAYABLE_DEFINE(cloud_reconnect_work, cloud_reconnect_work_fn);
+
+static void cloud_cmd_execute_work_fn(struct k_work *work)
 {
 	shell_execute_cmd(mosh_shell, shell_cmd);
 	memset(shell_cmd, 0, CLOUD_CMD_MAX_LENGTH);
 }
+
+static K_WORK_DEFINE(cloud_cmd_execute_work, cloud_cmd_execute_work_fn);
 
 static bool cloud_shell_parse_mosh_cmd(const char *buf_in)
 {
@@ -83,7 +87,7 @@ static bool cloud_shell_parse_mosh_cmd(const char *buf_in)
 	}
 
 	/* MoSh commands are identified by checking if appId equals "MODEM_SHELL" */
-	app_id = cJSON_GetObjectItemCaseSensitive(cloud_cmd_json, "appId");
+	app_id = cJSON_GetObjectItemCaseSensitive(cloud_cmd_json, NRF_CLOUD_JSON_APPID_KEY);
 	if (cJSON_IsString(app_id) && (app_id->valuestring != NULL)) {
 		if (strcmp(app_id->valuestring, "MODEM_SHELL") != 0) {
 			ret = false;
@@ -92,7 +96,7 @@ static bool cloud_shell_parse_mosh_cmd(const char *buf_in)
 	}
 
 	/* The value of attribute "data" contains the actual command */
-	mosh_cmd = cJSON_GetObjectItemCaseSensitive(cloud_cmd_json, "data");
+	mosh_cmd = cJSON_GetObjectItemCaseSensitive(cloud_cmd_json, NRF_CLOUD_JSON_DATA_KEY);
 	if (cJSON_IsString(mosh_cmd) && (mosh_cmd->valuestring != NULL)) {
 		mosh_print("%s", mosh_cmd->valuestring);
 		if (strlen(mosh_cmd->valuestring) <= CLOUD_CMD_MAX_LENGTH) {
@@ -111,7 +115,7 @@ end:
 /**
  * @brief Updates the nRF Cloud shadow with information about supported capabilities.
  */
-static void nrf_cloud_update_shadow(struct k_work *work)
+static void shadow_update_work_fn(struct k_work *work)
 {
 	int err;
 	struct nrf_cloud_svc_info_ui ui_info = {
@@ -138,69 +142,79 @@ static void nrf_cloud_update_shadow(struct k_work *work)
 	}
 }
 
+static K_WORK_DEFINE(shadow_update_work, shadow_update_work_fn);
+
 static void nrf_cloud_event_handler(const struct nrf_cloud_evt *evt)
 {
 	const int reconnection_delay = 10;
 
 	switch (evt->type) {
-	case NRF_CLOUD_EVT_TRANSPORT_CONNECTING:
-		mosh_print("NRF_CLOUD_EVT_TRANSPORT_CONNECTING");
-		break;
 	case NRF_CLOUD_EVT_TRANSPORT_CONNECTED:
-		mosh_print("NRF_CLOUD_EVT_TRANSPORT_CONNECTED");
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_TRANSPORT_CONNECTED");
+		break;
+	case NRF_CLOUD_EVT_TRANSPORT_CONNECTING:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_TRANSPORT_CONNECTING");
+		break;
+	case NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST");
+		mosh_warn("Add the device to nRF Cloud and reconnect");
+		break;
+	case NRF_CLOUD_EVT_USER_ASSOCIATED:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_USER_ASSOCIATED");
 		break;
 	case NRF_CLOUD_EVT_READY:
-		mosh_print("NRF_CLOUD_EVT_READY: Connection to nRF Cloud established");
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_READY");
+		mosh_print("Connection to nRF Cloud established");
 		k_work_submit_to_queue(&mosh_common_work_q, &shadow_update_work);
 		break;
+	case NRF_CLOUD_EVT_RX_DATA_GENERAL:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_RX_DATA_GENERAL");
+		if (((char *)evt->data.ptr)[0] == '{') {
+			/* Check if it's a MoSh command sent from the cloud */
+			if (cloud_shell_parse_mosh_cmd(evt->data.ptr)) {
+				k_work_submit_to_queue(&mosh_common_work_q,
+						       &cloud_cmd_execute_work);
+			}
+		}
+		break;
+	case NRF_CLOUD_EVT_RX_DATA_LOCATION:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_RX_DATA_LOCATION");
+		break;
+	case NRF_CLOUD_EVT_RX_DATA_SHADOW:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_RX_DATA_SHADOW");
+		break;
+	case NRF_CLOUD_EVT_PINGRESP:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_PINGRESP");
+		break;
+	case NRF_CLOUD_EVT_SENSOR_DATA_ACK:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_SENSOR_DATA_ACK");
+		break;
 	case NRF_CLOUD_EVT_TRANSPORT_DISCONNECTED:
-		mosh_print("NRF_CLOUD_EVT_TRANSPORT_DISCONNECTED: Connection to nRF Cloud "
-			   "disconnected");
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_TRANSPORT_DISCONNECTED, status: %d",
+			   evt->status);
+		mosh_print("Connection to nRF Cloud disconnected");
 		if (!nfsm_get_disconnect_requested()) {
 			mosh_print("Reconnecting in %d seconds...", reconnection_delay);
 			k_work_reschedule_for_queue(&mosh_common_work_q, &cloud_reconnect_work,
 						    K_SECONDS(reconnection_delay));
 		}
 		break;
-	case NRF_CLOUD_EVT_ERROR:
-		mosh_print("NRF_CLOUD_EVT_ERROR: %d", evt->status);
-		break;
-	case NRF_CLOUD_EVT_SENSOR_DATA_ACK:
-		mosh_print("NRF_CLOUD_EVT_SENSOR_DATA_ACK");
-		break;
 	case NRF_CLOUD_EVT_FOTA_START:
-		mosh_print("NRF_CLOUD_EVT_FOTA_START");
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_FOTA_START");
 		break;
 	case NRF_CLOUD_EVT_FOTA_DONE:
-		mosh_print("NRF_CLOUD_EVT_FOTA_DONE");
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_FOTA_DONE");
 		break;
 	case NRF_CLOUD_EVT_FOTA_ERROR:
-		mosh_print("NRF_CLOUD_EVT_FOTA_ERROR");
+		mosh_error("nRF Cloud event: NRF_CLOUD_EVT_FOTA_ERROR");
 		break;
-	case NRF_CLOUD_EVT_RX_DATA_GENERAL:
-		mosh_print("NRF_CLOUD_EVT_RX_DATA_GENERAL");
-		if (((char *)evt->data.ptr)[0] == '{') {
-			/* Check if it's a MoSh command sent from the cloud */
-			if (cloud_shell_parse_mosh_cmd(evt->data.ptr)) {
-				k_work_submit_to_queue(&mosh_common_work_q, &cloud_cmd_work);
-			}
-		}
+	case NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR:
+		mosh_error("nRF Cloud event: NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR, status: %d",
+			   evt->status);
+		mosh_error("Connecting to nRF Cloud failed");
 		break;
-	case NRF_CLOUD_EVT_RX_DATA_SHADOW:
-		mosh_print("NRF_CLOUD_EVT_RX_DATA_SHADOW");
-		break;
-	case NRF_CLOUD_EVT_RX_DATA_LOCATION:
-		mosh_print("NRF_CLOUD_EVT_RX_DATA_LOCATION");
-		break;
-	case NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST:
-		mosh_print("NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST");
-		mosh_warn("Add the device to nRF Cloud and reconnect");
-		break;
-	case NRF_CLOUD_EVT_USER_ASSOCIATED:
-		mosh_print("NRF_CLOUD_EVT_USER_ASSOCIATED");
-		break;
-	case NRF_CLOUD_EVT_PINGRESP:
-		mosh_print("NRF_CLOUD_EVT_PINGRESP");
+	case NRF_CLOUD_EVT_ERROR:
+		mosh_print("nRF Cloud event: NRF_CLOUD_EVT_ERROR, status: %d", evt->status);
 		break;
 	default:
 		mosh_error("Unknown nRF Cloud event type: %d", evt->type);
@@ -227,10 +241,6 @@ static void cmd_cloud_connect(const struct shell *shell, size_t argc, char **arg
 		}
 
 		initialized = true;
-
-		k_work_init(&cloud_cmd_work, cloud_cmd_execute);
-		k_work_init(&shadow_update_work, nrf_cloud_update_shadow);
-		k_work_init_delayable(&cloud_reconnect_work, cloud_reconnect_work_fn);
 	}
 
 	k_work_reschedule_for_queue(&mosh_common_work_q, &cloud_reconnect_work, K_NO_WAIT);
@@ -240,13 +250,16 @@ static void cmd_cloud_connect(const struct shell *shell, size_t argc, char **arg
 
 static void cmd_cloud_disconnect(const struct shell *shell, size_t argc, char **argv)
 {
-	int err = nrf_cloud_disconnect();
+	int err;
 
+	/* Stop possibly pending reconnection attempt. */
+	k_work_cancel_delayable(&cloud_reconnect_work);
+
+	err = nrf_cloud_disconnect();
 	if (err == -EACCES) {
 		mosh_print("Not connected to nRF Cloud");
 	} else if (err) {
 		mosh_error("nrf_cloud_disconnect, error: %d", err);
-		return;
 	}
 }
 

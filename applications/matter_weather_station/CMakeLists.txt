@@ -19,6 +19,12 @@ endif()
 # The application uses the configuration/<board> scheme for configuration files.
 set(APPLICATION_CONFIG_DIR "configuration/\${BOARD}")
 
+get_filename_component(MATTER_MODULE_ROOT $ENV{ZEPHYR_BASE}/../modules/lib/matter REALPATH)
+set(multiprotocol_rpmsg_KCONFIG_ROOT ${MATTER_MODULE_ROOT}/config/nrfconnect/chip-module/Kconfig.multiprotocol_rpmsg.root)
+
+if(OVERLAY_CONFIG STREQUAL "overlay-factory_data.conf")
+    set(PM_STATIC_YML_FILE ${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}/pm_static_factory_data.yml)
+endif()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(matter-weather-station)
@@ -45,17 +51,18 @@ target_sources(app PRIVATE
     src/buzzer.cpp
     src/zap-generated/IMClusterCommandHandler.cpp
     src/zap-generated/callback-stub.cpp
-    ${COMMON_ROOT}/src/thread_util.cpp
     ${COMMON_ROOT}/src/led_widget.cpp
     ${COMMON_ROOT}/src/dfu_over_smp.cpp
 )
 
-if(CONFIG_CHIP_OTA_REQUESTOR OR CONFIG_MCUMGR_SMP_BT)
+if(CONFIG_CHIP_OTA_REQUESTOR OR CONFIG_MCUMGR_TRANSPORT_BT)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/ota_util.cpp)
 endif()
 
 chip_configure_data_model(app
     INCLUDE_SERVER
+    BYPASS_IDL
+    GEN_DIR src/zap-generated
     ZAP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/weather-station.zap
 )
 # NORDIC SDK APP END

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nordic Semiconductor ASA
+ * Copyright (c) 2019-2023 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
@@ -7,8 +7,8 @@
 #ifndef NRF_MODEM_LIB_H_
 #define NRF_MODEM_LIB_H_
 
-#include <zephyr/kernel.h>
 #include <nrf_modem.h>
+#include <zephyr/kernel.h>
 
 #if CONFIG_NRF_MODEM_LIB_MEM_DIAG
 #include <zephyr/sys/sys_heap.h>
@@ -21,39 +21,49 @@ extern "C" {
 /**
  * @file nrf_modem_lib.h
  *
- * @defgroup nrf_modem_lib nRF Modem library wrapper
+ * @defgroup nrf_modem_lib Modem library integration layer.
  *
  * @{
  *
- * @brief API of the SMS nRF Modem library wrapper module.
+ * @brief Modem library wrapper.
  */
 
 /**
- * @brief Initialize the Modem library.
+ * @brief Initialize the Modem library and turn on the modem.
  *
- * This function synchronously turns on the modem; it could block
- * for a few minutes when the modem firmware is being updated.
+ * The operation can take a few minutes when a firmware update is scheduled.
  *
- * If your application supports modem firmware updates, consider
- * initializing the library manually to have control of what
- * the application should do while initialization is ongoing.
+ * To switch between the bootloader mode and normal operating mode, shutdown the modem
+ * with @ref nrf_modem_lib_shutdown() and re-initialize it in the desired mode.
+ * Use @ref nrf_modem_lib_init() to initialize in normal mode and
+ * @ref nrf_modem_lib_bootloader_init() to initialize the Modem library in bootloader mode.
  *
- * The library has two operation modes, normal mode and full DFU mode.
- * The full DFU mode is used to update the whole modem firmware.
+ * @return int Zero on success, a positive value @em nrf_modem_dfu when executing
+ *         Modem firmware updates, and negative errno on other failures.
+ */
+int nrf_modem_lib_init(void);
+
+/**
+ * @brief Initialize the Modem library in bootloader mode and turn on the modem.
  *
- * When the library is initialized in full DFU mode, all shared memory regions
- * are reserved for the firmware update operation, and no other functionality
- * can be used. In particular, sockets won't be available to the application.
+ * When the modem is initialized in bootloader mode, no other functionality is available. In
+ * particular, networking sockets and AT commands won't be available.
  *
- * To switch between the full DFU mode and normal mode,
- * shutdown the modem with @ref nrf_modem_lib_shutdown() and re-initialize
- * it in the desired operation mode.
- *
- * @param[in] mode Library mode.
+ * To switch between the bootloader mode and normal operating mode, shutdown the modem
+ * with @ref nrf_modem_lib_shutdown() and re-initialize it in the desired mode.
+ * Use @ref nrf_modem_lib_init() to initialize in normal mode and
+ * @ref nrf_modem_lib_bootloader_init() to initialize the Modem library in bootloader mode.
  *
  * @return int Zero on success, non-zero otherwise.
  */
-int nrf_modem_lib_init(enum nrf_modem_mode mode);
+int nrf_modem_lib_bootloader_init(void);
+
+/**
+ * @brief Shutdown the Modem library and turn off the modem.
+ *
+ * @return int Zero on success, non-zero otherwise.
+ */
+int nrf_modem_lib_shutdown(void);
 
 /**
  * @brief Modem library initialization callback struct.
@@ -115,32 +125,6 @@ struct nrf_modem_lib_shutdown_cb {
 	};
 
 /**
- * @brief Makes a thread sleep until next time nrf_modem_lib_init() is called.
- *
- * When nrf_modem_lib_shutdown() is called a thread can call this function to be
- * woken up next time nrf_modem_lib_init() is called.
- */
-__deprecated void nrf_modem_lib_shutdown_wait(void);
-
-/**
- * @brief Get the last return value of nrf_modem_lib_init.
- *
- * This function can be used to access the last return value of
- * nrf_modem_lib_init. This can be used to check the state of a modem
- * firmware exchange when the Modem library was initialized at boot-time.
- *
- * @return int The last return value of nrf_modem_lib_init.
- */
-__deprecated int nrf_modem_lib_get_init_ret(void);
-
-/**
- * @brief Shutdown the Modem library, releasing its resources.
- *
- * @return int Zero on success, non-zero otherwise.
- */
-int nrf_modem_lib_shutdown(void);
-
-/**
  * @brief Modem fault handler.
  *
  * @param[in] fault_info Modem fault information.
@@ -148,8 +132,17 @@ int nrf_modem_lib_shutdown(void);
  */
 void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info);
 
-#if defined(CONFIG_NRF_MODEM_LIB_MEM_DIAG) || defined(__DOXYGEN__)
+#if defined(CONFIG_NRF_MODEM_LIB_FAULT_STRERROR) || defined(__DOXYGEN__)
+/**
+ * @brief Retrieve a statically allocated textual description of a given fault.
+ *
+ * @param fault The fault.
+ * @return const char* Textual description of the given fault.
+ */
+const char *nrf_modem_lib_fault_strerror(int fault);
+#endif
 
+#if defined(CONFIG_NRF_MODEM_LIB_MEM_DIAG) || defined(__DOXYGEN__)
 struct nrf_modem_lib_diag_stats {
 	struct {
 		struct sys_memory_stats heap;
@@ -160,15 +153,15 @@ struct nrf_modem_lib_diag_stats {
 		uint32_t failed_allocs;
 	} shmem;
 };
-
 /**
  * @brief Retrieve heap runtime statistics.
  *
  * Retrieve runtime statistics for the shared memory and library heaps.
+ *
+ * @return int Zero on success, non-zero otherwise.
  */
 int nrf_modem_lib_diag_stats_get(struct nrf_modem_lib_diag_stats *stats);
-
-#endif /* defined(CONFIG_NRF_MODEM_LIB_MEM_DIAG) || defined(__DOXYGEN__) */
+#endif
 
 /** @} */
 

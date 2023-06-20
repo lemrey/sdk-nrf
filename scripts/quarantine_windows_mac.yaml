@@ -1,0 +1,29 @@
+# The configurations resulting as a product of scenarios and platforms
+# will be skipped if quarantine is used. More details here:
+# https://docs.zephyrproject.org/latest/guides/test/twister.html#quarantine
+# To have an empty list use:
+# - scenarios:
+#    - None
+#  platforms:
+#    - None
+
+- platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - qemu_x86
+  comment: "Cannot build samples for Native POSIX and QEMU on Windows OS"
+
+- scenarios:
+    - asset_tracker_v2.debug_module_test.tester
+    - asset_tracker_v2.location_module_test.tester
+    - asset_tracker_v2.lwm2m_codec
+    - asset_tracker_v2.lwm2m_integration
+    - asset_tracker_v2.nrf_cloud_codec_test
+    - asset_tracker_v2.nrf_cloud_codec_mocked_cjson_test
+    - asset_tracker_v2.ui_module_test.tester
+  comment: "ruby package not available in Windows toolchain"
+
+- scenarios:
+    - sample.esb.prx
+    - sample.esb.ptx
+  comment: "Cmake error for EBC tests - NCSDK-21089"

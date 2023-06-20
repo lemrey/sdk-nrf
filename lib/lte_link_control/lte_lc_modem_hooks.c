@@ -17,6 +17,11 @@ NRF_MODEM_LIB_ON_SHUTDOWN(lte_lc_shutdown_hook, on_modem_shutdown, NULL);
 static void on_modem_init(int err, void *ctx)
 {
 	if (err) {
+		if (err == NRF_MODEM_DFU_RESULT_OK) {
+			LOG_DBG("Modem DFU, lte_lc not initialized");
+			return;
+		}
+		LOG_ERR("Modem library init error: %d, lte_lc not initialized", err);
 		return;
 	}
 
@@ -55,6 +60,14 @@ static void on_modem_init(int err, void *ctx)
 	err = nrf_modem_at_printf("AT+COPS=0");
 	if (err) {
 		LOG_ERR("Failed to unlock PLMN, err %d", err);
+		return;
+	}
+#endif
+
+#if IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)
+	err = lte_lc_init_and_connect();
+	if (err) {
+		LOG_ERR("Lte_lc failed to initialize and connect, err %d", err);
 		return;
 	}
 #endif

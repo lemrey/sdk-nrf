@@ -1774,22 +1774,24 @@ void test_recv_loop(void)
 }
 
 /* This is needed because AT Monitor library is initialized in SYS_INIT. */
-static int sms_test_sys_init(const struct device *unused)
+static int sms_test_sys_init(void)
 {
 	__cmock_nrf_modem_at_notif_handler_set_ExpectAnyArgsAndReturn(0);
 
 	return 0;
 }
 
-/* It is required to be added to each test. That is because unity is using
- * different main signature (returns int) and zephyr expects main which does
- * not return value.
+/* It is required to be added to each test. That is because unity's
+ * main may return nonzero, while zephyr's main currently must
+ * return 0 in all cases (other values are reserved).
  */
 extern int unity_main(void);
 
-void main(void)
+int main(void)
 {
 	(void)unity_main();
+
+	return 0;
 }
 
 SYS_INIT(sms_test_sys_init, POST_KERNEL, 0);

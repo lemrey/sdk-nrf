@@ -88,6 +88,8 @@ For this sample, you can use one of the following :ref:`onboarding information f
        - MT:Y.K9042C00KA0648G00
        - 34970112332
 
+|matter_cd_info_note_for_samples|
+
 Configuration
 *************
 
@@ -155,14 +157,14 @@ Before you start testing the application, you can select one of the `Matter temp
 Selecting a build type in |VSC|
 -------------------------------
 
-.. include:: /gs_modifying.rst
+.. include:: /getting_started/modifying.rst
    :start-after: build_types_selection_vsc_start
    :end-before: build_types_selection_vsc_end
 
 Selecting a build type from command line
 ----------------------------------------
 
-.. include:: /gs_modifying.rst
+.. include:: /getting_started/modifying.rst
    :start-after: build_types_selection_cmd_start
    :end-before: For example, you can replace the
 
@@ -195,9 +197,6 @@ Testing
 
 When you have built the sample and programmed it to your development kit, it automatically starts the Bluetooth LE advertising and the **LED1** starts flashing (Short Flash On).
 At this point, you can press **Button 1** for six seconds to initiate the factory reset of the device.
-
-.. note::
-    If you are new to Matter, commission the Matter device using the Mobile Controller for Android (CHIP Tool for Android) when :ref:`setting up the Matter development environment <ug_matter_configuring_mobile>`.
 
 .. _matter_template_network_testing:
 

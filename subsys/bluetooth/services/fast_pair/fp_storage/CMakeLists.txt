@@ -4,13 +4,20 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-add_library(fp_storage STATIC)
+zephyr_library_named(fp_storage)
 
-if(CONFIG_BT_FAST_PAIR_STORAGE)
-  target_sources(fp_storage PRIVATE fp_storage.c)
+if(CONFIG_BT_FAST_PAIR_STORAGE_MANAGER)
+  zephyr_linker_sources(SECTIONS fp_storage_manager.ld)
+  target_sources(fp_storage PRIVATE fp_storage_manager.c)
+endif()
+if(CONFIG_BT_FAST_PAIR_STORAGE_AK)
+  target_sources(fp_storage PRIVATE fp_storage_ak.c)
 endif()
 if(CONFIG_BT_FAST_PAIR_STORAGE_EXT_PN)
   target_sources(fp_storage PRIVATE fp_storage_pn.c)
+endif()
+if(CONFIG_BT_FAST_PAIR_STORAGE_USER_RESET_ACTION)
+  target_sources(fp_storage PRIVATE fp_storage_user_reset_action.c)
 endif()
 
 target_include_directories(fp_storage PUBLIC include)
@@ -20,5 +27,3 @@ if(CONFIG_BT_FAST_PAIR_STORAGE_EXPOSE_PRIV_API)
 else()
   target_include_directories(fp_storage PRIVATE include_priv)
 endif()
-
-target_link_libraries(fp_storage PRIVATE zephyr_interface)

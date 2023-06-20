@@ -23,7 +23,9 @@ This page is included only in the latest documentation, because it might contain
    releases/release-notes-changelog_lcs
    releases/release-notes-2.2.99-cs1
    releases/release-notes-changelog
+   releases/release-notes-2.3.0
    releases/release-notes-2.2.0
+   releases/release-notes-2.1.4
    releases/release-notes-2.1.3
    releases/release-notes-2.1.2
    releases/release-notes-2.1.1

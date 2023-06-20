@@ -471,6 +471,7 @@ static void method_gnss_assistance_request(void)
 		agps_request.data_flags =
 			NRF_MODEM_GNSS_AGPS_GPS_UTC_REQUEST |
 			NRF_MODEM_GNSS_AGPS_KLOBUCHAR_REQUEST |
+			NRF_MODEM_GNSS_AGPS_NEQUICK_REQUEST |
 			NRF_MODEM_GNSS_AGPS_SYS_TIME_AND_SV_TOW_REQUEST |
 			NRF_MODEM_GNSS_AGPS_INTEGRITY_REQUEST |
 			NRF_MODEM_GNSS_AGPS_POSITION_REQUEST;
@@ -499,23 +500,14 @@ static void method_gnss_assistance_request(void)
 		method_gnss_nrf_cloud_agps_request();
 #endif
 	}
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-	else if (pgps_agps_request.sv_mask_ephe != 0) {
-		/* When both A-GPS and P-GPS are enabled, this needs to be called only when no
-		 * A-GPS data is requested. When A-GPS data is requested, the nRF Cloud library
-		 * calls the function internally after processing the A-GPS data.
-		 */
-		int err = nrf_cloud_pgps_notify_prediction();
+#endif /* CONFIG_NRF_CLOUD_AGPS */
 
-		if (err) {
-			LOG_ERR("Error requesting notification of prediction availability: %d",
-				err);
-		}
-	}
-#endif /* CONFIG_NRF_CLOUD_PGPS */
-#elif defined(CONFIG_NRF_CLOUD_PGPS)
+#if defined(CONFIG_NRF_CLOUD_PGPS)
 	if (pgps_agps_request.sv_mask_ephe != 0) {
-		/* When only P-GPS is enabled, this needs to be always called. */
+		/* When A-GPS is used, the nRF Cloud library also calls this function after
+		 * A-GPS data has been processed. However, the call happens too late to trigger
+		 * the initial P-GPS data download at the correct stage.
+		 */
 		int err = nrf_cloud_pgps_notify_prediction();
 
 		if (err) {
@@ -730,6 +722,22 @@ static uint8_t method_gnss_tracked_satellites(const struct nrf_modem_gnss_pvt_da
 	return tracked;
 }
 
+static uint8_t method_gnss_tracked_satellites_nonzero_cn0(
+		const struct nrf_modem_gnss_pvt_data_frame *pvt_data)
+{
+	uint8_t tracked = 0;
+
+	for (uint32_t i = 0; i < NRF_MODEM_GNSS_MAX_SATELLITES; i++) {
+		if ((pvt_data->sv[i].sv == 0) || (pvt_data->sv[i].cn0 == 0)) {
+			break;
+		}
+
+		tracked++;
+	}
+
+	return tracked;
+}
+
 static void method_gnss_print_pvt(const struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
 	LOG_DBG("Tracked satellites: %d, fix valid: %s, insuf. time window: %s",
@@ -758,7 +766,7 @@ static void method_gnss_pvt_work_fn(struct k_work *item)
 {
 	struct nrf_modem_gnss_pvt_data_frame pvt_data;
 	static struct location_data location_result = { 0 };
-	uint8_t satellites_tracked;
+	uint8_t satellites_tracked_nonzero_cn0;
 
 	if (!running) {
 		/* Cancel has already been called, so ignore the notification. */
@@ -771,13 +779,14 @@ static void method_gnss_pvt_work_fn(struct k_work *item)
 		return;
 	}
 
-	satellites_tracked = method_gnss_tracked_satellites(&pvt_data);
+	/* Only satellites with a reasonable C/N0 count towards the obstructed visibility limit */
+	satellites_tracked_nonzero_cn0 = method_gnss_tracked_satellites_nonzero_cn0(&pvt_data);
 
 	method_gnss_print_pvt(&pvt_data);
 
 #if defined(CONFIG_LOCATION_DATA_DETAILS)
 	location_data_details_gnss.pvt_data = pvt_data;
-	location_data_details_gnss.satellites_tracked = satellites_tracked;
+	location_data_details_gnss.satellites_tracked = method_gnss_tracked_satellites(&pvt_data);
 #endif
 
 	/* Store fix data only if we get a valid fix. Thus, the last valid data is always kept
@@ -806,7 +815,7 @@ static void method_gnss_pvt_work_fn(struct k_work *item)
 	} else if (gnss_config.visibility_detection) {
 		if (pvt_data.execution_time >= VISIBILITY_DETECTION_EXEC_TIME &&
 		    pvt_data.execution_time < (VISIBILITY_DETECTION_EXEC_TIME + MSEC_PER_SEC) &&
-		    satellites_tracked < VISIBILITY_DETECTION_SAT_LIMIT) {
+		    satellites_tracked_nonzero_cn0 < VISIBILITY_DETECTION_SAT_LIMIT) {
 			LOG_DBG("GNSS visibility obstructed, canceling");
 			method_gnss_cancel();
 			location_core_event_cb_error();
@@ -988,6 +997,10 @@ static bool method_gnss_agps_expiry_process(const struct nrf_modem_gnss_agps_exp
 		agps_request.data_flags |= NRF_MODEM_GNSS_AGPS_KLOBUCHAR_REQUEST;
 	}
 
+	if (agps_expiry->neq_expiry <= AGPS_EXPIRY_THRESHOLD) {
+		agps_request.data_flags |= NRF_MODEM_GNSS_AGPS_NEQUICK_REQUEST;
+	}
+
 	if (agps_expiry->data_flags & NRF_MODEM_GNSS_AGPS_SYS_TIME_AND_SV_TOW_REQUEST) {
 		agps_request.data_flags |= NRF_MODEM_GNSS_AGPS_SYS_TIME_AND_SV_TOW_REQUEST;
 	}
@@ -996,7 +1009,16 @@ static bool method_gnss_agps_expiry_process(const struct nrf_modem_gnss_agps_exp
 		agps_request.data_flags |= NRF_MODEM_GNSS_AGPS_INTEGRITY_REQUEST;
 	}
 
-	if (agps_expiry->data_flags & NRF_MODEM_GNSS_AGPS_POSITION_REQUEST) {
+	/* Position is reported as being valid for 2h. The uncertainty increases with time,
+	 * but in practice the position remains usable for a longer time. Because of this no
+	 * margin is used when checking if position assistance is needed.
+	 *
+	 * Position is only requested when also some other assistance data is needed.
+	 */
+	if (agps_expiry->position_expiry == 0 &&
+	    (agps_request.sv_mask_ephe != 0 ||
+	     agps_request.sv_mask_alm != 0 ||
+	     agps_request.data_flags != 0)) {
 		agps_request.data_flags |= NRF_MODEM_GNSS_AGPS_POSITION_REQUEST;
 	}
 
@@ -1048,11 +1070,11 @@ static void method_gnss_agps_req_work_fn(struct k_work *work)
 }
 #endif
 
-int method_gnss_location_get(const struct location_method_config *config)
+int method_gnss_location_get(const struct location_request_info *request)
 {
 	int err;
 
-	gnss_config = config->gnss;
+	gnss_config = *request->gnss;
 #if defined(CONFIG_LOCATION_DATA_DETAILS)
 	memset(&location_data_details_gnss, 0, sizeof(location_data_details_gnss));
 #endif

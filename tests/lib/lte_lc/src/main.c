@@ -16,13 +16,20 @@ static void test_parse_edrx(void)
 {
 	int err;
 	struct lte_lc_edrx_cfg cfg;
-	char *at_response_none = "+CEDRXP: 1,\"1000\",\"0101\",\"1011\"";
+	char *at_response_none = "+CEDRXP: 0";
+	char *at_response_fail = "+CEDRXP: 1,\"1000\",\"0101\",\"1011\"";
 	char *at_response_ltem = "+CEDRXP: 4,\"1000\",\"0101\",\"1011\"";
 	char *at_response_ltem_2 = "+CEDRXP: 4,\"1000\",\"0010\",\"1110\"";
 	char *at_response_nbiot = "+CEDRXP: 5,\"1000\",\"1101\",\"0111\"";
 	char *at_response_nbiot_2 = "+CEDRXP: 5,\"1000\",\"1101\",\"0101\"";
 
 	err = parse_edrx(at_response_none, &cfg);
+	zassert_equal(0, err, "parse_edrx failed, error: %d", err);
+	zassert_equal(cfg.edrx, 0, "Wrong eDRX value");
+	zassert_equal(cfg.ptw, 0, "Wrong PTW value");
+	zassert_equal(cfg.mode, LTE_LC_LTE_MODE_NONE, "Wrong LTE mode");
+
+	err = parse_edrx(at_response_fail, &cfg);
 	zassert_not_equal(0, err, "parse_edrx should have failed");
 
 	err = parse_edrx(at_response_ltem, &cfg);
@@ -230,33 +237,50 @@ void test_parse_xmodemsleep(void)
 	char *at_response_0 = "%XMODEMSLEEP: 1,36000";
 	char *at_response_1 = "%XMODEMSLEEP: 1,35712000000";
 	char *at_response_2 = "%XMODEMSLEEP: 2,100400";
-	char *at_response_3 = "%XMODEMSLEEP: 4";
-	char *at_response_4 = "%XMODEMSLEEP: 4,0";
+	char *at_response_3 = "%XMODEMSLEEP: 3";
+	char *at_response_4 = "%XMODEMSLEEP: 4";
+	char *at_response_5 = "%XMODEMSLEEP: 4,0";
+	char *at_response_6 = "%XMODEMSLEEP: 7";
 
 	err = parse_xmodemsleep(at_response_0, &modem_sleep);
 	zassert_equal(0, err, "parse_xmodemsleep failed, error: %d", err);
-	zassert_equal(modem_sleep.type, 1, "Wrong modem sleep type parameter");
+	zassert_equal(modem_sleep.type, LTE_LC_MODEM_SLEEP_PSM, "Wrong modem sleep type parameter");
 	zassert_equal(modem_sleep.time, 36000, "Wrong modem sleep time parameter");
 
 	err = parse_xmodemsleep(at_response_1, &modem_sleep);
 	zassert_equal(0, err, "parse_xmodemsleep failed, error: %d", err);
-	zassert_equal(modem_sleep.type, 1, "Wrong modem sleep type parameter");
+	zassert_equal(modem_sleep.type, LTE_LC_MODEM_SLEEP_PSM, "Wrong modem sleep type parameter");
 	zassert_equal(modem_sleep.time, 35712000000, "Wrong modem sleep time parameter");
 
 	err = parse_xmodemsleep(at_response_2, &modem_sleep);
 	zassert_equal(0, err, "parse_xmodemsleep failed, error: %d", err);
-	zassert_equal(modem_sleep.type, 2, "Wrong modem sleep type parameter");
+	zassert_equal(modem_sleep.type, LTE_LC_MODEM_SLEEP_RF_INACTIVITY,
+		"Wrong modem sleep type parameter");
 	zassert_equal(modem_sleep.time, 100400, "Wrong modem sleep time parameter");
 
 	err = parse_xmodemsleep(at_response_3, &modem_sleep);
 	zassert_equal(0, err, "parse_xmodemsleep failed, error: %d", err);
-	zassert_equal(modem_sleep.type, 4, "Wrong modem sleep type parameter");
+	zassert_equal(modem_sleep.type, LTE_LC_MODEM_SLEEP_LIMITED_SERVICE,
+		"Wrong modem sleep type parameter");
 	zassert_equal(modem_sleep.time, -1, "Wrong modem sleep time parameter");
 
 	err = parse_xmodemsleep(at_response_4, &modem_sleep);
 	zassert_equal(0, err, "parse_xmodemsleep failed, error: %d", err);
-	zassert_equal(modem_sleep.type, 4, "Wrong modem sleep type parameter");
+	zassert_equal(modem_sleep.type, LTE_LC_MODEM_SLEEP_FLIGHT_MODE,
+		"Wrong modem sleep type parameter");
+	zassert_equal(modem_sleep.time, -1, "Wrong modem sleep time parameter");
+
+	err = parse_xmodemsleep(at_response_5, &modem_sleep);
+	zassert_equal(0, err, "parse_xmodemsleep failed, error: %d", err);
+	zassert_equal(modem_sleep.type, LTE_LC_MODEM_SLEEP_FLIGHT_MODE,
+		"Wrong modem sleep type parameter");
 	zassert_equal(modem_sleep.time, 0, "Wrong modem sleep time parameter");
+
+	err = parse_xmodemsleep(at_response_6, &modem_sleep);
+	zassert_equal(0, err, "parse_xmodemsleep failed, error: %d", err);
+	zassert_equal(modem_sleep.type, LTE_LC_MODEM_SLEEP_PROPRIETARY_PSM,
+		"Wrong modem sleep type parameter");
+	zassert_equal(modem_sleep.time, -1, "Wrong modem sleep time parameter");
 
 	err = parse_xmodemsleep(NULL, &modem_sleep);
 	zassert_equal(-EINVAL, err, "parse_xmodemsleep failed, error: %d", err);

@@ -5,7 +5,7 @@
  */
 
 #include <nrf_cloud_transport.h>
-#include <nrf_cloud_codec.h>
+#include <nrf_cloud_codec_internal.h>
 #include <nrf_cloud_mem.h>
 #include <zephyr/fff.h>
 #include <zephyr/ztest.h>
@@ -19,6 +19,7 @@ int poll(struct zsock_pollfd *fds, int nfds, int timeout);
 FAKE_VALUE_FUNC(int, nct_init, const char *);
 FAKE_VALUE_FUNC(int, nfsm_init);
 FAKE_VALUE_FUNC(int, nrf_cloud_codec_init, struct nrf_cloud_os_mem_hooks *);
+FAKE_VOID_FUNC(nrf_cloud_set_app_version, const char *const);
 FAKE_VALUE_FUNC(int, nrf_cloud_fota_fmfu_dev_set, const struct dfu_target_fmfu_fdev *);
 FAKE_VALUE_FUNC(int, nct_disconnect);
 FAKE_VOID_FUNC(nct_uninit);
@@ -31,10 +32,11 @@ FAKE_VALUE_FUNC(int, nct_cc_send, const struct nct_cc_data *);
 FAKE_VALUE_FUNC(int, nct_dc_send, const struct nct_dc_data *);
 FAKE_VALUE_FUNC(int, nct_dc_stream, const struct nct_dc_data *);
 FAKE_VALUE_FUNC(int, nct_dc_bulk_send, const struct nct_dc_data *, enum mqtt_qos);
-FAKE_VALUE_FUNC(int, nrf_cloud_device_status_encode, const struct nrf_cloud_device_status *,
+FAKE_VALUE_FUNC(int, nrf_cloud_shadow_dev_status_encode,
+				const struct nrf_cloud_device_status *,
 				struct nrf_cloud_data *, const bool);
 FAKE_VOID_FUNC(nrf_cloud_device_status_free, struct nrf_cloud_data *);
-FAKE_VALUE_FUNC(int, nrf_cloud_encode_sensor_data, const struct nrf_cloud_sensor_data *,
+FAKE_VALUE_FUNC(int, nrf_cloud_sensor_data_encode, const struct nrf_cloud_sensor_data *,
 				struct nrf_cloud_data *);
 FAKE_VOID_FUNC(nrf_cloud_os_mem_hooks_init, struct nrf_cloud_os_mem_hooks *);
 FAKE_VOID_FUNC(nrf_cloud_free, void *);
@@ -228,7 +230,7 @@ int fake_nct_dc_bulk_send__fails(const struct nct_dc_data *data, enum mqtt_qos q
 	return -EINVAL;
 }
 
-int fake_device_status_encode__succeeds(
+int fake_device_status_shadow_encode__succeeds(
 	const struct nrf_cloud_device_status * const dev_status,
 	struct nrf_cloud_data * const output, const bool include_state)
 {
@@ -238,7 +240,7 @@ int fake_device_status_encode__succeeds(
 	return 0;
 }
 
-int fake_device_status_encode__fails(
+int fake_device_status_shadow_encode__fails(
 	const struct nrf_cloud_device_status * const dev_status,
 	struct nrf_cloud_data * const output, const bool include_state)
 {
@@ -248,7 +250,7 @@ int fake_device_status_encode__fails(
 	return -EINVAL;
 }
 
-int fake_nrf_cloud_encode_sensor_data__fails(
+int fake_nrf_cloud_sensor_data_encode__fails(
 	const struct nrf_cloud_sensor_data *sensor,
 	struct nrf_cloud_data *output)
 {
@@ -257,7 +259,7 @@ int fake_nrf_cloud_encode_sensor_data__fails(
 	return -ENOMEM;
 }
 
-int fake_nrf_cloud_encode_sensor_data__succeeds(
+int fake_nrf_cloud_sensor_data_encode__succeeds(
 	const struct nrf_cloud_sensor_data *sensor,
 	struct nrf_cloud_data *output)
 {

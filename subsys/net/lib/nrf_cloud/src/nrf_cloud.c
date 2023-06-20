@@ -10,7 +10,7 @@
 #endif
 #include <net/nrf_cloud.h>
 #include <zephyr/net/mqtt.h>
-#include "nrf_cloud_codec.h"
+#include "nrf_cloud_codec_internal.h"
 #include "nrf_cloud_fsm.h"
 #include "nrf_cloud_transport.h"
 #include "nrf_cloud_fota.h"
@@ -112,9 +112,12 @@ int nrf_cloud_init(const struct nrf_cloud_init_param *param)
 		}
 	}
 
+	nrf_cloud_set_app_version(param->application_version);
+
 	/* Set the flash device before initializing the transport/FOTA. */
 #if defined(CONFIG_NRF_CLOUD_FOTA_FULL_MODEM_UPDATE)
-	if (param->fmfu_dev_inf) {
+	if (param->fmfu_dev_inf ||
+	    IS_ENABLED(CONFIG_DFU_TARGET_FULL_MODEM_USE_EXT_PARTITION)) {
 		err = nrf_cloud_fota_fmfu_dev_set(param->fmfu_dev_inf);
 		if (err < 0) {
 			return err;
@@ -222,7 +225,7 @@ static int connect_error_translate(const int err)
 	case -EINPROGRESS:
 		return NRF_CLOUD_CONNECT_RES_ERR_ALREADY_CONNECTED;
 	default:
-		LOG_ERR("nRF cloud connect failed %d", err);
+		LOG_ERR("nRF Cloud connect failed %d", err);
 		return NRF_CLOUD_CONNECT_RES_ERR_MISC;
 	}
 }
@@ -276,7 +279,7 @@ int nrf_cloud_shadow_device_status_update(const struct nrf_cloud_device_status *
 		return -EACCES;
 	}
 
-	err = nrf_cloud_device_status_encode(dev_status, &tx_data.data, true);
+	err = nrf_cloud_shadow_dev_status_encode(dev_status, &tx_data.data, true);
 	if (err) {
 		return err;
 	}
@@ -301,7 +304,7 @@ int nrf_cloud_sensor_data_send(const struct nrf_cloud_sensor_data *param)
 		return -EINVAL;
 	}
 
-	err = nrf_cloud_encode_sensor_data(param, &sensor_data.data);
+	err = nrf_cloud_sensor_data_encode(param, &sensor_data.data);
 	if (err) {
 		return err;
 	}
@@ -331,7 +334,7 @@ int nrf_cloud_sensor_data_stream(const struct nrf_cloud_sensor_data *param)
 		return -EINVAL;
 	}
 
-	err = nrf_cloud_encode_sensor_data(param, &sensor_data.data);
+	err = nrf_cloud_sensor_data_encode(param, &sensor_data.data);
 	if (err) {
 		return err;
 	}
@@ -491,7 +494,7 @@ start:
 	ret = connect_error_translate(ret);
 
 	if (ret != NRF_CLOUD_CONNECT_RES_SUCCESS) {
-		evt.type = NRF_CLOUD_EVT_TRANSPORT_CONNECTING;
+		evt.type = NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR;
 		evt.status = ret;
 		nfsm_set_current_state_and_notify(nfsm_get_current_state(), &evt);
 		goto reset;

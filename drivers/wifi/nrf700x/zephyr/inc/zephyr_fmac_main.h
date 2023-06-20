@@ -36,11 +36,13 @@ struct wifi_nrf_vif_ctx_zep {
 	void *supp_drv_if_ctx;
 	void *rpu_ctx_zep;
 	unsigned char vif_idx;
-	struct net_eth_addr mac_addr;
 
 	scan_result_cb_t disp_scan_cb;
 	bool scan_in_progress;
 	int scan_type;
+	unsigned int scan_res_cnt;
+
+	struct net_eth_addr mac_addr;
 
 	unsigned int assoc_freq;
 	enum wifi_nrf_fmac_if_op_state if_op_state;
@@ -49,6 +51,24 @@ struct wifi_nrf_vif_ctx_zep {
 #ifdef CONFIG_WPA_SUPP
 	struct zep_wpa_supp_dev_callbk_fns supp_callbk_fns;
 #endif /* CONFIG_WPA_SUPP */
+	/* Used to store the negotiated twt flow id
+	 * for "twt_teardown_all" command.
+	 */
+	unsigned char neg_twt_flow_id;
+#ifdef CONFIG_NET_STATISTICS_ETHERNET
+	struct net_stats_eth eth_stats;
+#endif /* CONFIG_NET_STATISTICS_ETHERNET */
+	int if_type;
+	struct wifi_ps_config *ps_info;
+	bool ps_config_info_evnt;
+	bool passive_scan;
+	bool authorized;
+	struct wifi_nrf_ext_capa {
+		enum nrf_wifi_iftype iftype;
+		unsigned char *ext_capa, *ext_capa_mask;
+		unsigned int ext_capa_len;
+	} iface_ext_capa;
+	bool cookie_resp_received;
 };
 
 struct wifi_nrf_vif_ctx_map {
@@ -66,10 +86,12 @@ struct wifi_nrf_ctx_zep {
 	unsigned char rf_test;
 #else /* CONFIG_NRF700X_RADIO_TEST */
 	struct wifi_nrf_vif_ctx_zep vif_ctx_zep[MAX_NUM_VIFS];
-#ifdef CONFIG_NRF700X_WIFI_UTIL
+#ifdef CONFIG_NRF700X_UTIL
 	struct rpu_conf_params conf_params;
-#endif /* CONFIG_NRF700X_WIFI_UTIL */
+#endif /* CONFIG_NRF700X_UTIL */
 #endif /* CONFIG_NRF700X_RADIO_TEST */
+	unsigned char *extended_capa, *extended_capa_mask;
+	unsigned int extended_capa_len;
 };
 
 struct wifi_nrf_drv_priv_zep {

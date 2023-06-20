@@ -21,6 +21,11 @@ static struct k_work_delayable diag_work;
 
 int nrf_modem_lib_diag_stats_get(struct nrf_modem_lib_diag_stats *stats)
 {
+	/* Prevent runtime stats get of uninitialized heap which causes unresponsiveness. */
+	if (!nrf_modem_is_initialized()) {
+		return -EPERM;
+	}
+
 	if (!stats) {
 		return -EFAULT;
 	}
@@ -74,7 +79,7 @@ static void diag_task(struct k_work *item)
 }
 #endif
 
-static int nrf_modem_lib_diag_sys_init(const struct device *unused)
+static int nrf_modem_lib_diag_sys_init(void)
 {
 #if CONFIG_NRF_MODEM_LIB_MEM_DIAG_ALLOC
 	static HEAP_LISTENER_ALLOC_DEFINE(

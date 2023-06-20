@@ -6,21 +6,23 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
+file(TO_CMAKE_PATH $ENV{ZEPHYR_BASE} CMAKE_STYLE_ZEPHYR)
+
 if (CONFIG_AUDIO_DFU EQUAL 1)
     list(APPEND mcuboot_OVERLAY_CONFIG
         "${CMAKE_CURRENT_LIST_DIR}/dfu/conf/overlay-mcuboot.conf"
-        "$ENV{ZEPHYR_BASE}/../nrf/subsys/partition_manager/partition_manager_enabled.conf"
+        "${CMAKE_STYLE_ZEPHYR}/../nrf/subsys/partition_manager/partition_manager_enabled.conf"
     )
 endif()
 
 if (CONFIG_AUDIO_DFU EQUAL 2)
     list(APPEND mcuboot_OVERLAY_CONFIG
         "${CMAKE_CURRENT_LIST_DIR}/dfu/conf/overlay-mcuboot_external_flash.conf"
-        "$ENV{ZEPHYR_BASE}/../nrf/subsys/partition_manager/partition_manager_enabled.conf"
+        "${CMAKE_STYLE_ZEPHYR}/../nrf/subsys/partition_manager/partition_manager_enabled.conf"
     )
     list(APPEND mcuboot_DTC_OVERLAY_FILE
         "${CMAKE_CURRENT_LIST_DIR}/dfu/conf/overlay-dfu_external_flash.overlay"
-        "$ENV{ZEPHYR_BASE}/../nrf/modules/mcuboot/flash_sim.overlay"
+        "${CMAKE_STYLE_ZEPHYR}/../nrf/modules/mcuboot/flash_sim.overlay"
     )
     set(DTC_OVERLAY_FILE ${CMAKE_CURRENT_LIST_DIR}/dfu/conf/overlay-dfu_external_flash.overlay)
     set(mcuboot_PM_STATIC_YML_FILE ${CMAKE_CURRENT_LIST_DIR}/dfu/conf/pm_dfu_external_flash.yml)
@@ -60,10 +62,10 @@ target_sources(app PRIVATE
 
 # Include application events and configuration headers
 zephyr_library_include_directories(
+    include
     src/audio
     src/bluetooth
     src/drivers
-    src/events
     src/modules
     src/utils
     src/utils/macros
@@ -76,7 +78,6 @@ zephyr_library_include_directories(app PRIVATE
 add_subdirectory(src/audio)
 add_subdirectory(src/bluetooth)
 add_subdirectory(src/drivers)
-add_subdirectory(src/events)
 add_subdirectory(src/modules)
 add_subdirectory(src/utils)
 
@@ -91,10 +92,11 @@ endif()
 
 if ((CONFIG_AUDIO_DFU EQUAL 1) OR (CONFIG_AUDIO_DFU EQUAL 2))
     set(BLE5_CTR_SIGN_STEP ${APPLICATION_BINARY_DIR}/dummy)
+    file(TO_CMAKE_PATH ${ZEPHYR_NRF_MODULE_DIR}/lib/bin/bt_ll_acs_nrf53/bin CMAKE_STYLE_LL_ACS_NRF53_BIN)
 
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/tools/buildprog/ble5-ctr-rpmsg_sign.py
-        -I ${CMAKE_CURRENT_LIST_DIR}/dfu/bin/ -b ${APPLICATION_BINARY_DIR} ${min_b0n_flag}
+        -I ${CMAKE_STYLE_LL_ACS_NRF53_BIN} -b ${APPLICATION_BINARY_DIR} ${min_b0n_flag}
         OUTPUT ${BLE5_CTR_SIGN_STEP}
         DEPENDS merged_domains_hex
         COMMENT "Running post-build ble5-ctr signing step..."

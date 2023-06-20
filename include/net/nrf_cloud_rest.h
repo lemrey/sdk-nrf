@@ -138,7 +138,8 @@ struct nrf_cloud_rest_agps_request {
 	bool filtered;
 	/** Constrain the set of ephemerides to only those currently
 	 *  visible at or above the specified elevation threshold
-	 *  angle in degrees. Range is 0 to 90.
+	 *  angle in degrees. Range is 0 to 90.  Set to
+	 *  NRF_CLOUD_AGPS_MASK_ANGLE_NONE to exclude from request.
 	 */
 	uint8_t mask_angle;
 };
@@ -153,19 +154,10 @@ struct nrf_cloud_rest_agps_result {
 	size_t agps_sz;
 };
 
-/** Omit the prediction count from P-GPS request */
-#define NRF_CLOUD_REST_PGPS_REQ_NO_COUNT	0
-/** Omit the prediction validity period from P-GPS request */
-#define NRF_CLOUD_REST_PGPS_REQ_NO_INTERVAL	0
-/** Omit the GPS day from P-GPS request */
-#define NRF_CLOUD_REST_PGPS_REQ_NO_GPS_DAY	0
-/** Omit the GPS time of day from P-GPS request */
-#define NRF_CLOUD_REST_PGPS_REQ_NO_GPS_TOD	(-1)
-
 /** @brief Data required for nRF Cloud Predicted GPS (P-GPS) request */
 struct nrf_cloud_rest_pgps_request {
 	/** Data to be included in the P-GPS request. To omit an item
-	 * use the appropriate `NRF_CLOUD_REST_PGPS_REQ_NO_` define.
+	 * use the appropriate `NRF_CLOUD_PGPS_REQ_NO_` define.
 	 */
 	const struct gps_pgps_request *pgps_req;
 };
@@ -215,6 +207,7 @@ int nrf_cloud_rest_agps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 	struct nrf_cloud_rest_agps_request const *const request,
 	struct nrf_cloud_rest_agps_result *const result);
 
+#if defined(CONFIG_NRF_CLOUD_PGPS)
 /**
  * @brief nRF Cloud Predicted GPS (P-GPS) data request.
  *
@@ -230,6 +223,7 @@ int nrf_cloud_rest_agps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
  */
 int nrf_cloud_rest_pgps_data_get(struct nrf_cloud_rest_context *const rest_ctx,
 	struct nrf_cloud_rest_pgps_request const *const request);
+#endif
 
 /**
  * @brief Requests nRF Cloud FOTA job info for the specified device.
@@ -384,6 +378,23 @@ int nrf_cloud_rest_send_device_message(struct nrf_cloud_rest_context *const rest
  */
 int nrf_cloud_rest_send_location(struct nrf_cloud_rest_context *const rest_ctx,
 	const char *const device_id, const struct nrf_cloud_gnss_data * const gnss);
+
+/**
+ * @brief Send the device status to nRF Cloud as a device message. In addition to standard
+ * message storage, the data will also be stored in the device's shadow.
+ *
+ * @param[in,out] rest_ctx Context for communicating with nRF Cloud's REST API.
+ * @param[in]     device_id Null-terminated, unique device ID registered with nRF Cloud.
+ * @param[in]     dev_status Device status to be encoded in the message.
+ * @param[in]     timestamp_ms UNIX timestamp, in milliseconds, to be included in the message.
+ *
+ * @retval 0 If successful.
+ *         Otherwise, a (negative) error code is returned.
+ *         See @verbatim embed:rst:inline :ref:`nrf_cloud_rest_failure` @endverbatim for details.
+ */
+int nrf_cloud_rest_device_status_message_send(struct nrf_cloud_rest_context *const rest_ctx,
+	const char *const device_id, const struct nrf_cloud_device_status *const dev_status,
+	const int64_t timestamp_ms);
 
 /** @} */
 

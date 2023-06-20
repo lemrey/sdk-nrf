@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr/sys/util.h>
-
 #include <platform/include/tfm_platform_system.h>
 #include <cmsis.h>
 #include <stdio.h>
@@ -17,9 +15,9 @@
 #include "tfm_ioctl_api.h"
 #include "tfm_platform_hal_ioctl.h"
 #include <tfm_hal_isolation.h>
-#include <tfm_memory_utils.h>
 
 #include <hal/nrf_gpio.h>
+#include "handle_attr.h"
 
 void tfm_platform_hal_system_reset(void)
 {
@@ -39,6 +37,8 @@ tfm_platform_hal_fw_info_service(psa_invec  *in_vec, psa_outvec *out_vec)
 	uint32_t attr = TFM_HAL_ACCESS_WRITABLE |
 			TFM_HAL_ACCESS_READABLE |
 			TFM_HAL_ACCESS_NS;
+	uintptr_t boundary = (1 << HANDLE_ATTR_NS_POS) &
+	                      HANDLE_ATTR_NS_MASK;
 
 	if (in_vec->len != sizeof(struct tfm_fw_info_args_t) ||
 	    out_vec->len != sizeof(struct tfm_fw_info_out_t)) {
@@ -56,16 +56,17 @@ tfm_platform_hal_fw_info_service(psa_invec  *in_vec, psa_outvec *out_vec)
 		return TFM_PLATFORM_ERR_INVALID_PARAM;
 	}
 
-	status = tfm_hal_memory_has_access((uintptr_t)args->info,
-					    sizeof(struct fw_info),
-					    attr);
+	status = tfm_hal_memory_check(boundary,
+				      (uintptr_t)args->info,
+				      sizeof(struct fw_info),
+				      attr);
 	if (status != TFM_HAL_SUCCESS) {
 		return TFM_PLATFORM_ERR_INVALID_PARAM;
 	}
 
 	tfm_info = fw_info_find((uintptr_t)args->fw_address);
 	if (tfm_info != NULL) {
-		tfm_memcpy(args->info, tfm_info, sizeof(struct fw_info));
+		memcpy(args->info, tfm_info, sizeof(struct fw_info));
 		out->result = 0;
 		err = TFM_PLATFORM_ERR_SUCCESS;
 	}

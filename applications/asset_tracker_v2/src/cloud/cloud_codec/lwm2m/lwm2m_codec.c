@@ -85,29 +85,21 @@ int cloud_codec_init(struct cloud_data_cfg *cfg, cloud_codec_evt_handler_t event
 	return 0;
 }
 
-int cloud_codec_encode_neighbor_cells(struct cloud_codec_data *output,
-				      struct cloud_data_neighbor_cells *neighbor_cells)
+int cloud_codec_encode_cloud_location(struct cloud_codec_data *output,
+				 struct cloud_data_cloud_location *cloud_location)
 {
 	ARG_UNUSED(output);
 
 	int err;
 
-	err = lwm2m_codec_helpers_set_neighbor_cell_data(neighbor_cells);
+	err = lwm2m_codec_helpers_set_neighbor_cell_data(&cloud_location->neighbor_cells);
 	if (err) {
 		return err;
 	}
 
-	neighbor_cells->queued = false;
+	cloud_location->queued = false;
 	return 0;
 }
-
-#if defined(CONFIG_LOCATION_METHOD_WIFI)
-int cloud_codec_encode_wifi_access_points(struct cloud_codec_data *output,
-					  struct cloud_data_wifi_access_points *wifi_access_points)
-{
-	return -ENOTSUP;
-}
-#endif
 
 int cloud_codec_encode_agps_request(struct cloud_codec_data *output,
 				    struct cloud_data_agps_request *agps_request)
@@ -159,8 +151,8 @@ int cloud_codec_encode_data(struct cloud_codec_data *output,
 	err = lwm2m_codec_helpers_set_gnss_data(gnss_buf);
 	if (err == 0) {
 
-		static const char * const path_list[] = {
-			LWM2M_PATH(LWM2M_OBJECT_LOCATION_ID)
+		static const struct lwm2m_obj_path path_list[] = {
+			LWM2M_OBJ(LWM2M_OBJECT_LOCATION_ID)
 		};
 
 		err = lwm2m_codec_helpers_object_path_list_add(output,
@@ -182,9 +174,9 @@ int cloud_codec_encode_data(struct cloud_codec_data *output,
 	err = lwm2m_codec_helpers_set_modem_dynamic_data(modem_dyn_buf);
 	if (err == 0) {
 
-		static const char * const path_list[] = {
-			LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, CURRENT_TIME_RID),
-			LWM2M_PATH(LWM2M_OBJECT_CONNECTIVITY_MONITORING_ID)
+		static const struct lwm2m_obj_path path_list[] = {
+			LWM2M_OBJ(LWM2M_OBJECT_DEVICE_ID, 0, CURRENT_TIME_RID),
+			LWM2M_OBJ(LWM2M_OBJECT_CONNECTIVITY_MONITORING_ID)
 		};
 
 		err = lwm2m_codec_helpers_object_path_list_add(output,
@@ -206,12 +198,12 @@ int cloud_codec_encode_data(struct cloud_codec_data *output,
 	err = lwm2m_codec_helpers_set_modem_static_data(modem_stat_buf);
 	if (err == 0) {
 
-		static const char * const path_list[] = {
-			LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, MANUFACTURER_RID),
-			LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, MODEL_NUMBER_RID),
-			LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, SOFTWARE_VERSION_RID),
-			LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, FIRMWARE_VERSION_RID),
-			LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, DEVICE_SERIAL_NUMBER_ID)
+		static const struct lwm2m_obj_path path_list[] = {
+			LWM2M_OBJ(LWM2M_OBJECT_DEVICE_ID, 0, MANUFACTURER_RID),
+			LWM2M_OBJ(LWM2M_OBJECT_DEVICE_ID, 0, MODEL_NUMBER_RID),
+			LWM2M_OBJ(LWM2M_OBJECT_DEVICE_ID, 0, SOFTWARE_VERSION_RID),
+			LWM2M_OBJ(LWM2M_OBJECT_DEVICE_ID, 0, FIRMWARE_VERSION_RID),
+			LWM2M_OBJ(LWM2M_OBJECT_DEVICE_ID, 0, DEVICE_SERIAL_NUMBER_ID)
 		};
 
 		err = lwm2m_codec_helpers_object_path_list_add(output,
@@ -233,8 +225,8 @@ int cloud_codec_encode_data(struct cloud_codec_data *output,
 	err = lwm2m_codec_helpers_set_battery_data(bat_buf);
 	if (err == 0) {
 
-		static const char * const path_list[] = {
-			LWM2M_PATH(LWM2M_OBJECT_DEVICE_ID, 0, POWER_SOURCE_VOLTAGE_RID)
+		static const struct lwm2m_obj_path path_list[] = {
+			LWM2M_OBJ(LWM2M_OBJECT_DEVICE_ID, 0, POWER_SOURCE_VOLTAGE_RID)
 		};
 
 		err = lwm2m_codec_helpers_object_path_list_add(output,
@@ -257,13 +249,13 @@ int cloud_codec_encode_data(struct cloud_codec_data *output,
 	err = lwm2m_codec_helpers_set_sensor_data(sensor_buf);
 	if (err == 0) {
 
-		static const char * const path_list[] = {
-			LWM2M_PATH(IPSO_OBJECT_TEMP_SENSOR_ID, 0, TIMESTAMP_RID),
-			LWM2M_PATH(IPSO_OBJECT_HUMIDITY_SENSOR_ID, 0, TIMESTAMP_RID),
-			LWM2M_PATH(IPSO_OBJECT_PRESSURE_ID, 0, TIMESTAMP_RID),
-			LWM2M_PATH(IPSO_OBJECT_TEMP_SENSOR_ID, 0, SENSOR_VALUE_RID),
-			LWM2M_PATH(IPSO_OBJECT_HUMIDITY_SENSOR_ID, 0, SENSOR_VALUE_RID),
-			LWM2M_PATH(IPSO_OBJECT_PRESSURE_ID, 0, SENSOR_VALUE_RID)
+		static const struct lwm2m_obj_path path_list[] = {
+			LWM2M_OBJ(IPSO_OBJECT_TEMP_SENSOR_ID, 0, TIMESTAMP_RID),
+			LWM2M_OBJ(IPSO_OBJECT_HUMIDITY_SENSOR_ID, 0, TIMESTAMP_RID),
+			LWM2M_OBJ(IPSO_OBJECT_PRESSURE_ID, 0, TIMESTAMP_RID),
+			LWM2M_OBJ(IPSO_OBJECT_TEMP_SENSOR_ID, 0, SENSOR_VALUE_RID),
+			LWM2M_OBJ(IPSO_OBJECT_HUMIDITY_SENSOR_ID, 0, SENSOR_VALUE_RID),
+			LWM2M_OBJ(IPSO_OBJECT_PRESSURE_ID, 0, SENSOR_VALUE_RID)
 		};
 
 		err = lwm2m_codec_helpers_object_path_list_add(output,
@@ -300,8 +292,8 @@ int cloud_codec_encode_ui_data(struct cloud_codec_data *output,
 		return err;
 	}
 
-	static const char * const path_list[] = {
-		LWM2M_PATH(IPSO_OBJECT_PUSH_BUTTON_ID),
+	static const struct lwm2m_obj_path path_list[] = {
+		LWM2M_OBJ(IPSO_OBJECT_PUSH_BUTTON_ID),
 	};
 
 	err = lwm2m_codec_helpers_object_path_list_add(output, path_list, ARRAY_SIZE(path_list));

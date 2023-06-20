@@ -37,6 +37,7 @@ LOG_MODULE_REGISTER(fp_sample, LOG_LEVEL_INF);
 #define FP_DISCOVERABLE_ADV_TIMEOUT_MINUTES			(10)
 
 static enum bt_fast_pair_adv_mode fp_adv_mode = BT_FAST_PAIR_ADV_MODE_DISCOVERABLE;
+static bool new_adv_session = true;
 static struct bt_conn *peer;
 
 static struct k_work bt_adv_restart;
@@ -58,7 +59,9 @@ static void advertising_stop(void)
 
 static void advertising_start(void)
 {
-	int err = bt_adv_helper_adv_start(fp_adv_mode);
+	int err = bt_adv_helper_adv_start(fp_adv_mode, new_adv_session);
+
+	new_adv_session = false;
 
 	int ret = k_work_cancel_delayable(&fp_discoverable_adv_timeout);
 
@@ -180,6 +183,8 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 
 	__ASSERT_NO_MSG(ret == 1);
 	ARG_UNUSED(ret);
+
+	new_adv_session = true;
 }
 
 static void security_changed(struct bt_conn *conn, bt_security_t level, enum bt_security_err err)
@@ -304,6 +309,7 @@ static void fp_adv_mode_btn_handle(uint32_t button_state, uint32_t has_changed)
 	if (button_pressed & FP_ADV_MODE_BUTTON_MASK) {
 		fp_adv_mode = (fp_adv_mode + 1) % BT_FAST_PAIR_ADV_MODE_COUNT;
 		if (!peer) {
+			new_adv_session = true;
 			advertising_start();
 		}
 
@@ -330,6 +336,7 @@ static void bond_remove_btn_handle(uint32_t button_state, uint32_t has_changed)
 		}
 
 		if (!peer) {
+			new_adv_session = true;
 			advertising_start();
 		}
 	}
@@ -345,7 +352,12 @@ static void button_changed(uint32_t button_state, uint32_t has_changed)
 	bond_remove_btn_handle(button_state, has_changed);
 }
 
-void main(void)
+static void fp_account_key_written(struct bt_conn *conn)
+{
+	LOG_INF("Fast Pair Account Key has been written");
+}
+
+int main(void)
 {
 	bool run_led_on = true;
 	int err;
@@ -355,31 +367,40 @@ void main(void)
 	static struct bt_conn_auth_info_cb auth_info_cb = {
 		.pairing_complete = pairing_complete
 	};
+	static const struct bt_fast_pair_info_cb fp_info_callbacks = {
+		.account_key_written = fp_account_key_written,
+	};
 
 	LOG_INF("Starting Bluetooth Fast Pair example");
 
 	err = bt_conn_auth_cb_register(&conn_auth_callbacks);
 	if (err) {
 		LOG_ERR("Registering authentication callbacks failed (err %d)", err);
-		return;
+		return 0;
 	}
 
 	err = bt_conn_auth_info_cb_register(&auth_info_cb);
 	if (err) {
 		LOG_ERR("Registering authentication info callbacks failed (err %d)", err);
-		return;
+		return 0;
+	}
+
+	err = bt_fast_pair_info_cb_register(&fp_info_callbacks);
+	if (err) {
+		LOG_ERR("Registering Fast Pair info callbacks failed (err %d)", err);
+		return 0;
 	}
 
 	err = hids_helper_init();
 	if (err) {
 		LOG_ERR("HIDS init failed (err %d)", err);
-		return;
+		return 0;
 	}
 
 	err = bt_enable(NULL);
 	if (err) {
 		LOG_ERR("Bluetooth init failed (err %d)", err);
-		return;
+		return 0;
 	}
 
 	LOG_INF("Bluetooth initialized");
@@ -387,7 +408,7 @@ void main(void)
 	err = settings_load();
 	if (err) {
 		LOG_ERR("Settings load failed (err: %d)", err);
-		return;
+		return 0;
 	}
 
 	LOG_INF("Settings loaded");
@@ -395,19 +416,19 @@ void main(void)
 	err = dk_leds_init();
 	if (err) {
 		LOG_ERR("LEDs init failed (err %d)", err);
-		return;
+		return 0;
 	}
 
 	err = battery_module_init();
 	if (err) {
 		LOG_ERR("Battery module init failed (err %d)", err);
-		return;
+		return 0;
 	}
 
 	err = bt_le_adv_prov_fast_pair_set_battery_mode(BT_FAST_PAIR_ADV_BATTERY_MODE_SHOW_UI_IND);
 	if (err) {
 		LOG_ERR("Setting advertising battery mode failed (err %d)", err);
-		return;
+		return 0;
 	}
 
 	k_work_init(&bt_adv_restart, bt_adv_restart_fn);
@@ -424,7 +445,7 @@ void main(void)
 	err = dk_buttons_init(button_changed);
 	if (err) {
 		LOG_ERR("Buttons init failed (err %d)", err);
-		return;
+		return 0;
 	}
 
 	for (;;) {

@@ -45,7 +45,7 @@ SSED device type
 
 The SSED device type was created for the window covering devices to optimize the power usage of the device and communication pattern with the parent.
 
-.. include:: ../../../doc/nrf/ug_thread_commissioning.rst
+.. include:: /protocols/thread/overview/commissioning.rst
    :start-after: thread_ssed_description_start
    :end-before: thread_ssed_description_end
 
@@ -159,14 +159,14 @@ Before you start testing the application, you can select one of the `Matter wind
 Selecting a build type in |VSC|
 -------------------------------
 
-.. include:: /gs_modifying.rst
+.. include:: /getting_started/modifying.rst
    :start-after: build_types_selection_vsc_start
    :end-before: build_types_selection_vsc_end
 
 Selecting a build type from command line
 ----------------------------------------
 
-.. include:: /gs_modifying.rst
+.. include:: /getting_started/modifying.rst
    :start-after: build_types_selection_cmd_start
    :end-before: For example, you can replace the
 
@@ -252,6 +252,8 @@ For this sample, you can use one of the following :ref:`onboarding information f
 
        - MT:SAGA442C00KA0648G00
        - 34970112332
+
+|matter_cd_info_note_for_samples|
 
 Upgrading the device firmware
 =============================

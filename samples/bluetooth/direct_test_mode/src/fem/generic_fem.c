@@ -34,7 +34,7 @@ static struct generic_fem {
 	const struct gpio_dt_spec chl;
 #endif
 
-} generic_fem_cfg = {
+} generic_fem_cfg __used = {
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), ant_sel_gpios)
 	.ant_sel = GPIO_DT_SPEC_GET(GENERIC_FEM_NODE, ant_sel_gpios),
 #endif
@@ -191,7 +191,7 @@ static const struct fem_interface_api generic_fem_api = {
 	.tx_default_gain_get = tx_default_gain_get,
 };
 
-static int generic_fem_setup(const struct device *dev)
+static int generic_fem_setup(void)
 {
 	int err;
 

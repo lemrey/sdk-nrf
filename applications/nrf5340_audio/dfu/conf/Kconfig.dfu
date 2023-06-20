@@ -21,6 +21,11 @@ config B0N_MINIMAL
 
 if AUDIO_DFU = 1 || AUDIO_DFU = 2
 
+# Empty net core image is needed when DFU is enabled
+config NCS_SAMPLE_EMPTY_NET_CORE_CHILD_IMAGE
+	bool "Dummy Net core application"
+	default y
+
 config AUDIO_DFU_ENABLE
 	bool
 	default y
@@ -40,37 +45,60 @@ config THREAD_NAME
 	bool
 	default y
 
+config ZCBOR
+	bool
+	default y
+
 # DFU
 config MCUMGR
 	bool
 	default y
 
-config MCUMGR_CMD_OS_MGMT
+config MCUMGR_GRP_OS
 	bool
 	default y
 
-config OS_MGMT_TASKSTAT
+config MCUMGR_GRP_OS_TASKSTAT
 	bool
 	default y
 
-config MCUMGR_CMD_STAT_MGMT
+config MCUMGR_GRP_STAT
 	bool
 	default y
 
-config MCUMGR_CMD_IMG_MGMT
+config MCUMGR_GRP_IMG
 	bool
 	default y
 
-config MCUMGR_BUF_SIZE
+config MCUMGR_TRANSPORT_NETBUF_SIZE
 	int
 	default 1024
 
-# DFU over BLE
-config MCUMGR_SMP_BT
+config IMG_MANAGER
 	bool
 	default y
 
-config MCUMGR_SMP_BT_AUTHEN
+config FLASH
+	bool
+	default y
+
+config FLASH_MAP
+	bool
+	default y
+
+config STREAM_FLASH
+	bool
+	default y
+
+# DFU over BLE
+config BT_PERIPHERAL
+	default y
+
+config MCUMGR_TRANSPORT_BT
+	bool
+	default y
+
+config MCUMGR_TRANSPORT_BT_AUTHEN
 	bool
 	default n
 
@@ -82,7 +110,7 @@ config BT_BUF_ACL_TX_SIZE
 	int
 	default 502
 
-config MCUMGR_BUF_COUNT
+config MCUMGR_TRANSPORT_NETBUF_COUNT
 	int
 	default 6
 
@@ -158,11 +186,11 @@ config SPI_NOR_FLASH_LAYOUT_PAGE_SIZE
 	default 4096
 
 # Enable custom SMP request to erase settings partition.
-config MCUMGR_GRP_ZEPHYR_BASIC
+config MCUMGR_GRP_ZBASIC
 	bool
 	default y
 
-config MCUMGR_GRP_BASIC_CMD_STORAGE_ERASE
+config MCUMGR_GRP_ZBASIC_STORAGE_ERASE
 	bool
 	default y
 

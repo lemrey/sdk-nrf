@@ -12,12 +12,13 @@ The following commands list contains generic AT commands.
 SLM version #XSLMVER
 ====================
 
-The ``#XSLMVER`` command requests the SLM version.
+The ``#XSLMVER`` command return the versions of the |NCS| in which the SLM application is built.
+It also returns the version of the modem library that SLM uses to communicate with the modem.
 
 Set command
 -----------
 
-The set command requests the SLM version.
+The set command returns the versions of the |NCS| and the modem library.
 
 Syntax
 ~~~~~~
@@ -31,19 +32,21 @@ Response syntax
 
 ::
 
-   #XSLMVERSION: <version>
+   #XSLMVER: <ncs_version>,<libmodem_version>
 
-The ``<version>`` value returns a string containing the SLM version.
+The ``<ncs_version>`` value returns a string containing the version of the |NCS|.
+
+The ``<libmodem_version>`` value returns a string containing the version of the modem library.
 
 Example
 ~~~~~~~
 
-The following command example reads the SLM version:
+The following command example reads the versions:
 
 ::
 
    AT#XSLMVER
-   #XSLMVER: 1.2
+   #XSLMVER: "2.3.0","2.3.0"
    OK
 
 Read command
@@ -300,18 +303,18 @@ Set command
 -----------
 
 The set command changes the UART baud rate and hardware flow control settings.
-Hardware flow control settings can be changed only if :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_UART_HWFC_RUNTIME>` is selected.
+Hardware flow control settings can be changed only if ``hw-flow-control`` is enabled in device tree.
 These settings are stored in the flash memory and applied during the application startup.
 
 Syntax
 ~~~~~~
 
-The following is the syntax when :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_UART_HWFC_RUNTIME>` is selected:
+The following is the syntax when ``hw-flow-control`` is enabled in device tree.:
 ::
 
    #XSLMUART[=<baud_rate>,<hwfc>]
 
-The following is the syntax when :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_UART_HWFC_RUNTIME>` is not selected:
+The following is the syntax when ``hw-flow-control`` is disabled in device tree.:
 ::
 
    #XSLMUART[=<baud_rate>]
@@ -405,13 +408,13 @@ Syntax
 Response syntax
 ~~~~~~~~~~~~~~~
 
-The following is the syntax when :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_UART_HWFC_RUNTIME>` is selected:
+The following is the syntax when ``hw-flow-control`` is enabled in device tree:
 
 ::
 
    #XSLMUART: (list of the available baud rate options),(disable or enable hwfc)
 
-The following is the syntax when :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_UART_HWFC_RUNTIME>` not selected:
+The following is the syntax when ``hw-flow-control`` is disabled in device tree:
 
 ::
 
@@ -420,14 +423,14 @@ The following is the syntax when :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_
 Example
 ~~~~~~~
 
-The following is an example when :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_UART_HWFC_RUNTIME>` is selected:
+The following is an example when ``hw-flow-control`` is enabled in device tree:
 
 ::
 
    AT#XSLMUART=?
    #XSLMUART: (1200,2400,4800,9600,14400,19200,38400,57600,115200,230400,460800,921600,1000000),(0,1)
 
-The following is an example when :ref:`CONFIG_SLM_UART_HWFC_RUNTIME <CONFIG_SLM_UART_HWFC_RUNTIME>` is not selected:
+The following is an example when ``hw-flow-control`` is disabled in device tree.:
 
 ::
 

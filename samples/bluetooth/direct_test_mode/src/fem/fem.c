@@ -10,9 +10,11 @@
 #include <hal/nrf_radio.h>
 #include <hal/nrf_timer.h>
 #include <helpers/nrfx_gppi.h>
+#include <nrf_erratas.h>
 
 #include <zephyr/sys/printk.h>
 
+#include <mpsl_fem_config_common.h>
 #include <mpsl_fem_protocol_api.h>
 
 #include "fem.h"
@@ -276,6 +278,13 @@ int8_t fem_tx_output_power_prepare(int8_t power, int8_t *radio_tx_power, uint16_
 	return output_power;
 }
 
+int8_t fem_tx_output_power_check(int8_t power, uint16_t freq_mhz, bool tx_power_ceiling)
+{
+	mpsl_tx_power_split_t power_split = { 0 };
+
+	return mpsl_fem_tx_power_split(power, &power_split, freq_mhz, tx_power_ceiling);
+}
+
 uint32_t fem_default_tx_gain_get(void)
 {
 	if (fem_api->tx_default_gain_get) {
@@ -318,4 +327,53 @@ int fem_init(NRF_TIMER_Type *timer_instance, uint8_t compare_channel_mask)
 #endif
 
 	return 0;
+}
+
+#if (NRF52_CONFIGURATION_254_PRESENT || NRF52_CONFIGURATION_255_PRESENT || \
+	NRF52_CONFIGURATION_256_PRESENT || NRF52_CONFIGURATION_257_PRESENT)
+static void apply_fem_errata_25X(nrf_radio_mode_t mode)
+{
+	static uint8_t old_mode = NRF_RADIO_MODE_NRF_1MBIT;
+
+	if (*(volatile uint32_t *) 0x10000330UL != 0xFFFFFFFFUL) {
+		*(volatile uint32_t *) 0x4000174CUL = *(volatile uint32_t *) 0x10000330UL;
+	}
+
+	if (mode == NRF_RADIO_MODE_IEEE802154_250KBIT) {
+		if (*(volatile uint32_t *) 0x10000334UL != 0xFFFFFFFFUL) {
+			*(volatile uint32_t *) 0x40001584UL = *(volatile uint32_t *) 0x10000334UL;
+		}
+		if (*(volatile uint32_t *) 0x10000338UL != 0xFFFFFFFFUL) {
+			*(volatile uint32_t *) 0x40001588UL = *(volatile uint32_t *) 0x10000338UL;
+		}
+	}
+
+	if ((mode != NRF_RADIO_MODE_IEEE802154_250KBIT) && (mode != old_mode)) {
+		if (*(volatile uint32_t *) 0x10000334UL != 0xFFFFFFFFUL) {
+			*(volatile uint32_t *) 0x40001584UL =
+			((*(volatile uint32_t *) 0x40001584UL) & 0xBFFFFFFUL) | 0x00010000UL;
+		}
+		if (*(volatile uint32_t *) 0x10000338UL != 0xFFFFFFFFUL) {
+			*(volatile uint32_t *) 0x40001588UL =
+			((*(volatile uint32_t *) 0x40001588UL) & 0xBFFFFFFUL);
+		}
+	}
+
+	old_mode = mode;
+}
+#else
+static void apply_fem_errata_25X(nrf_radio_mode_t mode)
+{
+	ARG_UNUSED(mode);
+}
+#endif /* (NRF52_CONFIGURATION_254_PRESENT || NRF52_CONFIGURATION_255_PRESENT || \
+	*  NRF52_CONFIGURATION_256_PRESENT || NRF52_CONFIGURATION_257_PRESENT)
+	*/
+
+void fem_errata_25X(nrf_radio_mode_t mode)
+{
+	if (nrf52_configuration_254() || nrf52_configuration_255() ||
+	    nrf52_configuration_256() || nrf52_configuration_257()) {
+		apply_fem_errata_25X(mode);
+	}
 }

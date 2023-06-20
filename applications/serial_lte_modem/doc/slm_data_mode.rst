@@ -27,6 +27,7 @@ However, the SLM data mode is applied automatically while using the following mo
 * MQTT publish
 * HTTP request
 * GNSS nRF Cloud send message
+* LwM2M carrier library app data send
 
 Entering data mode
 ==================
@@ -50,6 +51,7 @@ Other examples:
 * ``AT#XFTP="mput",<file>``
 * ``AT#XMQTTPUB=<topic>,"",<qos>,<retain>``
 * ``AT#XNRFCLOUD=2``
+* ``AT#XCARRIER="app_data"``
 
 The SLM application sends an *OK* response when it successfully enters data mode.
 
@@ -106,7 +108,7 @@ Otherwise, if SLM imposes flow control, it disables the UART reception when it r
 SLM reenables UART receptions after the transmission of the data previously received has freed up buffer space.
 The buffer size is set to 3884 bytes by default.
 
-.. note:
+.. note::
    There is no unsolicited notification defined for this event.
    UART hardware flow control is responsible for imposing and revoking flow control.
 

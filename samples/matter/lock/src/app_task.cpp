@@ -14,8 +14,14 @@
 #include "software_images_swapper.h"
 #endif
 
-#ifdef CONFIG_NET_L2_OPENTHREAD
-#include "thread_util.h"
+#ifdef CONFIG_THREAD_WIFI_SWITCHING_CLI_SUPPORT
+#include <lib/shell/Engine.h>
+using chip::Shell::Engine;
+using chip::Shell::shell_command_t;
+#endif
+
+#ifdef CONFIG_CHIP_NUS
+#include "bt_nus_service.h"
 #endif
 
 #ifdef CONFIG_CHIP_NUS
@@ -25,10 +31,7 @@
 #include <platform/CHIPDeviceLayer.h>
 
 #include "board_util.h"
-#include <app-common/zap-generated/attribute-id.h>
-#include <app-common/zap-generated/attribute-type.h>
 #include <app-common/zap-generated/attributes/Accessors.h>
-#include <app-common/zap-generated/cluster-id.h>
 #include <app/clusters/door-lock-server/door-lock-server.h>
 #include <app/clusters/identify-server/identify-server.h>
 #include <app/server/OnboardingCodesUtil.h>
@@ -48,6 +51,10 @@
 #include "ota_util.h"
 #endif
 
+#ifdef CONFIG_CHIP_ICD_SUBSCRIPTION_HANDLING
+#include <app/InteractionModelEngine.h>
+#endif
+
 #include <dk_buttons_and_leds.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -56,7 +63,9 @@
 #include <pm_config.h>
 #endif
 
-LOG_MODULE_DECLARE(app, CONFIG_MATTER_LOG_LEVEL);
+#include <app/InteractionModelEngine.h>
+
+LOG_MODULE_DECLARE(app, CONFIG_CHIP_APP_LOG_LEVEL);
 
 using namespace ::chip;
 using namespace ::chip::app;
@@ -160,13 +169,6 @@ CHIP_ERROR AppTask::Init()
 		return err;
 	}
 
-#ifdef CONFIG_OPENTHREAD_DEFAULT_TX_POWER
-	err = SetDefaultThreadOutputPower();
-	if (err != CHIP_NO_ERROR) {
-		LOG_ERR("Cannot set default Thread output power");
-		return err;
-	}
-#endif /* CONFIG_OPENTHREAD_DEFAULT_TX_POWER */
 #elif defined(CONFIG_CHIP_WIFI)
 	sWiFiCommissioningInstance.Init();
 #else
@@ -200,7 +202,7 @@ CHIP_ERROR AppTask::Init()
 	k_timer_init(&sSwitchImagesTimer, &AppTask::SwitchImagesTimerTimeoutCallback, nullptr);
 #endif
 
-#ifdef CONFIG_MCUMGR_SMP_BT
+#ifdef CONFIG_MCUMGR_TRANSPORT_BT
 	/* Initialize DFU over SMP */
 	GetDFUOverSMP().Init();
 	GetDFUOverSMP().ConfirmNewImage();
@@ -238,6 +240,10 @@ CHIP_ERROR AppTask::Init()
 	ConfigurationMgr().LogDeviceConfig();
 	PrintOnboardingCodes(chip::RendezvousInformationFlags(chip::RendezvousInformationFlag::kBLE));
 
+#ifdef CONFIG_CHIP_ICD_SUBSCRIPTION_HANDLING
+	chip::app::InteractionModelEngine::GetInstance()->RegisterReadHandlerAppCallback(&GetICDUtil());
+#endif
+
 	/*
 	 * Add CHIP event handler and start CHIP thread.
 	 * Note that all the initialization code should happen prior to this point to avoid data races
@@ -250,6 +256,10 @@ CHIP_ERROR AppTask::Init()
 		LOG_ERR("PlatformMgr().StartEventLoopTask() failed");
 		return err;
 	}
+
+#ifdef CONFIG_THREAD_WIFI_SWITCHING_CLI_SUPPORT
+	RegisterSwitchCliCommand();
+#endif
 
 	return CHIP_NO_ERROR;
 }
@@ -322,7 +332,7 @@ void AppTask::SwitchImagesDone()
 	chip::Server::GetInstance().ScheduleFactoryReset();
 }
 
-void AppTask::SwitchImagesEventHandler(const AppEvent &event)
+void AppTask::SwitchImagesEventHandler(const AppEvent &)
 {
 	LOG_INF("Switching application from " CONFIG_APPLICATION_LABEL " to " CONFIG_APPLICATION_OTHER_LABEL);
 
@@ -501,7 +511,7 @@ void AppTask::FunctionHandler(const AppEvent &event)
 			Instance().CancelTimer();
 			Instance().mFunction = FunctionEvent::NoneSelected;
 
-#ifdef CONFIG_MCUMGR_SMP_BT
+#ifdef CONFIG_MCUMGR_TRANSPORT_BT
 			GetDFUOverSMP().StartServer();
 #else
 			LOG_INF("Software update is disabled");
@@ -591,7 +601,7 @@ void AppTask::ChipEventHandler(const ChipDeviceEvent *event, intptr_t /* arg */)
 		UpdateStatusLED();
 		break;
 #if defined(CONFIG_NET_L2_OPENTHREAD)
-	case DeviceEventType::kDnssdPlatformInitialized:
+	case DeviceEventType::kDnssdInitialized:
 #if CONFIG_CHIP_OTA_REQUESTOR
 		InitBasicOTARequestor();
 #endif /* CONFIG_CHIP_OTA_REQUESTOR */

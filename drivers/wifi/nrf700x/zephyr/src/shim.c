@@ -320,10 +320,14 @@ void *net_pkt_to_nbuf(struct net_pkt *pkt)
 
 void *net_pkt_from_nbuf(void *iface, void *frm)
 {
-	struct net_pkt *pkt;
+	struct net_pkt *pkt = NULL;
 	unsigned char *data;
 	unsigned int len;
 	struct nwb *nwb = frm;
+
+	if (!nwb) {
+		return NULL;
+	}
 
 	len = zep_shim_nbuf_data_size(nwb);
 
@@ -332,16 +336,17 @@ void *net_pkt_from_nbuf(void *iface, void *frm)
 	pkt = net_pkt_rx_alloc_with_buffer(iface, len, AF_UNSPEC, 0, K_MSEC(100));
 
 	if (!pkt) {
-		return NULL;
+		goto out;
 	}
 
 	if (net_pkt_write(pkt, data, len)) {
 		net_pkt_unref(pkt);
 		pkt = NULL;
+		goto out;
 	}
 
+out:
 	zep_shim_nbuf_free(nwb);
-
 	return pkt;
 }
 
@@ -634,13 +639,16 @@ static void irq_work_handler(struct k_work *work)
 	}
 }
 
+
+extern struct k_work_q zep_wifi_intr_q;
+
 static void zep_shim_irq_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
 	struct zep_shim_intr_priv *intr_priv = NULL;
 
 	intr_priv = (struct zep_shim_intr_priv *)cb;
 
-	k_work_schedule(&intr_priv->work, K_NO_WAIT);
+	k_work_schedule_for_queue(&zep_wifi_intr_q, &intr_priv->work, K_NO_WAIT);
 }
 
 static enum wifi_nrf_status zep_shim_bus_qspi_intr_reg(void *os_dev_ctx, void *callbk_data,

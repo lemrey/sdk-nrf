@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <date_time.h>
+#include <net/nrf_cloud_codec.h>
 #include <net/nrf_cloud_location.h>
 #include <cloud_codec.h>
 
@@ -26,7 +27,9 @@ enum batch_data_type {
 	GNSS,
 	ENVIRONMENTALS,
 	BUTTON,
-	MODEM_STATIC,
+	/* Only dynamic modem data is handled here. Static modem data is handled
+	 * in the nrf_cloud library; see CONFIG_NRF_CLOUD_SEND_DEVICE_STATUS.
+	 */
 	MODEM_DYNAMIC,
 	VOLTAGE,
 	IMPACT,
@@ -187,67 +190,6 @@ static int add_pvt_data(cJSON *parent, struct cloud_data_gnss *gnss)
 
 	json_add_obj_array(parent, data_obj);
 	return 0;
-}
-
-static int modem_static_data_add(struct cloud_data_modem_static *data, cJSON **val_obj_ref)
-{
-	int err;
-
-	if (!data->queued) {
-		return -ENODATA;
-	}
-
-	err = date_time_uptime_to_unix_time_ms(&data->ts);
-	if (err) {
-		LOG_ERR("date_time_uptime_to_unix_time_ms, error: %d", err);
-		return err;
-	}
-
-	cJSON *modem_val_obj = cJSON_CreateObject();
-
-	if (modem_val_obj == NULL) {
-		return -ENOMEM;
-	}
-
-	err = json_add_str(modem_val_obj, MODEM_IMEI, data->imei);
-	if (err) {
-		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
-		goto exit;
-	}
-
-	err = json_add_str(modem_val_obj, MODEM_ICCID, data->iccid);
-	if (err) {
-		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
-		goto exit;
-	}
-
-	err = json_add_str(modem_val_obj, MODEM_FIRMWARE_VERSION, data->fw);
-	if (err) {
-		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
-		goto exit;
-	}
-
-	err = json_add_str(modem_val_obj, MODEM_BOARD, data->brdv);
-	if (err) {
-		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
-		goto exit;
-	}
-
-	err = json_add_str(modem_val_obj, MODEM_APP_VERSION, data->appv);
-	if (err) {
-		LOG_ERR("Encoding error: %d returned at %s:%d", err, __FILE__, __LINE__);
-		goto exit;
-	}
-
-	*val_obj_ref = modem_val_obj;
-
-	data->queued = false;
-
-	return 0;
-
-exit:
-	cJSON_Delete(modem_val_obj);
-	return err;
 }
 
 static int modem_dynamic_data_add(struct cloud_data_modem_dynamic *data, cJSON **val_obj_ref)
@@ -680,28 +622,6 @@ static int add_batch_data(cJSON *array, enum batch_data_type type, void *buf, si
 			data[i].queued = false;
 			break;
 		}
-		case MODEM_STATIC: {
-			int err;
-			cJSON *data_ref = NULL;
-			struct cloud_data_modem_static *modem_static =
-						(struct cloud_data_modem_static *)buf;
-
-			err = modem_static_data_add(&modem_static[i], &data_ref);
-			if (err && err != -ENODATA) {
-				return err;
-			} else if (err == -ENODATA) {
-				break;
-			}
-
-			err = add_data(array, data_ref, APP_ID_DEVICE, NULL, &modem_static->ts,
-				       true, DATA_MODEM_STATIC, false);
-			if (err && err != -ENODATA) {
-				cJSON_Delete(data_ref);
-				return err;
-			}
-
-			break;
-		}
 		case MODEM_DYNAMIC: {
 			int err, len;
 			char rsrp[5];
@@ -776,58 +696,9 @@ int cloud_codec_init(struct cloud_data_cfg *cfg, cloud_codec_evt_handler_t event
 	return 0;
 }
 
-int cloud_codec_encode_neighbor_cells(struct cloud_codec_data *output,
-				      struct cloud_data_neighbor_cells *neighbor_cells)
-{
- #if defined(CONFIG_NRF_CLOUD_LOCATION)
-	int err;
-	char *buffer;
-	cJSON *root_obj = NULL;
-
-	__ASSERT_NO_MSG(output != NULL);
-	__ASSERT_NO_MSG(neighbor_cells != NULL);
-
-	struct lte_lc_cells_info info = neighbor_cells->cell_data;
-
-	info.neighbor_cells = neighbor_cells->neighbor_cells;
-
-	if (!neighbor_cells->queued) {
-		return -ENODATA;
-	}
-
-	err = nrf_cloud_location_request_json_get(&info, NULL, true, &root_obj);
-	if (err) {
-		LOG_ERR("nrf_cloud_location_request_json_get, error: %d", err);
-		return -ENOMEM;
-	}
-
-	buffer = cJSON_PrintUnformatted(root_obj);
-	if (buffer == NULL) {
-		LOG_ERR("Failed to allocate memory for JSON string");
-
-		err = -ENOMEM;
-		goto exit;
-	}
-
-	if (IS_ENABLED(CONFIG_CLOUD_CODEC_LOG_LEVEL_DBG)) {
-		json_print_obj("Encoded message:\n", root_obj);
-	}
-
-	output->buf = buffer;
-	output->len = strlen(buffer);
-
-exit:
-	neighbor_cells->queued = false;
-	cJSON_Delete(root_obj);
-	return err;
-#endif /* CONFIG_NRF_CLOUD_LOCATION */
-
-	return -ENOTSUP;
-}
-
-#if defined(CONFIG_LOCATION_METHOD_WIFI)
-int cloud_codec_encode_wifi_access_points(struct cloud_codec_data *output,
-					  struct cloud_data_wifi_access_points *wifi_access_points)
+int cloud_codec_encode_cloud_location(
+	struct cloud_codec_data *output,
+	struct cloud_data_cloud_location *cloud_location)
 {
 #if defined(CONFIG_NRF_CLOUD_LOCATION)
 	int err;
@@ -835,21 +706,41 @@ int cloud_codec_encode_wifi_access_points(struct cloud_codec_data *output,
 	cJSON *root_obj = NULL;
 
 	__ASSERT_NO_MSG(output != NULL);
-	__ASSERT_NO_MSG(wifi_access_points != NULL);
+	__ASSERT_NO_MSG(cloud_location != NULL);
 
-	struct wifi_scan_info info = {
-		.ap_info = wifi_access_points->ap_info,
-		.cnt = wifi_access_points->cnt
-	};
+	struct lte_lc_cells_info cell_info;
 
-	if (!wifi_access_points->queued) {
+	if (cloud_location->neighbor_cells_valid) {
+		cell_info = cloud_location->neighbor_cells.cell_data;
+		cell_info.neighbor_cells = cloud_location->neighbor_cells.neighbor_cells;
+	}
+
+#if defined(CONFIG_LOCATION_METHOD_WIFI)
+	struct wifi_scan_info wifi_info;
+
+	if (cloud_location->wifi_access_points_valid) {
+		wifi_info.ap_info = cloud_location->wifi_access_points.ap_info;
+		wifi_info.cnt = cloud_location->wifi_access_points.cnt;
+	}
+#endif
+
+	if (!cloud_location->queued) {
 		return -ENODATA;
 	}
 
-	err = nrf_cloud_location_request_json_get(NULL, &info, true, &root_obj);
+	root_obj = cJSON_CreateObject();
+	err = nrf_cloud_location_request_msg_json_encode(
+		cloud_location->neighbor_cells_valid ? &cell_info : NULL,
+#if defined(CONFIG_LOCATION_METHOD_WIFI)
+		cloud_location->wifi_access_points_valid ? &wifi_info : NULL,
+#else
+		NULL,
+#endif
+		true,
+		root_obj);
 	if (err) {
-		LOG_ERR("nrf_cloud_location_request_json_get, error: %d", err);
-		return -ENOMEM;
+		LOG_ERR("nrf_cloud_location_request_msg_json_encode, error: %d", err);
+		goto exit;
 	}
 
 	buffer = cJSON_PrintUnformatted(root_obj);
@@ -868,14 +759,15 @@ int cloud_codec_encode_wifi_access_points(struct cloud_codec_data *output,
 	output->len = strlen(buffer);
 
 exit:
-	wifi_access_points->queued = false;
+	if (!err) {
+		cloud_location->queued = false;
+	}
 	cJSON_Delete(root_obj);
 	return err;
 #endif /* CONFIG_NRF_CLOUD_LOCATION */
 
 	return -ENOTSUP;
 }
-#endif /* CONFIG_LOCATION_METHOD_WIFI */
 
 int cloud_codec_encode_agps_request(struct cloud_codec_data *output,
 				    struct cloud_data_agps_request *agps_request)
@@ -1159,6 +1051,8 @@ int cloud_codec_encode_batch_data(struct cloud_codec_data *output,
 				  size_t impact_buf_count,
 				  size_t bat_buf_count)
 {
+	ARG_UNUSED(modem_stat_buf);
+
 	int err;
 	char *buffer;
 
@@ -1195,12 +1089,6 @@ int cloud_codec_encode_batch_data(struct cloud_codec_data *output,
 	err = add_batch_data(root_array, VOLTAGE, bat_buf, bat_buf_count);
 	if (err) {
 		LOG_ERR("Failed adding battery data to array, error: %d", err);
-		goto exit;
-	}
-
-	err = add_batch_data(root_array, MODEM_STATIC, modem_stat_buf, modem_stat_buf_count);
-	if (err) {
-		LOG_ERR("Failed adding static modem data to array, error: %d", err);
 		goto exit;
 	}
 

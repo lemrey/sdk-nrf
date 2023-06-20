@@ -370,6 +370,9 @@ static void cloud_event_handler(const struct nrf_cloud_evt *evt)
 	case NRF_CLOUD_EVT_TRANSPORT_CONNECTING:
 		LOG_DBG("NRF_CLOUD_EVT_TRANSPORT_CONNECTING");
 		break;
+	case NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR:
+		LOG_DBG("NRF_CLOUD_EVT_TRANSPORT_CONNECT_ERROR, status: %d", evt->status);
+		break;
 	case NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST:
 		LOG_DBG("NRF_CLOUD_EVT_USER_ASSOCIATION_REQUEST");
 		display_state = LEDS_CLOUD_PAIRING_WAIT;
@@ -479,16 +482,15 @@ static void modem_configure(void)
 {
 	int err;
 
+	err = nrf_modem_lib_init();
+	__ASSERT(err == 0, "Modem library could not be initialized, err %d.", err);
+
 	display_state = LEDS_LTE_CONNECTING;
 
-	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
-		/* Do nothing, modem is already turned on and connected. */
-	} else {
-		LOG_INF("Establishing LTE link (this may take some time) ...");
-		err = lte_lc_init_and_connect();
-		__ASSERT(err == 0, "LTE link could not be established.");
-		display_state = LEDS_LTE_CONNECTED;
-	}
+	LOG_INF("Establishing LTE link (this may take some time) ...");
+	err = lte_lc_init_and_connect();
+	__ASSERT(err == 0, "LTE link could not be established.");
+	display_state = LEDS_LTE_CONNECTED;
 }
 
 /**@brief Initializes the sensors that are used by the application. */
@@ -571,7 +573,7 @@ static void buttons_leds_init(void)
 	}
 }
 
-void main(void)
+int main(void)
 {
 	LOG_INF("LTE Sensor Gateway sample started");
 
@@ -579,7 +581,9 @@ void main(void)
 	ble_init();
 
 	work_init();
-	cloud_init();
 	modem_configure();
+	cloud_init();
 	cloud_connect(NULL);
+
+	return 0;
 }

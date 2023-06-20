@@ -6,6 +6,10 @@
 
 menu "MQTT Multi Service Sample Settings"
 
+config APP_VERSION
+	string "MQTT Multi Service Sample version"
+	default "1.0.0"
+
 config POWER_SAVING_MODE_ENABLE
 	bool "Enable Power Saving Mode (PSM)"
 	help
@@ -144,6 +148,13 @@ config TEMP_TRACKING
 	default y
 	help
 	  Sets whether to take temperature measurements.
+
+config TEMP_ALERT_LIMIT
+	int "Temperature limit to send alert"
+	default 30
+	help
+	  Sets the temperature in degrees C over which a temperature alert will
+	  be sent to the cloud.
 
 choice
 	prompt "LED indication"

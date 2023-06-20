@@ -24,21 +24,11 @@ uint8_t stream_state_get(void);
 
 /** @brief Send encoded data over the stream
  *
- * @param data  Data to send
- * @param len   Length of data to send
+ * @param data		Data to send
+ * @param size		Size of data
+ * @param num_ch	Number of audio channels
  */
-void streamctrl_encoded_data_send(void const *const data, size_t len);
-
-/** @brief Drives streamctrl state machine
- *
- * This function drives the streamctrl state machine.
- * The function will read and handle events coming in to the streamctrl
- * module, and configure/run the rest of the system accordingly.
- *
- * Run this function repeatedly, e.g. in an eternal loop, to keep the
- * system running.
- */
-void streamctrl_event_handler(void);
+void streamctrl_encoded_data_send(void const *const data, size_t size, uint8_t num_ch);
 
 /** @brief Init internal functionality and start streamctrl
  *

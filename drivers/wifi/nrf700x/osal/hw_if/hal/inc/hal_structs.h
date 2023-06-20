@@ -28,10 +28,22 @@
 
 
 enum RPU_PROC_TYPE {
-	RPU_PROC_TYPE_MCU_LMAC,
+	RPU_PROC_TYPE_MCU_LMAC = 0,
 	RPU_PROC_TYPE_MCU_UMAC,
 	RPU_PROC_TYPE_MAX
 };
+
+static inline const char *rpu_proc_to_str(enum RPU_PROC_TYPE proc)
+{
+	switch (proc) {
+	case RPU_PROC_TYPE_MCU_LMAC:
+		return "LMAC";
+	case RPU_PROC_TYPE_MCU_UMAC:
+		return "UMAC";
+	default:
+		return "UNKNOWN";
+	}
+}
 
 
 enum WIFI_NRF_REGION_TYPE {
@@ -39,13 +51,6 @@ enum WIFI_NRF_REGION_TYPE {
 	WIFI_NRF_REGION_TYPE_PKTRAM,
 	WIFI_NRF_REGION_TYPE_SYSBUS,
 	WIFI_NRF_REGION_TYPE_PBUS,
-	WIFI_NRF_REGION_TYPE_LMAC_CORE_ROM,
-	WIFI_NRF_REGION_TYPE_LMAC_CORE_RET,
-	WIFI_NRF_REGION_TYPE_LMAC_CORE_SCRATCH,
-	WIFI_NRF_REGION_TYPE_UMAC_CORE_ROM,
-	WIFI_NRF_REGION_TYPE_UMAC_CORE_RET,
-	WIFI_NRF_REGION_TYPE_UMAC_CORE_SCRATCH,
-	WIFI_NRF_REGION_TYPE_MAX
 };
 
 
@@ -77,6 +82,7 @@ struct wifi_nrf_hal_cfg_params {
 	unsigned int max_tx_frms;
 	struct rx_buf_pool_params rx_buf_pool[MAX_NUM_OF_RX_QUEUES];
 	unsigned int max_tx_frm_sz;
+	unsigned int max_ampdu_len_per_token;
 #endif /* !CONFIG_NRF700X_RADIO_TEST */
 };
 
@@ -211,7 +217,7 @@ struct wifi_nrf_hal_dev_ctx {
 	unsigned long addr_rpu_pktram_base_tx;
 	unsigned long addr_rpu_pktram_base_rx;
 	unsigned long addr_rpu_pktram_base_rx_pool[MAX_NUM_OF_RX_QUEUES];
-
+	unsigned long tx_frame_offset;
 #ifdef CONFIG_NRF_WIFI_LOW_POWER
 	enum RPU_PS_STATE rpu_ps_state;
 	void *rpu_ps_timer;

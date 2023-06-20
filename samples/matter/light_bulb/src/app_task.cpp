@@ -10,16 +10,9 @@
 #include "led_util.h"
 #include "pwm_device.h"
 
-#ifdef CONFIG_NET_L2_OPENTHREAD
-#include "thread_util.h"
-#endif
-
 #include <platform/CHIPDeviceLayer.h>
 
-#include <app-common/zap-generated/attribute-id.h>
-#include <app-common/zap-generated/attribute-type.h>
 #include <app-common/zap-generated/attributes/Accessors.h>
-#include <app-common/zap-generated/cluster-id.h>
 #include <app/DeferredAttributePersistenceProvider.h>
 #include <app/clusters/identify-server/identify-server.h>
 #include <app/server/OnboardingCodesUtil.h>
@@ -40,10 +33,10 @@
 #endif
 
 #include <dk_buttons_and_leds.h>
-#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
-LOG_MODULE_DECLARE(app, CONFIG_MATTER_LOG_LEVEL);
+LOG_MODULE_DECLARE(app, CONFIG_CHIP_APP_LOG_LEVEL);
 
 using namespace ::chip;
 using namespace ::chip::app;
@@ -150,13 +143,6 @@ CHIP_ERROR AppTask::Init()
 		return err;
 	}
 
-#ifdef CONFIG_OPENTHREAD_DEFAULT_TX_POWER
-	err = SetDefaultThreadOutputPower();
-	if (err != CHIP_NO_ERROR) {
-		LOG_ERR("Cannot set default Thread output power");
-		return err;
-	}
-#endif /* CONFIG_OPENTHREAD_DEFAULT_TX_POWER */
 #elif defined(CONFIG_CHIP_WIFI)
 	sWiFiCommissioningInstance.Init();
 #else
@@ -184,7 +170,7 @@ CHIP_ERROR AppTask::Init()
 	k_timer_init(&sFunctionTimer, &AppTask::FunctionTimerTimeoutCallback, nullptr);
 	k_timer_user_data_set(&sFunctionTimer, this);
 
-#ifdef CONFIG_MCUMGR_SMP_BT
+#ifdef CONFIG_MCUMGR_TRANSPORT_BT
 	/* Initialize DFU over SMP */
 	GetDFUOverSMP().Init();
 	GetDFUOverSMP().ConfirmNewImage();
@@ -428,7 +414,7 @@ void AppTask::FunctionHandler(const AppEvent &event)
 			Instance().CancelTimer();
 			Instance().mFunction = FunctionEvent::NoneSelected;
 
-#ifdef CONFIG_MCUMGR_SMP_BT
+#ifdef CONFIG_MCUMGR_TRANSPORT_BT
 			GetDFUOverSMP().StartServer();
 #else
 			LOG_INF("Software update is disabled");
@@ -518,7 +504,7 @@ void AppTask::ChipEventHandler(const ChipDeviceEvent *event, intptr_t /* arg */)
 		UpdateStatusLED();
 		break;
 #if defined(CONFIG_NET_L2_OPENTHREAD)
-	case DeviceEventType::kDnssdPlatformInitialized:
+	case DeviceEventType::kDnssdInitialized:
 #if CONFIG_CHIP_OTA_REQUESTOR
 		InitBasicOTARequestor();
 #endif /* CONFIG_CHIP_OTA_REQUESTOR */

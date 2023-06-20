@@ -11,8 +11,11 @@
 #include <zephyr/settings/settings.h>
 #include <net/nrf_cloud.h>
 #include <net/nrf_cloud_rest.h>
+#include <net/nrf_cloud_alerts.h>
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
+#include <date_time.h>
+#include <zephyr/random/rand32.h>
 
 LOG_MODULE_REGISTER(nrf_cloud_rest_device_message,
 		    CONFIG_NRF_CLOUD_REST_DEVICE_MESSAGE_SAMPLE_LOG_LEVEL);
@@ -21,6 +24,12 @@ LOG_MODULE_REGISTER(nrf_cloud_rest_device_message,
 #define LTE_LED_NUM		CONFIG_REST_DEVICE_MESSAGE_LTE_LED_NUM
 #define SEND_LED_NUM		CONFIG_REST_DEVICE_MESSAGE_SEND_LED_NUM
 #define JITP_REQ_WAIT_SEC	10
+
+/* This does not match a predefined schema, but it is not a problem. */
+#define SAMPLE_MSG_FMT		"{\"sample_message\":"\
+			"\"Hello World, from the REST Device Message Sample! "\
+			"Message ID: %lld\"}"
+#define SAMPLE_MSG_BUF_SIZE (sizeof(SAMPLE_MSG_FMT) + 19)
 
 /* Semaphore to indicate a button has been pressed */
 static K_SEM_DEFINE(button_press_sem, 0, 1);
@@ -46,17 +55,6 @@ static struct nrf_cloud_rest_context rest_ctx = {
 
 /* Flag to indicate if the user requested JITP to be performed */
 static bool jitp_requested;
-
-NRF_MODEM_LIB_ON_INIT(nrf_cloud_rest_device_message_init_hook,
-		      on_modem_lib_init, NULL);
-
-/* Initialized to value different than success (0) */
-static int modem_lib_init_result = -1;
-
-static void on_modem_lib_init(int ret, void *ctx)
-{
-	modem_lib_init_result = ret;
-}
 
 static int set_led(const int led, const int state)
 {
@@ -106,6 +104,7 @@ static int send_message(const char *const msg)
 	/* Turn the SEND LED on for a bit */
 	set_led(SEND_LED_NUM, 1);
 
+	LOG_DBG("Sending message:'%s'", msg);
 	/* Send the message to nRF Cloud */
 	ret = nrf_cloud_rest_send_device_message(&rest_ctx, device_id, msg, false, NULL);
 	if (ret) {
@@ -115,6 +114,7 @@ static int send_message(const char *const msg)
 	/* Keep that LED on for at least 100ms */
 	k_sleep(K_MSEC(100));
 
+	LOG_DBG("Message sent");
 	/* Turn the LED back off */
 	set_led(SEND_LED_NUM, 0);
 
@@ -137,7 +137,7 @@ static int do_jitp(void)
 
 	LOG_INF("Performing JITP...");
 
-	/* Turn the SEND LED, indicating in-progress JITP*/
+	/* Turn the SEND LED, indicating in-progress JITP */
 	set_led(SEND_LED_NUM, 1);
 
 	ret = nrf_cloud_rest_jitp(CONFIG_NRF_CLOUD_SEC_TAG);
@@ -297,11 +297,9 @@ static int init(void)
 	}
 
 	/* Init modem */
-	if (!IS_ENABLED(CONFIG_NRF_MODEM_LIB_SYS_INIT)) {
-		modem_lib_init_result = nrf_modem_lib_init(NORMAL_MODE);
-	}
-	if (modem_lib_init_result) {
-		LOG_ERR("Failed to initialize modem library: 0x%X", modem_lib_init_result);
+	err = nrf_modem_lib_init();
+	if (err) {
+		LOG_ERR("Failed to initialize modem library: 0x%X", err);
 		return -EFAULT;
 	}
 
@@ -341,7 +339,37 @@ static int setup(void)
 	return 0;
 }
 
-void main(void)
+int send_hello_world_msg(void)
+{
+	int err;
+	int64_t time_now;
+	char buf[SAMPLE_MSG_BUF_SIZE];
+
+	/* Get the current timestamp */
+	err = date_time_now(&time_now);
+	if (err) {
+		LOG_ERR("Failed to get timestamp, using random number");
+		sys_rand_get(&time_now, sizeof(time_now));
+	}
+
+	/* Send off a hello world message! */
+	err = snprintk(buf, SAMPLE_MSG_BUF_SIZE, SAMPLE_MSG_FMT, time_now);
+	if (err < 0 || err > SAMPLE_MSG_BUF_SIZE) {
+		LOG_ERR("Failed to create Hello World message.");
+		return err;
+	}
+
+	err = send_message(buf);
+	if (err) {
+		LOG_ERR("Failed to send Hello World message");
+	} else {
+		LOG_INF("Sent Hello World message with ID: %lld", time_now);
+	}
+
+	return err;
+}
+
+int main(void)
 {
 	int err;
 
@@ -351,16 +379,18 @@ void main(void)
 	err = setup();
 	if (err) {
 		LOG_ERR("Setup failed, stopping.");
-		return;
+		return 0;
 	}
 
-	/* Send off a hello world message! */
-	/* This does not match a predefined schema. But that's not a problem! */
-	err = send_message("{\"sample_message\":"
-					    "\"Hello World, from the REST Device Message Sample!\"}");
+	rest_ctx.keep_alive = true;
+	(void)nrf_cloud_rest_alert_send(&rest_ctx, device_id,
+					ALERT_TYPE_DEVICE_NOW_ONLINE, 0, NULL);
+	rest_ctx.keep_alive = false;
+
+	err = send_hello_world_msg();
 	if (err) {
 		LOG_ERR("Hello World failed, stopping.");
-		return;
+		return 0;
 	}
 
 	while (1) {

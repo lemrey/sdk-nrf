@@ -7,7 +7,7 @@ Bluetooth: nRF Distance Measurement with Bluetooth LE discovery
    :local:
    :depth: 2
 
-The nRF Distance Measurement sample demonstrates the functionality of the :ref:`mod_dm` subsystem.
+The nRF Distance Measurement sample demonstrates the functionality of the :ref:`mod_dm` (DM) subsystem.
 It shows how to use DM to measure the distance between devices.
 The Bluetooth® :ref:`ddfs_readme` is running simultaneously.
 
@@ -38,6 +38,8 @@ The synchronization step has two goals:
 This sample synchronizes devices using the scan and advertising facilities of the Bluetooth LE.
 Anchoring occurs after the exchange of ``SCAN_REQ`` and ``SCAN_RSP`` packets.
 
+The following chart shows the sequence of the synchronization process:
+
 .. msc::
    hscale = "1.3";
    DevA [label="Device A"],DevB [label="Device B"];
@@ -54,8 +56,6 @@ Anchoring occurs after the exchange of ``SCAN_REQ`` and ``SCAN_RSP`` packets.
    |||;
    DevA<=>DevB [label="Ranging"];
 
-The chart shows the sequence of the synchronization process.
-
 Both devices act as an advertiser and a scanner.
 Device B receives advertising from Device A and scans it.
 Device A sends a scan response that contains ``Manufacturer Specific Data``.
@@ -71,15 +71,17 @@ After a configurable delay, Device A and Device B try to range each other.
    * If a Device acts as an advertiser in synchronization, it will act as the reflector in the ranging procedure.
    * If a Device acts as a scanner in synchronization, it will act as the initiator in the ranging procedure.
 
-The synchronization will be performed cyclically.
+The synchronization is performed cyclically.
 
 Based on the ``SCAN_RSP`` response, the device recognizes peers that support the distance measurement functionality within its coverage.
 The addresses of these devices are stored in a list.
 When a device does not respond within a certain period of time, it is removed from the list.
-Also the last measurement results with the peers are stored in this list.
+Also, the last measurement results with the peers are stored in this list.
 
 For the nRF5340, the ranging procedure is performed on the network core, while the calculation takes place on the application core.
 The distance calculation uses a floating-point unit (FPU).
+
+.. _ble_nrf_dm_power:
 
 Power consumption
 *****************
@@ -119,6 +121,8 @@ The :kconfig:option:`CONFIG_DM_HIGH_PRECISION_CALC` Kconfig option enables high-
 High-precision calculation has an impact on MCPD ranging mode only.
 Due to its limited memory, the nRF52 Development Kit (nrf52dk_nrf52832) does not support high-precision calculations.
 
+.. _ble_nrf_dm_calibr:
+
 Zero-distance calibration
 *************************
 
@@ -138,7 +142,7 @@ LED 2:
    Blinks every two seconds with the duty cycle set to 50% when the main loop is running and the device is advertising.
 
 LED 3:
-   On when connected.
+   Lit when connected.
 
 Building and running
 ********************
@@ -244,7 +248,7 @@ In addition, it uses the following Zephyr libraries:
 
 * :ref:`zephyr:pwm_api`:
 
-  * ``drivers/pwm.h``
+  * :file:`drivers/pwm.h`
 
 * :file:`include/sys/printk.h`
 * :file:`include/sys/byteorder.h`
@@ -253,4 +257,4 @@ In addition, it uses the following Zephyr libraries:
 
   * :file:`include/bluetooth/bluetooth.h`
   * :file:`include/bluetooth/scan.h`
-* ``ext/hal/nordic/nrfx/hal/nrf_radio.h``
+* :file:`ext/hal/nordic/nrfx/hal/nrf_radio.h`

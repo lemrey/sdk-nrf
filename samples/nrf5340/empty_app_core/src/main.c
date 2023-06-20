@@ -36,11 +36,13 @@ void disable_ram_and_wfi(register volatile uint32_t *reg_begin,
 	} while (1);
 }
 
-void main(void)
+int main(void)
 {
 	/* Power off RAM and suspend CPU */
 	disable_ram_and_wfi(&NRF_VMC->RAM[0].POWER,
 			    &NRF_VMC->RAM[ARRAY_SIZE(NRF_VMC->RAM) - 1].POWER);
+
+	return 0;
 }
 
 /** @brief Allow access to specific GPIOs for the network core.
@@ -49,9 +51,8 @@ void main(void)
  * that the network core is not started yet. More pins can be added if the
  * network core needs them.
  */
-static int network_gpio_allow(const struct device *dev)
+static int network_gpio_allow(void)
 {
-	ARG_UNUSED(dev);
 
 	/* When the use of the low frequency crystal oscillator (LFXO) is
 	 * enabled, do not modify the configuration of the pins P0.00 (XL1)

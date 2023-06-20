@@ -23,9 +23,7 @@ config BT_LL_SOFTDEVICE
 	select BT_CTLR_DATA_LEN_UPDATE_SUPPORT
 	select BT_CTLR_ADV_EXT_SUPPORT
 	select BT_CTLR_ADV_PERIODIC_SUPPORT
-	select BT_CTLR_ADV_PERIODIC_RSP_SUPPORT
 	select BT_CTLR_SYNC_PERIODIC_SUPPORT
-	select BT_CTLR_SYNC_PERIODIC_RSP_SUPPORT
 	select BT_CTLR_SYNC_TRANSFER_SENDER_SUPPORT
 	select BT_CTLR_SYNC_TRANSFER_RECEIVER_SUPPORT
 	select BT_CTLR_SCA_UPDATE_SUPPORT
@@ -47,7 +45,6 @@ choice BT_LL_SOFTDEVICE_BUILD_TYPE
 
 config BT_LL_SOFTDEVICE_BUILD_TYPE_LIB
 	bool "Use library"
-	select BT_LL_SOFTDEVICE_HEADERS_INCLUDE
 
 endchoice
 
@@ -75,7 +72,7 @@ config BT_RX_STACK_SIZE
 	int
 	depends on BT_HCI_HOST || BT_RECV_BLOCKING
 	default 512 if BT_HCI_RAW
-	default 2600 if BT_MESH
+	default 2400 if BT_MESH
 	default 2200 if BT_SETTINGS
 	default 1536 if BT_SMP
 	default 1024
@@ -248,13 +245,6 @@ config BT_SDC_ADDITIONAL_MEMORY
 	default 0
 	help
 	  This is for testing and internal use only.
-
-config BT_CTLR_FAL_SIZE
-	int "Configures the maximum number of addresses in the Filter Accept List"
-	range 0 255
-	default 8
-	help
-	  Size of the Filter Accept List.
 
 if BT_CTLR_ECDH
 choice BT_CTLR_ECDH_LIB

@@ -6,19 +6,19 @@
 
 #include "audio_datapath.h"
 
-#include <zephyr/kernel.h>
-#include <nrfx_clock.h>
-#include <zephyr/shell/shell.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <zephyr/kernel.h>
+#include <zephyr/shell/shell.h>
+#include <nrfx_clock.h>
 
+#include "nrf5340_audio_common.h"
 #include "macros_common.h"
 #include "board.h"
 #include "led.h"
 #include "audio_i2s.h"
 #include "sw_codec_select.h"
-#include "audio_sync_timer.h"
 #include "audio_system.h"
 #include "tone.h"
 #include "contin_array.h"
@@ -41,7 +41,7 @@ LOG_MODULE_REGISTER(audio_datapath, CONFIG_AUDIO_DATAPATH_LOG_LEVEL);
 #define BLK_PERIOD_US 1000
 
 /* Total sample FIFO period in microseconds */
-#define FIFO_SMPL_PERIOD_US (MAX_PRES_DLY_US * 2)
+#define FIFO_SMPL_PERIOD_US (CONFIG_AUDIO_MAX_PRES_DLY_US * 2)
 #define FIFO_NUM_BLKS NUM_BLKS(FIFO_SMPL_PERIOD_US)
 #define MAX_FIFO_SIZE (FIFO_NUM_BLKS * BLK_SIZE_SAMPLES(CONFIG_AUDIO_SAMPLE_RATE_HZ) * 2)
 
@@ -75,8 +75,6 @@ LOG_MODULE_REGISTER(audio_datapath, CONFIG_AUDIO_DATAPATH_LOG_LEVEL);
 #define DRIFT_MEAS_PERIOD_US 100000
 #define DRIFT_ERR_THRESH_LOCK 16
 #define DRIFT_ERR_THRESH_UNLOCK 32
-
-#define PRES_COMP_ENABLE true
 
 /* 3000 us to allow BLE transmission and (host -> HCI -> controller) */
 #define JUST_IN_TIME_US (CONFIG_AUDIO_FRAME_DURATION_US - 3000)
@@ -123,7 +121,11 @@ static struct {
 	} in;
 
 	struct {
+#if CONFIG_AUDIO_BIT_DEPTH_16
 		int16_t __aligned(sizeof(uint32_t)) fifo[MAX_FIFO_SIZE];
+#elif CONFIG_AUDIO_BIT_DEPTH_32
+		int32_t __aligned(sizeof(uint32_t)) fifo[MAX_FIFO_SIZE];
+#endif
 		uint16_t prod_blk_idx; /* Output producer audio block index */
 		uint16_t cons_blk_idx; /* Output consumer audio block index */
 		uint32_t prod_blk_ts[FIFO_NUM_BLKS];
@@ -139,7 +141,7 @@ static struct {
 		uint16_t ctr; /* Count func calls. Used for waiting */
 		uint32_t meas_start_time_us;
 		uint32_t center_freq;
-		bool hfclkaudio_comp_enabled;
+		bool enabled;
 	} drift_comp;
 
 	struct {
@@ -147,6 +149,7 @@ static struct {
 		uint16_t ctr; /* Count func calls. Used for collecting data points and waiting */
 		int32_t sum_err_dly_us;
 		uint32_t pres_delay_us;
+		bool enabled;
 	} pres_comp;
 } ctrl_blk;
 
@@ -161,10 +164,6 @@ static void hfclkaudio_set(uint16_t freq_value)
 
 	freq_val = MIN(freq_val, APLL_FREQ_MAX);
 	freq_val = MAX(freq_val, APLL_FREQ_MIN);
-
-	if (!ctrl_blk.drift_comp.hfclkaudio_comp_enabled) {
-		return;
-	}
 
 	nrfx_clock_hfclkaudio_config_set(freq_val);
 }
@@ -345,10 +344,7 @@ static void audio_datapath_presentation_compensation(uint32_t recv_frame_ts_us, 
 			break;
 		}
 
-#if (PRES_COMP_ENABLE)
 		pres_adj_us = ctrl_blk.pres_comp.sum_err_dly_us / PRES_COMP_NUM_DATA_PTS;
-#endif /* (PRES_COMP_ENABLE) */
-
 		if ((pres_adj_us >= (BLK_PERIOD_US / 2)) || (pres_adj_us <= -(BLK_PERIOD_US / 2))) {
 			pres_comp_state_set(PRES_STATE_WAIT);
 		} else {
@@ -573,93 +569,102 @@ static void audio_datapath_i2s_blk_complete(uint32_t frame_start_ts, uint32_t *r
 	/********** I2S TX **********/
 	static uint8_t *tx_buf;
 
-	if (tx_buf_released != NULL) {
-		/* Double buffered index */
-		uint32_t next_out_blk_idx = NEXT_IDX(ctrl_blk.out.cons_blk_idx);
+	if (IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) || (CONFIG_AUDIO_DEV == HEADSET)) {
+		if (tx_buf_released != NULL) {
+			/* Double buffered index */
+			uint32_t next_out_blk_idx = NEXT_IDX(ctrl_blk.out.cons_blk_idx);
 
-		if (next_out_blk_idx != ctrl_blk.out.prod_blk_idx) {
-			/* Only increment if not in underrun condition */
-			ctrl_blk.out.cons_blk_idx = next_out_blk_idx;
-			if (underrun_condition) {
-				underrun_condition = false;
-				LOG_WRN("Data received, total underruns: %d",
-					ctrl_blk.out.total_blk_underruns);
-			}
-
-			tx_buf = (uint8_t *)&ctrl_blk.out
-					 .fifo[next_out_blk_idx * BLK_MONO_SIZE_OCTETS];
-
-		} else {
-			if (stream_state_get() == STATE_STREAMING) {
-				underrun_condition = true;
-				ctrl_blk.out.total_blk_underruns++;
-
-				if ((ctrl_blk.out.total_blk_underruns %
-				     UNDERRUN_LOG_INTERVAL_BLKS) == 0) {
-					LOG_WRN("In I2S TX underrun condition, total: %d",
+			if (next_out_blk_idx != ctrl_blk.out.prod_blk_idx) {
+				/* Only increment if not in underrun condition */
+				ctrl_blk.out.cons_blk_idx = next_out_blk_idx;
+				if (underrun_condition) {
+					underrun_condition = false;
+					LOG_WRN("Data received, total underruns: %d",
 						ctrl_blk.out.total_blk_underruns);
 				}
+
+				tx_buf = (uint8_t *)&ctrl_blk.out
+						 .fifo[next_out_blk_idx * BLK_STEREO_NUM_SAMPS];
+
+			} else {
+				if (stream_state_get() == STATE_STREAMING) {
+					underrun_condition = true;
+					ctrl_blk.out.total_blk_underruns++;
+
+					if ((ctrl_blk.out.total_blk_underruns %
+					     UNDERRUN_LOG_INTERVAL_BLKS) == 0) {
+						LOG_WRN("In I2S TX underrun condition, total: %d",
+							ctrl_blk.out.total_blk_underruns);
+					}
+				}
+
+				/*
+				 * No data available in out.fifo
+				 * use alternative buffers
+				 */
+				ret = alt_buffer_get((void **)&tx_buf);
+				ERR_CHK(ret);
+
+				memset(tx_buf, 0, BLK_STEREO_SIZE_OCTETS);
 			}
 
-			/* No data available in out.fifo
-			 * use alternative buffers
-			 */
-			ret = alt_buffer_get((void **)&tx_buf);
-			ERR_CHK(ret);
-
-			memset(tx_buf, 0, BLK_STEREO_SIZE_OCTETS);
-		}
-
-		if (tone_active) {
-			tone_mix(tx_buf);
+			if (tone_active) {
+				tone_mix(tx_buf);
+			}
 		}
 	}
 
 	/********** I2S RX **********/
-	uint32_t *rx_buf;
+	static uint32_t *rx_buf;
 	static int prev_ret;
 
-	/* Lock last filled buffer into message queue */
-	if (rx_buf_released != NULL) {
-		ret = data_fifo_block_lock(ctrl_blk.in.fifo, (void **)&rx_buf_released,
-					   BLOCK_SIZE_BYTES);
+	if (IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) || (CONFIG_AUDIO_DEV == GATEWAY)) {
+		/* Lock last filled buffer into message queue */
+		if (rx_buf_released != NULL) {
+			ret = data_fifo_block_lock(ctrl_blk.in.fifo, (void **)&rx_buf_released,
+						   BLOCK_SIZE_BYTES);
 
-		ERR_CHK_MSG(ret, "Unable to lock block RX");
-	}
+			ERR_CHK_MSG(ret, "Unable to lock block RX");
+		}
 
-	/* Get new empty buffer to send to I2S HW */
-	ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf, K_NO_WAIT);
-	if (ret == 0 && prev_ret == -ENOMEM) {
-		LOG_WRN("I2S RX continuing stream");
-		prev_ret = ret;
-	}
-
-	/* If RX FIFO is filled up */
-	if (ret == -ENOMEM) {
-		void *data;
-		size_t size;
-
-		if (ret != prev_ret) {
-			LOG_WRN("I2S RX overrun. Single msg");
+		/* Get new empty buffer to send to I2S HW */
+		ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf,
+							 K_NO_WAIT);
+		if (ret == 0 && prev_ret == -ENOMEM) {
+			LOG_WRN("I2S RX continuing stream");
 			prev_ret = ret;
 		}
 
-		ret = data_fifo_pointer_last_filled_get(ctrl_blk.in.fifo, &data, &size, K_NO_WAIT);
-		ERR_CHK(ret);
+		/* If RX FIFO is filled up */
+		if (ret == -ENOMEM) {
+			void *data;
+			size_t size;
 
-		data_fifo_block_free(ctrl_blk.in.fifo, &data);
+			if (ret != prev_ret) {
+				LOG_WRN("I2S RX overrun. Single msg");
+				prev_ret = ret;
+			}
 
-		ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf,
-							 K_NO_WAIT);
+			ret = data_fifo_pointer_last_filled_get(ctrl_blk.in.fifo, &data, &size,
+								K_NO_WAIT);
+			ERR_CHK(ret);
+
+			data_fifo_block_free(ctrl_blk.in.fifo, &data);
+
+			ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf,
+								 K_NO_WAIT);
+		}
+
+		ERR_CHK_MSG(ret, "RX failed to get block");
 	}
-
-	ERR_CHK_MSG(ret, "RX failed to get block");
 
 	/*** Data exchange ***/
 	audio_i2s_set_next_buf(tx_buf, rx_buf);
 
 	/*** Drift compensation ***/
-	audio_datapath_drift_compensation(frame_start_ts);
+	if (ctrl_blk.drift_comp.enabled) {
+		audio_datapath_drift_compensation(frame_start_ts);
+	}
 }
 
 static void audio_datapath_i2s_start(void)
@@ -673,29 +678,33 @@ static void audio_datapath_i2s_start(void)
 	uint32_t *rx_buf_two = NULL;
 
 	/* TX */
-#if (CONFIG_STREAM_BIDIRECTIONAL || (CONFIG_AUDIO_DEV == HEADSET))
-	ctrl_blk.out.cons_blk_idx = PREV_IDX(ctrl_blk.out.cons_blk_idx);
-	tx_buf_one =
-		(uint8_t *)&ctrl_blk.out.fifo[ctrl_blk.out.cons_blk_idx * BLK_STEREO_NUM_SAMPS];
+	if (IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) || (CONFIG_AUDIO_DEV == HEADSET)) {
+		ctrl_blk.out.cons_blk_idx = PREV_IDX(ctrl_blk.out.cons_blk_idx);
+		tx_buf_one = (uint8_t *)&ctrl_blk.out
+				     .fifo[ctrl_blk.out.cons_blk_idx * BLK_STEREO_NUM_SAMPS];
 
-	ctrl_blk.out.cons_blk_idx = PREV_IDX(ctrl_blk.out.cons_blk_idx);
-	tx_buf_two =
-		(uint8_t *)&ctrl_blk.out.fifo[ctrl_blk.out.cons_blk_idx * BLK_STEREO_NUM_SAMPS];
-#endif /* (CONFIG_STREAM_BIDIRECTIONAL || (CONFIG_AUDIO_DEV == HEADSET)) */
-
-	/* RX */
-	uint32_t alloced_cnt;
-	uint32_t locked_cnt;
-
-	ret = data_fifo_num_used_get(ctrl_blk.in.fifo, &alloced_cnt, &locked_cnt);
-	if (alloced_cnt || locked_cnt || ret) {
-		ERR_CHK_MSG(-ENOMEM, "Fifo is not empty!");
+		ctrl_blk.out.cons_blk_idx = PREV_IDX(ctrl_blk.out.cons_blk_idx);
+		tx_buf_two = (uint8_t *)&ctrl_blk.out
+				     .fifo[ctrl_blk.out.cons_blk_idx * BLK_STEREO_NUM_SAMPS];
 	}
 
-	ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf_one, K_NO_WAIT);
-	ERR_CHK_MSG(ret, "RX failed to get block");
-	ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf_two, K_NO_WAIT);
-	ERR_CHK_MSG(ret, "RX failed to get block");
+	/* RX */
+	if (IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) || (CONFIG_AUDIO_DEV == GATEWAY)) {
+		uint32_t alloced_cnt;
+		uint32_t locked_cnt;
+
+		ret = data_fifo_num_used_get(ctrl_blk.in.fifo, &alloced_cnt, &locked_cnt);
+		if (alloced_cnt || locked_cnt || ret) {
+			ERR_CHK_MSG(-ENOMEM, "Fifo is not empty!");
+		}
+
+		ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf_one,
+							 K_NO_WAIT);
+		ERR_CHK_MSG(ret, "RX failed to get block");
+		ret = data_fifo_pointer_first_vacant_get(ctrl_blk.in.fifo, (void **)&rx_buf_two,
+							 K_NO_WAIT);
+		ERR_CHK_MSG(ret, "RX failed to get block");
+	}
 
 	/* Start I2S */
 	audio_i2s_start(tx_buf_one, rx_buf_one);
@@ -708,31 +717,23 @@ static void audio_datapath_i2s_stop(void)
 	alt_buffer_free_both();
 }
 
-int audio_datapath_pres_delay_us_set(uint32_t delay_us)
-{
-	if (delay_us > MAX_PRES_DLY_US || delay_us < MIN_PRES_DLY_US) {
-		LOG_WRN("Presentation delay not supported: %d", delay_us);
-		return -EINVAL;
-	}
-
-	ctrl_blk.pres_comp.pres_delay_us = delay_us;
-
-	LOG_DBG("Presentation delay set to %d us", delay_us);
-
-	return 0;
-}
-
-void audio_datapath_pres_delay_us_get(uint32_t *delay_us)
-{
-	*delay_us = ctrl_blk.pres_comp.pres_delay_us;
-}
-
-void audio_datapath_just_in_time_check_and_adjust(uint32_t sdu_ref_us)
+/**
+ * @brief Adjust timing to make sure audio data is sent just in time for BLE event
+ *
+ * @note  The time from last anchor point is checked and then blocks of 1ms
+ *        can be dropped to allow the sending of encoded data to be sent just
+ *        before the connection interval opens up. This is done to reduce overall
+ *        latency.
+ *
+ * @param[in]  sdu_ref_us  The SDU reference, in µs, to the previous sent packet
+ */
+static void audio_datapath_just_in_time_check_and_adjust(uint32_t sdu_ref_us)
 {
 	static int32_t count;
 	int ret;
 
-	uint32_t curr_frame_ts = audio_sync_timer_curr_time_get();
+	uint32_t curr_frame_ts = nrfx_timer_capture(&audio_sync_timer_instance,
+						    AUDIO_SYNC_TIMER_CURR_TIME_CAPTURE_CHANNEL);
 	int diff = curr_frame_ts - sdu_ref_us;
 
 	if (count++ % 100 == 0) {
@@ -751,12 +752,37 @@ void audio_datapath_just_in_time_check_and_adjust(uint32_t sdu_ref_us)
 	}
 }
 
-void audio_datapath_sdu_ref_update(uint32_t sdu_ref_us)
+int audio_datapath_pres_delay_us_set(uint32_t delay_us)
 {
-	if (ctrl_blk.stream_started) {
-		ctrl_blk.previous_sdu_ref_us = sdu_ref_us;
-	} else {
-		LOG_WRN("Stream not startet - Can not update sdu_ref_us");
+	if (!IN_RANGE(delay_us, CONFIG_AUDIO_MIN_PRES_DLY_US, CONFIG_AUDIO_MAX_PRES_DLY_US)) {
+		LOG_WRN("Presentation delay not supported: %d", delay_us);
+		return -EINVAL;
+	}
+
+	ctrl_blk.pres_comp.pres_delay_us = delay_us;
+
+	LOG_DBG("Presentation delay set to %d us", delay_us);
+
+	return 0;
+}
+
+void audio_datapath_pres_delay_us_get(uint32_t *delay_us)
+{
+	*delay_us = ctrl_blk.pres_comp.pres_delay_us;
+}
+
+void audio_datapath_sdu_ref_update(uint32_t sdu_ref_us, bool adjust)
+{
+	if (IS_ENABLED(CONFIG_AUDIO_SOURCE_I2S)) {
+		if (ctrl_blk.stream_started) {
+			ctrl_blk.previous_sdu_ref_us = sdu_ref_us;
+
+			if (adjust) {
+				audio_datapath_just_in_time_check_and_adjust(sdu_ref_us);
+			}
+		} else {
+			LOG_WRN("Stream not startet - Can not update sdu_ref_us");
+		}
 	}
 }
 
@@ -805,7 +831,8 @@ void audio_datapath_stream_out(const uint8_t *buf, size_t size, uint32_t sdu_ref
 					     CONFIG_AUDIO_FRAME_DURATION_US;
 			}
 		} else {
-			LOG_INF("sdu_ref_us not from consecutive frames");
+			LOG_INF("sdu_ref_us not from consecutive frames (diff: %d us)",
+				sdu_ref_delta_us);
 			sdu_ref_not_consecutive = true;
 		}
 	}
@@ -813,9 +840,10 @@ void audio_datapath_stream_out(const uint8_t *buf, size_t size, uint32_t sdu_ref
 	ctrl_blk.previous_sdu_ref_us = sdu_ref_us;
 
 	/*** Presentation compensation ***/
-
-	audio_datapath_presentation_compensation(recv_frame_ts_us, sdu_ref_us,
-						 sdu_ref_not_consecutive);
+	if (ctrl_blk.pres_comp.enabled) {
+		audio_datapath_presentation_compensation(recv_frame_ts_us, sdu_ref_us,
+							 sdu_ref_not_consecutive);
+	}
 
 	/*** Decode ***/
 
@@ -848,9 +876,15 @@ void audio_datapath_stream_out(const uint8_t *buf, size_t size, uint32_t sdu_ref
 	uint32_t out_blk_idx = ctrl_blk.out.prod_blk_idx;
 
 	for (uint32_t i = 0; i < NUM_BLKS_IN_FRAME; i++) {
-		memcpy(&ctrl_blk.out.fifo[out_blk_idx * BLK_STEREO_NUM_SAMPS],
-		       &((int16_t *)ctrl_blk.decoded_data)[i * BLK_STEREO_NUM_SAMPS],
-		       BLK_STEREO_SIZE_OCTETS);
+		if (IS_ENABLED(CONFIG_AUDIO_BIT_DEPTH_16)) {
+			memcpy(&ctrl_blk.out.fifo[out_blk_idx * BLK_STEREO_NUM_SAMPS],
+			       &((int16_t *)ctrl_blk.decoded_data)[i * BLK_STEREO_NUM_SAMPS],
+			       BLK_STEREO_SIZE_OCTETS);
+		} else if (IS_ENABLED(CONFIG_AUDIO_BIT_DEPTH_32)) {
+			memcpy(&ctrl_blk.out.fifo[out_blk_idx * BLK_STEREO_NUM_SAMPS],
+			       &((int32_t *)ctrl_blk.decoded_data)[i * BLK_STEREO_NUM_SAMPS],
+			       BLK_STEREO_SIZE_OCTETS);
+		}
 
 		/* Record producer block start reference */
 		ctrl_blk.out.prod_blk_ts[out_blk_idx] = recv_frame_ts_us + (i * BLK_PERIOD_US);
@@ -904,9 +938,11 @@ int audio_datapath_init(void)
 {
 	memset(&ctrl_blk, 0, sizeof(ctrl_blk));
 	audio_i2s_blk_comp_cb_register(audio_datapath_i2s_blk_complete);
+	audio_i2s_init();
 	ctrl_blk.datapath_initialized = true;
-	ctrl_blk.drift_comp.hfclkaudio_comp_enabled = true;
-	ctrl_blk.pres_comp.pres_delay_us = DEFAULT_PRES_DLY_US;
+	ctrl_blk.drift_comp.enabled = true;
+	ctrl_blk.pres_comp.enabled = true;
+	ctrl_blk.pres_comp.pres_delay_us = CONFIG_BT_AUDIO_PRESENTATION_DELAY_US;
 
 	return 0;
 }
@@ -981,7 +1017,7 @@ static int cmd_hfclkaudio_drift_comp_enable(const struct shell *shell, size_t ar
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	ctrl_blk.drift_comp.hfclkaudio_comp_enabled = true;
+	ctrl_blk.drift_comp.enabled = true;
 
 	shell_print(shell, "Audio PLL drift compensation enabled");
 
@@ -994,24 +1030,65 @@ static int cmd_hfclkaudio_drift_comp_disable(const struct shell *shell, size_t a
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	ctrl_blk.drift_comp.hfclkaudio_comp_enabled = false;
+	if (ctrl_blk.pres_comp.enabled) {
+		shell_print(shell, "Pres comp must be disabled to disable drift comp");
+	} else {
+		ctrl_blk.drift_comp.enabled = false;
+		drift_comp_state_set(DRIFT_STATE_INIT);
 
-	shell_print(shell, "Audio PLL drift compensation disabled");
+		shell_print(shell, "Audio PLL drift compensation disabled");
+	}
 
 	return 0;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(test_cmd,
-			       SHELL_COND_CMD(CONFIG_SHELL, nrf_tone_start, NULL,
-					      "Start local tone from nRF5340.", cmd_i2s_tone_play),
-			       SHELL_COND_CMD(CONFIG_SHELL, nrf_tone_stop, NULL,
-					      "Stop local tone from nRF5340.", cmd_i2s_tone_stop),
-			       SHELL_COND_CMD(CONFIG_SHELL, pll_comp_enable, NULL,
-					      "Enable audio PLL auto drift compensation (default).",
-					      cmd_hfclkaudio_drift_comp_enable),
-			       SHELL_COND_CMD(CONFIG_SHELL, pll_comp_disable, NULL,
-					      "Disable audio PLL auto drift compensation",
-					      cmd_hfclkaudio_drift_comp_disable),
-			       SHELL_SUBCMD_SET_END);
+static int cmd_audio_pres_comp_enable(const struct shell *shell, size_t argc, const char **argv)
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	if (ctrl_blk.drift_comp.enabled) {
+		ctrl_blk.pres_comp.enabled = true;
+
+		shell_print(shell, "Presentation compensation enabled");
+	} else {
+		shell_print(shell, "Drift comp must be enabled to enable pres comp");
+	}
+
+	return 0;
+}
+
+static int cmd_audio_pres_comp_disable(const struct shell *shell, size_t argc, const char **argv)
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	ctrl_blk.pres_comp.enabled = false;
+	pres_comp_state_set(PRES_STATE_INIT);
+
+	shell_print(shell, "Presentation compensation disabled");
+
+	return 0;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(
+	test_cmd,
+	SHELL_COND_CMD(CONFIG_SHELL, nrf_tone_start, NULL, "Start local tone from nRF5340",
+		       cmd_i2s_tone_play),
+	SHELL_COND_CMD(CONFIG_SHELL, nrf_tone_stop, NULL, "Stop local tone from nRF5340",
+		       cmd_i2s_tone_stop),
+	SHELL_COND_CMD(CONFIG_SHELL, pll_drift_comp_enable, NULL,
+		       "Enable audio PLL auto drift compensation (default)",
+		       cmd_hfclkaudio_drift_comp_enable),
+	SHELL_COND_CMD(CONFIG_SHELL, pll_drift_comp_disable, NULL,
+		       "Disable audio PLL auto drift compensation",
+		       cmd_hfclkaudio_drift_comp_disable),
+	SHELL_COND_CMD(CONFIG_SHELL, pll_pres_comp_enable, NULL,
+		       "Enable audio presentation compensation (default)",
+		       cmd_audio_pres_comp_enable),
+	SHELL_COND_CMD(CONFIG_SHELL, pll_pres_comp_disable, NULL,
+		       "Disable audio presentation compensation",
+		       cmd_audio_pres_comp_disable),
+	SHELL_SUBCMD_SET_END);
 
 SHELL_CMD_REGISTER(test, &test_cmd, "Test mode commands", NULL);

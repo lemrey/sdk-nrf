@@ -17,12 +17,11 @@ static uint8_t test_label[16] = {
 
 __ALIGNED(4)
 static uint8_t expected_key[32] = {
-	0xaf, 0xf8, 0x48, 0x65, 0x43, 0xbd, 0x31, 0x76,
-	0xa4, 0xbe, 0xee, 0xd6, 0x7d, 0x67, 0xdf, 0x48,
-	0xf4, 0x5e, 0x98, 0xc1, 0xa7, 0x1b, 0x1e, 0x3a,
-	0x62, 0xc9, 0x6a, 0xc2, 0xdb, 0x4b, 0x2e, 0xeb
+	0xa2, 0x87, 0x3, 0x5f, 0x34, 0xc0, 0x34, 0x63,
+	0x7c, 0x9e, 0x45, 0x85, 0xb5, 0xcb, 0x82, 0x7c,
+	0x85, 0x7f, 0x1a, 0x22, 0xd6, 0x22, 0xf3, 0xf,
+	0x8d, 0x2f, 0xae, 0x7d, 0x3d, 0xd5, 0x5e, 0x5c
 };
-
 #else
 __ALIGNED(4)
 static uint8_t test_label[19] = {
@@ -33,13 +32,13 @@ static uint8_t test_label[19] = {
 
 __ALIGNED(4)
 static uint8_t expected_key[16] = {
-	0x02, 0xaa, 0xe4, 0xe3, 0x9a, 0x4c, 0xec, 0xe8,
-	0x4a, 0x28, 0xde, 0x9d, 0x4d, 0x05, 0xbd, 0xb1
+	0x4f, 0x2d, 0xf8, 0x86, 0x61, 0xba, 0x8, 0x55,
+	0xf3, 0x9d, 0x43, 0xae, 0x96, 0x56, 0xc9, 0x5c
 };
 #endif
 
 
-static void test_hw_unique_key_tfm1(void)
+ZTEST(test_hw_unique_key_tfm, test_hw_unique_key_tfm1)
 {
 #ifdef CONFIG_SOC_NRF5340_CPUAPP
 	uint8_t out_key[32];
@@ -59,12 +58,15 @@ static void test_hw_unique_key_tfm1(void)
 	psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
 	psa_set_key_bits(&attributes, sizeof(out_key) * 8);
 
-	/* Set up a key derivation operation with HUK derivation as the alg */
-	status = psa_key_derivation_setup(&op, TFM_CRYPTO_ALG_HUK_DERIVATION);
-	zassert_equal(PSA_SUCCESS, status, NULL);
+	status = psa_key_derivation_setup(&op, PSA_ALG_HKDF(PSA_ALG_SHA_256));
+	zassert_equal(PSA_SUCCESS, status, "status %ld != PSA_SUCCESS\r\n");
+
+	/* Set up a key derivation operation with HUK  */
+	status = psa_key_derivation_input_key(&op, PSA_KEY_DERIVATION_INPUT_SECRET,
+					      TFM_BUILTIN_KEY_ID_HUK);
 
 	/* Supply the PS key label as an input to the key derivation */
-	status = psa_key_derivation_input_bytes(&op, PSA_KEY_DERIVATION_INPUT_LABEL,
+	status = psa_key_derivation_input_bytes(&op, PSA_KEY_DERIVATION_INPUT_INFO,
 						test_label,
 						sizeof(test_label));
 	zassert_equal(PSA_SUCCESS, status, "psa_key_derivation_input_bytes failed: %d\n", status);
@@ -81,13 +83,12 @@ static void test_hw_unique_key_tfm1(void)
 	zassert_equal(PSA_SUCCESS, status, NULL);
 	zassert_equal(out_len, sizeof(out_key), NULL);
 
+	for (int i = 0; i < sizeof(expected_key); i++) {
+		printk("%02x ", out_key[i]);
+	}
+	printk("\r\n");
+
 	zassert_mem_equal(expected_key, out_key, sizeof(expected_key), NULL);
 }
 
-void test_main(void)
-{
-	ztest_test_suite(test_hw_unique_key_tfm,
-			ztest_unit_test(test_hw_unique_key_tfm1)
-			);
-	ztest_run_test_suite(test_hw_unique_key_tfm);
-}
+ZTEST_SUITE(test_hw_unique_key_tfm, NULL, NULL, NULL, NULL, NULL);

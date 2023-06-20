@@ -16,7 +16,7 @@
 LOG_MODULE_REGISTER(MODULE, CONFIG_CLOUD_INTEGRATION_LOG_LEVEL);
 
 #if !defined(CONFIG_CLOUD_CLIENT_ID_USE_CUSTOM)
-#define CLIENT_ID_LEN 15
+#define CLIENT_ID_LEN HW_ID_LEN
 #else
 #define CLIENT_ID_LEN (sizeof(CONFIG_CLOUD_CLIENT_ID) - 1)
 #endif
@@ -27,7 +27,7 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_CLOUD_INTEGRATION_LOG_LEVEL);
 #define PROP_BAG_CONTENT_ENCODING_VALUE "utf-8"
 
 #define PROP_BAG_BATCH_KEY "batch"
-#define PROP_BAG_NEIGHBOR_CELLS_KEY "ncellmeas"
+#define PROP_BAG_GROUND_FIX_KEY "ground-fix"
 
 #define PROP_BAG_AGPS_KEY "agps"
 #define PROP_BAG_AGPS_GET_VALUE "get"
@@ -112,10 +112,10 @@ static struct azure_iot_hub_property prop_bag_pgps[] = {
 		.value.size = sizeof(PROP_BAG_CONTENT_ENCODING_VALUE) - 1,
 	},
 };
-static struct azure_iot_hub_property prop_bag_ncellmeas[] = {
+static struct azure_iot_hub_property prop_bag_ground_fix[] = {
 	{
-		.key.ptr = PROP_BAG_NEIGHBOR_CELLS_KEY,
-		.key.size = sizeof(PROP_BAG_NEIGHBOR_CELLS_KEY) - 1,
+		.key.ptr = PROP_BAG_GROUND_FIX_KEY,
+		.key.size = sizeof(PROP_BAG_GROUND_FIX_KEY) - 1,
 		.value.ptr = NULL,
 	},
 	{
@@ -134,9 +134,7 @@ static struct azure_iot_hub_property prop_bag_ncellmeas[] = {
 
 static char client_id_buf[CLIENT_ID_LEN + 1];
 static struct azure_iot_hub_config config = {
-	.use_dps = IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS),
-	.device_id.ptr = client_id_buf,
-	.device_id.size = sizeof(client_id_buf) - 1,
+	.use_dps = IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS)
 };
 
 static cloud_wrap_evt_handler_t wrapper_evt_handler;
@@ -329,6 +327,9 @@ int cloud_wrap_init(cloud_wrap_evt_handler_t event_handler)
 	snprintk(client_id_buf, sizeof(client_id_buf), "%s", CONFIG_CLOUD_CLIENT_ID);
 #endif
 
+	config.device_id.ptr = client_id_buf;
+	config.device_id.size = strlen(client_id_buf);
+
 	err = azure_iot_hub_init(azure_iot_hub_event_handler);
 	if (err) {
 		LOG_ERR("azure_iot_hub_init, error: %d", err);
@@ -416,7 +417,8 @@ int cloud_wrap_state_send(char *buf, size_t len, bool ack, uint32_t id)
 	return 0;
 }
 
-int cloud_wrap_data_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_data_send(char *buf, size_t len, bool ack, uint32_t id,
+			 const struct lwm2m_obj_path path_list[])
 {
 	ARG_UNUSED(path_list);
 
@@ -460,7 +462,8 @@ int cloud_wrap_batch_send(char *buf, size_t len, bool ack, uint32_t id)
 	return 0;
 }
 
-int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id, char *path_list[])
+int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id,
+		       const struct lwm2m_obj_path path_list[])
 {
 	ARG_UNUSED(path_list);
 
@@ -484,7 +487,7 @@ int cloud_wrap_ui_send(char *buf, size_t len, bool ack, uint32_t id, char *path_
 	return 0;
 }
 
-int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id)
+int cloud_wrap_cloud_location_send(char *buf, size_t len, bool ack, uint32_t id)
 {
 	int err;
 	struct azure_iot_hub_msg msg = {
@@ -493,8 +496,8 @@ int cloud_wrap_neighbor_cells_send(char *buf, size_t len, bool ack, uint32_t id)
 		.message_id = id,
 		.qos = ack ? MQTT_QOS_1_AT_LEAST_ONCE : MQTT_QOS_0_AT_MOST_ONCE,
 		.topic.type = AZURE_IOT_HUB_TOPIC_EVENT,
-		.topic.properties = prop_bag_ncellmeas,
-		.topic.property_count = ARRAY_SIZE(prop_bag_ncellmeas)
+		.topic.properties = prop_bag_ground_fix,
+		.topic.property_count = ARRAY_SIZE(prop_bag_ground_fix)
 	};
 
 	err = azure_iot_hub_send(&msg);

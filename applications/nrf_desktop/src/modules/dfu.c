@@ -53,16 +53,24 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_LOG_LEVEL);
  #include <fw_info.h>
  #define IMAGE0_ID		PM_S0_IMAGE_ID
  #define IMAGE0_ADDRESS		PM_S0_IMAGE_ADDRESS
+ #define IMAGE0_SIZE		PM_S0_IMAGE_SIZE
  #define IMAGE1_ID		PM_S1_IMAGE_ID
  #define IMAGE1_ADDRESS		PM_S1_IMAGE_ADDRESS
+ #define IMAGE1_SIZE		PM_S1_IMAGE_SIZE
  #define BOOTLOADER_NAME	"B0"
 #elif CONFIG_BOOTLOADER_MCUBOOT
  #include <zephyr/dfu/mcuboot.h>
  #define IMAGE0_ID		PM_MCUBOOT_PRIMARY_ID
  #define IMAGE0_ADDRESS		PM_MCUBOOT_PRIMARY_ADDRESS
+ #define IMAGE0_SIZE		PM_MCUBOOT_PRIMARY_SIZE
  #define IMAGE1_ID		PM_MCUBOOT_SECONDARY_ID
  #define IMAGE1_ADDRESS		PM_MCUBOOT_SECONDARY_ADDRESS
- #define BOOTLOADER_NAME	"MCUBOOT"
+ #define IMAGE1_SIZE		PM_MCUBOOT_SECONDARY_SIZE
+ #if CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_MCUBOOT_DIRECT_XIP
+   #define BOOTLOADER_NAME	"MCUBOOT+XIP"
+ #else
+   #define BOOTLOADER_NAME	"MCUBOOT"
+ #endif
 #else
  #error Bootloader not supported.
 #endif
@@ -91,6 +99,7 @@ enum dfu_opt {
 	DFU_OPT_REBOOT,
 	DFU_OPT_FWINFO,
 	DFU_OPT_VARIANT,
+	DFU_OPT_DEVINFO,
 
 	DFU_OPT_COUNT
 };
@@ -101,22 +110,24 @@ const static char * const opt_descr[] = {
 	[DFU_OPT_SYNC] = "sync",
 	[DFU_OPT_REBOOT] = "reboot",
 	[DFU_OPT_FWINFO] = "fwinfo",
-	[DFU_OPT_VARIANT] = OPT_DESCR_MODULE_VARIANT
+	[DFU_OPT_VARIANT] = OPT_DESCR_MODULE_VARIANT,
+	[DFU_OPT_DEVINFO] = "devinfo"
 };
 
 static uint8_t dfu_slot_id(void)
 {
-#if CONFIG_BOOTLOADER_MCUBOOT
-	/* MCUBoot always puts new image in the secondary slot. */
-	return IMAGE1_ID;
-#else
-	BUILD_ASSERT(IMAGE0_ADDRESS < IMAGE1_ADDRESS);
-	if ((uint32_t)(uintptr_t)dfu_slot_id < IMAGE1_ADDRESS) {
-		return IMAGE1_ID;
-	}
+	/* Assuming that image 0 slot is always located in internal FLASH. */
+	uint32_t cur_fun_addr = (uintptr_t)dfu_slot_id;
 
-	return IMAGE0_ID;
-#endif
+	/* Return slot ID that is currently not in use. */
+	if ((cur_fun_addr >= IMAGE0_ADDRESS) &&
+	    (cur_fun_addr < (IMAGE0_ADDRESS + IMAGE0_SIZE))) {
+		return IMAGE1_ID;
+	} else {
+		__ASSERT_NO_MSG((cur_fun_addr >= IMAGE1_ADDRESS) &&
+				(cur_fun_addr < (IMAGE1_ADDRESS + IMAGE1_SIZE)));
+		return IMAGE0_ID;
+	}
 }
 
 static bool is_page_clean(const struct flash_area *fa, off_t off, size_t len)
@@ -245,7 +256,7 @@ static void complete_dfu_data_store(void)
 
 	if (cur_offset == img_length) {
 		LOG_INF("DFU image written");
-#ifdef CONFIG_BOOTLOADER_MCUBOOT
+#if CONFIG_BOOTLOADER_MCUBOOT && !CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_MCUBOOT_DIRECT_XIP
 		int err = boot_request_upgrade(false);
 		if (err) {
 			LOG_ERR("Cannot request the image upgrade (err:%d)", err);
@@ -504,6 +515,33 @@ static void handle_dfu_bootloader_variant(uint8_t *data, size_t *size)
 	strcpy((char *)data, BOOTLOADER_NAME);
 }
 
+static void handle_dfu_devinfo(uint8_t *data, size_t *size)
+{
+	LOG_INF("Device information requested");
+	const uint16_t vid = CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_VID;
+	const uint16_t pid = CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_PID;
+	const char *generation = CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_GENERATION;
+	size_t pos = 0;
+
+	BUILD_ASSERT(sizeof(CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_GENERATION) > 1,
+		     "CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_GENERATION cannot be an empty string");
+	BUILD_ASSERT((sizeof(vid) + sizeof(pid) +
+		      sizeof(CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_GENERATION)) <=
+		     CONFIG_CHANNEL_FETCHED_DATA_MAX_SIZE,
+		     "CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_GENERATION is too long");
+
+	sys_put_le16(vid, &data[pos]);
+	pos += sizeof(vid);
+
+	sys_put_le16(pid, &data[pos]);
+	pos += sizeof(pid);
+
+	strcpy(&data[pos], generation);
+	pos += strlen(generation);
+
+	*size = pos;
+}
+
 static void handle_reboot_request(uint8_t *data, size_t *size)
 {
 	LOG_INF("System reboot requested");
@@ -671,6 +709,10 @@ static void fetch_config(const uint8_t opt_id, uint8_t *data, size_t *size)
 		handle_dfu_bootloader_variant(data, size);
 		break;
 
+	case DFU_OPT_DEVINFO:
+		handle_dfu_devinfo(data, size);
+		break;
+
 	default:
 		/* Ignore unknown event. */
 		LOG_WRN("Unknown DFU event");
@@ -689,7 +731,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 	GEN_CONFIG_EVENT_HANDLERS(STRINGIFY(MODULE), opt_descr, update_config,
 				  fetch_config);
 
-	if (is_ble_peer_event(aeh)) {
+	if (IS_ENABLED(CONFIG_CAF_BLE_COMMON_EVENTS) && is_ble_peer_event(aeh)) {
 		device_in_use = true;
 
 		return false;
@@ -700,7 +742,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 			cast_module_state_event(aeh);
 
 		if (check_state(event, MODULE_ID(main), MODULE_STATE_READY)) {
-#if CONFIG_BOOTLOADER_MCUBOOT
+#if CONFIG_BOOTLOADER_MCUBOOT && !CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_MCUBOOT_DIRECT_XIP
 			int err = boot_write_img_confirmed();
 
 			if (err) {
@@ -727,4 +769,6 @@ APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE(MODULE, hid_report_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, config_event);
 APP_EVENT_SUBSCRIBE(MODULE, module_state_event);
+#ifdef CONFIG_CAF_BLE_COMMON_EVENTS
 APP_EVENT_SUBSCRIBE(MODULE, ble_peer_event);
+#endif /* CONFIG_CAF_BLE_COMMON_EVENTS */

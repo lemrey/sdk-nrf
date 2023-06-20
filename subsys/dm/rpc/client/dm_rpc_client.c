@@ -100,7 +100,7 @@ static void process_data(const struct dm_rpc_process_data *data, struct dm_resul
 		result->dist_estimates.mcpd.best = data->report.distance_estimates.mcpd.best;
 		result->dist_estimates.mcpd.rssi_openspace =
 						data->report.distance_estimates.mcpd.rssi_openspace;
-#ifdef CONFIG_DM__HIGH_PRECISION_CALC
+#ifdef CONFIG_DM_HIGH_PRECISION_CALC
 		result->dist_estimates.mcpd.high_precision = high_precision_estimate;
 #endif
 	}
@@ -164,9 +164,8 @@ static void data_handler(struct k_work *work)
 	ipc_service_send(&ep, &cmd, sizeof(cmd));
 }
 
-static int ipc_init(const struct device *dev)
+static int ipc_init(void)
 {
-	ARG_UNUSED(dev);
 
 	int err;
 	const struct device *ipc_instance;

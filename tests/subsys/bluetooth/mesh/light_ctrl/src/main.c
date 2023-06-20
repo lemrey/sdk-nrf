@@ -383,8 +383,8 @@ expected_statemachine_cond(bool enabled,
 	zassert_equal(light_ctrl_srv.state, expected_state, "Wrong state, expected: %d, got: %d",
 		      expected_state, light_ctrl_srv.state);
 	zassert_equal(light_ctrl_srv.flags, expected_flags,
-		      "Wrong Flags: 0x%X:0x%X", light_ctrl_srv.flags,
-		      expected_flags);
+		      "Wrong Flags: exp 0x%X : got 0x%X", expected_flags,
+		      light_ctrl_srv.flags);
 }
 
 static void trigger_pi_reg(uint32_t steps)
@@ -410,7 +410,7 @@ static float sensor_to_float(struct sensor_value *val)
 	return val->val1 + val->val2 / 1000000.0f;
 }
 
-static void setup(void)
+static void setup(void *f)
 {
 	mock_timers[REG_TIMER].dwork = &CONTAINER_OF(
 		light_ctrl_srv.reg, struct bt_mesh_light_ctrl_reg_spec, reg)->timer;
@@ -424,7 +424,7 @@ static void setup(void)
 		   "Start failed");
 }
 
-static void teardown(void)
+static void teardown(void *f)
 {
 	zassert_not_null(_bt_mesh_light_ctrl_srv_cb.reset, "Reset cb is null");
 	expect_ctrl_disable();
@@ -434,7 +434,8 @@ static void teardown(void)
 static void enable_ctrl(void)
 {
 	enum bt_mesh_light_ctrl_srv_state expected_state = LIGHT_CTRL_STATE_STANDBY;
-	atomic_t expected_flags = FLAGS_CONFIGURATION | BIT(FLAG_CTRL_SRV_MANUALLY_ENABLED);
+	atomic_t expected_flags = FLAGS_CONFIGURATION | BIT(FLAG_CTRL_SRV_MANUALLY_ENABLED)
+				  | BIT(FLAG_REGULATOR);
 
 	expect_ctrl_enable();
 	bt_mesh_light_ctrl_srv_enable(&light_ctrl_srv);
@@ -473,7 +474,7 @@ static void turn_on_ctrl(void)
 	mock_uptime += timeout.ticks;
 }
 
-static void setup_pi_reg(void)
+static void setup_pi_reg(void *f)
 {
 	pi_reg_test_ctx.enabled = true;
 	pi_reg_test_ctx.lightness = 0;
@@ -486,21 +487,24 @@ static void setup_pi_reg(void)
 	light_ctrl_srv.cfg.light[LIGHT_CTRL_STATE_ON] = 0;
 	light_ctrl_srv.cfg.light[LIGHT_CTRL_STATE_PROLONG] = 0;
 
-	setup();
+	setup(f);
 	enable_ctrl();
 	turn_on_ctrl();
+
+	/* Start regulator manually to allow the test to check operation */
+	light_ctrl_srv.reg->start(light_ctrl_srv.reg);
 }
 
-static void teardown_pi_reg(void)
+static void teardown_pi_reg(void *f)
 {
 	pi_reg_test_ctx.enabled = false;
 	pi_reg_test_ctx.lightness = 0;
 	pi_reg_test_ctx.lightness_changed = false;
 
-	teardown();
+	teardown(f);
 }
 
-static void test_fsm_no_change_by_light_onoff(void)
+ZTEST(light_ctrl_test, test_fsm_no_change_by_light_onoff)
 {
 	/* The light ctrl server is disable after init, and in OFF state */
 	enum bt_mesh_light_ctrl_srv_state expected_state =
@@ -517,9 +521,11 @@ static void test_fsm_no_change_by_light_onoff(void)
 
 	/* Enable light ctrl server, to enter STANDBY state */
 	expected_flags = expected_flags | BIT(FLAG_CTRL_SRV_MANUALLY_ENABLED);
-	expected_flags = expected_flags | BIT(FLAG_TRANSITION);
+	expected_flags = expected_flags | BIT(FLAG_TRANSITION) | BIT(FLAG_REGULATOR);
 	expect_ctrl_enable();
 	bt_mesh_light_ctrl_srv_enable(&light_ctrl_srv);
+	/* Start regulator manually to allow the test to check operation */
+	light_ctrl_srv.reg->start(light_ctrl_srv.reg);
 
 	/* Wait for transition to completed. */
 	expected_flags = expected_flags & ~BIT(FLAG_TRANSITION);
@@ -617,7 +623,7 @@ static void check_default_cfg(void)
 			  sizeof(struct sensor_value), "Invalid default value");
 }
 
-static void test_default_cfg(void)
+ZTEST(light_ctrl_test, test_default_cfg)
 {
 	check_default_cfg();
 
@@ -656,7 +662,7 @@ static void test_default_cfg(void)
  * Verify that PI Regulator keeps internal sum and its output within the range defined in
  * MeshMDLv1.0.1, table 6.53.
  */
-static void test_pi_regulator_shall_not_wrap_around(void)
+ZTEST(light_ctrl_pi_reg_test, test_pi_regulator_shall_not_wrap_around)
 {
 	light_ctrl_srv.reg->cfg.ki.up = 10;
 	light_ctrl_srv.reg->cfg.ki.down = 10;
@@ -717,7 +723,7 @@ static void test_pi_regulator_shall_not_wrap_around(void)
 /**
  * Verify that accumulated values are reset after model reset.
  */
-static void test_pi_regulator_after_reset(void)
+ZTEST(light_ctrl_pi_reg_test, test_pi_regulator_after_reset)
 {
 	uint16_t expected_lightness;
 
@@ -733,8 +739,8 @@ static void test_pi_regulator_after_reset(void)
 	zassert_equal(pi_reg_test_ctx.lightness, expected_lightness, "Expected: %d, got: %d",
 		      expected_lightness, pi_reg_test_ctx.lightness);
 
-	teardown_pi_reg();
-	setup_pi_reg();
+	teardown_pi_reg(NULL);
+	setup_pi_reg(NULL);
 
 	light_ctrl_srv.reg->measured = CONFIG_BT_MESH_LIGHT_CTRL_SRV_REG_LUX_ON -
 				       REG_ACCURACY(CONFIG_BT_MESH_LIGHT_CTRL_SRV_REG_LUX_ON) - 2;
@@ -745,8 +751,8 @@ static void test_pi_regulator_after_reset(void)
 		      expected_lightness, pi_reg_test_ctx.lightness);
 
 	/* Test reg.prev. */
-	teardown_pi_reg();
-	setup_pi_reg();
+	teardown_pi_reg(NULL);
+	setup_pi_reg(NULL);
 
 	trigger_pi_reg(1);
 	expected_lightness = (SUMMATION_STEP(light_ctrl_srv.reg->cfg.ki.up) +
@@ -754,8 +760,8 @@ static void test_pi_regulator_after_reset(void)
 	zassert_equal(pi_reg_test_ctx.lightness, expected_lightness, "Expected: %d, got: %d",
 		      expected_lightness, pi_reg_test_ctx.lightness);
 
-	teardown_pi_reg();
-	setup_pi_reg();
+	teardown_pi_reg(NULL);
+	setup_pi_reg(NULL);
 
 	pi_reg_test_ctx.lightness_changed = false;
 	trigger_pi_reg(1);
@@ -768,7 +774,7 @@ static void test_pi_regulator_after_reset(void)
  * Verify that PI Regulator doesn't change lightness value when the adjustment error within the
  * accuracy.
  */
-static void test_pi_regulator_accuracy(void)
+ZTEST(light_ctrl_pi_reg_test, test_pi_regulator_accuracy)
 {
 	uint32_t expected_lightness;
 
@@ -810,7 +816,7 @@ static void test_pi_regulator_accuracy(void)
 /**
  * Verify that PI Regulator correctly uses Kiu, Kid, Kpu and Kpd coffeicients.
  */
-static void test_pi_regulator_coefficients(void)
+ZTEST(light_ctrl_pi_reg_test, test_pi_regulator_coefficients)
 {
 	uint16_t expected_lightness;
 
@@ -941,7 +947,7 @@ static void switch_to_standby_state(void)
 /**
  * Verify that PI Regulator uses correct target LuxLevel values for On, Prolong and Standby states.
  */
-static void test_target_luxlevel_for_pi_regulator(void)
+ZTEST(light_ctrl_pi_reg_test, test_target_luxlevel_for_pi_regulator)
 {
 	uint16_t expected_lightness;
 
@@ -1013,7 +1019,7 @@ static void test_target_luxlevel_for_pi_regulator(void)
 /**
  * Verify that Light LC Linear Output = max((Lightness Out ^ 2) / 65535, Regulator Output)
  */
-static void test_linear_output_state(void)
+ZTEST(light_ctrl_pi_reg_test, test_linear_output_state)
 {
 	uint16_t expected_lightness;
 
@@ -1039,26 +1045,5 @@ static void test_linear_output_state(void)
 		      expected_lightness, pi_reg_test_ctx.lightness);
 }
 
-void test_main(void)
-{
-	ztest_test_suite(light_ctrl_test,
-			 ztest_unit_test_setup_teardown(
-				 test_fsm_no_change_by_light_onoff, setup,
-				 teardown),
-			 ztest_unit_test_setup_teardown(test_default_cfg,
-							setup, teardown),
-			 ztest_unit_test_setup_teardown(test_pi_regulator_shall_not_wrap_around,
-							setup_pi_reg, teardown_pi_reg),
-			 ztest_unit_test_setup_teardown(test_pi_regulator_after_reset,
-							setup_pi_reg, teardown_pi_reg),
-			 ztest_unit_test_setup_teardown(test_pi_regulator_accuracy,
-							setup_pi_reg, teardown_pi_reg),
-			 ztest_unit_test_setup_teardown(test_pi_regulator_coefficients,
-							setup_pi_reg, teardown_pi_reg),
-			 ztest_unit_test_setup_teardown(test_target_luxlevel_for_pi_regulator,
-							setup_pi_reg, teardown_pi_reg),
-			 ztest_unit_test_setup_teardown(test_linear_output_state,
-							setup_pi_reg, teardown_pi_reg));
-
-	ztest_run_test_suite(light_ctrl_test);
-}
+ZTEST_SUITE(light_ctrl_test, NULL, NULL, setup, teardown, NULL);
+ZTEST_SUITE(light_ctrl_pi_reg_test, NULL, NULL, setup_pi_reg, teardown_pi_reg, NULL);

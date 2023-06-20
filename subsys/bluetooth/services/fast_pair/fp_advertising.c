@@ -17,7 +17,7 @@ LOG_MODULE_DECLARE(fast_pair, CONFIG_BT_FAST_PAIR_LOG_LEVEL);
 #include "fp_common.h"
 #include "fp_crypto.h"
 #include "fp_registration_data.h"
-#include "fp_storage.h"
+#include "fp_storage_ak.h"
 
 #define LEN_BITS				4
 #define TYPE_BITS				4
@@ -66,7 +66,7 @@ static size_t bt_fast_pair_adv_data_size_non_discoverable(size_t account_key_cnt
 	if (account_key_cnt == 0) {
 		res += sizeof(empty_account_key_list);
 	} else {
-		uint8_t salt;
+		uint16_t salt;
 
 		res += FIELD_LEN_TYPE_SIZE;
 		res += fp_crypto_account_key_filter_size(account_key_cnt);
@@ -89,7 +89,7 @@ static size_t bt_fast_pair_adv_data_size_discoverable(void)
 
 size_t bt_fast_pair_adv_data_size(struct bt_fast_pair_adv_config fp_adv_config)
 {
-	int account_key_cnt = fp_storage_account_key_count();
+	int account_key_cnt = fp_storage_ak_count();
 	size_t res = 0;
 	int err;
 
@@ -168,7 +168,7 @@ static int fp_adv_data_fill_non_discoverable(struct net_buf_simple *buf, size_t 
 		struct fp_account_key ak[CONFIG_BT_FAST_PAIR_STORAGE_ACCOUNT_KEY_MAX];
 		size_t ak_filter_size = fp_crypto_account_key_filter_size(account_key_cnt);
 		size_t account_key_get_cnt = account_key_cnt;
-		uint8_t salt;
+		uint16_t salt;
 		int err;
 
 		err = sys_csrand_get(&salt, sizeof(salt));
@@ -176,7 +176,7 @@ static int fp_adv_data_fill_non_discoverable(struct net_buf_simple *buf, size_t 
 			return err;
 		}
 
-		err = fp_storage_account_keys_get(ak, &account_key_get_cnt);
+		err = fp_storage_ak_get(ak, &account_key_get_cnt);
 		if (err) {
 			return err;
 		}
@@ -198,7 +198,7 @@ static int fp_adv_data_fill_non_discoverable(struct net_buf_simple *buf, size_t 
 		}
 
 		net_buf_simple_add_u8(buf, ENCODE_FIELD_LEN_TYPE(sizeof(salt), FP_FIELD_TYPE_SALT));
-		net_buf_simple_add_u8(buf, salt);
+		net_buf_simple_add_be16(buf, salt);
 	}
 
 	if (add_battery_info) {
@@ -218,7 +218,7 @@ int bt_fast_pair_adv_data_fill(struct bt_data *bt_adv_data, uint8_t *buf, size_t
 			       struct bt_fast_pair_adv_config fp_adv_config)
 {
 	struct net_buf_simple nb;
-	int account_key_cnt = fp_storage_account_key_count();
+	int account_key_cnt = fp_storage_ak_count();
 	size_t adv_data_len = bt_fast_pair_adv_data_size(fp_adv_config);
 	enum fp_field_type ak_filter_type;
 	int err;

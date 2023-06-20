@@ -9,10 +9,15 @@ Matter: Light switch
    :depth: 2
 
 This light switch sample demonstrates the usage of the :ref:`Matter <ug_matter>` application layer to build a switch device that binds with lighting devices and changes the state of their LEDs.
+You can use this sample as a reference for creating your own application.
+
 When configured together with the :ref:`Matter light bulb <matter_light_bulb_sample>` sample (or other lighting sample) and when using a Matter controller, the light switch can control one light bulb directly or a group of light bulbs remotely over a Matter network built on top of a low-power, 802.15.4 Thread, or on top of a Wi-Fi network.
 Support for both Thread and Wi-Fi is mutually exclusive and depends on the hardware platform, so only one protocol can be supported for a specific light switch device.
-In case of Thread, this device works as a Thread :ref:`Sleepy End Device <thread_ot_device_types>`.
-You can use this sample as a reference for creating your own application.
+Depending on the network you choose:
+
+* In case of Thread, this device works as a Thread :ref:`Sleepy End Device <thread_ot_device_types>`.
+* In case of Wi-Fi, this device works in the :ref:`Legacy Power Save mode <ug_nrf70_developing_powersave_dtim_unicast>`.
+  This means that the device sleeps most of the time and wakes up on each Delivery Traffic Indication Message (DTIM) interval to poll for pending messages.
 
 Requirements
 ************
@@ -27,7 +32,7 @@ To commission the device and run all required commands, you need also a :ref:`Ma
 By default, this sample is configured to use the CHIP Tool as Matter controller.
 See the :doc:`matter:chip_tool_guide` page in the Matter documentation for the CHIP Tool's setup information.
 
-If you decide to use :ref:`matter_light_switch_sample_remote_control_cli`, you also need a USB cable for the serial connection.
+If you decide to use :ref:`matter_light_switch_sample_ui_matter_cli`, you also need a USB cable for the serial connection.
 
 .. note::
     |matter_gn_required_note|
@@ -111,28 +116,6 @@ FEM support
 
 .. include:: /includes/sample_fem_support.txt
 
-.. _matter_light_switch_sample_remote_control_cli:
-
-Matter CLI support
-==================
-
-The Matter CLI allows to run commands through the serial interface using the USB cable connected to the USB port on Nordic Semiconductor's development kit.
-
-To enable the Matter CLI, you must build the light switch application with the additional option ``-DCONFIG_CHIP_LIB_SHELL=y``.
-Use the following command pattern, with ``<build-target>`` replaced with the build target name of Nordic Semiconductor's development kit you are using (see `Requirements`_):
-
-.. parsed-literal::
-   :class: highlight
-
-   west build -b <build-target> -- -DCONFIG_CHIP_LIB_SHELL=y
-
-For example:
-
-.. parsed-literal::
-   :class: highlight
-
-   west build -b nrf52840dk_nrf52840_cpuapp -- -DCONFIG_CHIP_LIB_SHELL=y
-
 Device Firmware Upgrade support
 ===============================
 
@@ -200,7 +183,7 @@ NFC port with antenna attached:
 Matter CLI commands
 ===================
 
-If you build the application with the :ref:`matter_light_switch_sample_remote_control_cli`, you can use a series of commands to control the light switch device.
+If you build the application using the ``debug`` or ``no_dfu`` build type, you can use a series of commands to control the light switch device.
 These commands can be sent to one device (unicast) or a group of devices (groupcast).
 
 Unicast commands
@@ -284,14 +267,14 @@ Before you start testing the application, you can select one of the `Matter ligh
 Selecting a build type in |VSC|
 -------------------------------
 
-.. include:: /gs_modifying.rst
+.. include:: /getting_started/modifying.rst
    :start-after: build_types_selection_vsc_start
    :end-before: build_types_selection_vsc_end
 
 Selecting a build type from command line
 ----------------------------------------
 
-.. include:: /gs_modifying.rst
+.. include:: /getting_started/modifying.rst
    :start-after: build_types_selection_cmd_start
    :end-before: For example, you can replace the
 
@@ -477,6 +460,8 @@ For this sample, you can use one of the following :ref:`onboarding information f
 
        - MT:4CT9142C00KA0648G00
        - 34970112332
+
+|matter_cd_info_note_for_samples|
 
 Upgrading the device firmware
 =============================

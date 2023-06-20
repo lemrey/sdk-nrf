@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+#define DT_DRV_COMPAT cirrus_cs47l63
+
 #include "cs47l63_comm.h"
 
 #include <zephyr/kernel.h>
@@ -14,7 +16,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
-#include "macros_common.h"
 #include "bsp_driver_if.h"
 #include "cs47l63.h"
 
@@ -26,16 +27,14 @@ LOG_MODULE_REGISTER(CS47L63, CONFIG_CS47L63_LOG_LEVEL);
 /* Delay the processing thread to allow interrupts to settle after boot */
 #define CS47L63_PROCESS_THREAD_DELAY_MS 10
 
-static const struct gpio_dt_spec hw_codec_gpio =
-	GPIO_DT_SPEC_GET(DT_NODELABEL(hw_codec_gpio_in), gpios);
-static const struct gpio_dt_spec hw_codec_irq =
-	GPIO_DT_SPEC_GET(DT_NODELABEL(hw_codec_irq_in), gpios);
-static const struct gpio_dt_spec hw_codec_reset =
-	GPIO_DT_SPEC_GET(DT_NODELABEL(hw_codec_reset_out), gpios);
+static const struct gpio_dt_spec hw_codec_gpio = GPIO_DT_SPEC_INST_GET(0, gpio9_gpios);
+static const struct gpio_dt_spec hw_codec_irq = GPIO_DT_SPEC_INST_GET(0, irq_gpios);
+static const struct gpio_dt_spec hw_codec_reset = GPIO_DT_SPEC_INST_GET(0, reset_gpios);
 
-const static struct device *cirrus_dev = DEVICE_DT_GET(DT_BUS(DT_NODELABEL(cs47l63)));
 const static struct device *gpio_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0));
 
+static const struct spi_dt_spec spi = SPI_DT_SPEC_INST_GET(
+	0, SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8) | SPI_LINES_SINGLE, 0);
 static bsp_callback_t bsp_callback;
 static void *bsp_callback_arg;
 
@@ -45,22 +44,6 @@ static struct k_thread cs47l63_data;
 static K_THREAD_STACK_DEFINE(cs47l63_stack, CONFIG_CS47L63_STACK_SIZE);
 
 static K_SEM_DEFINE(sem_cs47l63, 0, 1);
-
-/* Free the CS pin and release the SPI device after a transaction */
-#define SPI_OPER_POST_FREE                                                                         \
-	(SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8) | SPI_LINES_SINGLE)
-
-/* Hold the CS pin and do not release the SPI device after a transaction */
-#define SPI_OPER_POST_HOLD                                                                         \
-	(SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_HOLD_ON_CS | SPI_LOCK_ON | SPI_WORD_SET(8) |  \
-	 SPI_LINES_SINGLE)
-
-#define SPI_FREQUENCY 8000000
-
-static struct spi_config config = { .frequency = SPI_FREQUENCY,
-				    .operation = SPI_OPER_POST_FREE,
-				    .slave = 0,
-				    .cs = SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(cs47l63), 0) };
 
 static struct k_mutex cirrus_reg_oper_mutex;
 
@@ -72,44 +55,54 @@ static void notification_callback(uint32_t event_flags, void *arg)
 /* Locks the mutex and holds the CS pin
  * for consecutive transactions
  */
-static void spi_mutex_lock(void)
+static int spi_mutex_lock(void)
 {
 	int ret;
 
 	ret = k_mutex_lock(&cirrus_reg_oper_mutex, K_FOREVER);
-	ERR_CHK(ret);
+	if (ret) {
+		LOG_ERR("Failed to lock mutex: %d", ret);
+		return ret;
+	}
 
 	/* If operation mode set to HOLD or the SPI_LOCK_ON is set when
 	 * taking the mutex something is wrong
 	 */
-	if ((config.operation & SPI_HOLD_ON_CS) || (config.operation & SPI_LOCK_ON)) {
-		ERR_CHK_MSG(-EPERM,
-			    "SPI_HOLD_ON_CS and SPI_LOCK_ON must be freed before releasing mutex");
+	if ((spi.config.operation & SPI_HOLD_ON_CS) || (spi.config.operation & SPI_LOCK_ON)) {
+		LOG_ERR("SPI_HOLD_ON_CS and SPI_LOCK_ON must be freed before releasing mutex");
+		return -EPERM;
 	}
+
+	return 0;
 }
 
 /* Unlocks mutex and CS pin */
-static void spi_mutex_unlock(void)
+static int spi_mutex_unlock(void)
 {
+	int ret;
 	/* If operation mode still set to HOLD or
 	 * the SPI_LOCK_ON is still set when releasing the mutex
 	 * something is wrong
 	 */
-	if ((config.operation & SPI_HOLD_ON_CS) || (config.operation & SPI_LOCK_ON)) {
-		ERR_CHK_MSG(-EPERM,
-			    "SPI_HOLD_ON_CS and SPI_LOCK_ON must be freed before releasing mutex");
+	if ((spi.config.operation & SPI_HOLD_ON_CS) || (spi.config.operation & SPI_LOCK_ON)) {
+		LOG_ERR("SPI_HOLD_ON_CS and SPI_LOCK_ON must be freed before releasing mutex");
+		return -EPERM;
 	}
 
-	k_mutex_unlock(&cirrus_reg_oper_mutex);
+	ret = k_mutex_unlock(&cirrus_reg_oper_mutex);
+	if (ret) {
+		LOG_ERR("Failed to unlock mutex: %d", ret);
+		return ret;
+	}
+
+	return 0;
 }
 
 /* Pin interrupt handler for CS47L63 */
 static void cs47l63_comm_pin_int_handler(const struct device *gpio_port, struct gpio_callback *cb,
 					 uint32_t pins)
 {
-	if (bsp_callback == NULL) {
-		ERR_CHK_MSG(-ENODEV, "No callback registered");
-	}
+	__ASSERT(bsp_callback != NULL, "No callback registered");
 
 	if (pins == BIT(hw_codec_irq.pin)) {
 		bsp_callback(BSP_STATUS_OK, bsp_callback_arg);
@@ -121,11 +114,6 @@ static uint32_t cs47l63_comm_reg_read(uint32_t bsp_dev_id, uint8_t *addr_buffer,
 				      uint32_t addr_length, uint8_t *data_buffer,
 				      uint32_t data_length, uint32_t pad_len)
 {
-	if (!cirrus_dev) {
-		LOG_ERR("SPI driver was not found!");
-		return BSP_STATUS_FAIL;
-	}
-
 	if (pad_len != PAD_LEN) {
 		LOG_ERR("Trying to pad more than 4 bytes: %d", pad_len);
 		return BSP_STATUS_FAIL;
@@ -143,13 +131,21 @@ static uint32_t cs47l63_comm_reg_read(uint32_t bsp_dev_id, uint8_t *addr_buffer,
 	rx.buffers = rx_buf;
 	rx.count = ARRAY_SIZE(rx_buf);
 
-	spi_mutex_lock();
-	config.operation = SPI_OPER_POST_FREE;
+	ret = spi_mutex_lock();
+	if (ret) {
+		return BSP_STATUS_FAIL;
+	}
 
-	ret = spi_transceive(cirrus_dev, &config, &rx, &rx);
-	ERR_CHK(ret);
+	ret = spi_transceive_dt(&spi, &rx, &rx);
+	if (ret) {
+		LOG_ERR("Failed transceive operation: %d", ret);
+		return BSP_STATUS_FAIL;
+	}
 
-	spi_mutex_unlock();
+	ret = spi_mutex_unlock();
+	if (ret) {
+		return BSP_STATUS_FAIL;
+	}
 
 	return BSP_STATUS_OK;
 }
@@ -158,11 +154,6 @@ static uint32_t cs47l63_comm_reg_write(uint32_t bsp_dev_id, uint8_t *addr_buffer
 				       uint32_t addr_length, uint8_t *data_buffer,
 				       uint32_t data_length, uint32_t pad_len)
 {
-	if (!cirrus_dev) {
-		LOG_ERR("SPI driver was not found!");
-		return BSP_STATUS_FAIL;
-	}
-
 	if (pad_len != PAD_LEN) {
 		LOG_ERR("Trying to pad more than 4 bytes: %d", pad_len);
 		return BSP_STATUS_FAIL;
@@ -180,16 +171,21 @@ static uint32_t cs47l63_comm_reg_write(uint32_t bsp_dev_id, uint8_t *addr_buffer
 	tx.buffers = tx_buf;
 	tx.count = ARRAY_SIZE(tx_buf);
 
-	spi_mutex_lock();
-	config.operation = SPI_OPER_POST_FREE;
+	ret = spi_mutex_lock();
+	if (ret) {
+		return BSP_STATUS_FAIL;
+	}
 
-	ret = spi_write(cirrus_dev, &config, &tx);
+	ret = spi_write_dt(&spi, &tx);
 	if (ret) {
 		LOG_ERR("SPI failed to write: %d", ret);
 		return BSP_STATUS_FAIL;
 	}
 
-	spi_mutex_unlock();
+	ret = spi_mutex_unlock();
+	if (ret) {
+		return BSP_STATUS_FAIL;
+	}
 
 	return BSP_STATUS_OK;
 }
@@ -197,11 +193,6 @@ static uint32_t cs47l63_comm_reg_write(uint32_t bsp_dev_id, uint8_t *addr_buffer
 static uint32_t cs47l63_comm_gpio_set(uint32_t gpio_id, uint8_t gpio_state)
 {
 	int ret;
-
-	if (!gpio_dev) {
-		LOG_ERR("Failed to get gpio_dev");
-		return BSP_STATUS_FAIL;
-	}
 
 	ret = gpio_pin_set_raw(gpio_dev, gpio_id, gpio_state);
 
@@ -340,17 +331,12 @@ int cs47l63_comm_init(cs47l63_t *cs47l63_driver)
 
 	k_mutex_init(&cirrus_reg_oper_mutex);
 
-	if (!device_is_ready(cirrus_dev)) {
+	if (!spi_is_ready_dt(&spi)) {
 		LOG_ERR("CS47L63 is not ready!");
 		return -ENXIO;
 	}
 
-	if (!device_is_ready(config.cs->gpio.port)) {
-		LOG_ERR("CS GPIO is not ready!");
-		return -ENXIO;
-	}
-
-	if (!device_is_ready(hw_codec_gpio.port)) {
+	if (!gpio_is_ready_dt(&hw_codec_gpio)) {
 		LOG_ERR("GPIO is not ready!");
 		return -ENXIO;
 	}
@@ -360,7 +346,7 @@ int cs47l63_comm_init(cs47l63_t *cs47l63_driver)
 		return ret;
 	}
 
-	if (!device_is_ready(hw_codec_irq.port)) {
+	if (!gpio_is_ready_dt(&hw_codec_irq)) {
 		LOG_ERR("GPIO is not ready!");
 		return -ENXIO;
 	}
@@ -370,7 +356,7 @@ int cs47l63_comm_init(cs47l63_t *cs47l63_driver)
 		return ret;
 	}
 
-	if (!device_is_ready(hw_codec_reset.port)) {
+	if (!gpio_is_ready_dt(&hw_codec_reset)) {
 		LOG_ERR("GPIO is not ready!");
 		return -ENXIO;
 	}

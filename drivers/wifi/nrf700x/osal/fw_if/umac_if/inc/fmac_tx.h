@@ -18,6 +18,26 @@
 #define TX_DESC_BUCKET_BOUND 32
 #define DOT11_WMM_PARAMS_LEN 2
 
+/* 4 bits represent 4 access categories.
+ * (VOVIBEBO) respectively
+ */
+#define SPARE_DESC_Q_MAP_SIZE 4
+
+/**
+ * enum wifi_nrf_fmac_tx_status - The status of a TX operation performed by the
+ *						RPU driver.
+ * @WIFI_NRF_FMAC_TX_STATUS_SUCCESS: The TX operation was successful (sent packet to RPU).
+ * @WIFI_NRF_FMAC_TX_STATUS_QUEUED: The TX operation was successful (packet queued in driver).
+ * @WIFI_NRF_FMAC_TX_STATUS_FAIL: The TX operation failed.
+ *
+ * This enum lists the possible outcomes of a TX operation performed by the
+ * RPU driver.
+ */
+enum wifi_nrf_fmac_tx_status {
+	WIFI_NRF_FMAC_TX_STATUS_SUCCESS,
+	WIFI_NRF_FMAC_TX_STATUS_QUEUED = 1,
+	WIFI_NRF_FMAC_TX_STATUS_FAIL = -1,
+};
 
 struct tx_pkt_info {
 	void *pkt;
@@ -42,4 +62,14 @@ unsigned int tx_desc_get(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 enum wifi_nrf_status tx_pending_process(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 					unsigned int desc,
 					unsigned int ac);
+
+enum wifi_nrf_status tx_cmd_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
+				 void *txq,
+				 int desc,
+				 int peer_id);
+
+unsigned int tx_buff_req_free(struct wifi_nrf_fmac_dev_ctx *fmac_ctx,
+			      unsigned int desc,
+			      unsigned char *ac);
+
 #endif /* __FMAC_TX_H__ */

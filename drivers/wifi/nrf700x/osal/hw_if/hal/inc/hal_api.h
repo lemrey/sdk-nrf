@@ -151,7 +151,9 @@ unsigned long wifi_nrf_hal_buf_unmap_rx(struct wifi_nrf_hal_dev_ctx *hal_ctx,
 unsigned long wifi_nrf_hal_buf_map_tx(struct wifi_nrf_hal_dev_ctx *hal_ctx,
 				      unsigned long buf,
 				      unsigned int buf_len,
-				      unsigned int desc_id);
+				      unsigned int desc_id,
+				      unsigned int token,
+				      unsigned int buf_indx);
 
 unsigned long wifi_nrf_hal_buf_unmap_tx(struct wifi_nrf_hal_dev_ctx *hal_ctx,
 					unsigned int desc_id);
@@ -168,6 +170,9 @@ enum wifi_nrf_status wifi_nrf_hal_fw_chk_boot(struct wifi_nrf_hal_dev_ctx *hal_c
 
 #ifdef CONFIG_NRF_WIFI_LOW_POWER
 enum wifi_nrf_status hal_rpu_ps_wake(struct wifi_nrf_hal_dev_ctx *hal_dev_ctx);
+enum wifi_nrf_status wifi_nrf_hal_get_rpu_ps_state(
+				struct wifi_nrf_hal_dev_ctx *hal_dev_ctx,
+				int *rpu_ps_ctrl_state);
 #endif /* CONFIG_NRF_WIFI_LOW_POWER */
 #endif /* __HAL_API_H__ */
 

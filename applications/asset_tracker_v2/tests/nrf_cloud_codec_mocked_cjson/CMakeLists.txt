@@ -18,6 +18,7 @@ test_runner_generate(src/nrf_cloud_codec_mocked_test.c)
 cmock_handle(${ASSET_TRACKER_V2_DIR}/src/cloud/cloud_codec/json_helpers.h)
 cmock_handle(${NRF_DIR}/include/date_time.h)
 cmock_handle(${NRF_DIR}/include/net/nrf_cloud.h)
+cmock_handle(${NRF_DIR}/include/net/nrf_cloud_codec.h)
 cmock_handle(src/cJSON_to_mock.h)
 
 # add test file
@@ -37,4 +38,5 @@ target_sources(app PRIVATE ${ASSET_TRACKER_V2_DIR}/src/cloud/cloud_codec/cloud_c
 
 target_compile_options(app PRIVATE
 	-DCONFIG_ASSET_TRACKER_V2_APP_VERSION_MAX_LEN=20
+	-DCONFIG_LTE_NEIGHBOR_CELLS_MAX=10
 )

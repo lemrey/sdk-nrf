@@ -42,19 +42,22 @@ typedef bool (*cb_fn)(const struct app_event_header *aeh);
  * @brief List of bits in event type flags.
  */
 enum app_event_type_flags {
-	/* Flags set internally by Application Event Manager. */
+	/** marks beginning of flags controlled internally by Application Event Manager.*/
 	APP_EVENT_TYPE_FLAGS_SYSTEM_START,
+	/** indicates that event type has variable data size.
+	 *  Flag set internally by Application Event Manager.
+	 */
 	APP_EVENT_TYPE_FLAGS_HAS_DYNDATA = APP_EVENT_TYPE_FLAGS_SYSTEM_START,
-
-	/* Flags available for user. */
+	/** marks beginning of flags set by user.*/
 	APP_EVENT_TYPE_FLAGS_USER_SETTABLE_START,
+	/** enables event logging from the application start.
+	 *  Flag set by user.
+	 */
 	APP_EVENT_TYPE_FLAGS_INIT_LOG_ENABLE =
 		APP_EVENT_TYPE_FLAGS_USER_SETTABLE_START,
-
-	/* Number of predefined flags. */
+	/** shows number of predefined flags.*/
 	APP_EVENT_TYPE_FLAGS_COUNT,
-
-	/* Value greater or equal are user-specific. */
+	/** marks beginning of user-specific flags.*/
 	APP_EVENT_TYPE_FLAGS_USER_DEFINED_START = APP_EVENT_TYPE_FLAGS_COUNT,
 };
 
@@ -69,6 +72,16 @@ static inline bool app_event_get_type_flag(const struct event_type *et,
 {
 	return (et->flags & BIT(flag)) != 0;
 }
+
+/**
+ * @brief Get the event ID
+ *
+ * Macro that creates event id pointer from the event name.
+ *
+ * @param ename The name of the event
+ * @return Event id pointer to struct event_type type
+ */
+#define APP_EVENT_ID(ename) _EVENT_ID(ename)
 
 /** @brief Create an event listener object.
  *

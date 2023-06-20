@@ -286,7 +286,7 @@ static int module_init(void)
 	if (IS_ENABLED(CONFIG_DESKTOP_HID_REPORT_MOUSE_SUPPORT)) {
 		static const uint8_t mask[] = REPORT_MASK_MOUSE;
 		BUILD_ASSERT((sizeof(mask) == 0) ||
-			     (sizeof(mask) == ceiling_fraction(REPORT_SIZE_MOUSE, 8)));
+			     (sizeof(mask) == DIV_ROUND_UP(REPORT_SIZE_MOUSE, 8)));
 		BUILD_ASSERT(REPORT_ID_MOUSE < ARRAY_SIZE(report_index));
 
 		input_report[ir_pos].id       = REPORT_ID_MOUSE;
@@ -301,7 +301,7 @@ static int module_init(void)
 	if (IS_ENABLED(CONFIG_DESKTOP_HID_REPORT_KEYBOARD_SUPPORT)) {
 		static const uint8_t mask[] = REPORT_MASK_KEYBOARD_KEYS;
 		BUILD_ASSERT((sizeof(mask) == 0) ||
-			     (sizeof(mask) == ceiling_fraction(REPORT_SIZE_KEYBOARD_KEYS, 8)));
+			     (sizeof(mask) == DIV_ROUND_UP(REPORT_SIZE_KEYBOARD_KEYS, 8)));
 		BUILD_ASSERT(REPORT_ID_KEYBOARD_KEYS < ARRAY_SIZE(report_index));
 
 		input_report[ir_pos].id       = REPORT_ID_KEYBOARD_KEYS;
@@ -316,7 +316,7 @@ static int module_init(void)
 	if (IS_ENABLED(CONFIG_DESKTOP_HID_REPORT_SYSTEM_CTRL_SUPPORT)) {
 		static const uint8_t mask[] = REPORT_MASK_SYSTEM_CTRL;
 		BUILD_ASSERT((sizeof(mask) == 0) ||
-			     (sizeof(mask) == ceiling_fraction(REPORT_SIZE_SYSTEM_CTRL, 8)));
+			     (sizeof(mask) == DIV_ROUND_UP(REPORT_SIZE_SYSTEM_CTRL, 8)));
 		BUILD_ASSERT(REPORT_ID_SYSTEM_CTRL < ARRAY_SIZE(report_index));
 
 		input_report[ir_pos].id       = REPORT_ID_SYSTEM_CTRL;
@@ -331,7 +331,7 @@ static int module_init(void)
 	if (IS_ENABLED(CONFIG_DESKTOP_HID_REPORT_CONSUMER_CTRL_SUPPORT)) {
 		static const uint8_t mask[] = REPORT_MASK_CONSUMER_CTRL;
 		BUILD_ASSERT((sizeof(mask) == 0) ||
-			     (sizeof(mask) == ceiling_fraction(REPORT_SIZE_CONSUMER_CTRL, 8)));
+			     (sizeof(mask) == DIV_ROUND_UP(REPORT_SIZE_CONSUMER_CTRL, 8)));
 		BUILD_ASSERT(REPORT_ID_CONSUMER_CTRL < ARRAY_SIZE(report_index));
 
 		input_report[ir_pos].id       = REPORT_ID_CONSUMER_CTRL;
@@ -571,8 +571,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 	if (is_module_state_event(aeh)) {
 		struct module_state_event *event = cast_module_state_event(aeh);
 
-		if (check_state(event, MODULE_ID(ble_state),
-				MODULE_STATE_READY)) {
+		if (check_state(event, MODULE_ID(main), MODULE_STATE_READY)) {
 			static bool initialized;
 
 			__ASSERT_NO_MSG(!initialized);
@@ -612,7 +611,12 @@ static bool app_event_handler(const struct app_event_header *aeh)
 APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE(MODULE, hid_report_event);
 APP_EVENT_SUBSCRIBE(MODULE, hid_notification_event);
-APP_EVENT_SUBSCRIBE(MODULE, module_state_event);
+/* The module is initialized before CAF BLE state module to make sure that the GATT HIDS is
+ * registered before Bluetooth is enabled. This is done to avoid submitting works related to Service
+ * Changed indication and GATT database hash calculation before system settings are loaded from
+ * non-volatile memory.
+ */
+APP_EVENT_SUBSCRIBE_EARLY(MODULE, module_state_event);
 #if CONFIG_DESKTOP_CONFIG_CHANNEL_ENABLE
 APP_EVENT_SUBSCRIBE(MODULE, config_event);
 #endif

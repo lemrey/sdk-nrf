@@ -407,7 +407,7 @@ void exec_test_case_aes_cbc_monte_carlo(void)
 	mbedtls_cipher_free(&ctx);
 }
 
-/** @brief  Macro for registering the the AES funtional test case by using section variables.
+/** @brief  Macro for registering the AES funtional test case by using section variables.
  *
  * @details     This macro places a variable in a section named "test_case_aes_data",
  *              which is initialized by main.
@@ -453,3 +453,23 @@ ITEM_REGISTER(test_case_aes_cbc_data,
 	.vectors_start = __start_test_vector_aes_cbc_monte_carlo_data,
 	.vectors_stop = __stop_test_vector_aes_cbc_monte_carlo_data,
 };
+
+ZTEST_SUITE(test_suite_aes_cbc, NULL, NULL, NULL, NULL, NULL);
+
+ZTEST(test_suite_aes_cbc, test_case_aes_cbc_functional)
+{
+	aes_setup_functional();
+	exec_test_case_aes_cbc_functional();
+}
+
+ZTEST(test_suite_aes_cbc, test_case_aes_cbc)
+{
+	aes_setup();
+	exec_test_case_aes_cbc();
+}
+
+ZTEST(test_suite_aes_cbc, test_case_aes_cbc_monte_carlo)
+{
+	aes_setup_monte_carlo();
+	exec_test_case_aes_cbc_monte_carlo();
+}

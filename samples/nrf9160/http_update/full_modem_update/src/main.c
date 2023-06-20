@@ -9,7 +9,7 @@
 #include <dfu/dfu_target_full_modem.h>
 #include <net/fota_download.h>
 #include <zephyr/shell/shell.h>
-#include <nrf_modem_full_dfu.h>
+#include <nrf_modem_bootloader.h>
 #include <modem/modem_info.h>
 #include <dfu/fmfu_fdev.h>
 #include <zephyr/drivers/gpio.h>
@@ -65,9 +65,9 @@ static void apply_fmfu_from_ext_flash(bool valid_init)
 		}
 	}
 
-	err = nrf_modem_lib_init(FULL_DFU_MODE);
+	err = nrf_modem_lib_bootloader_init();
 	if (err != 0) {
-		printk("nrf_modem_lib_init(FULL_DFU_MODE) failed: %d\n", err);
+		printk("nrf_modem_lib_bootloader_init() failed: %d\n", err);
 		return;
 	}
 
@@ -83,7 +83,7 @@ static void apply_fmfu_from_ext_flash(bool valid_init)
 		return;
 	}
 
-	err = nrf_modem_lib_init(NORMAL_MODE);
+	err = nrf_modem_lib_init();
 	if (err != 0) {
 		printk("nrf_modem_lib_init() failed: %d\n", err);
 		return;
@@ -193,7 +193,7 @@ static int shell_flash(const struct shell *shell, size_t argc, char **argv)
 
 SHELL_CMD_REGISTER(flash, NULL, "For rebooting device", shell_flash);
 
-void main(void)
+int main(void)
 {
 	int err;
 
@@ -201,10 +201,10 @@ void main(void)
 
 	if (!device_is_ready(flash_dev)) {
 		printk("Flash device %s not ready\n", flash_dev->name);
-		return;
+		return 0;
 	}
 
-	err = nrf_modem_lib_init(NORMAL_MODE);
+	err = nrf_modem_lib_init();
 	if (err) {
 		printk("Failed to initialize modem lib, err: %d\n", err);
 		printk("This could indicate that an earlier update failed\n");
@@ -217,13 +217,13 @@ void main(void)
 	err = button_init();
 	if (err != 0) {
 		printk("button_init() failed: %d\n", err);
-		return;
+		return 0;
 	}
 
 	err = fota_download_init(fota_dl_handler);
 	if (err != 0) {
 		printk("fota_download_init() failed, err %d\n", err);
-		return;
+		return 0;
 	}
 
 	const struct dfu_target_full_modem_params params = {
@@ -237,13 +237,13 @@ void main(void)
 	err = dfu_target_full_modem_cfg(&params);
 	if (err != 0) {
 		printk("dfu_target_full_modem_cfg failed: %d\n", err);
-		return;
+		return 0;
 	}
 
 	err = modem_info_init();
 	if (err != 0) {
 		printk("modem_info_init failed: %d\n", err);
-		return;
+		return 0;
 	}
 
 	modem_info_string_get(MODEM_INFO_FW_VERSION, modem_version,
@@ -257,9 +257,11 @@ void main(void)
 				});
 	if (err != 0) {
 		printk("update_sample_init() failed, err %d\n", err);
-		return;
+		return 0;
 	}
 
 	printk("Press Button 1 or enter 'download' to download firmware update\n");
 	printk("Press Button 2 or enter 'flash' to apply modem firmware update from flash\n");
+
+	return 0;
 }

@@ -77,17 +77,11 @@ enum location_event_id {
 	 */
 	LOCATION_EVT_GNSS_PREDICTION_REQUEST,
 	/**
-	 * Cellular location request with neighbor cell information is available.
-	 * Application should send the cell information to cloud services and
-	 * then call location_cellular_ext_result_set().
+	 * Cloud location request with neighbor cell and/or Wi-Fi access point information
+	 * is available. The application should send the information to cloud services and
+	 * then call location_cloud_location_ext_result_set().
 	 */
-	LOCATION_EVT_CELLULAR_EXT_REQUEST,
-	/**
-	 * Wi-Fi location request with Wi-Fi access point information is available.
-	 * The application should send the access point information to cloud services and
-	 * then call location_wifi_ext_result_set().
-	 */
-	LOCATION_EVT_WIFI_EXT_REQUEST
+	LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST
 };
 
 /** Result of the external request. */
@@ -185,11 +179,29 @@ struct location_data_error {
 };
 #endif
 
+/** Cloud location information. */
+struct location_data_cloud {
+#if defined(CONFIG_LOCATION_SERVICE_EXTERNAL) && defined(CONFIG_LOCATION_METHOD_CELLULAR)
+	/** Cellular cell information. */
+	const struct lte_lc_cells_info *cell_data;
+#endif
+#if defined(CONFIG_LOCATION_SERVICE_EXTERNAL) && defined(CONFIG_LOCATION_METHOD_WIFI)
+	/** Wi-Fi access point information. */
+	const struct wifi_scan_info *wifi_data;
+#endif
+};
+
 /** Location event data. */
 struct location_event_data {
 	/** Event ID. */
 	enum location_event_id id;
-	/** Used location method. */
+	/**
+	 * Used location method.
+	 *
+	 * When cellular and Wi-Fi positioning are used and they are combined into a single
+	 * cloud request by the library, the method is not known so there is some uncertainty
+	 * on the reported location method.
+	 */
 	enum location_method method;
 
 	/** Event specific data. */
@@ -219,21 +231,14 @@ struct location_event_data {
 		 */
 		struct gps_pgps_request pgps_request;
 #endif
-#if defined(CONFIG_LOCATION_SERVICE_EXTERNAL) && defined(CONFIG_LOCATION_METHOD_CELLULAR)
+#if defined(CONFIG_LOCATION_SERVICE_EXTERNAL) &&\
+	(defined(CONFIG_LOCATION_METHOD_CELLULAR) || defined(CONFIG_LOCATION_METHOD_WIFI))
 		/**
-		 * Cellular cell information to let the application know it should send these
+		 * Cloud location information to let the application know it should send these
 		 * to a cloud service to resolve the location.
-		 * Used with event LOCATION_EVT_CELLULAR_EXT_REQUEST.
+		 * Used with event LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST.
 		 */
-		struct lte_lc_cells_info cellular_request;
-#endif
-#if defined(CONFIG_LOCATION_SERVICE_EXTERNAL) && defined(CONFIG_LOCATION_METHOD_WIFI)
-		/**
-		 * Wi-Fi access point information to let the application know it should send these
-		 * to a cloud service to resolve the location.
-		 * Used with event LOCATION_EVT_WIFI_EXT_REQUEST.
-		 */
-		struct wifi_scan_info wifi_request;
+		struct location_data_cloud cloud_location_request;
 #endif
 	};
 };
@@ -251,6 +256,10 @@ struct location_gnss_config {
 	 * is inactive before starting GNSS. If LTE power saving mode (PSM) is enabled
 	 * and A-GPS is disabled, library waits until modem enters PSM before starting GNSS,
 	 * thus maximizing uninterrupted operating window and minimizing power consumption.
+	 *
+	 * Default value is 120000 (2 minutes). It is applied when
+	 * @ref location_config_defaults_set function is called and can be changed
+	 * at build time with CONFIG_LOCATION_REQUEST_DEFAULT_GNSS_TIMEOUT configuration.
 	 */
 	int32_t timeout;
 
@@ -261,6 +270,10 @@ struct location_gnss_config {
 	 *
 	 * If accuracy is set to LOCATION_ACCURACY_HIGH, instead of using the first fix, GNSS is
 	 * allowed to run for a longer time. This typically improves the location accuracy.
+	 *
+	 * Default value is LOCATION_ACCURACY_NORMAL. It is applied when
+	 * @ref location_config_defaults_set function is called and can be changed
+	 * at build time with CONFIG_LOCATION_REQUEST_DEFAULT_GNSS_ACCURACY choice configuration.
 	 */
 	enum location_accuracy accuracy;
 
@@ -270,6 +283,10 @@ struct location_gnss_config {
 	 *
 	 * @details If accuracy is set to LOCATION_ACCURACY_NORMAL or LOCATION_ACCURACY_LOW this
 	 * parameter has no effect.
+	 *
+	 * Default value is 3. It is applied when @ref location_config_defaults_set
+	 * function is called and can be changed at build time with
+	 * CONFIG_LOCATION_REQUEST_DEFAULT_GNSS_NUM_CONSECUTIVE_FIXES configuration.
 	 */
 	uint8_t num_consecutive_fixes;
 
@@ -280,6 +297,10 @@ struct location_gnss_config {
 	 * timeout.
 	 *
 	 * @details See Kconfig for related configuration options.
+	 *
+	 * Default value is false. It is applied when @ref location_config_defaults_set
+	 * function is called and can be changed at build time with
+	 * CONFIG_LOCATION_REQUEST_DEFAULT_GNSS_VISIBILITY_DETECTION configuration.
 	 *
 	 * @note Only supported with modem firmware v1.3.2 or later.
 	 */
@@ -300,6 +321,10 @@ struct location_gnss_config {
 	 * during the priority mode the network will typically buffer the data and sent them to the
 	 * device once the priority time window ends. However, it is possible that the network drops
 	 * the data, or some protocol timer expires causing data transfer to fail.
+	 *
+	 * Default value is false. It is applied when @ref location_config_defaults_set
+	 * function is called and can be changed at build time with
+	 * CONFIG_LOCATION_REQUEST_DEFAULT_GNSS_PRIORITY_MODE configuration.
 	 */
 	bool priority_mode;
 };
@@ -309,10 +334,25 @@ struct location_cellular_config {
 	/**
 	 * @brief Timeout (in milliseconds) of how long the cellular positioning procedure can take.
 	 * SYS_FOREVER_MS means that the timer is disabled.
+	 *
+	 * @details Default value is 30000 (30 seconds). It is applied when
+	 * @ref location_config_defaults_set function is called and can be changed
+	 * at build time with CONFIG_LOCATION_REQUEST_DEFAULT_CELLULAR_TIMEOUT configuration.
+	 *
+	 * When CONFIG_LOCATION_SERVICE_EXTERNAL is enabled, this timeout stops when
+	 * event LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST is sent. However, timeout specified in
+	 * @ref location_config structure is still valid.
 	 */
 	int32_t timeout;
 
-	/** Used cellular positioning service. */
+	/**
+	 * @brief Used cellular positioning service.
+	 *
+	 * @details Default value is LOCATION_SERVICE_ANY. It is applied when
+	 * @ref location_config_defaults_set function is called.
+	 *
+	 * This parameter is ignored when CONFIG_LOCATION_SERVICE_EXTERNAL is enabled.
+	 */
 	enum location_service service;
 };
 
@@ -321,10 +361,25 @@ struct location_wifi_config {
 	/**
 	 * @brief Timeout (in milliseconds) of how long the Wi-Fi positioning procedure can take.
 	 * SYS_FOREVER_MS means that the timer is disabled.
+	 *
+	 * @details Default value is 30000 (30 seconds). It is applied when
+	 * @ref location_config_defaults_set function is called and can be changed
+	 * at build time with CONFIG_LOCATION_REQUEST_DEFAULT_WIFI_TIMEOUT configuration.
+	 *
+	 * When CONFIG_LOCATION_SERVICE_EXTERNAL is enabled, this timeout stops when
+	 * event LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST is sent. However, timeout specified in
+	 * @ref location_config structure is still valid.
 	 */
 	int32_t timeout;
 
-	/** Used Wi-Fi positioning service. */
+	/**
+	 * @brief Used Wi-Fi positioning service.
+	 *
+	 * @details Default value is LOCATION_SERVICE_ANY. It is applied when
+	 * @ref location_config_defaults_set function is called.
+	 *
+	 * This parameter is ignored when CONFIG_LOCATION_SERVICE_EXTERNAL is enabled.
+	 */
 	enum location_service service;
 };
 
@@ -346,28 +401,49 @@ struct location_method_config {
 struct location_config {
 	/** Number of location methods in 'methods'. */
 	uint8_t methods_count;
+
 	/**
 	 * @brief Selected location methods and associated configurations in priority order.
 	 *
 	 * @details Index 0 has the highest priority. Number of used methods is indicated in
 	 * 'methods_count' and it can be smaller than the size of this table.
+	 *
+	 * Wi-Fi and cellular scan results are combined into single cloud request, that is,
+	 * these methods are handled together, if the following conditions are met:
+	 *   - Methods are one after the other in location request method list
+	 *   - @ref mode is @ref LOCATION_REQ_MODE_FALLBACK
+	 *   - Requested cloud service for Wi-Fi and cellular is the same
 	 */
 	struct location_method_config methods[CONFIG_LOCATION_METHODS_LIST_SIZE];
+
 	/**
 	 * @brief Position update interval in seconds.
 	 *
 	 * @details Set to 0 for a single position update. For periodic position updates
 	 * the valid range is 1...65535 seconds.
+	 *
+	 * Default value is 0. It is applied when
+	 * @ref location_config_defaults_set function is called and can be changed
+	 * at build time with CONFIG_LOCATION_REQUEST_DEFAULT_INTERVAL configuration.
 	 */
 	uint16_t interval;
+
 	/**
 	 * @brief Timeout (in milliseconds) for the entire location request.
-	 * SYS_FOREVER_MS means that the timer is disabled.
+	 *
+	 * @details SYS_FOREVER_MS means that the timer is disabled.
+	 *
+	 * Default value is 300000 (5 minutes). It is applied when
+	 * @ref location_config_defaults_set function is called and can be changed
+	 * at build time with CONFIG_LOCATION_REQUEST_DEFAULT_TIMEOUT configuration.
 	 */
 	int32_t timeout;
 
 	/**
 	 * @brief Location acquisition mode.
+	 *
+	 * @details Default value is LOCATION_REQ_MODE_FALLBACK. It is applied when
+	 * @ref location_config_defaults_set function is called.
 	 */
 	enum location_req_mode mode;
 };
@@ -492,34 +568,12 @@ int location_agps_data_process(const char *buf, size_t buf_len);
 int location_pgps_data_process(const char *buf, size_t buf_len);
 
 /**
- * @brief Pass cellular location result to the library.
+ * @brief Pass cloud location result to the library.
  *
- * @details If the Location library is not receiving cellular position directly from services,
- * it triggers the @ref LOCATION_EVT_CELLULAR_EXT_REQUEST event, that indicates the
- * neighbor cell information is ready to be sent to cloud services for location resolution.
- * Then, the application responds with the result.
- *
- * In addition to 'success' and 'error' results, the application can indicate that the result is
- * unknown with @ref LOCATION_EXT_RESULT_UNKNOWN. This is useful when the application wants
- * the Location library to proceed irrespective of the outcome. The Location library will try to
- * perform a fallback to the next method, if available, just like in a failure case.
- * If there are no more methods, LOCATION_EVT_RESULT_UNKNOWN event will be sent to the application.
- *
- * @param[in] result Result of the external cellular request.
- * @param[in] location Cellular location data. Will be used only if @p result is
- *                     LOCATION_EXT_RESULT_SUCCESS.
- */
-void location_cellular_ext_result_set(
-	enum location_ext_result result,
-	struct location_data *location);
-
-/**
- * @brief Pass Wi-Fi location result to the library.
- *
- * @details If the Location library is not receiving Wi-Fi position directly from the services,
- * it triggers the @ref LOCATION_EVT_WIFI_EXT_REQUEST event, that indicates the
- * access point information is ready to be sent to cloud services for location resolution.
- * Then, the application responds with the result.
+ * @details If the Location library is not receiving cloud location directly from the services,
+ * it triggers the @ref LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST event, that indicates the
+ * LTE neighbor cell and/or Wi-Fi access point information is ready to be sent to cloud services
+ * for location resolution. Then, the application responds with the result.
  *
  * In addition to 'success' and 'error' results, the application can indicate that the result is
  * unknown with @ref LOCATION_EXT_RESULT_UNKNOWN. This is useful when the application wants
@@ -527,11 +581,11 @@ void location_cellular_ext_result_set(
  * perform a fallback to the next method, if available, just like in a failure case.
  * If there are no more methods, LOCATION_EVT_RESULT_UNKNOWN event will be sent to the application.
  *
- * @param[in] result Result of the external Wi-Fi request.
- * @param[in] location Wi-Fi location data. Will be used only if @p result is
+ * @param[in] result Result of the external cloud location request.
+ * @param[in] location Cloud location data. Will be used only if @p result is
  *                     LOCATION_EXT_RESULT_SUCCESS.
  */
-void location_wifi_ext_result_set(
+void location_cloud_location_ext_result_set(
 	enum location_ext_result result,
 	struct location_data *location);
 

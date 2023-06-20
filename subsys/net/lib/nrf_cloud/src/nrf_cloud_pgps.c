@@ -27,12 +27,16 @@ LOG_MODULE_REGISTER(nrf_cloud_pgps, CONFIG_NRF_CLOUD_GPS_LOG_LEVEL);
 #include "nrf_cloud_fsm.h"
 #include "nrf_cloud_pgps_schema_v1.h"
 #include "nrf_cloud_pgps_utils.h"
-#include "nrf_cloud_codec.h"
+#include "nrf_cloud_codec_internal.h"
 
 #define FORCE_HTTP_DL			0 /* set to 1 to force HTTP instead of HTTPS */
 #define PGPS_DEBUG			0 /* set to 1 for extra logging */
 
-#define PREDICTION_PERIOD		CONFIG_NRF_CLOUD_PGPS_PREDICTION_PERIOD
+#if defined(CONFIG_NRF_CLOUD_PGPS_PREDICTION_PERIOD_120_MIN)
+#define PREDICTION_PERIOD		120
+#else
+#define PREDICTION_PERIOD		240
+#endif
 #define REPLACEMENT_THRESHOLD		CONFIG_NRF_CLOUD_PGPS_REPLACEMENT_THRESHOLD
 #define SEC_TAG				CONFIG_NRF_CLOUD_SEC_TAG
 #define FRAGMENT_SIZE			CONFIG_NRF_CLOUD_PGPS_DOWNLOAD_FRAGMENT_SIZE
@@ -136,6 +140,17 @@ static int get_prediction_block(int pnum)
 	return npgps_pointer_to_block((uint8_t *)index.predictions[pnum]);
 }
 
+/**
+ * @brief When using external flash, ensure the prediction at the requested flash device offset
+ * is available via the prediction cache.  When using internal flash, just the flash device offset
+ * as a direct pointer to the location of the prediction in flash.
+ *
+ * @param off Offset from the start of the flash device, when using external flash, or offset from
+ * the start of application processor memory space when using internal flash.
+ *
+ * @return struct nrf_cloud_pgps_prediction* Pointer to a cached copy of the prediction when
+ * using external flash, or a direct pointer the prediction when using internal flash.
+ */
 static struct nrf_cloud_pgps_prediction *get_cached_prediction(off_t off)
 {
 #if defined(CONFIG_PM_PARTITION_REGION_PGPS_EXTERNAL)
@@ -143,7 +158,10 @@ static struct nrf_cloud_pgps_prediction *get_cached_prediction(off_t off)
 	if (prediction_cache_flash_offset != off) {
 		int err;
 
-		err = flash_area_read(prediction_flash_area, off,
+		/* Subtract fa_off from off to convert from flash device address space
+		 * to partition address space.
+		 */
+		err = flash_area_read(prediction_flash_area, off - prediction_flash_area->fa_off,
 				      prediction_cache, sizeof(prediction_cache));
 
 		if (err) {
@@ -152,6 +170,7 @@ static struct nrf_cloud_pgps_prediction *get_cached_prediction(off_t off)
 			return NULL;
 		}
 		prediction_cache_flash_offset = off;
+		LOG_DBG("Caching offset 0x%X", (uint32_t)(off - prediction_flash_area->fa_off));
 	}
 
 	return (struct nrf_cloud_pgps_prediction *)prediction_cache;
@@ -372,7 +391,7 @@ static int validate_stored_predictions(uint16_t *first_bad_day,
 
 		i = get_prediction_block(pnum);
 		LOG_DBG("Prediction num:%u, loc:%p, blk:%d", pnum, pred, i);
-		__ASSERT(i != -1, "unexpected pointer value %p", pred);
+		__ASSERT(i != NO_BLOCK, "unexpected pointer value %p", pred);
 		npgps_mark_block_used(i, true);
 	}
 
@@ -762,70 +781,22 @@ static int pgps_request(const struct gps_pgps_request *request)
 
 	return 0;
 #elif defined(CONFIG_NRF_CLOUD_PGPS_TRANSPORT_MQTT)
-	int err = 0;
-	cJSON *data_obj;
-	cJSON *pgps_req_obj;
-	cJSON *ret;
+	cJSON *pgps_req_obj = cJSON_CreateObject();
+	int err = nrf_cloud_pgps_req_json_encode(request, pgps_req_obj);
 
-	LOG_INF("Requesting %u predictions...", request->prediction_count);
-
-	/* Create request JSON containing a data object */
-	pgps_req_obj = json_create_req_obj(NRF_CLOUD_JSON_APPID_VAL_PGPS,
-					   NRF_CLOUD_JSON_MSG_TYPE_VAL_DATA);
-	data_obj = cJSON_AddObjectToObject(pgps_req_obj, NRF_CLOUD_JSON_DATA_KEY);
-
-	if (!pgps_req_obj || !data_obj) {
-		err = -ENOMEM;
-		goto cleanup;
-	}
-
-#if defined(CONFIG_PGPS_INCLUDE_MODEM_INFO)
-	/* Add modem info and P-GPS types to the data object */
-	err = json_add_modem_info(data_obj);
-	if (err) {
-		LOG_ERR("Failed to add modem info to P-GPS request:%d", err);
-		goto cleanup;
-	}
-#endif
-
-	ret = cJSON_AddNumberToObject(data_obj, NRF_CLOUD_JSON_PGPS_PRED_COUNT,
-				      request->prediction_count);
-	if (ret == NULL) {
-		LOG_ERR("Failed to add pred count to P-GPS request:%d", err);
-		err = -ENOMEM;
-		goto cleanup;
-	}
-	ret = cJSON_AddNumberToObject(data_obj, NRF_CLOUD_JSON_PGPS_INT_MIN,
-				      request->prediction_period_min);
-	if (ret == NULL) {
-		LOG_ERR("Failed to add pred int min to P-GPS request:%d", err);
-		err = -ENOMEM;
-		goto cleanup;
-	}
-	ret = cJSON_AddNumberToObject(data_obj, NRF_CLOUD_JSON_PGPS_GPS_DAY,
-				      request->gps_day);
-	if (ret == NULL) {
-		LOG_ERR("Failed to add gps day to P-GPS request:%d", err);
-		err = -ENOMEM;
-		goto cleanup;
-	}
-	ret = cJSON_AddNumberToObject(data_obj, NRF_CLOUD_JSON_PGPS_GPS_TIME,
-				      request->gps_time_of_day);
-	if (ret == NULL) {
-		LOG_ERR("Failed to add gps time to P-GPS request:%d", err);
-		err = -ENOMEM;
-		goto cleanup;
-	}
-
-	/* @TODO: if device is offline, we need to defer this to later */
-	err = json_send_to_cloud(pgps_req_obj);
 	if (!err) {
+		/* @TODO: if device is offline, we need to defer this to later */
+		err = json_send_to_cloud(pgps_req_obj);
+	} else {
+		LOG_ERR("Failed to create P-GPS request: %d", err);
+	}
+
+	if (!err) {
+		LOG_INF("Requesting %u predictions...", request->prediction_count);
 		state = PGPS_REQUESTING;
 	}
 
-cleanup:
 	cJSON_Delete(pgps_req_obj);
-
 	return err;
 #endif /* defined(CONFIG_NRF_CLOUD_PGPS_TRANSPORT_MQTT) */
 }
@@ -899,7 +870,7 @@ int nrf_cloud_pgps_process(const char *buf, size_t buf_len)
 		return -EINVAL;
 	}
 
-	err = nrf_cloud_parse_pgps_response(buf, &pgps_dl);
+	err = nrf_cloud_pgps_response_decode(buf, &pgps_dl);
 	if (err) {
 		return err;
 	}
@@ -1043,7 +1014,7 @@ int nrf_cloud_pgps_inject(struct nrf_cloud_pgps_prediction *p,
 			/* send time */
 			err = nrf_cloud_agps_process((const char *)&sys_time,
 						     sizeof(sys_time) -
-						     sizeof(sys_time.time.sv_tow));
+						     sizeof(sys_time.time.sv_tow) + 4);
 			if (err) {
 				LOG_ERR("Error injecting P-GPS sys_time (%u, %u): %d",
 					sys_time.time.date_day, sys_time.time.time_full_s,
@@ -1168,9 +1139,9 @@ static int open_flash(void)
 		name = prediction_flash_area->fa_dev->name;
 	}
 
-	LOG_DBG("Opened flash_area: fa_id:%u, fa_device_id:%u, "
+	LOG_DBG("Opened flash_area: fa_id:%u, "
 		"fa_off:%ld, fa_size:%zu, prediction_flash_area device name:%s",
-		prediction_flash_area->fa_id, prediction_flash_area->fa_device_id,
+		prediction_flash_area->fa_id,
 		prediction_flash_area->fa_off, prediction_flash_area->fa_size, name);
 	return err;
 }

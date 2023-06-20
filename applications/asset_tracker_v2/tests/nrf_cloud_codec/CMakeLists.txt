@@ -29,7 +29,7 @@ target_include_directories(app PRIVATE
 target_sources(app PRIVATE ${ASSET_TRACKER_V2_DIR}/src/cloud/cloud_codec/nrf_cloud/nrf_cloud_codec.c)
 target_sources(app PRIVATE ${ASSET_TRACKER_V2_DIR}/src/cloud/cloud_codec/cloud_codec_ringbuffer.c)
 target_sources(app PRIVATE ${ASSET_TRACKER_V2_DIR}/src/cloud/cloud_codec/json_helpers.c)
-target_sources(app PRIVATE ${NRF_DIR}/subsys/net/lib/nrf_cloud/src/nrf_cloud_codec.c)
+target_sources(app PRIVATE ${NRF_DIR}/subsys/net/lib/nrf_cloud/src/nrf_cloud_codec_internal.c)
 
 # Mocks
 target_sources(app PRIVATE ${ASSET_TRACKER_V2_DIR}/tests/json_common/mock/date_time_mock.c)
@@ -37,4 +37,5 @@ target_sources(app PRIVATE ${ASSET_TRACKER_V2_DIR}/tests/json_common/mock/date_t
 target_compile_options(app PRIVATE
 	-DCONFIG_ASSET_TRACKER_V2_APP_VERSION_MAX_LEN=20
 	-DEFTYPE=79
+	-DCONFIG_LTE_NEIGHBOR_CELLS_MAX=10
 )

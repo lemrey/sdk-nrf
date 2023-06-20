@@ -13,7 +13,7 @@
 #include <zephyr/device.h>
 #include <zephyr/net/net_config.h>
 
-void main(void)
+int main(void)
 {
 #ifdef CLOCK_FEATURE_HFCLK_DIVIDE_PRESENT
 	/* For now hardcode to 128MHz */
@@ -22,6 +22,7 @@ void main(void)
 #endif
 	printk("Starting %s with CPU frequency: %d MHz\n", CONFIG_BOARD, SystemCoreClock/MHZ(1));
 
+#ifdef CONFIG_NET_CONFIG_SETTINGS
 	/* Without this, DHCPv4 starts on first interface and if that is not Wi-Fi or
 	 * only supports IPv6, then its an issue. (E.g., OpenThread)
 	 *
@@ -31,4 +32,7 @@ void main(void)
 	const struct device *dev = device_get_binding("wlan0");
 
 	net_config_init_app(dev, "Initializing network");
+#endif
+
+	return 0;
 }

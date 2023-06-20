@@ -48,9 +48,11 @@ static void clock_init(void)
 }
 #endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
-void main(void)
+int main(void)
 {
 	printk("Starting Radio Test example\n");
 	
 	clock_init();
+
+	return 0;
 }

@@ -14,7 +14,13 @@
 #include "cmock_nrfx_uarte.h"
 #include "cmock_pinctrl.h"
 
+/* It is required to be added to each test. That is because unity's
+ * main may return nonzero, while zephyr's main currently must
+ * return 0 in all cases (other values are reserved).
+ */
 extern int unity_main(void);
+
+extern struct nrf_modem_lib_trace_backend trace_backend;
 
 static const nrfx_uarte_t *p_uarte_inst_in_use;
 /* Variable to store the event_handler registered by the modem_trace module.*/
@@ -104,7 +110,7 @@ static void trace_test_thread(void)
 		k_sem_take(&receive_traces_sem, K_FOREVER);
 		is_waiting_on_traces = false;
 
-		trace_backend_write(trace_data, trace_data_len);
+		trace_backend.write(trace_data, trace_data_len);
 	}
 }
 
@@ -121,7 +127,7 @@ void test_trace_backend_init_uart(void)
 	__cmock_nrfx_uarte_init_ExpectAnyArgsAndReturn(NRFX_SUCCESS);
 	__cmock_nrfx_uarte_init_AddCallback(&nrfx_uarte_init_callback);
 
-	ret = trace_backend_init(empty_callback);
+	ret = trace_backend.init(empty_callback);
 
 	TEST_ASSERT_EQUAL(0, ret);
 }
@@ -136,7 +142,7 @@ void test_trace_backend_init_uart_ebusy(void)
 	__cmock_pinctrl_configure_pins_ExpectAnyArgsAndReturn(0);
 	__cmock_nrfx_uarte_init_ExpectAnyArgsAndReturn(NRFX_ERROR_BUSY);
 
-	ret = trace_backend_init(empty_callback);
+	ret = trace_backend.init(empty_callback);
 
 	TEST_ASSERT_EQUAL(-EBUSY, ret);
 }
@@ -152,7 +158,7 @@ void test_trace_backend_deinit_uart(void)
 	__cmock_pinctrl_lookup_state_ExpectAnyArgsAndReturn(0);
 	__cmock_pinctrl_configure_pins_ExpectAnyArgsAndReturn(0);
 
-	ret = trace_backend_deinit();
+	ret = trace_backend.deinit();
 
 	TEST_ASSERT_EQUAL(0, ret);
 }
@@ -288,7 +294,9 @@ void test_trace_backend_write_uart_nrfx_uarte_evt_error(void)
 	TEST_ASSERT_EQUAL(true, is_waiting_on_traces);
 }
 
-void main(void)
+int main(void)
 {
 	(void)unity_main();
+
+	return 0;
 }

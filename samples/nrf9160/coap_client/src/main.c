@@ -11,6 +11,7 @@
 #include <zephyr/net/coap.h>
 #include <zephyr/net/socket.h>
 #include <modem/lte_lc.h>
+#include <modem/nrf_modem_lib.h>
 #include <zephyr/random/rand32.h>
 
 #define APP_COAP_SEND_INTERVAL_MS 5000
@@ -173,18 +174,14 @@ static int client_get_send(void)
 static void modem_configure(void)
 {
 #if defined(CONFIG_LTE_LINK_CONTROL)
-	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
-		/* Do nothing, modem is already turned on
-		 * and connected.
-		 */
-	} else {
-		int err;
 
-		printk("LTE Link Connecting ...\n");
-		err = lte_lc_init_and_connect();
-		__ASSERT(err == 0, "LTE link could not be established.");
-		printk("LTE Link Connected!\n");
-	}
+	int err;
+
+	printk("LTE Link Connecting ...\n");
+	err = lte_lc_init_and_connect();
+	__ASSERT(err == 0, "LTE link could not be established.");
+	printk("LTE Link Connected!\n");
+
 #endif /* defined(CONFIG_LTE_LINK_CONTROL) */
 }
 
@@ -223,23 +220,29 @@ static int wait(int timeout)
 	return 0;
 }
 
-void main(void)
+int main(void)
 {
 	int64_t next_msg_time = APP_COAP_SEND_INTERVAL_MS;
 	int err, received;
 
 	printk("The nRF CoAP client sample started\n");
 
+	err = nrf_modem_lib_init();
+	if (err) {
+		printk("Modem library initialization failed, error: %d\n", err);
+		return 0;
+	}
+
 	modem_configure();
 
 	if (server_resolve() != 0) {
 		printk("Failed to resolve server name\n");
-		return;
+		return 0;
 	}
 
 	if (client_init() != 0) {
 		printk("Failed to initialize CoAP client\n");
-		return;
+		return 0;
 	}
 
 	next_msg_time = k_uptime_get();
@@ -294,4 +297,6 @@ void main(void)
 	}
 
 	(void)close(sock);
+
+	return 0;
 }

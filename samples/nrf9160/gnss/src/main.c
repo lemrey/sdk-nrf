@@ -13,6 +13,7 @@
 #include <nrf_modem_at.h>
 #include <nrf_modem_gnss.h>
 #include <modem/lte_lc.h>
+#include <modem/nrf_modem_lib.h>
 #include <date_time.h>
 
 LOG_MODULE_REGISTER(gnss_sample, CONFIG_GNSS_SAMPLE_LOG_LEVEL);
@@ -238,13 +239,14 @@ static void agps_data_get_work_fn(struct k_work *item)
 	int err;
 
 #if defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_SUPL)
-	/* SUPL doesn't usually provide satellite real time integrity information. If GNSS asks
-	 * only for satellite integrity, the request should be ignored.
+	/* SUPL doesn't usually provide NeQuick ionospheric corrections and satellite real time
+	 * integrity information. If GNSS asks only for those, the request should be ignored.
 	 */
 	if (last_agps.sv_mask_ephe == 0 &&
 	    last_agps.sv_mask_alm == 0 &&
-	    last_agps.data_flags == NRF_MODEM_GNSS_AGPS_INTEGRITY_REQUEST) {
-		LOG_INF("Ignoring assistance request for only satellite integrity");
+	    (last_agps.data_flags & ~(NRF_MODEM_GNSS_AGPS_NEQUICK_REQUEST |
+				      NRF_MODEM_GNSS_AGPS_INTEGRITY_REQUEST)) == 0) {
+		LOG_INF("Ignoring assistance request for only NeQuick and/or integrity");
 		return;
 	}
 #endif /* CONFIG_GNSS_SAMPLE_ASSISTANCE_SUPL */
@@ -345,6 +347,7 @@ static void ttff_test_prepare_work_fn(struct k_work *item)
 		last_agps.data_flags =
 			NRF_MODEM_GNSS_AGPS_GPS_UTC_REQUEST |
 			NRF_MODEM_GNSS_AGPS_KLOBUCHAR_REQUEST |
+			NRF_MODEM_GNSS_AGPS_NEQUICK_REQUEST |
 			NRF_MODEM_GNSS_AGPS_SYS_TIME_AND_SV_TOW_REQUEST |
 			NRF_MODEM_GNSS_AGPS_POSITION_REQUEST |
 			NRF_MODEM_GNSS_AGPS_INTEGRITY_REQUEST;
@@ -615,10 +618,17 @@ static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 
 int main(void)
 {
+	int err;
 	uint8_t cnt = 0;
 	struct nrf_modem_gnss_nmea_data_frame *nmea_data;
 
 	LOG_INF("Starting GNSS sample");
+
+	err = nrf_modem_lib_init();
+	if (err) {
+		LOG_ERR("Modem library initialization failed, error: %d", err);
+		return err;
+	}
 
 	/* Initialize reference coordinates (if used). */
 	if (sizeof(CONFIG_GNSS_SAMPLE_REFERENCE_LATITUDE) > 1 &&

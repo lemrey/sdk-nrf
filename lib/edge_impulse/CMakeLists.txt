@@ -30,9 +30,7 @@ if(NOT ${EI_URI} MATCHES "^[a-z]+://")
   endif()
 endif()
 
-
-file(GLOB_RECURSE  edge_impulse_all_headers CONFIGURE_DEPENDS "${EDGE_IMPULSE_SOURCE_DIR}/*.h")
-
+file(GLOB_RECURSE  edge_impulse_all_headers "${EDGE_IMPULSE_SOURCE_DIR}/*.h")
 
 include(ExternalProject)
 ExternalProject_Add(edge_impulse_project
@@ -103,6 +101,7 @@ target_include_directories(edge_impulse INTERFACE
 target_link_libraries(edge_impulse INTERFACE ${EDGE_IMPULSE_LIBRARY})
 
 add_dependencies(edge_impulse
+                 zephyr_interface
                  edge_impulse_project
                  edge_impulse_project_download
 )

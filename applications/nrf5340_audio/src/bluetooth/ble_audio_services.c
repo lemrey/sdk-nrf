@@ -23,23 +23,25 @@ LOG_MODULE_REGISTER(ble_audio_services, CONFIG_AUDIO_SERVICES_LOG_LEVEL);
 #define VOLUME_DEFAULT 195
 #define VOLUME_STEP 16
 
-#if (CONFIG_BT_VCP_VOL_CTLR)
 static struct bt_vcp_vol_ctlr *vcs;
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
+static struct bt_vcp_vol_ctlr *vcs_client_peer[CONFIG_BT_MAX_CONN];
 
 static uint8_t media_player_state = BT_MCS_MEDIA_STATE_PLAYING;
 
-#if (CONFIG_BT_MCS)
 static struct media_player *local_player;
 static ble_mcs_play_pause_cb play_pause_cb;
-#endif /* (CONFIG_BT_MCS) */
 
-#if (CONFIG_BT_VCP_VOL_CTLR)
-static struct bt_vcp_vol_ctlr *vcs_client_peer[CONFIG_BT_MAX_CONN];
+static uint8_t mcp_mcs_disc_status[CONFIG_BT_MAX_CONN];
+
+enum mcs_disc_status {
+	IDLE,
+	IN_PROGRESS,
+	FINISHED,
+};
 
 static int ble_vcs_client_remote_set(uint8_t channel_num)
 {
-	if (channel_num > CONFIG_BT_MAX_CONN) {
+	if (channel_num >= CONFIG_BT_MAX_CONN) {
 		return -EPERM;
 	}
 
@@ -52,7 +54,6 @@ static int ble_vcs_client_remote_set(uint8_t channel_num)
 	vcs = vcs_client_peer[channel_num];
 	return 0;
 }
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
 
 /**
  * @brief  Convert VCS volume to actual volume setting for HW codec.
@@ -66,7 +67,6 @@ static uint16_t vcs_vol_conversion(uint8_t volume)
 	return (((uint16_t)volume + 1) / 2);
 }
 
-#if (CONFIG_BT_VCP_VOL_CTLR)
 /**
  * @brief  Callback handler for volume state changed.
  *
@@ -120,8 +120,6 @@ static void vcs_flags_ctlr_cb_handler(struct bt_vcp_vol_ctlr *vcs, int err, uint
 	}
 }
 
-#endif /* (CONFIG_BT_VCP_VOL_CTLR)*/
-
 static void vcs_state_rend_cb_handler(int err, uint8_t volume, uint8_t mute)
 {
 	int ret;
@@ -156,7 +154,6 @@ static void vcs_flags_rend_cb_handler(int err, uint8_t flags)
 	}
 }
 
-#if (CONFIG_BT_VCP_VOL_CTLR)
 /**
  * @brief  Callback handler for VCS discover finished
  *
@@ -169,12 +166,10 @@ static void vcs_discover_cb_handler(struct bt_vcp_vol_ctlr *vcs, int err, uint8_
 	if (err) {
 		LOG_ERR("VCS discover finished callback error: %d", err);
 	} else {
-		LOG_DBG("VCS discover finished");
+		LOG_INF("VCS discover finished");
 	}
 }
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
 
-#if (CONFIG_BT_MCC)
 /**
  * @brief  Callback handler for MCS discover finished.
  *
@@ -184,17 +179,28 @@ static void vcs_discover_cb_handler(struct bt_vcp_vol_ctlr *vcs, int err, uint8_
 static void mcc_discover_mcs_cb(struct bt_conn *conn, int err)
 {
 	int ret;
-
-	LOG_DBG("mcc_discover_mcs_cb");
+	uint8_t idx = bt_conn_index(conn);
 
 	if (err) {
 		LOG_ERR("Discovery of MCS failed (%d)", err);
-	} else {
-		LOG_DBG("Discovery of MCS finished");
-		ret = ble_mcs_state_update(conn);
-		if (ret < 0) {
-			LOG_WRN("Failed to update media state: %d", ret);
-		}
+		mcp_mcs_disc_status[idx] = IDLE;
+		return;
+	}
+
+	if (mcp_mcs_disc_status[idx] != IN_PROGRESS) {
+		/* Due to the design of MCC, there will be several
+		 * invocations of this callback. We are only interested
+		 * in what we have explicitly requested.
+		 */
+		LOG_DBG("Filtered out callback");
+		return;
+	}
+
+	mcp_mcs_disc_status[idx] = FINISHED;
+	LOG_INF("Discovery of MCS finished");
+	ret = ble_mcs_state_update(conn);
+	if (ret < 0 && ret != -EBUSY) {
+		LOG_WRN("Failed to update media state: %d", ret);
 	}
 }
 
@@ -247,9 +253,7 @@ static void mcc_read_media_state_cb(struct bt_conn *conn, int err, uint8_t state
 
 	media_player_state = state;
 }
-#endif /* CONFIG_BT_MCC */
 
-#if (CONFIG_BT_MCS)
 /**
  * @brief  Callback handler for received MCS commands.
  *
@@ -317,168 +321,262 @@ static void mcs_local_player_instance_cb(struct media_player *player, int err)
 	 */
 	(void)media_proxy_ctrl_send_command(local_player, &cmd);
 }
-#endif /* (CONFIG_BT_MCS) */
 
 int ble_vcs_vol_set(uint8_t volume)
 {
-#if (CONFIG_BT_VCP_VOL_CTLR)
-	int ret;
+	if (IS_ENABLED(CONFIG_BT_VCP_VOL_CTLR)) {
+		int ret;
 
-	for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
-		ret = ble_vcs_client_remote_set(i);
-		/* If remote peer hasn't been connected before, just skip the operation for it */
-		if (ret == -EINVAL) {
-			continue;
+		for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
+			ret = ble_vcs_client_remote_set(i);
+			/* If remote peer hasn't been connected before, just skip the operation */
+			if (ret == -EINVAL) {
+				continue;
+			}
+
+			ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
+			ret = bt_vcp_vol_ctlr_set_vol(vcs, volume);
+			if (ret) {
+				LOG_WRN("Failed to set volume for remote channel %d, ret = %d", i,
+					ret);
+			}
 		}
-		ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
-		ret = bt_vcp_vol_ctlr_set_vol(vcs, volume);
-		if (ret) {
-			LOG_WRN("Failed to set volume for remote channel %d, ret = %d", i, ret);
+
+		return 0;
+	} else if (IS_ENABLED(CONFIG_BT_VCP_VOL_REND)) {
+		return bt_vcp_vol_rend_set_vol(volume);
+	}
+
+	if (CONFIG_AUDIO_DEV == GATEWAY) {
+		if (!IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) ||
+		    !IS_ENABLED(CONFIG_AUDIO_SOURCE_I2S)) {
+			LOG_DBG("Vol unchanged. VCP not enabled, GW unidir and/or USB source");
+			return 0;
 		}
 	}
-	return 0;
-#elif (CONFIG_BT_VCP_VOL_REND)
-	return bt_vcp_vol_rend_set_vol(volume);
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
-	return -ENXIO;
+
+	LOG_DBG("VCP not enabled, setting volume locally");
+	return hw_codec_volume_set(vcs_vol_conversion(volume));
 }
 
 int ble_vcs_volume_up(void)
 {
-#if (CONFIG_BT_VCP_VOL_CTLR)
-	int ret;
+	if (IS_ENABLED(CONFIG_BT_VCP_VOL_CTLR)) {
+		int ret;
 
-	for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
-		ret = ble_vcs_client_remote_set(i);
-		/* If remote peer hasn't been connected before, just skip the operation for it */
-		if (ret == -EINVAL) {
-			continue;
+		for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
+			ret = ble_vcs_client_remote_set(i);
+			/* If remote peer hasn't been connected before, just skip the operation */
+			if (ret == -EINVAL) {
+				continue;
+			}
+
+			ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
+			ret = bt_vcp_vol_ctlr_unmute_vol_up(vcs);
+			if (ret) {
+				LOG_WRN("Failed to volume up for remote channel %d, ret = %d", i,
+					ret);
+			}
 		}
-		ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
-		ret = bt_vcp_vol_ctlr_unmute_vol_up(vcs);
-		if (ret) {
-			LOG_WRN("Failed to volume up for remote channel %d, ret = %d", i, ret);
+
+		return 0;
+	} else if (IS_ENABLED(CONFIG_BT_VCP_VOL_REND)) {
+		return bt_vcp_vol_rend_unmute_vol_up();
+	}
+
+	if (CONFIG_AUDIO_DEV == GATEWAY) {
+		if (!IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) ||
+		    !IS_ENABLED(CONFIG_AUDIO_SOURCE_I2S)) {
+			LOG_DBG("Vol unchanged. VCP not enabled, GW unidir and/or USB source");
+			return 0;
 		}
 	}
-	return 0;
-#elif (CONFIG_BT_VCP_VOL_REND)
-	return bt_vcp_vol_rend_unmute_vol_up();
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
-	hw_codec_volume_increase();
-	return 0;
+
+	LOG_DBG("VCP not enabled, increasing volume locally");
+	return hw_codec_volume_increase();
 }
 
 int ble_vcs_volume_down(void)
 {
-#if (CONFIG_BT_VCP_VOL_CTLR)
-	int ret;
+	if (IS_ENABLED(CONFIG_BT_VCP_VOL_CTLR)) {
+		int ret;
 
-	for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
-		ret = ble_vcs_client_remote_set(i);
-		/* If remote peer hasn't been connected before, just skip the operation for it */
-		if (ret == -EINVAL) {
-			continue;
+		for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
+			ret = ble_vcs_client_remote_set(i);
+			/* If remote peer hasn't been connected before, just skip the operation */
+			if (ret == -EINVAL) {
+				continue;
+			}
+
+			ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
+			ret = bt_vcp_vol_ctlr_unmute_vol_down(vcs);
+			if (ret) {
+				LOG_WRN("Failed to volume down for remote channel %d, ret = %d", i,
+					ret);
+			}
 		}
-		ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
-		ret = bt_vcp_vol_ctlr_unmute_vol_down(vcs);
-		if (ret) {
-			LOG_WRN("Failed to volume down for remote channel %d, ret = %d", i, ret);
+
+		return 0;
+	} else if (IS_ENABLED(CONFIG_BT_VCP_VOL_REND)) {
+		return bt_vcp_vol_rend_unmute_vol_down();
+	}
+
+	if (CONFIG_AUDIO_DEV == GATEWAY) {
+		if (!IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) ||
+		    !IS_ENABLED(CONFIG_AUDIO_SOURCE_I2S)) {
+			LOG_DBG("Vol unchanged. VCP not enabled, GW unidir and/or USB source");
+			return 0;
 		}
 	}
-	return 0;
-#elif (CONFIG_BT_VCP_VOL_REND)
-	return bt_vcp_vol_rend_unmute_vol_down();
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
-	hw_codec_volume_decrease();
-	return 0;
+
+	LOG_DBG("VCP not enabled, decreasing volume locally");
+	return hw_codec_volume_decrease();
 }
 
 int ble_vcs_volume_mute(void)
 {
-#if (CONFIG_BT_VCP_VOL_CTLR)
-	int ret;
+	if (IS_ENABLED(CONFIG_BT_VCP_VOL_CTLR)) {
+		int ret;
 
-	for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
-		ret = ble_vcs_client_remote_set(i);
-		/* If remote peer hasn't been connected before, just skip the operation for it */
-		if (ret == -EINVAL) {
-			continue;
+		for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
+			ret = ble_vcs_client_remote_set(i);
+			/* If remote peer hasn't been connected before, just skip the operation */
+			if (ret == -EINVAL) {
+				continue;
+			}
+
+			ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
+			ret = bt_vcp_vol_ctlr_mute(vcs);
+			if (ret) {
+				LOG_WRN("Failed to mute for remote channel %d, ret = %d", i, ret);
+			}
 		}
-		ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
-		ret = bt_vcp_vol_ctlr_mute(vcs);
-		if (ret) {
-			LOG_WRN("Failed to mute for remote channel %d, ret = %d", i, ret);
+
+		return 0;
+	} else if (IS_ENABLED(CONFIG_BT_VCP_VOL_REND)) {
+		return bt_vcp_vol_rend_mute();
+	}
+
+	if (CONFIG_AUDIO_DEV == GATEWAY) {
+		if (!IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) ||
+		    !IS_ENABLED(CONFIG_AUDIO_SOURCE_I2S)) {
+			LOG_DBG("Vol unchanged. VCP not enabled, GW unidir and/or USB source");
+			return 0;
 		}
 	}
-	return 0;
-#elif (CONFIG_BT_VCP_VOL_REND)
-	return bt_vcp_vol_rend_mute();
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
-	return -ENXIO;
+
+	LOG_DBG("VCP not enabled, muting volume locally");
+	return hw_codec_volume_mute();
 }
 
 int ble_vcs_volume_unmute(void)
 {
-#if (CONFIG_BT_VCP_VOL_CTLR)
-	int ret;
+	if (IS_ENABLED(CONFIG_BT_VCP_VOL_CTLR)) {
+		int ret;
 
-	for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
-		ret = ble_vcs_client_remote_set(i);
-		/* If remote peer hasn't been connected before, just skip the operation for it */
-		if (ret == -EINVAL) {
-			continue;
+		for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
+			ret = ble_vcs_client_remote_set(i);
+			/* If remote peer hasn't been connected before, just skip the operation */
+			if (ret == -EINVAL) {
+				continue;
+			}
+
+			ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
+			ret = bt_vcp_vol_ctlr_unmute(vcs);
+			if (ret) {
+				LOG_WRN("Failed to unmute for remote channel %d, ret = %d", i, ret);
+			}
 		}
-		ERR_CHK_MSG(ret, "Failed to set VCS client to remote device properly");
-		ret = bt_vcp_vol_ctlr_unmute(vcs);
-		if (ret) {
-			LOG_WRN("Failed to unmute for remote channel %d, ret = %d", i, ret);
+
+		return 0;
+	} else if (IS_ENABLED(CONFIG_BT_VCP_VOL_REND)) {
+		return bt_vcp_vol_rend_unmute();
+	}
+
+	if (CONFIG_AUDIO_DEV == GATEWAY) {
+		if (!IS_ENABLED(CONFIG_STREAM_BIDIRECTIONAL) ||
+		    !IS_ENABLED(CONFIG_AUDIO_SOURCE_I2S)) {
+			LOG_DBG("Vol unchanged. VCP not enabled, GW unidir and/or USB source");
+			return 0;
 		}
 	}
-	return 0;
-#elif (CONFIG_BT_VCP_VOL_REND)
-	return bt_vcp_vol_rend_unmute();
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
-	return -ENXIO;
+
+	LOG_DBG("VCP not enabled, unmuting volume locally");
+	return hw_codec_volume_unmute();
 }
 
-#if (CONFIG_BT_VCP_VOL_CTLR)
 int ble_vcs_discover(struct bt_conn *conn, uint8_t channel_num)
 {
+	if (!IS_ENABLED(CONFIG_BT_VCP_VOL_CTLR)) {
+		LOG_ERR("VCP volume controller not enabled");
+		return -ECANCELED;
+	}
+
 	int ret;
 
-	if (channel_num > CONFIG_BT_MAX_CONN) {
+	if (channel_num >= CONFIG_BT_MAX_CONN) {
 		return -EPERM;
 	}
+
 	ret = bt_vcp_vol_ctlr_discover(conn, &vcs);
 	vcs_client_peer[channel_num] = vcs;
 	return ret;
 }
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
 
 int ble_mcs_discover(struct bt_conn *conn)
 {
-#if (CONFIG_BT_MCC)
-	return bt_mcc_discover_mcs(conn, true);
-#else
-	LOG_ERR("MCC not enabled");
-	return -ECANCELED;
-#endif /* CONFIG_BT_MCC */
+	if (!IS_ENABLED(CONFIG_BT_MCC)) {
+		LOG_ERR("MCC not enabled");
+		return -ECANCELED;
+	}
+
+	int ret;
+	uint8_t idx = bt_conn_index(conn);
+
+	if (mcp_mcs_disc_status[idx] == FINISHED || mcp_mcs_disc_status[idx] == IN_PROGRESS) {
+		return -EALREADY;
+	}
+
+	mcp_mcs_disc_status[idx] = IN_PROGRESS;
+	ret = bt_mcc_discover_mcs(conn, true);
+	if (ret) {
+		mcp_mcs_disc_status[idx] = IDLE;
+		return ret;
+	}
+
+	return 0;
 }
 
 int ble_mcs_state_update(struct bt_conn *conn)
 {
-#if (CONFIG_BT_MCC)
+	if (!IS_ENABLED(CONFIG_BT_MCC)) {
+		LOG_ERR("MCC not enabled");
+		return -ECANCELED;
+	}
+
+	uint8_t idx = bt_conn_index(conn);
+
+	if (mcp_mcs_disc_status[idx] != FINISHED) {
+		LOG_WRN("MCS discovery has not finished");
+		return -EBUSY;
+	}
+
 	return bt_mcc_read_media_state(conn);
-#else
-	LOG_ERR("MCC not enabled");
-	return -ECANCELED;
-#endif /* CONFIG_BT_MCC */
 }
 
 int ble_mcs_play_pause(struct bt_conn *conn)
 {
 	int ret = 0;
 	struct mpl_cmd cmd;
+
+	if (conn != NULL) {
+		uint8_t idx = bt_conn_index(conn);
+
+		if (mcp_mcs_disc_status[idx] != FINISHED) {
+			LOG_WRN("MCS discovery has not finished");
+			return -EBUSY;
+		}
+	}
 
 	if (media_player_state == BT_MCS_MEDIA_STATE_PLAYING) {
 		cmd.opcode = BT_MCS_OPC_PAUSE;
@@ -491,11 +589,11 @@ int ble_mcs_play_pause(struct bt_conn *conn)
 
 	cmd.use_param = false;
 
-#if (CONFIG_BT_MCS)
-	ret = media_proxy_ctrl_send_command(local_player, &cmd);
-#elif CONFIG_BT_MCC
-	ret = bt_mcc_send_cmd(conn, &cmd);
-#endif /* (CONFIG_BT_MCS) */
+	if (IS_ENABLED(CONFIG_BT_MCS)) {
+		ret = media_proxy_ctrl_send_command(local_player, &cmd);
+	} else if (IS_ENABLED(CONFIG_BT_MCC)) {
+		ret = bt_mcc_send_cmd(conn, &cmd);
+	}
 
 	if (ret) {
 		LOG_WRN("Failed to send play/pause command: %d", ret);
@@ -505,9 +603,27 @@ int ble_mcs_play_pause(struct bt_conn *conn)
 	return 0;
 }
 
-#if (CONFIG_BT_VCP_VOL_CTLR)
+int ble_mcp_conn_disconnected(struct bt_conn *conn)
+{
+	if (!IS_ENABLED(CONFIG_BT_MCC)) {
+		LOG_ERR("MCC not enabled");
+		return -ECANCELED;
+	}
+
+	uint8_t idx = bt_conn_index(conn);
+
+	LOG_DBG("MCS discover state reset due to disconnection");
+	mcp_mcs_disc_status[idx] = IDLE;
+	return 0;
+}
+
 int ble_vcs_client_init(void)
 {
+	if (!IS_ENABLED(CONFIG_BT_VCP_VOL_CTLR)) {
+		LOG_ERR("VCP volume controller not enabled");
+		return -ECANCELED;
+	}
+
 	static struct bt_vcp_vol_ctlr_cb vcs_client_callback;
 
 	vcs_client_callback.discover = vcs_discover_cb_handler;
@@ -515,10 +631,14 @@ int ble_vcs_client_init(void)
 	vcs_client_callback.flags = vcs_flags_ctlr_cb_handler;
 	return bt_vcp_vol_ctlr_cb_register(&vcs_client_callback);
 }
-#endif /* (CONFIG_BT_VCP_VOL_CTLR) */
 
 int ble_vcs_server_init(void)
 {
+	if (!IS_ENABLED(CONFIG_BT_VCP_VOL_REND)) {
+		LOG_ERR("VCP volume renderer not enabled");
+		return -ECANCELED;
+	}
+
 	int ret;
 	struct bt_vcp_vol_rend_register_param vcs_param;
 	static struct bt_vcp_vol_rend_cb vcs_server_callback;
@@ -540,24 +660,27 @@ int ble_vcs_server_init(void)
 
 int ble_mcs_client_init(void)
 {
-#if (CONFIG_BT_MCC)
+	if (!IS_ENABLED(CONFIG_BT_MCC)) {
+		LOG_ERR("MCC not enabled");
+		return -ECANCELED;
+	}
+
 	static struct bt_mcc_cb mcc_cb;
 
 	mcc_cb.discover_mcs = mcc_discover_mcs_cb;
 	mcc_cb.send_cmd = mcc_send_command_cb;
 	mcc_cb.cmd_ntf = mcc_cmd_notification_cb;
 	mcc_cb.read_media_state = mcc_read_media_state_cb;
-
 	return bt_mcc_init(&mcc_cb);
-#else
-	LOG_ERR("MCC not enabled");
-	return -ECANCELED;
-#endif /* CONFIG_BT_MCC */
 }
 
 int ble_mcs_server_init(ble_mcs_play_pause_cb le_audio_play_pause_cb)
 {
-#if (CONFIG_BT_MCS)
+	if (!IS_ENABLED(CONFIG_BT_MCS)) {
+		LOG_ERR("MCS not enabled");
+		return -ECANCELED;
+	}
+
 	int ret;
 	static struct media_proxy_ctrl_cbs mcs_cb;
 
@@ -580,7 +703,4 @@ int ble_mcs_server_init(ble_mcs_play_pause_cb le_audio_play_pause_cb)
 	}
 
 	return 0;
-#endif /* (CONFIG_BT_MCS) */
-	LOG_ERR("MCS not enabled");
-	return -ECANCELED;
 }

@@ -868,7 +868,7 @@ In addition to documentation related to the changes listed above, the following 
     * Added:
 
       * New subpage :ref:`app_optimize` and moved the optimization sections under it.
-      * New subpage :ref:`ext_components` and moved the sections for using external components or modules under it.
+      * New subpage "Using external components" and moved the sections for using external components or modules under it.
 
   * The contents of the :ref:`ug_radio_fem` section:
 
@@ -877,5 +877,3 @@ In addition to documentation related to the changes listed above, the following 
      * :ref:`ug_radio_fem_nrf21540_spi_gpio`.
      * :ref:`ug_radio_fem_direct_support`.
      * More information about supported protocols and hardware.
-
-.. |no_changes_yet_note| replace:: No changes since the latest |NCS| release.

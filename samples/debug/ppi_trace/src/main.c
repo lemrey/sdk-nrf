@@ -100,7 +100,7 @@ static void counter_setup(void)
 	__ASSERT_NO_MSG(err == 0);
 }
 
-void main(void)
+int main(void)
 {
 	ppi_trace_setup();
 	counter_setup();
@@ -108,4 +108,6 @@ void main(void)
 	if (IS_ENABLED(CONFIG_BT)) {
 		bluetooth_enable();
 	}
+
+	return 0;
 }

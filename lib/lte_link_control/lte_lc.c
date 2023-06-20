@@ -18,6 +18,7 @@
 #include <modem/at_cmd_parser.h>
 #include <modem/at_params.h>
 #include <modem/at_monitor.h>
+#include <modem/nrf_modem_lib.h>
 #include <zephyr/logging/log.h>
 
 #include "lte_lc_helpers.h"
@@ -222,7 +223,7 @@ static void at_handler_cereg(const char *response)
 	}
 
 	/* Cell update event */
-	if (memcmp(&cell, &prev_cell, sizeof(struct lte_lc_cell))) {
+	if ((cell.id != prev_cell.id) || (cell.tac != prev_cell.tac)) {
 		evt.type = LTE_LC_EVT_CELL_UPDATE;
 
 		memcpy(&prev_cell, &cell, sizeof(struct lte_lc_cell));
@@ -256,7 +257,8 @@ static void at_handler_cereg(const char *response)
 	}
 
 	/* PSM configuration update event */
-	if (memcmp(&psm_cfg, &prev_psm_cfg, sizeof(struct lte_lc_psm_cfg))) {
+	if ((psm_cfg.tau != prev_psm_cfg.tau) ||
+	    (psm_cfg.active_time != prev_psm_cfg.active_time)) {
 		evt.type = LTE_LC_EVT_PSM_UPDATE;
 
 		memcpy(&prev_psm_cfg, &psm_cfg, sizeof(struct lte_lc_psm_cfg));
@@ -361,7 +363,7 @@ static void at_handler_ncellmeas_gci(const char *response)
 
 	evt.cells_info.gci_cells = cells;
 	err = parse_ncellmeas_gci(&ncellmeas_params, resp, &evt.cells_info);
-
+	LOG_DBG("parse_ncellmeas_gci returned %d", err);
 	switch (err) {
 	case -E2BIG:
 		LOG_WRN("Not all neighbor cells could be parsed");
@@ -461,12 +463,14 @@ static void at_handler_xmodemsleep(const char *response)
 		return;
 	}
 
-	/* Link controller only supports PSM, RF inactivity and flight mode
-	 * modem sleep types.
+	/* Link controller only supports PSM, RF inactivity, limited service, flight mode
+	 * and proprietary PSM modem sleep types.
 	 */
 	if ((evt.modem_sleep.type != LTE_LC_MODEM_SLEEP_PSM) &&
 		(evt.modem_sleep.type != LTE_LC_MODEM_SLEEP_RF_INACTIVITY) &&
-		(evt.modem_sleep.type != LTE_LC_MODEM_SLEEP_FLIGHT_MODE)) {
+		(evt.modem_sleep.type != LTE_LC_MODEM_SLEEP_LIMITED_SERVICE) &&
+		(evt.modem_sleep.type != LTE_LC_MODEM_SLEEP_FLIGHT_MODE) &&
+		(evt.modem_sleep.type != LTE_LC_MODEM_SLEEP_PROPRIETARY_PSM)) {
 		return;
 	}
 
@@ -715,7 +719,7 @@ exit:
 	return err;
 }
 
-static int init_and_connect(const struct device *unused)
+static int init_and_connect(void)
 {
 	int err;
 
@@ -768,9 +772,7 @@ int lte_lc_connect(void)
 
 int lte_lc_init_and_connect(void)
 {
-	const struct device *x = 0;
-
-	return init_and_connect(x);
+	return init_and_connect();
 }
 
 int lte_lc_connect_async(lte_lc_evt_handler_t handler)
@@ -1814,8 +1816,3 @@ int lte_lc_factory_reset(enum lte_lc_factory_reset_type type)
 {
 	return nrf_modem_at_printf("AT%%XFACTORYRESET=%d", type) ? -EFAULT : 0;
 }
-
-#if defined(CONFIG_LTE_AUTO_INIT_AND_CONNECT)
-SYS_INIT(init_and_connect,
-		  APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
-#endif /* CONFIG_LTE_AUTO_INIT_AND_CONNECT */

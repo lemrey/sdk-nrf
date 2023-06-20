@@ -8,6 +8,8 @@
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <modem/sms.h>
+#include <modem/nrf_modem_lib.h>
+#include <modem/lte_lc.h>
 
 
 static void sms_callback(struct sms_data *const data, void *context)
@@ -51,17 +53,29 @@ static void sms_callback(struct sms_data *const data, void *context)
 	}
 }
 
-void main(void)
+int main(void)
 {
 	int handle = 0;
 	int ret = 0;
 
 	printk("\nSMS sample starting\n");
 
+	ret = nrf_modem_lib_init();
+	if (ret) {
+		printk("Modem library initialization failed, error: %d\n", ret);
+		return 0;
+	}
+
+	ret = lte_lc_init_and_connect();
+	if (ret) {
+		printk("Lte_lc failed to initialize and connect, err %d", ret);
+		return 0;
+	}
+
 	handle = sms_register_listener(sms_callback, NULL);
 	if (handle) {
 		printk("sms_register_listener returned err: %d\n", handle);
-		return;
+		return 0;
 	}
 
 	printk("SMS sample is ready for receiving messages\n");
@@ -86,4 +100,5 @@ void main(void)
 	 * However, this sample will continue to be registered for
 	 * received SMS messages and they can be seen in serial port log.
 	 */
+	return 0;
 }

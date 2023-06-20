@@ -28,6 +28,7 @@ The default configuration for the location request is set as follows:
 * GNSS, Wi-Fi and cellular positioning are set in priority order of the location methods.
   Wi-Fi is omitted if it is not built into the application.
   If GNSS fails, both Wi-Fi and cellular positioning are tried.
+  The priority order of the methods can be changed through :ref:`lib_location` library Kconfig options.
   Methods that should not be used can be configured by adding them into ``No Data List``.
   See :ref:`Real-time configurations <real_time_configs>` for more information.
 * Timeout, which can be configured as part of :ref:`Real-time configurations <real_time_configs>` with ``Location timeout``.
@@ -40,8 +41,7 @@ The location module receives configuration updates as payload in the following t
 
 The module sends the following events based on the outcome of the location request:
 * ``LOCATION_MODULE_EVT_GNSS_DATA_READY``: GNSS position has been acquired
-* ``LOCATION_MODULE_EVT_NEIGHBOR_CELLS_DATA_READY``: neighbor cell measurements have been obtained
-* ``LOCATION_MODULE_EVT_WIFI_ACCESS_POINTS_DATA_READY``: Wi-Fi access points have been obtained
+* ``LOCATION_MODULE_EVT_CLOUD_LOCATION_DATA_READY``: neighbor cell measurements or Wi-Fi access points (or both) have been obtained
 * ``LOCATION_MODULE_EVT_DATA_NOT_READY``: Location request failed
 * ``LOCATION_MODULE_EVT_TIMEOUT``: Timeout occurred
 * ``LOCATION_MODULE_EVT_AGPS_NEEDED``: A-GPS request should be sent to cloud
@@ -96,6 +96,10 @@ The location module is a threadless module in terms of message processing.
 In this sense, it differs from many other modules.
 
 All incoming events from other modules are handled in the context of the Application Event Manager callback, because they all complete fast enough to not require a separate thread.
+
+The :ref:`lib_location` library handles cellular and Wi-Fi positioning together when the location request method list has them next to each other.
+This means that LTE neighbor cell measurements and Wi-Fi scanning results are combined into the same ``LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST`` event.
+The location module responds to the :ref:`lib_location` library with unknown location resolution, because it does not request the location back from cloud service.
 
 Configuration options
 *********************

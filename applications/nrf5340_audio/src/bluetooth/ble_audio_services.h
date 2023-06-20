@@ -125,6 +125,15 @@ int ble_mcs_state_update(struct bt_conn *conn);
 int ble_mcs_play_pause(struct bt_conn *conn);
 
 /**
+ * @brief  Reset the MCP's MCS discovered state, only valid for client.
+ *
+ * @param  conn  Pointer to the active connection.
+ *
+ * @return 0 for success, error otherwise.
+ */
+int ble_mcp_conn_disconnected(struct bt_conn *conn);
+
+/**
  * @brief Initialize the Volume Control Service client.
  */
 int ble_vcs_client_init(void);

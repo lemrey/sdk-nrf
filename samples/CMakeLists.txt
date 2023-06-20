@@ -43,6 +43,15 @@ if (CONFIG_NCS_SAMPLE_EMPTY_APP_CORE_CHILD_IMAGE)
     )
 endif()
 
+if (CONFIG_NCS_SAMPLE_PROVISIONING_NET_CORE_CHILD_IMAGE)
+  add_child_image(
+    NAME "provisioning_net_core"
+    SOURCE_DIR "${NRF_DIR}/samples/tfm/provisioning_image_net_core"
+    DOMAIN "CPUNET"
+    BOARD ${CONFIG_DOMAIN_CPUNET_BOARD}
+    )
+endif()
+
 if (CONFIG_NCS_SAMPLE_REMOTE_SHELL_CHILD_IMAGE)
   add_child_image(
     NAME "remote_shell"
@@ -84,6 +93,17 @@ if (CONFIG_NCS_INCLUDE_RPMSG_CHILD_IMAGE OR CONFIG_NCS_SAMPLE_EMPTY_NET_CORE_CHI
       "couldn't resolve which RPMsg sample to add.")
   endif()
 
+  if (CONFIG_NCS_SAMPLE_MCUMGR_BT_OTA_DFU_SPEEDUP)
+    # By passing this value we don't require the user to pass any overlay files to the
+    # network core child image. Bluetooth buffer sizes are aligned automatically.
+    if (CONFIG_NCS_SAMPLE_HCI_RPMSG_CHILD_IMAGE OR CONFIG_NCS_SAMPLE_MULTIPROTOCOL_RPMSG_CHILD_IMAGE)
+      add_overlay_config(
+        ${CHILD_IMAGE_NAME}
+        ${CMAKE_CURRENT_LIST_DIR}/common/mcumgr_bt_ota_dfu/rpmsg_child_image_overlay.conf
+      )
+    endif()
+  endif()
+
   # Only include a child image if both image name and path have been defined.
   # Prevents e.g. menuconfig from becoming inaccessible, among others.
   if(CHILD_IMAGE_NAME AND CHILD_IMAGE_PATH)
@@ -114,6 +134,16 @@ if (CONFIG_NCS_INCLUDE_RPMSG_CHILD_IMAGE OR CONFIG_NCS_SAMPLE_EMPTY_NET_CORE_CHI
       )
     endif()
 
+    if (CONFIG_BT_MESH)
+      # Inject this configuration from the parent image to enable
+      # the necessary amount of advertising sets in the Bluetooth controller
+      # on the network core required by the Bluetooth mesh.
+      add_overlay_config(
+        ${CHILD_IMAGE_NAME}
+        "${NRF_DIR}/subsys/bluetooth/mesh/hci_rpmsg_child_image_overlay.conf"
+      )
+    endif()
+
     add_child_image(
       NAME ${CHILD_IMAGE_NAME}
       SOURCE_DIR ${CHILD_IMAGE_PATH}
@@ -123,3 +153,5 @@ if (CONFIG_NCS_INCLUDE_RPMSG_CHILD_IMAGE OR CONFIG_NCS_SAMPLE_EMPTY_NET_CORE_CHI
   endif()
 
 endif()
+
+add_subdirectory(common)

@@ -17,7 +17,7 @@ LOG_MODULE_REGISTER(MODULE);
 #include <hal/nrf_vpr.h>
 #endif
 
-void main(void)
+int main(void)
 {
 #if defined(CONFIG_BOARD_NRF54H20DK_NRF54H20_CPUAPP) && defined(CONFIG_ML_APP_INCLUDE_REMOTE_IMAGE)
 	/* Enable PPr core */
@@ -30,4 +30,5 @@ void main(void)
 	} else {
 		module_set_state(MODULE_STATE_READY);
 	}
+	return 0;
 }

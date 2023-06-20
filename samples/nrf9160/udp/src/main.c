@@ -9,6 +9,10 @@
 #include <modem/lte_lc.h>
 #include <zephyr/net/socket.h>
 
+#if CONFIG_NRF_MODEM_LIB
+#include <modem/nrf_modem_lib.h>
+#endif
+
 #define UDP_IP_HEADER_SIZE 28
 
 static int client_fd;
@@ -134,14 +138,16 @@ static void modem_init(void)
 {
 	int err;
 
-	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
-		/* Do nothing, modem is already configured and LTE connected. */
-	} else {
-		err = lte_lc_init();
-		if (err) {
-			printk("Modem initialization failed, error: %d\n", err);
-			return;
-		}
+	err = nrf_modem_lib_init();
+	if (err) {
+		printk("Modem library initialization failed, error: %d\n", err);
+		return;
+	}
+
+	err = lte_lc_init();
+	if (err) {
+		printk("Modem LTE connection initialization failed, error: %d\n", err);
+		return;
 	}
 }
 
@@ -149,15 +155,11 @@ static void modem_connect(void)
 {
 	int err;
 
-	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
-		/* Do nothing, modem is already configured and LTE connected. */
-	} else {
-		err = lte_lc_connect_async(lte_handler);
-		if (err) {
-			printk("Connecting to LTE network failed, error: %d\n",
-			       err);
-			return;
-		}
+	err = lte_lc_connect_async(lte_handler);
+	if (err) {
+		printk("Connecting to LTE network failed, error: %d\n",
+			err);
+		return;
 	}
 }
 #endif
@@ -206,7 +208,7 @@ error:
 	return err;
 }
 
-void main(void)
+int main(void)
 {
 	int err;
 
@@ -236,14 +238,16 @@ void main(void)
 	err = server_init();
 	if (err) {
 		printk("Not able to initialize UDP server connection\n");
-		return;
+		return 0;
 	}
 
 	err = server_connect();
 	if (err) {
 		printk("Not able to connect to UDP server\n");
-		return;
+		return 0;
 	}
 
 	k_work_schedule(&server_transmission_work, K_NO_WAIT);
+
+	return 0;
 }

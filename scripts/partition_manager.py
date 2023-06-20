@@ -679,7 +679,7 @@ def load_reqs(input_config):
                 if loaded_reqs is None:
                     continue
                 for key in loaded_reqs.keys():
-                    if key in reqs.keys() and loaded_reqs[key] != reqs[key]:
+                    if key in reqs and loaded_reqs[key] != reqs[key]:
                         raise PartitionError(
                             f"Conflicting configuration found for '{f.name}'"
                             f" value for key '{key}' differs. val1: "
@@ -826,7 +826,7 @@ def verify_static_conf_simple(size, start, placement_strategy, static_conf):
         return
 
     if placement_strategy == START_TO_END:
-        start_end_correct = gaps[0][0] == start + size
+        start_end_correct = gaps[0][1] == start + size
     else:
         start_end_correct = gaps[0][0] == start
 
@@ -1441,6 +1441,21 @@ def test():
     assert 'spm' in test_config
     assert test_config['spm']['address'] == 0
 
+    # Verify that mixing one static partition and a dynamic in a START_TO_END region configuration is allowed
+    static_config = {'secondary': {'size': 200, 'address': 2000, 'region': 'extflash'}}
+    td = {'b': {'size': 100, 'region': 'extflash'}}
+    test_region = {'name': 'extflash',
+                   'size': 1000,
+                   'base_address': 2000,
+                   'placement_strategy': START_TO_END,
+                   'device': 'some-driver-device'}
+    get_region_config(td, test_region, static_config)
+    assert td['secondary']['address'] == 2000
+    assert td['secondary']['size'] == 200
+    assert td['b']['address'] == 2200
+    assert td['extflash']['address'] == 2300
+    assert td['extflash']['size'] == 700
+
     # Test a single partition with alignment where the address is smaller than the alignment value.
     td = {'without_alignment': {'placement': {'before': 'with_alignment'}, 'size': 100},
           'with_alignment': {'placement': {'before': 'app', 'align': {'start': 200}}, 'size': 100},
@@ -1627,7 +1642,7 @@ def test():
     s, sub_partitions = resolve(td, 'app')
     set_addresses_and_align(td, sub_partitions, s, 1000, 'app')
     set_sub_partition_address_and_size(td, sub_partitions)
-    assert 'should_not_exist' not in td.keys()
+    assert 'should_not_exist' not in td
 
     # Verify that if a partition X uses 'share_size' with a non-existing partition, but has set a default size,
     # then partition X is created with the default size.

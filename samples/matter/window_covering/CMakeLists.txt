@@ -47,19 +47,24 @@ target_sources(app PRIVATE
     src/zap-generated/callback-stub.cpp
     ${COMMON_ROOT}/src/led_widget.cpp
     ${COMMON_ROOT}/src/pwm_device.cpp
-    ${COMMON_ROOT}/src/thread_util.cpp
 )
 
-if(CONFIG_CHIP_OTA_REQUESTOR OR CONFIG_MCUMGR_SMP_BT)
+if(CONFIG_CHIP_OTA_REQUESTOR OR CONFIG_MCUMGR_TRANSPORT_BT)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/ota_util.cpp)
 endif()
 
-if(CONFIG_MCUMGR_SMP_BT)
+if(CONFIG_MCUMGR_TRANSPORT_BT)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/dfu_over_smp.cpp)
+endif()
+
+if(CONFIG_CHIP_ICD_SUBSCRIPTION_HANDLING)
+    target_sources(app PRIVATE ${COMMON_ROOT}/src/icd_util.cpp)
 endif()
 
 chip_configure_data_model(app
     INCLUDE_SERVER
+    BYPASS_IDL
+    GEN_DIR src/zap-generated
     ZAP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/window-app.zap
 )
 # NORDIC SDK APP END

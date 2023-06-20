@@ -10,6 +10,7 @@
 #include <zephyr/net/socket.h>
 #include <zephyr/net/tls_credentials.h>
 #include <modem/lte_lc.h>
+#include <modem/nrf_modem_lib.h>
 #include <modem/modem_key_mgmt.h>
 
 #define HTTPS_PORT 443
@@ -135,7 +136,7 @@ int tls_setup(int fd)
 	return 0;
 }
 
-void main(void)
+int main(void)
 {
 	int err;
 	int fd;
@@ -148,24 +149,30 @@ void main(void)
 
 	printk("TLS Ciphersuites sample started\n\r");
 
+	err = nrf_modem_lib_init();
+	if (err) {
+		printk("Modem library initialization failed, error: %d\n", err);
+		return 0;
+	}
+
 	/* Provision certificates before connecting to the LTE network */
 	err = cert_provision();
 	if (err) {
-		return;
+		return 0;
 	}
 
 	printk("Waiting for network.. ");
 	err = lte_lc_init_and_connect();
 	if (err) {
 		printk("Failed to connect to the LTE network, err %d\n", err);
-		return;
+		return 0;
 	}
 	printk("OK\n");
 
 	err = getaddrinfo(HTTPS_HOSTNAME, NULL, &hints, &res);
 	if (err) {
 		printk("getaddrinfo() failed, err %d, %s\n", errno, strerror(errno));
-		return;
+		return 0;
 	}
 
 	((struct sockaddr_in *)res->ai_addr)->sin_port = htons(HTTPS_PORT);
@@ -226,4 +233,6 @@ clean_up:
 	(void)close(fd);
 
 	lte_lc_power_off();
+
+	return 0;
 }

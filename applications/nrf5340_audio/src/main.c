@@ -11,6 +11,7 @@
 
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/settings/settings.h>
+#include <zephyr/zbus/zbus.h>
 
 #include "macros_common.h"
 #include "fw_info_app.h"
@@ -39,6 +40,12 @@ extern struct k_thread z_main_thread;
 
 static atomic_t ble_core_is_ready = (atomic_t) false;
 static struct board_version board_rev;
+
+ZBUS_CHAN_DECLARE(button_chan);
+ZBUS_CHAN_DECLARE(le_audio_chan);
+
+ZBUS_OBS_DECLARE(button_sub);
+ZBUS_OBS_DECLARE(le_audio_evt_sub);
 
 static int hfclock_config_and_start(void)
 {
@@ -157,7 +164,7 @@ void on_ble_core_ready(void)
 	}
 }
 
-void main(void)
+int main(void)
 {
 	int ret;
 
@@ -168,6 +175,14 @@ void main(void)
 
 	ret = led_init();
 	ERR_CHK(ret);
+
+	if (IS_ENABLED(CONFIG_ZBUS) && (CONFIG_ZBUS_RUNTIME_OBSERVERS_POOL_SIZE > 0)) {
+		ret = zbus_chan_add_obs(&button_chan, &button_sub, K_MSEC(200));
+		ERR_CHK(ret);
+
+		ret = zbus_chan_add_obs(&le_audio_chan, &le_audio_evt_sub, K_MSEC(200));
+		ERR_CHK(ret);
+	}
 
 	ret = button_handler_init();
 	ERR_CHK(ret);
@@ -194,8 +209,8 @@ void main(void)
 	}
 
 #if defined(CONFIG_AUDIO_DFU_ENABLE)
-	/* Check DFU BTN before Initialize BLE */
-	dfu_entry_check();
+	/* Check DFU BTN before initialize BLE */
+	dfu_entry_check((void *)ble_core_init);
 #endif
 
 	/* Initialize BLE, with callback for when BLE is ready */
@@ -210,13 +225,6 @@ void main(void)
 	ret = leds_set();
 	ERR_CHK(ret);
 
-	audio_system_init();
-
 	ret = streamctrl_start();
 	ERR_CHK(ret);
-
-	while (1) {
-		streamctrl_event_handler();
-		STACK_USAGE_PRINT("main", &z_main_thread);
-	}
 }

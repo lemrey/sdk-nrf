@@ -41,7 +41,7 @@ static void bt_ready(int err)
 
 	printk("Mesh initialized\n");
 
-	if (IS_ENABLED(CONFIG_SOC_SERIES_NRF52X) && IS_ENABLED(CONFIG_MCUMGR_SMP_BT)) {
+	if (IS_ENABLED(CONFIG_SOC_SERIES_NRF52X) && IS_ENABLED(CONFIG_MCUMGR_TRANSPORT_BT)) {
 		err = smp_dfu_init();
 		if (err) {
 			printk("Unable to initialize DFU (err %d)\n", err);
@@ -49,7 +49,7 @@ static void bt_ready(int err)
 	}
 }
 
-void main(void)
+int main(void)
 {
 	int err;
 
@@ -59,4 +59,6 @@ void main(void)
 	if (err) {
 		printk("Bluetooth init failed (err %d)\n", err);
 	}
+
+	return 0;
 }

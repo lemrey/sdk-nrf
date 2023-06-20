@@ -149,16 +149,6 @@ void nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 	__ASSERT(false, "Modem crash detected, halting application execution");
 }
 
-NRF_MODEM_LIB_ON_INIT(modem_shell_init_hook, on_modem_lib_init, NULL);
-
-/* Initialized to value different than success (0) */
-static int modem_lib_init_result = -1;
-
-static void on_modem_lib_init(int ret, void *ctx)
-{
-	modem_lib_init_result = ret;
-}
-
 static void mosh_print_version_info(void)
 {
 #if defined(APP_VERSION)
@@ -208,7 +198,7 @@ static void button_handler(uint32_t button_states, uint32_t has_changed)
 }
 #endif
 
-void main(void)
+int main(void)
 {
 	int err;
 	struct k_work_queue_config cfg = {
@@ -256,34 +246,37 @@ void main(void)
 		&cfg);
 
 #if !defined(CONFIG_LWM2M_CARRIER)
-	/* Get Modem library initialization return value. */
-	err = modem_lib_init_result;
+	err = nrf_modem_lib_init();
 	switch (err) {
 	case 0:
 		/* Modem library was initialized successfully. */
 		break;
-	case MODEM_DFU_RESULT_OK:
+	case NRF_MODEM_DFU_RESULT_OK:
 		printk("Modem firmware update successful!\n");
 		printk("Modem will run the new firmware after reboot\n");
 		sys_reboot(SYS_REBOOT_WARM);
-		return;
-	case MODEM_DFU_RESULT_UUID_ERROR:
-	case MODEM_DFU_RESULT_AUTH_ERROR:
+		return 0;
+	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
+	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
 		printk("Modem firmware update failed!\n");
 		printk("Modem will run non-updated firmware on reboot.\n");
 		sys_reboot(SYS_REBOOT_WARM);
-		return;
-	case MODEM_DFU_RESULT_HARDWARE_ERROR:
-	case MODEM_DFU_RESULT_INTERNAL_ERROR:
+		return 0;
+	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
+	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
 		printk("Modem firmware update failed!\n");
 		printk("Fatal error.\n");
 		sys_reboot(SYS_REBOOT_WARM);
-		return;
+		return 0;
+	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
+		printk("Modem firmware update cancelled due to low power.\n");
+		printk("Please reboot once you have sufficient power for the DFU\n");
+		break;
 	default:
 		/* Modem library initialization failed. */
-		printk("Could not initialize modemlib.\n");
+		printk("Could not initialize nrf_modem_lib, err %d.\n", err);
 		printk("Fatal error.\n");
-		return;
+		return 0;
 	}
 #else
 	/* Wait until the LwM2M carrier library has initialized the modem library. */
@@ -315,7 +308,7 @@ void main(void)
 	err = modem_info_init();
 	if (err) {
 		printk("Modem info could not be established: %d\n", err);
-		return;
+		return 0;
 	}
 #endif
 
@@ -353,4 +346,6 @@ void main(void)
 		at_cmd_mode_start(mosh_shell);
 	}
 #endif
+
+	return 0;
 }

@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <stdio.h>
 #include <modem/lte_lc.h>
+#include <modem/nrf_modem_lib.h>
 #include <zephyr/net/socket.h>
 #include <dk_buttons_and_leds.h>
 
@@ -76,21 +77,23 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 static void modem_configure(void)
 {
 #if defined(CONFIG_NRF_MODEM_LIB)
-	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
-		k_sem_give(&lte_connected);
-	} else {
-		int err;
+	int err;
 
-		err = lte_lc_init_and_connect_async(lte_handler);
-		if (err) {
-			LOG_ERR("Modem could not be configured, error: %d", err);
-			return;
-		}
-
-		/* Check LTE events of type LTE_LC_EVT_NW_REG_STATUS in
-		 * lte_handler() to determine when the LTE link is up.
-		 */
+	err = nrf_modem_lib_init();
+	if (err) {
+		LOG_ERR("Modem library could not be initialized, err %d.", err);
+		return;
 	}
+
+	err = lte_lc_init_and_connect_async(lte_handler);
+	if (err) {
+		LOG_ERR("Modem could not be configured, error: %d", err);
+		return;
+	}
+
+	/* Check LTE events of type LTE_LC_EVT_NW_REG_STATUS in
+	 * lte_handler() to determine when the LTE link is up.
+	 */
 #endif
 }
 
@@ -178,7 +181,7 @@ static void handle_lte_connection_started(void)
 	memfault_zephyr_port_post_data();
 }
 
-void main(void)
+int main(void)
 {
 	int err;
 

@@ -14,17 +14,6 @@
 
 #define FOTA_TEST "FOTA-TEST"
 
-NRF_MODEM_LIB_ON_INIT(modem_delta_update_init_hook,
-		      on_modem_lib_init, NULL);
-
-/* Initialized to value different than success (0) */
-static int modem_lib_init_result = -1;
-
-static void on_modem_lib_init(int ret, void *ctx)
-{
-	modem_lib_init_result = ret;
-}
-
 static char version[256];
 
 static bool is_test_firmware(void)
@@ -88,43 +77,41 @@ static int num_leds(void)
 	}
 }
 
-void main(void)
+int main(void)
 {
 	int err;
 
 	printk("HTTP delta modem update sample started\n");
 
 	printk("Initializing modem library\n");
-#if !defined(CONFIG_NRF_MODEM_LIB_SYS_INIT)
-	err = nrf_modem_lib_init(NORMAL_MODE);
-#else
-	/* If nrf_modem_lib is initialized on post-kernel we should
-	 * fetch the returned error code instead of nrf_modem_lib_init
-	 */
-	err = modem_lib_init_result;
-#endif
+
+	err = nrf_modem_lib_init();
 	switch (err) {
-	case MODEM_DFU_RESULT_OK:
+	case NRF_MODEM_DFU_RESULT_OK:
 		printk("Modem firmware update successful!\n");
 		printk("Modem will run the new firmware after reboot\n");
 		printk("Press 'Reset' button or enter 'reset' to apply new firmware\n");
 		k_thread_suspend(k_current_get());
 		break;
-	case MODEM_DFU_RESULT_UUID_ERROR:
-	case MODEM_DFU_RESULT_AUTH_ERROR:
+	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
+	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
 		printk("Modem firmware update failed\n");
 		printk("Modem will run non-updated firmware on reboot.\n");
 		printk("Press 'Reset' button or enter 'reset'\n");
 		break;
-	case MODEM_DFU_RESULT_HARDWARE_ERROR:
-	case MODEM_DFU_RESULT_INTERNAL_ERROR:
+	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
+	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
 		printk("Modem firmware update failed\n");
 		printk("Fatal error.\n");
+		break;
+	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
+		printk("Modem firmware update failed\n");
+		printk("Please reboot once you have sufficient power for the DFU.\n");
 		break;
 	case -1:
 		printk("Could not initialize momdem library.\n");
 		printk("Fatal error.\n");
-		return;
+		return 0;
 	default:
 		break;
 	}
@@ -133,7 +120,7 @@ void main(void)
 	err = fota_download_init(fota_dl_handler);
 	if (err != 0) {
 		printk("fota_download_init() failed, err %d\n", err);
-		return;
+		return 0;
 	}
 
 	err = update_sample_init(&(struct update_sample_init_params){
@@ -143,10 +130,12 @@ void main(void)
 				});
 	if (err != 0) {
 		printk("update_sample_init() failed, err %d\n", err);
-		return;
+		return 0;
 	}
 
 	printk("Current modem firmware version: %s\n", version);
 
 	printk("Press Button 1 for enter 'download' to download modem delta update\n");
+
+	return 0;
 }

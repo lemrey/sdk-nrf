@@ -7,10 +7,10 @@ Introduction
    :local:
    :depth: 2
 
-The |NCS| is a scalable and unified software development kit for building low-power wireless applications based on the Nordic Semiconductor nRF52, nRF53, and nRF91 Series wireless devices.
+The |NCS| is a scalable and unified software development kit for building low-power wireless applications based on the Nordic Semiconductor nRF52, nRF53, nRF70, and nRF91 Series wireless devices.
 It offers an extensible framework for building size-optimized software for memory-constrained devices as well as powerful and complex software for more advanced devices and applications.
 
-It integrates the Zephyr™ real-time operating system (RTOS) and a wide range of complete applications, samples, and protocol stacks such as Bluetooth® Low Energy, Bluetooth mesh, Matter, Thread/Zigbee and LTE-M/NB-IoT/GPS, TCP/IP.
+It integrates the Zephyr™ real-time operating system (RTOS) and a wide range of complete applications, samples, and protocol stacks such as Bluetooth® Low Energy, Bluetooth mesh, Matter, Thread/Zigbee, Wi-Fi®, and LTE-M/NB-IoT/GPS, TCP/IP.
 It also includes middleware such as CoAP, MQTT, LwM2M, various libraries, hardware drivers, Trusted Firmware-M for security, and a secure bootloader (MCUboot).
 
 nRF54H20 initial limited sampling
@@ -63,10 +63,10 @@ The version numbers are incremented based on the following criteria:
 
 * The ``MAJOR`` version number is increased seldom, whenever a release is deemed to be introducing a large number of substantial changes across the board.
 * The ``MINOR`` version number is increased every time a major release is cut.
-  Major releases are the default types of an |NCS| release.
+  Minor releases are the default types of an |NCS| release.
   They introduce new functionality and may break APIs.
 * The ``PATCH`` version number is increased whenever a minor or bugfix release is cut.
-  Minor releases only address functional issues but do not introduce new functionality.
+  Patch releases only address functional issues but do not introduce new functionality.
 
 In between releases, |NCS| is not static.
 Instead, it changes its revision every time a Git commit is merged into the `sdk-nrf`_ repository.
@@ -75,6 +75,10 @@ This means that, by virtue of containing the `west manifest file`_, its revision
 
 A special value of ``99`` for the ``PATCH`` version number indicates that the version string does not belong to a release, but rather a point in between two major releases.
 For example, ``2.2.99`` indicates that this particular revision of the |NCS| is somewhere between versions ``2.2.0`` and ``2.3.0``.
+
+.. include:: developing/code_base.rst
+   :start-after: dev_tag_definition_start
+   :end-before: dev_tag_definition_end
 
 Revisions can either be Git SHAs or tags, depending on whether the current revision is associated with a release (in which case it is a tag) or is just any revision in between releases.
 
@@ -172,7 +176,7 @@ See the :ref:`west_sbom` documentation for more information.
 Documentation pages
 *******************
 
-.. include:: doc_structure.rst
+.. include:: documentation/structure.rst
    :start-after: doc_structure_start
    :end-before: doc_structure_end
 
@@ -193,4 +197,4 @@ For more information about the documentation conventions and templates, see :ref
 The following table lists all the repositories (and their respective revisions) that are included as part of |NCS| |version| release:
 
 .. manifest-revisions-table::
-   :show-first: zephyr, nrfxlib, mcuboot, trusted-firmware-m, find-my, homekit, matter, nrf-802154, mbedtls-nrf, memfault-firmware-sdk
+   :show-first: zephyr, nrfxlib, mcuboot, trusted-firmware-m, find-my, homekit, matter, nrf-802154, mbedtls, memfault-firmware-sdk

@@ -16,6 +16,93 @@
 extern struct wifi_nrf_drv_priv_zep rpu_drv_priv_zep;
 struct wifi_nrf_ctx_zep *ctx = &rpu_drv_priv_zep.rpu_ctx_zep;
 
+static bool check_valid_data_rate(const struct shell *shell,
+				  unsigned char rate_flag,
+				  unsigned int data_rate)
+{
+	bool ret = false;
+
+	switch (rate_flag) {
+	case RPU_TPUT_MODE_LEGACY:
+		if ((data_rate == 1) ||
+		    (data_rate == 2) ||
+		    (data_rate == 55) ||
+		    (data_rate == 11) ||
+		    (data_rate == 6) ||
+		    (data_rate == 9) ||
+		    (data_rate == 12) ||
+		    (data_rate == 18) ||
+		    (data_rate == 24) ||
+		    (data_rate == 36) ||
+		    (data_rate == 48) ||
+		    (data_rate == 54)) {
+			ret = true;
+		}
+		break;
+	case RPU_TPUT_MODE_HT:
+	case RPU_TPUT_MODE_HE_SU:
+	case RPU_TPUT_MODE_VHT:
+		if ((data_rate >= 0) && (data_rate <= 7)) {
+			ret = true;
+		}
+		break;
+	case RPU_TPUT_MODE_HE_ER_SU:
+		if (data_rate >= 0 && data_rate <= 2) {
+			ret = true;
+		}
+		break;
+	default:
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "%s: Invalid rate_flag %d\n",
+			      __func__,
+			      rate_flag);
+		break;
+	}
+
+	return ret;
+}
+
+
+static struct wifi_nrf_vif_ctx_zep *net_if_get_vif_ctx(const struct shell *shell,
+						       int indx)
+{
+	struct net_if *iface = NULL;
+	const struct device *dev;
+	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+
+	iface = net_if_get_by_index(indx);
+
+	if (!iface) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "No such interface in index %d\n",
+			      indx);
+		goto err;
+	}
+
+	dev = net_if_get_device(iface);
+
+	if (!dev) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "No such device\n");
+		goto err;
+	}
+
+	vif_ctx_zep = dev->data;
+
+	if (!vif_ctx_zep) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "No such vif interface in index %d\n",
+			      indx);
+		goto err;
+	}
+err:
+	return vif_ctx_zep;
+}
+
 
 int nrf_wifi_util_conf_init(struct rpu_conf_params *conf_params)
 {
@@ -38,6 +125,13 @@ static int nrf_wifi_util_set_he_ltf(const struct shell *shell,
 {
 	char *ptr = NULL;
 	unsigned long he_ltf = 0;
+
+	if (ctx->conf_params.set_he_ltf_gi) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Disable 'set_he_ltf_gi', to set 'he_ltf'\n");
+		return -ENOEXEC;
+	}
 
 	he_ltf = strtoul(argv[1], &ptr, 10);
 
@@ -62,6 +156,13 @@ static int nrf_wifi_util_set_he_gi(const struct shell *shell,
 {
 	char *ptr = NULL;
 	unsigned long he_gi = 0;
+
+	if (ctx->conf_params.set_he_ltf_gi) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Disable 'set_he_ltf_gi', to set 'he_gi'\n");
+		return -ENOEXEC;
+	}
 
 	he_gi = strtoul(argv[1], &ptr, 10);
 
@@ -99,21 +200,19 @@ static int nrf_wifi_util_set_he_ltf_gi(const struct shell *shell,
 		return -ENOEXEC;
 	}
 
-	if (ctx->conf_params.set_he_ltf_gi != val) {
-		status = wifi_nrf_fmac_conf_ltf_gi(ctx->rpu_ctx,
-						   ctx->conf_params.he_ltf,
-						   ctx->conf_params.he_gi,
-						   val);
+	status = wifi_nrf_fmac_conf_ltf_gi(ctx->rpu_ctx,
+					   ctx->conf_params.he_ltf,
+					   ctx->conf_params.he_gi,
+					   val);
 
-		if (status != WIFI_NRF_STATUS_SUCCESS) {
-			shell_fprintf(shell,
-				      SHELL_ERROR,
-				      "Programming ltf_gi failed\n");
-			return -ENOEXEC;
-		}
-
-		ctx->conf_params.set_he_ltf_gi = val;
+	if (status != WIFI_NRF_STATUS_SUCCESS) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Programming ltf_gi failed\n");
+		return -ENOEXEC;
 	}
+
+	ctx->conf_params.set_he_ltf_gi = val;
 
 	return 0;
 }
@@ -192,6 +291,37 @@ static int nrf_wifi_util_set_uapsd_queue(const struct shell *shell,
 }
 
 
+static int nrf_wifi_util_set_passive_scan(const struct shell *shell,
+					  size_t argc,
+					  const char *argv[])
+{
+	char *ptr = NULL;
+	unsigned long val = 0;
+	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+
+	vif_ctx_zep = net_if_get_vif_ctx(shell, atoi(argv[1]));
+
+	if (!vif_ctx_zep) {
+		return -ENOEXEC;
+	}
+
+	val = strtoul(argv[2], &ptr, 10);
+
+	if (val > 1) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Invalid value(%lu).\n",
+			      val);
+		shell_help(shell);
+		return -ENOEXEC;
+	}
+
+	vif_ctx_zep->passive_scan = val;
+
+	return 0;
+}
+
+
 static int nrf_wifi_util_show_cfg(const struct shell *shell,
 				  size_t argc,
 				  const char *argv[])
@@ -231,7 +361,205 @@ static int nrf_wifi_util_show_cfg(const struct shell *shell,
 		      SHELL_INFO,
 		      "uapsd_queue = %d\n",
 		      conf_params->uapsd_queue);
+
+	shell_fprintf(shell,
+		      SHELL_INFO,
+		      "passive_scan = %d\n",
+		      (&ctx->vif_ctx_zep[0])->passive_scan);
+
+	shell_fprintf(shell,
+		      SHELL_INFO,
+		      "rate_flag = %d,  rate_val = %d\n",
+		      ctx->conf_params.tx_pkt_tput_mode,
+		      ctx->conf_params.tx_pkt_rate);
 	return 0;
+}
+
+static int nrf_wifi_util_tx_stats(const struct shell *shell,
+				  size_t argc,
+				  const char *argv[])
+{
+	int vif_index = -1;
+	int queue_index = -1;
+	/* TODO: Get this from shell when AP mode is supported */
+	int peer_index = 0;
+	int max_vif_index = MAX(MAX_NUM_APS, MAX_NUM_STAS);
+	struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx = NULL;
+	void *queue = NULL;
+	unsigned int tx_pending_pkts = 0;
+
+	vif_index = atoi(argv[1]);
+	if ((vif_index < 0) || (vif_index >= max_vif_index)) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Invalid vif index(%d).\n",
+			      vif_index);
+		shell_help(shell);
+		return -ENOEXEC;
+	}
+
+	queue_index = atoi(argv[2]);
+	if ((queue_index < 0) || (queue_index >= WIFI_NRF_FMAC_AC_MAX)) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Invalid queue(%d).\n",
+			      queue_index);
+		shell_help(shell);
+		return -ENOEXEC;
+	}
+
+	fmac_dev_ctx = ctx->rpu_ctx;
+	queue = fmac_dev_ctx->tx_config.data_pending_txq[peer_index][queue_index];
+
+	tx_pending_pkts = wifi_nrf_utils_q_len(fmac_dev_ctx->fpriv->opriv, queue);
+
+	shell_fprintf(shell,
+		SHELL_INFO,
+		"************* Tx Stats: vif(%d) queue(%d) ***********\n",
+		vif_index,
+		queue_index);
+
+	shell_fprintf(shell,
+		SHELL_INFO,
+		"tx_pending_pkts = %d\n",
+		tx_pending_pkts);
+
+	for (int i = 0; i < WIFI_NRF_FMAC_AC_MAX ; i++) {
+		shell_fprintf(
+			shell,
+			SHELL_INFO,
+			"Outstanding tokens: ac: %d -> %d\n",
+			i,
+			fmac_dev_ctx->tx_config.outstanding_descs[i]);
+	}
+
+	return 0;
+}
+
+
+static int nrf_wifi_util_tx_rate(const struct shell *shell,
+				 size_t argc,
+				 const char *argv[])
+{
+	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
+	char *ptr = NULL;
+	long rate_flag = -1;
+	long data_rate = -1;
+
+	rate_flag = strtol(argv[1], &ptr, 10);
+
+	if (rate_flag >= RPU_TPUT_MODE_MAX) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Invalid value %ld for rate_flags\n",
+			      rate_flag);
+		shell_help(shell);
+		return -ENOEXEC;
+	}
+
+
+	if (rate_flag == RPU_TPUT_MODE_HE_TB) {
+		data_rate = -1;
+	} else {
+		if (argc < 3) {
+			shell_fprintf(shell,
+				      SHELL_ERROR,
+				      "rate_val needed for rate_flag = %ld\n",
+				      rate_flag);
+			shell_help(shell);
+			return -ENOEXEC;
+		}
+
+		data_rate = strtol(argv[2], &ptr, 10);
+
+		if (!(check_valid_data_rate(shell,
+					    rate_flag,
+					    data_rate))) {
+			shell_fprintf(shell,
+				      SHELL_ERROR,
+				      "Invalid data_rate %ld for rate_flag %ld\n",
+				      data_rate,
+				      rate_flag);
+			return -ENOEXEC;
+		}
+
+	}
+
+	status = wifi_nrf_fmac_set_tx_rate(ctx->rpu_ctx,
+					   rate_flag,
+					   data_rate);
+
+	if (status != WIFI_NRF_STATUS_SUCCESS) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Programming tx_rate failed\n");
+		return -ENOEXEC;
+	}
+
+	ctx->conf_params.tx_pkt_tput_mode = rate_flag;
+	ctx->conf_params.tx_pkt_rate = data_rate;
+
+	return 0;
+}
+
+
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
+static int nrf_wifi_util_show_host_rpu_ps_ctrl_state(const struct shell *shell,
+						     size_t argc,
+						     const char *argv[])
+{
+	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
+	int rpu_ps_state = -1;
+
+	status = wifi_nrf_fmac_get_host_rpu_ps_ctrl_state(ctx->rpu_ctx,
+							  &rpu_ps_state);
+
+	if (status != WIFI_NRF_STATUS_SUCCESS) {
+		shell_fprintf(shell,
+			      SHELL_ERROR,
+			      "Failed to get PS state\n");
+		return -ENOEXEC;
+	}
+
+	shell_fprintf(shell,
+		      SHELL_INFO,
+		      "RPU sleep status = %s\n", rpu_ps_state ? "AWAKE" : "SLEEP");
+	return 0;
+}
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
+
+
+static int nrf_wifi_util_show_fw_ver(const struct shell *shell,
+				  size_t argc,
+				  const char *argv[])
+{
+	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
+	struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx = NULL;
+	unsigned int umac_ver, lmac_ver;
+
+	fmac_dev_ctx = ctx->rpu_ctx;
+
+	status = wifi_nrf_fmac_ver_get(fmac_dev_ctx, &umac_ver, &lmac_ver);
+
+	if (status != WIFI_NRF_STATUS_SUCCESS) {
+		shell_fprintf(shell,
+		 SHELL_INFO,
+		 "Failed to get firmware version\n");
+		return -ENOEXEC;
+	}
+
+	shell_fprintf(shell, SHELL_INFO,
+		 "UMAC version: %d.%d.%d.%d\nLMAC version: %d.%d.%d.%d\n",
+		  NRF_WIFI_UMAC_VER(umac_ver),
+		  NRF_WIFI_UMAC_VER_MAJ(umac_ver),
+		  NRF_WIFI_UMAC_VER_MIN(umac_ver),
+		  NRF_WIFI_UMAC_VER_EXTRA(umac_ver),
+		  NRF_WIFI_LMAC_VER(lmac_ver),
+		  NRF_WIFI_LMAC_VER_MAJ(lmac_ver),
+		  NRF_WIFI_LMAC_VER_MIN(lmac_ver),
+		  NRF_WIFI_LMAC_VER_EXTRA(lmac_ver));
+
+	return status;
 }
 
 
@@ -278,6 +606,53 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 		      nrf_wifi_util_show_cfg,
 		      1,
 		      0),
+	SHELL_CMD_ARG(passive_scan,
+		      NULL,
+		      "<intf indx> <0 - Passive scan off>\n"
+		      "<intf indx> <1 - Passive scan on>\n",
+		      nrf_wifi_util_set_passive_scan,
+		      3,
+		      0),
+	SHELL_CMD_ARG(tx_stats,
+		      NULL,
+		      "Displays transmit statistics\n"
+			  "vif_index: 0 - 1\n"
+			  "queue: 0 - 4\n",
+		      nrf_wifi_util_tx_stats,
+		      3,
+		      0),
+	SHELL_CMD_ARG(tx_rate,
+		      NULL,
+		      "Sets TX data rate to either a fixed value or AUTO\n"
+		      "Parameters:\n"
+		      "    <rate_flag> : The TX data rate type to be set, where:\n"
+		      "        0 - LEGACY\n"
+		      "        1 - HT\n"
+		      "        2 - VHT\n"
+		      "        3 - HE_SU\n"
+		      "        4 - HE_ER_SU\n"
+		      "        5 - AUTO\n"
+		      "    <rate_val> : The TX data rate value to be set, valid values are:\n"
+		      "        Legacy : <1, 2, 55, 11, 6, 9, 12, 18, 24, 36, 48, 54>\n"
+		      "        Non-legacy: <MCS index value between 0 - 7>\n"
+		      "        AUTO: <No value needed>\n",
+		      nrf_wifi_util_tx_rate,
+		      2,
+		      1),
+#ifdef CONFIG_NRF_WIFI_LOW_POWER
+	SHELL_CMD_ARG(sleep_state,
+		      NULL,
+		      "Display current sleep status",
+		      nrf_wifi_util_show_host_rpu_ps_ctrl_state,
+		      1,
+		      0),
+#endif /* CONFIG_NRF_WIFI_LOW_POWER */
+	SHELL_CMD_ARG(show_fw_ver,
+		      NULL,
+		      "Display the firmware version",
+		      nrf_wifi_util_show_fw_ver,
+		      1,
+		      0),
 	SHELL_SUBCMD_SET_END);
 
 
@@ -287,9 +662,8 @@ SHELL_CMD_REGISTER(wifi_util,
 		   NULL);
 
 
-static int nrf_wifi_util_init(const struct device *unused)
+static int nrf_wifi_util_init(void)
 {
-	ARG_UNUSED(unused);
 
 	if (nrf_wifi_util_conf_init(&ctx->conf_params) < 0)
 		return -1;

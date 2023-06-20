@@ -45,7 +45,6 @@ target_sources(app PRIVATE
     src/zap-generated/IMClusterCommandHandler.cpp
     src/zap-generated/callback-stub.cpp
     ${COMMON_ROOT}/src/led_widget.cpp
-    $<$<BOOL:${CONFIG_NET_L2_OPENTHREAD}>:${COMMON_ROOT}/src/thread_util.cpp>
 )
 
 if(CONFIG_SOC_SERIES_NRF54HX)
@@ -62,6 +61,8 @@ endif()
 
 chip_configure_data_model(app
     INCLUDE_SERVER
+    BYPASS_IDL
+    GEN_DIR src/zap-generated
     ZAP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/template.zap
 )
 # NORDIC SDK APP END

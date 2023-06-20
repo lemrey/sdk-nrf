@@ -75,6 +75,10 @@ struct wifi_nrf_fmac_dev_ctx {
 	enum nrf_wifi_rf_test rf_test_type;
 	void *rf_test_cap_data;
 	unsigned int rf_test_cap_sz;
+#ifdef CONFIG_NRF700X_RADIO_TEST
+	bool radio_cmd_done;
+	enum nrf_wifi_radio_test_err_status radio_cmd_status;
+#endif /* CONFIG_NRF700X_RADIO_TEST */
 };
 
 #else /* CONFIG_NRF700X_RADIO_TEST */
@@ -247,6 +251,18 @@ struct wifi_nrf_fmac_callbk_fns {
 	void (*event_get_wiphy)(void *if_priv,
 		struct nrf_wifi_event_get_wiphy *get_wiphy,
 		unsigned int event_len);
+
+	void (*twt_sleep_callbk_fn)(void *if_priv,
+		struct nrf_wifi_umac_event_twt_sleep *twt_sleep_event_info,
+		unsigned int event_len);
+
+	void (*event_get_reg)(void *if_priv,
+		struct nrf_wifi_reg *get_reg,
+		unsigned int event_len);
+
+	void (*event_get_ps_info)(void *if_priv,
+		struct nrf_wifi_umac_event_power_save_info *get_ps_config,
+		unsigned int event_len);
 };
 
 
@@ -274,7 +290,10 @@ struct wifi_nrf_fmac_buf_map_info {
 struct rpu_host_stats {
 	unsigned long long total_tx_pkts;
 	unsigned long long total_tx_done_pkts;
+	unsigned long long total_tx_drop_pkts;
+
 	unsigned long long total_rx_pkts;
+	unsigned long long total_rx_drop_pkts;
 };
 
 
@@ -389,8 +408,23 @@ struct wifi_nrf_fmac_priv {
 	struct rx_buf_pool_params rx_buf_pools[MAX_NUM_OF_RX_QUEUES];
 	unsigned int rx_desc[MAX_NUM_OF_RX_QUEUES];
 	unsigned int num_rx_bufs;
+	unsigned int max_ampdu_len_per_token;
+	unsigned int avail_ampdu_len_per_token;
 
 	struct wifi_nrf_fmac_callbk_fns callbk_fns;
+
+};
+
+/**
+ * enum wifi_nrf_fmac_twt_state - The TWT state of device.
+ * @WIFI_NRF_FMAC_TWT_STATE_SLEEP: The RPU in TWT sleep state
+ * @WIFI_NRF_FMAC_TWT_STATE_AWAKE: The RPU in TWT awake state
+ *
+ * This enum lists the possible RPU TWT operational states.
+ */
+enum wifi_nrf_fmac_twt_state {
+	WIFI_NRF_FMAC_TWT_STATE_SLEEP,
+	WIFI_NRF_FMAC_TWT_STATE_AWAKE
 };
 
 
@@ -419,6 +453,7 @@ struct wifi_nrf_fmac_priv {
  * @lmac_ver: LMAC version information.
  * @num_sta: Present number of STAs created on the device.
  * @num_ap: Present number of APs created on the device.
+ * @twt_sleep_status: Current RPU TWT sleep status.
  *
  * This structure maintains the context information necessary for the
  * a single instance of an FullMAC based RPU.
@@ -435,11 +470,13 @@ struct wifi_nrf_fmac_dev_ctx {
 	unsigned char num_sta;
 	unsigned char num_ap;
 	struct rpu_fw_stats *fw_stats;
-	unsigned char rf_params[NRF_WIFI_RF_PARAMS_SIZE];
 	bool stats_req;
 	bool fw_boot_done;
 	bool fw_init_done;
 	bool fw_deinit_done;
+	bool alpha2_valid;
+	unsigned char alpha2[3];
+	enum wifi_nrf_fmac_twt_state twt_sleep_status;
 };
 
 

@@ -12,6 +12,7 @@
 #include <memfault_ncs.h>
 
 #ifdef CONFIG_NRF_MODEM_LIB
+#include <modem/nrf_modem_lib.h>
 #include <nrf_modem_at.h>
 #endif
 
@@ -131,11 +132,10 @@ static int device_info_init(void)
 }
 #endif /* CONFIG_MEMFAULT_NCS_DEVICE_ID_IMEI */
 
-static int init(const struct device *unused)
+static int init(void)
 {
 	int err = 0;
 
-	ARG_UNUSED(unused);
 
 	if (IS_ENABLED(CONFIG_MEMFAULT_NCS_PROVISION_CERTIFICATES)) {
 		err = memfault_zephyr_port_install_root_certs();
@@ -185,4 +185,19 @@ int memfault_ncs_device_id_set(const char *device_id, size_t len)
 	return 0;
 }
 
+#if defined(CONFIG_NRF_MODEM_LIB)
+NRF_MODEM_LIB_ON_INIT(memfault_ncs_init_hook, on_modem_lib_init, NULL);
+
+static void on_modem_lib_init(int ret, void *ctx)
+{
+	if (ret != 0) {
+		/* Return if modem initialization failed */
+		return;
+	}
+
+	init();
+}
+
+#else
 SYS_INIT(init, APPLICATION, CONFIG_MEMFAULT_NCS_INIT_PRIORITY);
+#endif

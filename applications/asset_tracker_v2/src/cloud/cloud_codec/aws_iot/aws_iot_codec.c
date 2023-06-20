@@ -58,14 +58,15 @@ int cloud_codec_init(struct cloud_data_cfg *cfg, cloud_codec_evt_handler_t event
 	return 0;
 }
 
-int cloud_codec_encode_neighbor_cells(struct cloud_codec_data *output,
-				      struct cloud_data_neighbor_cells *neighbor_cells)
+int cloud_codec_encode_cloud_location(
+	struct cloud_codec_data *output,
+	struct cloud_data_cloud_location *cloud_location)
 {
 	int err;
 	char *buffer;
 
 	__ASSERT_NO_MSG(output != NULL);
-	__ASSERT_NO_MSG(neighbor_cells != NULL);
+	__ASSERT_NO_MSG(cloud_location != NULL);
 
 	cJSON *root_obj = cJSON_CreateObject();
 
@@ -74,11 +75,25 @@ int cloud_codec_encode_neighbor_cells(struct cloud_codec_data *output,
 		return -ENOMEM;
 	}
 
-	err = json_common_neighbor_cells_data_add(root_obj, neighbor_cells,
+	if (!cloud_location->neighbor_cells_valid) {
+		err = -ENODATA;
+		goto exit;
+	}
+
+	err = json_common_neighbor_cells_data_add(root_obj, &cloud_location->neighbor_cells,
 						  JSON_COMMON_ADD_DATA_TO_OBJECT);
 	if (err) {
 		goto exit;
 	}
+
+#if defined(CONFIG_LOCATION_METHOD_WIFI)
+	err = json_common_wifi_ap_data_add(root_obj, &cloud_location->wifi_access_points,
+					   JSON_COMMON_ADD_DATA_TO_OBJECT);
+	if (err) {
+		goto exit;
+	}
+#endif
+
 
 	buffer = cJSON_PrintUnformatted(root_obj);
 	if (buffer == NULL) {
@@ -99,14 +114,6 @@ exit:
 	cJSON_Delete(root_obj);
 	return err;
 }
-
-#if defined(CONFIG_LOCATION_METHOD_WIFI)
-int cloud_codec_encode_wifi_access_points(struct cloud_codec_data *output,
-					  struct cloud_data_wifi_access_points *wifi_access_points)
-{
-	return -ENOTSUP;
-}
-#endif
 
 int cloud_codec_encode_agps_request(struct cloud_codec_data *output,
 				    struct cloud_data_agps_request *agps_request)

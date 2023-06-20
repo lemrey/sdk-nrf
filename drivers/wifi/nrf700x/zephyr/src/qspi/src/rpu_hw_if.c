@@ -171,7 +171,17 @@ int rpu_gpio_config(void)
 
 	ret = gpio_pin_configure_dt(&bucken_spec, (GPIO_OUTPUT | NRF_GPIO_DRIVE_H0H1));
 
+	if (ret) {
+		LOG_ERR("BUCKEN GPIO configuration failed...\n");
+		return ret;
+	}
+
 	ret = gpio_pin_configure_dt(&iovdd_ctrl_spec, GPIO_OUTPUT);
+
+	if (ret) {
+		LOG_ERR("IOVDD GPIO configuration failed...\n");
+		return ret;
+	}
 
 	LOG_DBG("GPIO configuration done...\n\n");
 
@@ -180,11 +190,24 @@ int rpu_gpio_config(void)
 
 int rpu_pwron(void)
 {
-	gpio_pin_set_dt(&bucken_spec, 1);
-	k_msleep(SLEEP_TIME_MS);
-	gpio_pin_set_dt(&iovdd_ctrl_spec, 1);
-	k_msleep(SLEEP_TIME_MS);
-	LOG_DBG("BUCKEN=1, IOVDD=1...\n");
+	int ret;
+
+	ret = gpio_pin_set_dt(&bucken_spec, 1);
+	if (ret) {
+		LOG_ERR("BUCKEN GPIO set failed...\n");
+		return ret;
+	}
+	/* Settling time is 50us (H0) or 100us (L0) */
+	k_msleep(1);
+	ret = gpio_pin_set_dt(&iovdd_ctrl_spec, 1);
+	if (ret) {
+		LOG_ERR("IOVDD GPIO set failed...\n");
+		return ret;
+	}
+	/* Settling time for iovdd switch (TCK106AG): ~600us */
+	k_msleep(1);
+	LOG_DBG("Bucken = %d, IOVDD = %d\n", gpio_pin_get_dt(&bucken_spec),
+			gpio_pin_get_dt(&iovdd_ctrl_spec));
 
 	return 0;
 }
@@ -316,7 +339,7 @@ int rpu_enable(void)
 
 int rpu_disable(void)
 {
-	gpio_pin_set_dt(&iovdd_ctrl_spec, 0); /* IOVDD CNTRL = 0 */
 	gpio_pin_set_dt(&bucken_spec, 0); /* BUCKEN = 0 */
+	gpio_pin_set_dt(&iovdd_ctrl_spec, 0); /* IOVDD CNTRL = 0 */
 	return 0;
 }

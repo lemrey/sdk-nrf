@@ -9,13 +9,11 @@
 #include <mgmt/fmfu_mgmt_stat.h>
 #include <modem/modem_info.h>
 #include <modem/nrf_modem_lib.h>
-#include <zephyr/mgmt/mcumgr/grp/os_mgmt/os_mgmt.h>
-#include <zephyr/mgmt/mcumgr/grp/img_mgmt/img_mgmt.h>
 #include <zephyr/dfu/mcuboot.h>
 
-void main(void)
+int main(void)
 {
-	int err = nrf_modem_lib_init(NORMAL_MODE);
+	int err = nrf_modem_lib_init();
 
 	if (err == 0) {
 		char modem_version[MODEM_INFO_MAX_RESPONSE_SIZE];
@@ -34,13 +32,9 @@ void main(void)
 	/* Shutdown modem to prepare for DFU */
 	nrf_modem_lib_shutdown();
 
-	nrf_modem_lib_init(FULL_DFU_MODE);
+	nrf_modem_lib_bootloader_init();
 	/* Register SMP Communication stats */
 	fmfu_mgmt_stat_init();
-	/* Registers the OS management command handler group */
-	os_mgmt_register_group();
-	/* Registers the image management command handler group */
-	img_mgmt_register_group();
 	/* Initialize MCUMgr handlers for full modem update */
 	err = fmfu_mgmt_init();
 	if (err) {
@@ -52,4 +46,6 @@ void main(void)
 	} else {
 		printk("Current image not confirmed yet\n\r");
 	}
+
+	return 0;
 }

@@ -20,7 +20,6 @@
 #include "zephyr/logging/log.h"
 LOG_MODULE_REGISTER(bt_mesh_scheduler_srv);
 
-#define MAX_DAY        0x1F
 #define JANUARY           0
 #define DECEMBER         11
 
@@ -238,11 +237,11 @@ static int minute_handler(struct tm *sched_time, struct tm *current_local,
 	bool minute_ovflw = false;
 
 	if (entry->minute == BT_MESH_SCHEDULER_EVERY_15_MINUTES) {
-		info->start_minute = 15 * ceiling_fraction(current_local->tm_min + 1, 15);
+		info->start_minute = 15 * DIV_ROUND_UP(current_local->tm_min + 1, 15);
 		minute_ovflw = info->start_minute == 60;
 		sched_time->tm_min = minute_ovflw ? 0 : info->start_minute;
 	} else if (entry->minute == BT_MESH_SCHEDULER_EVERY_20_MINUTES) {
-		info->start_minute = 20 * ceiling_fraction(current_local->tm_min + 1, 20);
+		info->start_minute = 20 * DIV_ROUND_UP(current_local->tm_min + 1, 20);
 		minute_ovflw = info->start_minute == 60;
 		sched_time->tm_min = minute_ovflw ? 0 : info->start_minute;
 	} else if (entry->minute == BT_MESH_SCHEDULER_ONCE_AN_HOUR) {
@@ -274,11 +273,11 @@ static int second_handler(struct tm *sched_time, struct tm *current_local,
 	bool second_ovflw = false;
 
 	if (entry->second == BT_MESH_SCHEDULER_EVERY_15_SECONDS) {
-		info->start_second = 15 * ceiling_fraction(current_local->tm_sec + 1, 15);
+		info->start_second = 15 * DIV_ROUND_UP(current_local->tm_sec + 1, 15);
 		second_ovflw = info->start_second == 60;
 		sched_time->tm_sec = second_ovflw ? 0 : info->start_second;
 	} else if (entry->second == BT_MESH_SCHEDULER_EVERY_20_SECONDS) {
-		info->start_second = 20 * ceiling_fraction(current_local->tm_sec + 1, 20);
+		info->start_second = 20 * DIV_ROUND_UP(current_local->tm_sec + 1, 20);
 		second_ovflw = info->start_second == 60;
 		sched_time->tm_sec = second_ovflw ? 0 : info->start_second;
 	} else if (entry->second == BT_MESH_SCHEDULER_ONCE_A_MINUTE) {
@@ -445,7 +444,7 @@ static void schedule_action(struct bt_mesh_scheduler_srv *srv,
 	LOG_DBG("      second: %d", current_local->tm_sec);
 
 	if (!convert_scheduler_time_to_tm(&sched_time, current_local, entry)) {
-		LOG_WRN("Cannot convert scheduled action time to struct tm");
+		LOG_DBG("Cannot convert scheduled action time to struct tm");
 		return;
 	}
 
@@ -623,19 +622,11 @@ static int action_set(struct bt_mesh_model *model, struct bt_mesh_msg_ctx *ctx,
 {
 	struct bt_mesh_scheduler_srv *srv = model->user_data;
 	uint8_t idx;
-	struct bt_mesh_schedule_entry tmp;
+	struct bt_mesh_schedule_entry tmp = { 0 };
 
 	scheduler_action_unpack(buf, &idx, &tmp);
 
-	/* check against prohibited values */
-	if (tmp.year > BT_MESH_SCHEDULER_ANY_YEAR ||
-	    tmp.day > MAX_DAY ||
-	    tmp.hour > BT_MESH_SCHEDULER_ONCE_A_DAY ||
-	    tmp.minute > BT_MESH_SCHEDULER_ONCE_AN_HOUR ||
-	    tmp.second > BT_MESH_SCHEDULER_ONCE_A_MINUTE ||
-	    (tmp.action > BT_MESH_SCHEDULER_SCENE_RECALL &&
-			    tmp.action != BT_MESH_SCHEDULER_NO_ACTIONS) ||
-	    idx >= BT_MESH_SCHEDULER_ACTION_ENTRY_COUNT) {
+	if (!scheduler_action_valid(&tmp, idx)) {
 		return -EINVAL;
 	}
 

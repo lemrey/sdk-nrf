@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.20.0)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(asset_tracker_v2)
+zephyr_compile_definitions(PROJECT_NAME=${PROJECT_NAME})
 
 # NORDIC SDK APP START
 target_sources(app PRIVATE src/main.c)
@@ -34,4 +35,7 @@ if (CONFIG_BOARD_QEMU_X86 OR CONFIG_BOARD_NATIVE_POSIX)
         # Make folder containing certificates global so that it can be located by the configured
         # cloud library.
         zephyr_include_directories(src/cloud-certs)
+
+        target_compile_options(app PRIVATE
+	        -DCONFIG_LTE_NEIGHBOR_CELLS_MAX=10)
 endif()
