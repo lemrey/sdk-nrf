@@ -1,0 +1,24 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+ / {
+    chosen {
+        zephyr,console = &uart20;
+        zephyr,shell-uart = &uart20;
+    };
+};
+
+
+&systick {
+	status = "okay";
+};
+
+/* Matter needs at lease 1 MB Flash size, instead of default 344 kB */
+&slot0_partition {
+	label = "image-0";
+	reg = <0x00054000 DT_SIZE_K(1024)>;
+};
