@@ -100,7 +100,7 @@
 };
 
 &uart135 {
-	status = "okay";
+	status = "reserved";
 };
 
 &gpio9 {

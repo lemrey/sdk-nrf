@@ -130,12 +130,12 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: f52379d86045aca2ea339a44c386dea3df272cac
+      revision: 62c405fb8635eab2935b8de335bc7bc53f0d2c3d
     - name: sdk-secdom
       revision: f82680daeb73cc7008393ea927a72bc3dc2da185
       path: core_fw/secdom
     - name: nrf-regtool
-      revision: bfb744027c761595320fa6aeceb20d0f633aa829
+      revision: 72a88481d00d772585bd7a7c325916acc645e5c1
       path: modules/lib/nrf-regtool
     - name: nrfs
       path: modules/lib/nrfs

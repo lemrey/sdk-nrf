@@ -77,7 +77,7 @@
 };
 
 &uart135 {
-	status = "okay";
+	status = "reserved";
 };
 
 &grtc {
