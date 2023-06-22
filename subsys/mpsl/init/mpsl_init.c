@@ -17,6 +17,9 @@
 #if defined(CONFIG_NRFX_DPPI)
 #include <nrfx_dppi.h>
 #endif
+#if IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
+#include <nrfx_grtc.h>
+#endif
 
 LOG_MODULE_REGISTER(mpsl_init, CONFIG_MPSL_LOG_LEVEL);
 
@@ -50,8 +53,76 @@ const uint32_t z_mpsl_used_nrf_ppi_groups;
 #define MPSL_RADIO_IRQn RADIO_0_IRQn
 #elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
 #define MPSL_TIMER_IRQn TIMER020_IRQn
-#define MPSL_RTC_IRQn RTC_IRQn
+#define MPSL_RTC_IRQn GRTC_0_IRQn /* non-secure GRTC IRQ. */
 #define MPSL_RADIO_IRQn RADIO_0_IRQn
+
+/* Basic build time sanity checking */
+#define MPSL_RESERVED_GRTC_CHANNELS ((1U << 8) | (1U << 9) | (1U << 10) | (1U << 11) | (1U << 12))
+#define MPSL_RESERVED_DPPI_SOURCE_CHANNELS ((1U << 0) | (1U << 1))
+#define MPSL_RESERVED_DPPI_SINK_CHANNELS ((1U << 0) | (1U << 1))
+#define MPSL_RESERVED_IPCT_SOURCE_CHANNELS ((1U << 0) | (1U << 1))
+
+BUILD_ASSERT(MPSL_RTC_IRQn != GRTC_IRQn, "MPSL requires a dedicated GRTC IRQ");
+
+#define CHECK_IRQ(val, _) (DT_IRQ_BY_IDX(DT_NODELABEL(grtc), val, irq) == MPSL_RTC_IRQn)
+#define NUM_IRQS DT_NUM_IRQS(DT_NODELABEL(grtc))
+/* Note: MPSL_RTC_IRQn is an enum value so this macro will be a concatenation of conditions and not 0 or 1 */
+#define MPSL_IRQ_IN_DT (LISTIFY(NUM_IRQS, CHECK_IRQ, (|)))
+
+BUILD_ASSERT(MPSL_IRQ_IN_DT, "The MPSL GRTC IRQ is not in the device tree");
+
+BUILD_ASSERT((NRFX_GRTC_CONFIG_FORBIDDEN_CC_CHANNEL_MASK & MPSL_RESERVED_GRTC_CHANNELS) ==
+		     MPSL_RESERVED_GRTC_CHANNELS,
+	     "The GRTC channels used by MPSL must not be used by zephyr");
+
+/* check the GRTC source channels.
+ * i.e. ensure something similar to this is present in the DT
+ * &dppic132 {
+ *   owned-channels = <0 1>;
+ *   source-channels = <0 1>;
+ * }; */
+#define SHIFT_DPPI_SOURCE_CHANNELS(val, _)                                                         \
+	(1 << (DT_PROP_BY_IDX(DT_NODELABEL(dppic132), source_channels, val)))
+#define NUM_DPPI_SOURCE_CHANNELS DT_PROP_LEN(DT_NODELABEL(dppic132), source_channels)
+#define DPPI_SOURCE_CHANNELS (LISTIFY(NUM_DPPI_SOURCE_CHANNELS, SHIFT_DPPI_SOURCE_CHANNELS, (|)))
+
+BUILD_ASSERT((DPPI_SOURCE_CHANNELS & MPSL_RESERVED_DPPI_SOURCE_CHANNELS) ==
+		     MPSL_RESERVED_DPPI_SOURCE_CHANNELS,
+	     "The required DPPIC channels in the GRTC domain are not reserved");
+
+/* check the GRTC sink channels.
+ * i.e. ensure something similar to this is present in the DT
+ * &dppic130 {
+ *   owned-channels = <0 1>;
+ *   sink-channels = <0 1>;
+ * }; */
+#define SHIFT_DPPI_SINK_CHANNELS(val, _)                                                           \
+	(1 << (DT_PROP_BY_IDX(DT_NODELABEL(dppic130), sink_channels, val)))
+#define NUM_DPPI_SINK_CHANNELS DT_PROP_LEN(DT_NODELABEL(dppic130), sink_channels)
+#define DPPI_SINK_CHANNELS (LISTIFY(NUM_DPPI_SINK_CHANNELS, SHIFT_DPPI_SINK_CHANNELS, (|)))
+
+BUILD_ASSERT((DPPI_SINK_CHANNELS & MPSL_RESERVED_DPPI_SINK_CHANNELS) ==
+		     MPSL_RESERVED_DPPI_SINK_CHANNELS,
+	     "The required DPPIC channels in the IPCT domain are not reserved");
+
+/* check the IPCT source channels.
+ * i.e. ensure something similar to this is present in the DT
+ * &ipct130 {
+ *   owned-channels = <0 1>;
+ *   source-channel-links = <0 3 0
+ *                           1 3 1>;
+ * }; */
+#define SHIFT_IPCT_SOURCE_CHANNELS(val, _)                                                         \
+	(1 << (DT_PROP_BY_IDX(DT_NODELABEL(ipct130), owned_channels, val)))
+#define NUM_IPCT_SOURCE_CHANNELS DT_PROP_LEN(DT_NODELABEL(ipct130), owned_channels)
+#define IPCT_SOURCE_CHANNELS (LISTIFY(NUM_IPCT_SOURCE_CHANNELS, SHIFT_IPCT_SOURCE_CHANNELS, (|)))
+
+/* NOTE: this is not checking the source/sink allocation as the device tree property is an
+   array of triplets that is difficult to separate using macros. */
+BUILD_ASSERT((IPCT_SOURCE_CHANNELS & MPSL_RESERVED_IPCT_SOURCE_CHANNELS) ==
+		     MPSL_RESERVED_IPCT_SOURCE_CHANNELS,
+	     "The required IPCT source channels are not reserved");
+
 #endif
 
 #define MPSL_LOW_PRIO (4)
