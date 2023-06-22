@@ -594,15 +594,6 @@
   comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
-    - sample.homekit.lock.multiprotocol.mtd.eui.nfc.hdfu.release
-    - sample.homekit.lock.multiprotocol.mtd.eui.nfc.ndfu.debug
-    - sample.homekit.light_bulb.multiprotocol.ftd.eui.qrc.ndfu.release
-    - sample.homekit.light_bulb.multiprotocol.ftd.eui.nfc.btp.hdfu.debug
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp
-  comment: "Configurations excluded due to FLASH overflow during build"
-
-- scenarios:
     - sample.ant_advanced_burst
     - sample.ant_background_scanning
     - sample.ant_broadcast_rx
