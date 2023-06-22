@@ -44,13 +44,18 @@
 	};
 };
 
+&cpuppr {
+	loader-img-dst = <&ppr_code>;
+	status = "okay";
+};
+
 &mram0 {
 	/* Expand to include PPR */
 	reg = <0xe0aa000 DT_SIZE_K(576)>;
 };
 
 &vevif_cpuppr {
-	status = "okay";
+       status = "okay";
 };
 
 /* ram3x_cpuapp buffer is used by App core UART driver. */
@@ -72,11 +77,6 @@
 	/* Channels 6 and 7 are owned by App but used by PPR. */
 	child-owned-channels = <6 7>;
 	nonsecure-channels = <6 7>;
-};
-
-/* Enable PPR clic so App could start PPR. */
-&clic_cpuppr {
-	status = "okay";
 };
 
 /* Disable systick for App core, GRTC is used as tick source. */
