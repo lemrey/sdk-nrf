@@ -18,6 +18,8 @@ const struct {} led_state_def_include_once;
 enum led_id {
 	LED_ID_0,
 	LED_ID_1,
+	LED_ID_2,
+	LED_ID_3,
 
 	LED_ID_COUNT
 };
