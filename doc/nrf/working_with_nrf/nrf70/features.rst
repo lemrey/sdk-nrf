@@ -45,7 +45,6 @@ Devices in the nRF70 Series are supported by the following boards in the `Zephyr
      - ``nrf7002dk_nrf5340_cpuapp``
      - | `Product Specification <Product specification for nRF70 Series devices_>`_
        | `User Guide <nRF7002 DK Hardware_>`_
-     -
 
 Supported Wi-Fi standards and modes
 ===================================
