@@ -677,6 +677,7 @@
   comment: "TFM-M doesn't build in HCS"
 
 - scenarios:
+    - boot_chains.secure_boot_and_bootloader_mcuboot
     - sample.openthread.cli.low_power
     - tfm.psa_test_crypto_lvl1
     - tfm.psa_test_crypto_lvl2
