@@ -1080,7 +1080,7 @@
 
 .. _`SIGMA`: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
-_`WPA Supplicant`: https://w1.fi/wpa_supplicant/
+.. _`WPA Supplicant`: https://w1.fi/wpa_supplicant/
 
 .. _`Wi-Fi Alliance`: https://www.wi-fi.org/
 
