@@ -179,5 +179,3 @@ Documentation
 =============
 
 * Added documentation for :ref:`ug_nrf54h`.
-
-.. |no_changes_yet_note| replace:: No changes since the latest |NCS| release.
