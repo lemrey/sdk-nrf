@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
 #include <nrf_modem_gnss.h>
+#include <nrf_modem_at.h>
 #include <cJSON.h>
 #include <modem/modem_info.h>
 #include <net/nrf_cloud_codec.h>
@@ -116,6 +117,20 @@ int nrf_cloud_agps_request(const struct nrf_modem_gnss_agnss_data_frame *request
 #endif
 }
 
+static bool qzss_assistance_is_supported(void)
+{
+	char resp[32];
+
+	if (nrf_modem_at_cmd(resp, sizeof(resp), "AT+CGMM") == 0) {
+		/* nRF9160 does not support QZSS assistance, while nRF91x1 do. */
+		if (strstr(resp, "nRF9160") != NULL) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int nrf_cloud_agps_request_all(void)
 {
 	const uint32_t mask = IS_ENABLED(CONFIG_NRF_CLOUD_PGPS) ? 0u : 0xFFFFFFFFu;
@@ -133,6 +148,13 @@ int nrf_cloud_agps_request_all(void)
 		.system[0].sv_mask_alm = mask
 	};
 
+	if (qzss_assistance_is_supported()) {
+		request.system_count = 2;
+		request.system[1].system_id = NRF_MODEM_GNSS_SYSTEM_QZSS;
+		request.system[1].sv_mask_ephe = 0x3ff;
+		request.system[1].sv_mask_alm = 0x3ff;
+	}
+
 	return nrf_cloud_agps_request(&request);
 }
 #endif /* CONFIG_NRF_CLOUD_AGPS */
@@ -146,12 +168,11 @@ static int send_to_modem(void *data, size_t data_len, uint16_t type)
 	return nrf_modem_gnss_agnss_write(data, data_len, type);
 }
 
-static int copy_utc(struct nrf_modem_gnss_agnss_gps_data_utc *dst,
-		    struct nrf_cloud_apgs_element *src)
+static void copy_utc(struct nrf_modem_gnss_agnss_gps_data_utc *dst,
+		     struct nrf_cloud_apgs_element *src)
 {
-	if ((src == NULL) || (dst == NULL)) {
-		return -EINVAL;
-	}
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
 
 	dst->a1		= src->utc->a1;
 	dst->a0		= src->utc->a0;
@@ -161,16 +182,13 @@ static int copy_utc(struct nrf_modem_gnss_agnss_gps_data_utc *dst,
 	dst->wn_lsf	= src->utc->wn_lsf;
 	dst->dn		= src->utc->dn;
 	dst->delta_tlsf	= src->utc->delta_tlsf;
-
-	return 0;
 }
 
-static int copy_almanac(struct nrf_modem_gnss_agnss_gps_data_almanac *dst,
-			struct nrf_cloud_apgs_element *src)
+static void copy_almanac(struct nrf_modem_gnss_agnss_gps_data_almanac *dst,
+			 struct nrf_cloud_apgs_element *src)
 {
-	if ((src == NULL) || (dst == NULL)) {
-		return -EINVAL;
-	}
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
 
 	dst->sv_id	= src->almanac->sv_id;
 	dst->wn		= src->almanac->wn;
@@ -186,16 +204,13 @@ static int copy_almanac(struct nrf_modem_gnss_agnss_gps_data_almanac *dst,
 	dst->m0		= src->almanac->m0;
 	dst->af0	= src->almanac->af0;
 	dst->af1	= src->almanac->af1;
-
-	return 0;
 }
 
-static int copy_ephemeris(struct nrf_modem_gnss_agnss_gps_data_ephemeris *dst,
-			  struct nrf_cloud_apgs_element *src)
+static void copy_ephemeris(struct nrf_modem_gnss_agnss_gps_data_ephemeris *dst,
+			   struct nrf_cloud_apgs_element *src)
 {
-	if ((src == NULL) || (dst == NULL)) {
-		return -EINVAL;
-	}
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
 
 	dst->sv_id	= src->ephemeris->sv_id;
 	dst->health	= src->ephemeris->health;
@@ -223,16 +238,13 @@ static int copy_ephemeris(struct nrf_modem_gnss_agnss_gps_data_ephemeris *dst,
 	dst->crc	= src->ephemeris->crc;
 	dst->cic	= src->ephemeris->cic;
 	dst->cuc	= src->ephemeris->cuc;
-
-	return 0;
 }
 
-static int copy_klobuchar(struct nrf_modem_gnss_agnss_data_klobuchar *dst,
-			  struct nrf_cloud_apgs_element *src)
+static void copy_klobuchar(struct nrf_modem_gnss_agnss_data_klobuchar *dst,
+			   struct nrf_cloud_apgs_element *src)
 {
-	if ((src == NULL) || (dst == NULL)) {
-		return -EINVAL;
-	}
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
 
 	dst->alpha0	= src->ion_correction.klobuchar->alpha0;
 	dst->alpha1	= src->ion_correction.klobuchar->alpha1;
@@ -242,32 +254,26 @@ static int copy_klobuchar(struct nrf_modem_gnss_agnss_data_klobuchar *dst,
 	dst->beta1	= src->ion_correction.klobuchar->beta1;
 	dst->beta2	= src->ion_correction.klobuchar->beta2;
 	dst->beta3	= src->ion_correction.klobuchar->beta3;
-
-	return 0;
 }
 
-static int copy_nequick(struct nrf_modem_gnss_agnss_data_nequick *dst,
-			struct nrf_cloud_apgs_element *src)
+static void copy_nequick(struct nrf_modem_gnss_agnss_data_nequick *dst,
+			 struct nrf_cloud_apgs_element *src)
 {
-	if ((src == NULL) || (dst == NULL)) {
-		return -EINVAL;
-	}
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
 
 	dst->ai0 = src->ion_correction.nequick->ai0;
 	dst->ai1 = src->ion_correction.nequick->ai1;
 	dst->ai2 = src->ion_correction.nequick->ai2;
 	dst->storm_cond = src->ion_correction.nequick->storm_cond;
 	dst->storm_valid = src->ion_correction.nequick->storm_valid;
-
-	return 0;
 }
 
-static int copy_location(struct nrf_modem_gnss_agnss_data_location *dst,
-			 struct nrf_cloud_apgs_element *src)
+static void copy_location(struct nrf_modem_gnss_agnss_data_location *dst,
+			  struct nrf_cloud_apgs_element *src)
 {
-	if ((src == NULL) || (dst == NULL)) {
-		return -EINVAL;
-	}
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
 
 	dst->latitude		= src->location->latitude;
 	dst->longitude		= src->location->longitude;
@@ -277,16 +283,13 @@ static int copy_location(struct nrf_modem_gnss_agnss_data_location *dst,
 	dst->orientation_major	= src->location->orientation_major;
 	dst->unc_altitude	= src->location->unc_altitude;
 	dst->confidence		= src->location->confidence;
-
-	return 0;
 }
 
-static int copy_time_and_tow(struct nrf_modem_gnss_agnss_gps_data_system_time_and_sv_tow *dst,
-			     struct nrf_cloud_apgs_element *src)
+static void copy_time_and_tow(struct nrf_modem_gnss_agnss_gps_data_system_time_and_sv_tow *dst,
+			      struct nrf_cloud_apgs_element *src)
 {
-	if ((src == NULL) || (dst == NULL)) {
-		return -EINVAL;
-	}
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
 
 	dst->date_day		= src->time_and_tow->date_day;
 	dst->time_full_s	= src->time_and_tow->time_full_s;
@@ -297,15 +300,33 @@ static int copy_time_and_tow(struct nrf_modem_gnss_agnss_gps_data_system_time_an
 		LOG_DBG("SW TOW mask is zero, not copying TOW array");
 		memset(dst->sv_tow, 0, sizeof(dst->sv_tow));
 
-		return 0;
+		return;
 	}
 
 	for (size_t i = 0; i < NRF_CLOUD_AGPS_MAX_SV_TOW; i++) {
 		dst->sv_tow[i].flags = src->time_and_tow->sv_tow[i].flags;
 		dst->sv_tow[i].tlm = src->time_and_tow->sv_tow[i].tlm;
 	}
+}
 
-	return 0;
+static void copy_integrity_gps(struct nrf_modem_gnss_agps_data_integrity *dst,
+			       struct nrf_cloud_apgs_element *src)
+{
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
+
+	dst->integrity_mask = src->integrity->integrity_mask;
+}
+
+static void copy_integrity_qzss(struct nrf_modem_gnss_agnss_data_integrity *dst,
+				struct nrf_cloud_apgs_element *src)
+{
+	__ASSERT_NO_MSG(dst != NULL);
+	__ASSERT_NO_MSG(src != NULL);
+
+	dst->signal_count = 1;
+	dst->signal[0].signal_id = NRF_MODEM_GNSS_SIGNAL_QZSS_L1_CA;
+	dst->signal[0].integrity_mask = src->integrity->integrity_mask;
 }
 
 static int agps_send_to_modem(struct nrf_cloud_apgs_element *agps_data)
@@ -326,31 +347,42 @@ static int agps_send_to_modem(struct nrf_cloud_apgs_element *agps_data)
 		return send_to_modem(&utc, sizeof(utc),
 				     NRF_MODEM_GNSS_AGNSS_GPS_UTC_PARAMETERS);
 	}
-	case NRF_CLOUD_AGPS_EPHEMERIDES: {
+	case NRF_CLOUD_AGPS_EPHEMERIDES:
+	case NRF_CLOUD_AGNSS_QZSS_EPHEMERIDES: {
 		struct nrf_modem_gnss_agnss_gps_data_ephemeris ephemeris;
 
-		processed.system[0].sv_mask_ephe |= (1 << (agps_data->ephemeris->sv_id - 1));
+		if (agps_data->type == NRF_CLOUD_AGPS_EPHEMERIDES) {
+			processed.system[0].sv_mask_ephe |=
+				(1 << (agps_data->ephemeris->sv_id - 1));
 #if defined(CONFIG_NRF_CLOUD_PGPS)
-		if (agps_data->ephemeris->health ==
-		    NRF_CLOUD_PGPS_EMPTY_EPHEM_HEALTH) {
-			LOG_DBG("Skipping empty ephemeris for sv %u",
-				agps_data->ephemeris->sv_id);
-			return 0;
-		}
+			if (agps_data->ephemeris->health ==
+			    NRF_CLOUD_PGPS_EMPTY_EPHEM_HEALTH) {
+				LOG_DBG("Skipping empty ephemeris for sv %u",
+					agps_data->ephemeris->sv_id);
+				return 0;
+			}
 #endif
+		}
+
 		copy_ephemeris(&ephemeris, agps_data);
-		LOG_DBG("A-GPS type: NRF_CLOUD_AGPS_EPHEMERIDES %d",
+		LOG_DBG("A-GNSS type: %s EPHEMERIDES %d",
+			(agps_data->type == NRF_CLOUD_AGPS_EPHEMERIDES) ? "GPS" : "QZSS",
 			agps_data->ephemeris->sv_id);
 
 		return send_to_modem(&ephemeris, sizeof(ephemeris),
 				     NRF_MODEM_GNSS_AGNSS_GPS_EPHEMERIDES);
 	}
-	case NRF_CLOUD_AGPS_ALMANAC: {
+	case NRF_CLOUD_AGPS_ALMANAC:
+	case NRF_CLOUD_AGNSS_QZSS_ALMANAC: {
 		struct nrf_modem_gnss_agnss_gps_data_almanac almanac;
 
-		processed.system[0].sv_mask_alm |= (1 << (agps_data->almanac->sv_id - 1));
+		if (agps_data->type == NRF_CLOUD_AGPS_ALMANAC) {
+			processed.system[0].sv_mask_alm |= (1 << (agps_data->almanac->sv_id - 1));
+		}
+
 		copy_almanac(&almanac, agps_data);
-		LOG_DBG("A-GPS type: NRF_CLOUD_AGPS_ALMANAC %d",
+		LOG_DBG("A-GNSS type: %s ALMANAC %d",
+			(agps_data->type == NRF_CLOUD_AGPS_ALMANAC) ? "GPS" : "QZSS",
 			agps_data->almanac->sv_id);
 
 		return send_to_modem(&almanac, sizeof(almanac),
@@ -400,13 +432,26 @@ static int agps_send_to_modem(struct nrf_cloud_apgs_element *agps_data)
 		return send_to_modem(&location, sizeof(location),
 				     NRF_MODEM_GNSS_AGNSS_LOCATION);
 	}
-	case NRF_CLOUD_AGPS_INTEGRITY:
-		LOG_DBG("A-GPS type: NRF_CLOUD_AGPS_INTEGRITY");
+	case NRF_CLOUD_AGPS_INTEGRITY: {
+		struct nrf_modem_gnss_agps_data_integrity integrity = {0};
 
 		processed.data_flags |= NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
-		return send_to_modem(agps_data->integrity,
-				     sizeof(*(agps_data->integrity)),
+		copy_integrity_gps(&integrity, agps_data);
+		LOG_DBG("A-GPS type: NRF_CLOUD_AGPS_INTEGRITY");
+
+		return send_to_modem(&integrity, sizeof(integrity),
 				     NRF_MODEM_GNSS_AGPS_INTEGRITY);
+	}
+	case NRF_CLOUD_AGNSS_QZSS_INTEGRITY: {
+		struct nrf_modem_gnss_agnss_data_integrity integrity = {0};
+
+		processed.data_flags |= NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
+		copy_integrity_qzss(&integrity, agps_data);
+		LOG_DBG("A-GNSS type: NRF_CLOUD_AGNSS_QZSS_INTEGRITY");
+
+		return send_to_modem(&integrity, sizeof(integrity),
+				     NRF_MODEM_GNSS_AGNSS_INTEGRITY);
+	}
 	default:
 		LOG_WRN("Unknown AGPS data type: %d", agps_data->type);
 		break;
@@ -452,10 +497,12 @@ static size_t get_next_agps_element(struct nrf_cloud_apgs_element *element,
 		len += sizeof(struct nrf_cloud_agps_utc);
 		break;
 	case NRF_CLOUD_AGPS_EPHEMERIDES:
+	case NRF_CLOUD_AGNSS_QZSS_EPHEMERIDES:
 		element->ephemeris = (struct nrf_cloud_agps_ephemeris *)(buf + len);
 		len += sizeof(struct nrf_cloud_agps_ephemeris);
 		break;
 	case NRF_CLOUD_AGPS_ALMANAC:
+	case NRF_CLOUD_AGNSS_QZSS_ALMANAC:
 		element->almanac = (struct nrf_cloud_agps_almanac *)(buf + len);
 		len += sizeof(struct nrf_cloud_agps_almanac);
 		break;
@@ -485,6 +532,7 @@ static size_t get_next_agps_element(struct nrf_cloud_apgs_element *element,
 		len += sizeof(struct nrf_cloud_agps_location);
 		break;
 	case NRF_CLOUD_AGPS_INTEGRITY:
+	case NRF_CLOUD_AGNSS_QZSS_INTEGRITY:
 		element->integrity =
 			(struct nrf_cloud_agps_integrity *)(buf + len);
 		len += sizeof(struct nrf_cloud_agps_integrity);
@@ -598,8 +646,7 @@ int nrf_cloud_agps_process(const char *buf, size_t buf_len)
 		err = agps_send_to_modem(&element);
 		k_mutex_unlock(&processed_lock);
 		if (err) {
-			LOG_ERR("Failed to send data to modem, error: %d", err);
-			break;
+			LOG_WRN("Failed to send data to modem, error: %d", err);
 		}
 	}
 

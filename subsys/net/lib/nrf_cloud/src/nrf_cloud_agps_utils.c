@@ -134,7 +134,7 @@ static void print_gnss_integrity(struct nrf_modem_gnss_agnss_data_integrity *dat
 {
 	printk("integrity\n");
 	for (int i = 0; i < data->signal_count; i++) {
-		printk("\tsignal_id: %d, integrity_mask: 0x%16llx\n",
+		printk("\tsignal_id: %d, integrity_mask: 0x%llx\n",
 		       data->signal[i].signal_id, data->signal[i].integrity_mask);
 	}
 }
