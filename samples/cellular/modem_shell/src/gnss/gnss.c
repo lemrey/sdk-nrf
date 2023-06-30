@@ -77,7 +77,7 @@ static enum gnss_operation_mode operation_mode = GNSS_OP_MODE_CONTINUOUS;
 static uint32_t periodic_fix_interval;
 static uint32_t periodic_fix_retry;
 static bool nmea_mask_set;
-static struct nrf_modem_gnss_agnss_data_frame agps_need;
+static struct nrf_modem_gnss_agnss_data_frame agnss_need;
 static uint8_t gnss_elevation = 5; /* init to modem default threshold angle */
 
 #if defined(CONFIG_NRF_CLOUD_AGPS) || defined(CONFIG_SUPL_CLIENT_LIB)
@@ -409,6 +409,23 @@ static void get_agps_data_flags_string(char *flags_string, uint32_t data_flags)
 	}
 }
 
+static const char *get_system_string(uint8_t system_id)
+{
+	switch (system_id) {
+	case NRF_MODEM_GNSS_SYSTEM_INVALID:
+		return "invalid";
+
+	case NRF_MODEM_GNSS_SYSTEM_GPS:
+		return "GPS";
+
+	case NRF_MODEM_GNSS_SYSTEM_QZSS:
+		return "QZSS";
+
+	default:
+		return "unknown";
+	}
+}
+
 static void data_handler_thread_fn(void)
 {
 	struct event_item event;
@@ -451,15 +468,19 @@ static void data_handler_thread_fn(void)
 					flags_string,
 					agnss_data_frame->data_flags);
 
-				mosh_print(
-					"GNSS: A-GNSS data needed (ephe: 0x%08x, alm: 0x%08x, "
-					"flags: %s)",
-					(uint32_t)agnss_data_frame->system[0].sv_mask_ephe,
-					(uint32_t)agnss_data_frame->system[0].sv_mask_alm,
-					flags_string);
+				mosh_print("GNSS: A-GNSS data needed: Flags: %s", flags_string);
+				for (int i = 0; i < agnss_data_frame->system_count; i++) {
+					mosh_print(
+						"GNSS: A-GNSS data needed: "
+						"%s ephe: 0x%llx, alm: 0x%llx",
+						get_system_string(
+							agnss_data_frame->system[i].system_id),
+						agnss_data_frame->system[i].sv_mask_ephe,
+						agnss_data_frame->system[i].sv_mask_alm);
+				}
 			}
 
-			memcpy(&agps_need, event.data, sizeof(agps_need));
+			memcpy(&agnss_need, event.data, sizeof(agnss_need));
 
 #if defined(CONFIG_NRF_CLOUD_AGPS) || defined(CONFIG_SUPL_CLIENT_LIB)
 			if (agps_automatic) {
@@ -583,10 +604,10 @@ static void get_filtered_agps_request(struct nrf_modem_gnss_agnss_data_frame *ag
 {
 	memset(agnss_request, 0, sizeof(*agnss_request));
 
-	agnss_request->system_count = agps_need.system_count;
+	agnss_request->system_count = agnss_need.system_count;
 
-	for (int i = 0; i < agps_need.system_count; i++) {
-		const struct nrf_modem_gnss_agnss_system_data_need *src = &agps_need.system[i];
+	for (int i = 0; i < agnss_need.system_count; i++) {
+		const struct nrf_modem_gnss_agnss_system_data_need *src = &agnss_need.system[i];
 		struct nrf_modem_gnss_agnss_system_data_need *dst = &agnss_request->system[i];
 
 		dst->system_id = src->system_id;
@@ -601,27 +622,27 @@ static void get_filtered_agps_request(struct nrf_modem_gnss_agnss_data_frame *ag
 
 	if (agps_inject_utc) {
 		agnss_request->data_flags |=
-			agps_need.data_flags & NRF_MODEM_GNSS_AGNSS_GPS_UTC_REQUEST;
+			agnss_need.data_flags & NRF_MODEM_GNSS_AGNSS_GPS_UTC_REQUEST;
 	}
 	if (agps_inject_klob) {
 		agnss_request->data_flags |=
-			agps_need.data_flags & NRF_MODEM_GNSS_AGNSS_KLOBUCHAR_REQUEST;
+			agnss_need.data_flags & NRF_MODEM_GNSS_AGNSS_KLOBUCHAR_REQUEST;
 	}
 	if (agps_inject_neq) {
 		agnss_request->data_flags |=
-			agps_need.data_flags & NRF_MODEM_GNSS_AGNSS_NEQUICK_REQUEST;
+			agnss_need.data_flags & NRF_MODEM_GNSS_AGNSS_NEQUICK_REQUEST;
 	}
 	if (agps_inject_time) {
 		agnss_request->data_flags |=
-			agps_need.data_flags & NRF_MODEM_GNSS_AGNSS_GPS_SYS_TIME_AND_SV_TOW_REQUEST;
+			agnss_need.data_flags & NRF_MODEM_GNSS_AGNSS_GPS_SYS_TIME_AND_SV_TOW_REQUEST;
 	}
 	if (agps_inject_pos) {
 		agnss_request->data_flags |=
-			agps_need.data_flags & NRF_MODEM_GNSS_AGNSS_POSITION_REQUEST;
+			agnss_need.data_flags & NRF_MODEM_GNSS_AGNSS_POSITION_REQUEST;
 	}
 	if (agps_inject_int) {
 		agnss_request->data_flags |=
-			agps_need.data_flags & NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
+			agnss_need.data_flags & NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
 	}
 }
 
@@ -638,17 +659,22 @@ static void get_agps_data(struct k_work *item)
 	get_agps_data_flags_string(flags_string, agnss_request.data_flags);
 
 	mosh_print(
-		"GNSS: Getting A-GPS data from %s (ephe: 0x%08x, alm: 0x%08x, flags: %s)...",
+		"GNSS: Getting A-GNSS data from %s...",
 #if defined(CONFIG_LWM2M_CLIENT_UTILS_LOCATION_ASSIST_AGPS)
-		"LwM2M",
+		"LwM2M"
 #elif defined(CONFIG_NRF_CLOUD_AGPS)
-		"nRF Cloud",
+		"nRF Cloud"
 #else
-		"SUPL",
+		"SUPL"
 #endif
-		(uint32_t)agnss_request.system[0].sv_mask_ephe,
-		(uint32_t)agnss_request.system[0].sv_mask_alm,
-		flags_string);
+		);
+	mosh_print("GNSS: A-GNSS request: flags: %s", flags_string);
+	for (int i = 0; i < agnss_request.system_count; i++) {
+		mosh_print("GNSS: A-GNSS request: %s sv_mask_ephe: 0x%llx, sv_mask_alm: 0x%llx",
+			get_system_string(agnss_request.system[i].system_id),
+			agnss_request.system[i].sv_mask_ephe,
+			agnss_request.system[i].sv_mask_alm);
+	}
 
 #if defined(CONFIG_LWM2M_CLIENT_UTILS_LOCATION_ASSIST_AGPS)
 	if (!cloud_lwm2m_is_connected()) {
@@ -941,7 +967,7 @@ static void inject_pgps_data_work_fn(struct k_work *work)
 
 	mosh_print("GNSS: Injecting ephemerides to modem...");
 
-	err = nrf_cloud_pgps_inject(prediction, &agps_need);
+	err = nrf_cloud_pgps_inject(prediction, &agnss_need);
 	if (err) {
 		mosh_error("GNSS: Failed to inject ephemerides to modem");
 	}
@@ -1525,23 +1551,45 @@ int gnss_set_agps_automatic(bool value)
 #endif
 }
 
+#if defined(CONFIG_NRF_CLOUD_AGPS)
+static bool qzss_assistance_is_supported(void)
+{
+	char resp[32];
+
+	if (nrf_modem_at_cmd(resp, sizeof(resp), "AT+CGMM") == 0) {
+		/* nRF9160 does not support QZSS assistance, while nRF91x1 do. */
+		if (strstr(resp, "nRF9160") != NULL) {
+			return false;
+		}
+	}
+
+	return true;
+}
+#endif /* CONFIG_NRF_CLOUD_AGPS */
+
 int gnss_inject_agps_data(void)
 {
 #if defined(CONFIG_NRF_CLOUD_AGPS) || defined(CONFIG_SUPL_CLIENT_LIB)
 	gnss_api_init();
 
 	/* Pretend modem requested all A-GPS data */
-	agps_need.data_flags =
+	agnss_need.data_flags =
 		NRF_MODEM_GNSS_AGNSS_GPS_UTC_REQUEST |
 		NRF_MODEM_GNSS_AGNSS_KLOBUCHAR_REQUEST |
 		NRF_MODEM_GNSS_AGNSS_NEQUICK_REQUEST |
 		NRF_MODEM_GNSS_AGNSS_GPS_SYS_TIME_AND_SV_TOW_REQUEST |
 		NRF_MODEM_GNSS_AGNSS_POSITION_REQUEST |
 		NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
-	agps_need.system_count = 1;
-	agps_need.system[0].system_id = NRF_MODEM_GNSS_SYSTEM_GPS;
-	agps_need.system[0].sv_mask_ephe = 0xffffffff;
-	agps_need.system[0].sv_mask_alm = 0xffffffff;
+	agnss_need.system_count = 1;
+	agnss_need.system[0].system_id = NRF_MODEM_GNSS_SYSTEM_GPS;
+	agnss_need.system[0].sv_mask_ephe = 0xffffffff;
+	agnss_need.system[0].sv_mask_alm = 0xffffffff;
+	if (qzss_assistance_is_supported()) {
+		agnss_need.system_count = 2;
+		agnss_need.system[1].system_id = NRF_MODEM_GNSS_SYSTEM_QZSS;
+		agnss_need.system[1].sv_mask_ephe = 0x3ff;
+		agnss_need.system[1].sv_mask_alm = 0x3ff;
+	}
 
 	k_work_submit_to_queue(&mosh_common_work_q, &get_agps_data_work);
 
@@ -1594,23 +1642,6 @@ int gnss_enable_pgps(void)
 	mosh_error("GNSS: Enable CONFIG_NRF_CLOUD_PGPS for P-GPS support");
 	return -EOPNOTSUPP;
 #endif
-}
-
-static const char *get_system_string(uint8_t system_id)
-{
-	switch (system_id) {
-	case NRF_MODEM_GNSS_SYSTEM_INVALID:
-		return "invalid";
-
-	case NRF_MODEM_GNSS_SYSTEM_GPS:
-		return "GPS";
-
-	case NRF_MODEM_GNSS_SYSTEM_QZSS:
-		return "QZSS";
-
-	default:
-		return "unknown";
-	}
 }
 
 static void get_expiry_string(char *string, uint32_t string_len, uint16_t expiry)
