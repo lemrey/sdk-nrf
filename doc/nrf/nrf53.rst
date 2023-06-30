@@ -12,5 +12,6 @@ The |NCS| provides support for developing on the nRF5340 System on Chip (SoC) us
    :caption: Subpages:
 
    working_with_nrf/nrf53/nrf5340
+   working_with_nrf/nrf53/nrf5340_gs
    working_with_nrf/nrf53/thingy53_gs
    working_with_nrf/nrf53/thingy53
