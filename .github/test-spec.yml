@@ -14,7 +14,7 @@
 
 "CI-tool-test-linux":
   - "scripts/requirements*.txt"
-  - "scripts/tools-versions-linux.txt"
+  - "scripts/tools-versions-linux.yml"
 
 "CI-tool-test-win":
   - "scripts/requirements*.txt"
