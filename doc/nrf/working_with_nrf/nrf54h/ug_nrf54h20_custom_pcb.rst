@@ -98,20 +98,21 @@ Each subsequent start will use this initial calibration as the starting point.
 BICR configuration
 ==================
 
-The nRF54H20 PDK BICR configuration can be found in the board configuration directory (:file:`boards/arm/nrf54h20dk_nrf54h20/`).
+The nRF54H20 PDK BICR configuration can be found in the board configuration directory as :file:`boards/arm/nrf54h20dk_nrf54h20/nrf54h20soc1_pdk_bicr.dtsi`.
 This file is used by the |NCS| build system to generate a corresponding HEX file.
-You can start from this file when editing the values of the :file:`bicr.toml` file inside your custom board folder (:file:`boards/arm/your_custom_board`), according to your board configuration.
+You can start from this file when editing the values of the devicetree properties inside your custom board folder (:file:`boards/arm/your_custom_board`), according to your board configuration.
 
 Generating the BICR binary
 ==========================
 
-When running ``west build``, the build system runs the BICR configuration TOML through `nrf-regtool`_ to create the relevant HEX file (:file:`bicr.hex`) at build time.
+When running ``west build``, the build system runs the BICR devicetree node through `nrf-regtool`_ to create the relevant HEX file (:file:`bicr.hex`) at build time.
 Based on the peripheral definition extracted from the nRF54H20 SVD file, the modified registers from the configuration are mapped into their relevant position in memory.
 
 .. note::
-   If the build system cannot locate the :file:`bicr.toml` file inside your custom board folder, or if you did not create the file, the BICR generation cannot progress, and the build system will skip it.
+   If the build system cannot locate the ``bicr`` node inside your custom board's devicetree, or if you did not create a custom :file:`.dtsi` file for it, the BICR generation cannot progress, and the build system will skip it.
 
-You can find the generated :file:`bicr.hex` file in the :file:`build_dir/zephyr/bicr/` directory.
+You can find the generated :file:`bicr.hex` file in the :file:`build_dir/zephyr/`.
+The presence of a ``bicr`` node in the application devicetree will automatically trigger a build of the BICR binary, and will place this file alongside the other binary outputs such as ``zephyr.hex`` and ``uicr.hex``.
 
 Flashing the BICR binary
 ========================
@@ -137,14 +138,6 @@ When doing so, consider the following:
 
   * The application might require board overlays for multiple cores.
     In this case, ensure that these overlays are consistent with each other.
-  * Some UICR values (GPIOTE and GRTC channels, specifically) cannot be derived from DTS files yet.
-    These values must be overridden using an UICR overlay provided as a TOML file.
-    See `UICR overlay`_ as an example.
-
-    To use an overlay, set the value of the ``CONFIG_NRF_REGTOOL_TOML_CONFIG_FILES`` option in the :file:`prj.conf` file to the UICR overlay file path.
-    See the following example::
-
-      CONFIG_NRF_REGTOOL_TOML_CONFIG_FILES="configuration/nrf54h20dk_nrf54h20_cpuapp@soc1/uicr/nrf54h20dk_nrf54h20_cpuapp@soc1.toml"
 
 * When creating a new application specific to your new board, DTS board files can contain all necessary configurations, and no overlay file is needed.
   However, the same limitations regarding the consistency and UICR configuration apply, but should be kept on the board files level.
