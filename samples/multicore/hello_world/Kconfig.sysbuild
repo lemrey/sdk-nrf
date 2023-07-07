@@ -12,4 +12,5 @@ config REMOTE_BOARD
 	default "nrf5340dk_nrf5340_cpunet" if $(BOARD) = "nrf5340dk_nrf5340_cpuapp_ns"
 	#default "nrf54h20dk_nrf54h20_cpuppr@soc1" if ($(BOARD) = "nrf54h20dk_nrf54h20_cpuapp" && HW_REVISION_SOC1)
 	default "nrf54h20dk_nrf54h20_cpuppr@soc1" if ($(BOARD) = "nrf54h20dk_nrf54h20_cpuapp")
+	default "nrf7140dk_nrf7140_cpuppr" if ($(BOARD) = "nrf7140dk_nrf7140_cpuapp")
 	default "UNKNOWN"
