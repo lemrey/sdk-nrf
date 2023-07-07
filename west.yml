@@ -37,6 +37,8 @@ manifest:
       url-base: https://github.com/ant-nrfconnect
     - name: babblesim
       url-base: https://github.com/BabbleSim
+    - name: lemrey
+      url-base: https://github.com/lemrey
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -59,7 +61,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr
-      revision: 35510c3d8e95826803ffaee1bb678163e1846320
+      remote: lemrey
+      revision: pull/7/head
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -139,8 +142,9 @@ manifest:
       revision: v3.3.0-ncs1
     - name: nrfxlib
       repo-path: sdk-nrfxlib
+      remote: lemrey
       path: nrfxlib
-      revision: 4eca399cc6e8a095f320aafdd272606ee1294a13
+      revision: pull/26/head
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m

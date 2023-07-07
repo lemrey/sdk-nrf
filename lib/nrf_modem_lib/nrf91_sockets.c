@@ -211,6 +211,9 @@ static int z_to_nrf_optname(int z_in_level, int z_in_optname,
 		case SO_BINDTODEVICE:
 			*nrf_out_optname = NRF_SO_BINDTODEVICE;
 			break;
+		case SO_WAIT_NW_ACK_TIMEOUT:
+			*nrf_out_optname = NRF_SO_WAIT_NW_ACK_TIMEOUT;
+			break;
 		case SO_REUSEADDR:
 			*nrf_out_optname = NRF_SO_REUSEADDR;
 			break;
