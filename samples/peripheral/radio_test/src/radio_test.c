@@ -50,15 +50,11 @@
 	#define RADIO_TEST_TIMER_INSTANCE 020
 	#define RADIO_TEST_TIMER_IRQn     TIMER020_IRQn
 	#define RADIO_TEST_RADIO_IRQn     RADIO_0_IRQn
-	/* The radio peripheral for Haltium has a different offset of the SUBSCRIBE registers to nrf52 and nrf53.
- 	* A temporary solution until nrfx is adapted. */
-	#define SUBSCRIBE_EXTRA_OFFSET    0x80
 #else
 	#define RADIO_TEST_EGU            NRF_EGU0
 	#define RADIO_TEST_TIMER_INSTANCE 0
 	#define RADIO_TEST_TIMER_IRQn     TIMER0_IRQn
 	#define RADIO_TEST_RADIO_IRQn     RADIO_IRQn
-	#define SUBSCRIBE_EXTRA_OFFSET    0x00
 #endif /* defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 #define RADIO_TEST_TIMER_IRQ_HANDLER  NRFX_CONCAT_3(nrfx_timer_,	    \
@@ -165,20 +161,17 @@ static void endpoints_clear(void)
 	if (atomic_test_and_clear_bit(&endpoint_state, ENDPOINT_EGU_RADIO_TX)) {
 		nrfx_gppi_channel_endpoints_clear(ppi_radio_start,
 			nrf_egu_event_address_get(RADIO_TEST_EGU, RADIO_TEST_EGU_EVENT),
-			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
-							    SUBSCRIBE_EXTRA_OFFSET);
+			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN));
 	}
 	if (atomic_test_and_clear_bit(&endpoint_state, ENDPOINT_EGU_RADIO_RX)) {
 		nrfx_gppi_channel_endpoints_clear(ppi_radio_start,
 			nrf_egu_event_address_get(RADIO_TEST_EGU, RADIO_TEST_EGU_EVENT),
-			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_RXEN) +
-							    SUBSCRIBE_EXTRA_OFFSET);
+			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_RXEN));
 	}
 	if (atomic_test_and_clear_bit(&endpoint_state, ENDPOINT_TIMER_RADIO_TX)) {
 		nrfx_gppi_channel_endpoints_clear(ppi_radio_start,
 			nrf_timer_event_address_get(timer.p_reg, NRF_TIMER_EVENT_COMPARE0),
-			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
-							    SUBSCRIBE_EXTRA_OFFSET);
+			nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN));
 	}
 }
 
@@ -189,8 +182,7 @@ static void radio_ppi_config(bool rx)
 	nrfx_gppi_channel_endpoints_setup(ppi_radio_start,
 			nrf_egu_event_address_get(RADIO_TEST_EGU, RADIO_TEST_EGU_EVENT),
 			nrf_radio_task_address_get(NRF_RADIO,
-						   rx ? NRF_RADIO_TASK_RXEN : NRF_RADIO_TASK_TXEN) +
-						   SUBSCRIBE_EXTRA_OFFSET);
+						   rx ? NRF_RADIO_TASK_RXEN : NRF_RADIO_TASK_TXEN));
 	atomic_set_bit(&endpoint_state, (rx ? ENDPOINT_EGU_RADIO_RX : ENDPOINT_EGU_RADIO_TX));
 
 	nrfx_gppi_fork_endpoint_setup(ppi_radio_start,
@@ -210,8 +202,7 @@ static void radio_ppi_tx_reconfigure(void)
 
 	nrfx_gppi_channel_endpoints_setup(ppi_radio_start,
 		nrf_timer_event_address_get(timer.p_reg, NRF_TIMER_EVENT_COMPARE1),
-		nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN) +
-						    SUBSCRIBE_EXTRA_OFFSET);
+		nrf_radio_task_address_get(NRF_RADIO, NRF_RADIO_TASK_TXEN));
 	atomic_set_bit(&endpoint_state, ENDPOINT_TIMER_RADIO_TX);
 
 	nrfx_gppi_channels_enable(BIT(ppi_radio_start));
