@@ -59,3 +59,10 @@ tests:
       CONFIG_SERIAL=n
       CONFIG_CONSOLE=n
       remote_CONFIG_XIP=y
+  sample.multicore.hello_world.nrf7140:
+    build_only: true
+    sysbuild: true
+    platform_allow: nrf7140dk_nrf7140_cpuapp
+    integration_platforms:
+      - nrf7140dk_nrf7140_cpuapp
+    tags: ci_build
