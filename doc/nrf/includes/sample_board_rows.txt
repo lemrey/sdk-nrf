@@ -169,3 +169,7 @@
 .. nrf54h20dk_nrf54h20_cpuapp
 
 | :ref:`nRF54H20 PDK <ug_nrf54h20_gs>` | | ``nrf54h20dk_nrf54h20_cpuapp`` | ``nrf54h20dk_nrf54h20_cpuapp`` |
+
+.. nrf7140dk_nrf7140_cpuapp
+
+| nRF7140 PDK | | ``nrf7140dk_nrf7140_cpuapp`` | ``nrf7140dk_nrf7140_cpuapp`` |

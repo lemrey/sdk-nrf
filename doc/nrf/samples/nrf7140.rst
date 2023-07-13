@@ -1,0 +1,12 @@
+.. _nrf7140_samples:
+
+nRF7140 samples
+################
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Subpages
+   :glob:
+
+   ../../../samples/multicore/hello_world/README
+   ../../../samples/ipc/ipc_service/README

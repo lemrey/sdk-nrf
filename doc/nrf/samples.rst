@@ -38,3 +38,4 @@ Those samples are a good starting point for understanding how to put together yo
    samples/wifi
    samples/other
    samples/nrf54h20.rst
+   samples/nrf7140.rst
