@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 #include <zephyr/kernel.h>
+#include <zephyr/net/net_if.h>
 #ifndef CONFIG_NRF700X_RADIO_TEST
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/ethernet.h>
@@ -112,4 +113,7 @@ struct wifi_nrf_drv_priv_zep {
 
 void wifi_nrf_scan_timeout_work(struct k_work *work);
 const char *wifi_nrf_get_drv_version(void);
+
+struct wifi_nrf_vif_ctx_zep *wifi_nrf_get_vif_ctx(struct net_if *iface);
+
 #endif /* __ZEPHYR_FMAC_MAIN_H__ */

@@ -160,24 +160,14 @@ static void ip_maddr_event_handler(struct net_mgmt_event_callback *cb,
 				   struct net_if *iface)
 {
 	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
-	const struct device *dev = NULL;
 	struct net_eth_addr mac_addr;
 	struct nrf_wifi_umac_mcast_cfg *mcast_info = NULL;
 	enum wifi_nrf_status status;
 	uint8_t mac_string_buf[sizeof("xx:xx:xx:xx:xx:xx")];
 
-	dev = net_if_get_device(iface);
-
-	if (!dev) {
-		LOG_ERR("%s: dev is NULL\n", __func__);
+	vif_ctx_zep = wifi_nrf_get_vif_ctx(iface);
+	if (!vif_ctx_zep) {
 		return;
-	}
-
-	for (int i = 0; i < ARRAY_SIZE(rpu_ctx->vif_ctx_zep); i++) {
-		if (rpu_ctx->vif_ctx_zep[i].zep_net_if_ctx == iface) {
-			vif_ctx_zep = &rpu_ctx->vif_ctx_zep[i];
-			break;
-		}
 	}
 
 	mcast_info = k_calloc(sizeof(*mcast_info), sizeof(char));
