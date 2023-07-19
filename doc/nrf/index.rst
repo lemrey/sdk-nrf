@@ -27,6 +27,7 @@ The "99" at the end of the version number of this documentation indicates contin
    nrf91
    nrf70
    nrf54h
+   nrf54l
    nrf53
    nrf52
    protocols
