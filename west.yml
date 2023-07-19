@@ -142,7 +142,7 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 438326c5454e9dbc32e3ef93c9dc95f49edcab3e
+      revision: 111059bd5fd9867f9c7a4fd3691c01b7d97c6917
     - name: sdk-secdom
       revision: 3cde0d4de65cdfaf465366e5c269a87b6beefc6d
       path: core_fw/secdom
