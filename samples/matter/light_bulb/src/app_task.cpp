@@ -71,7 +71,9 @@ bool sIsNetworkProvisioned = false;
 bool sIsNetworkEnabled = false;
 bool sHaveBLEConnections = false;
 
+#ifdef CONFIG_DK_LIBRARY
 const struct pwm_dt_spec sLightPwmDevice = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led1));
+#endif
 
 // Define a custom attribute persister which makes actual write of the CurrentLevel attribute value
 // to the non-volatile storage only when it has remained constant for 5 seconds. This is to reduce
@@ -160,11 +162,13 @@ CHIP_ERROR AppTask::Init()
 	UpdateStatusLED();
 
 	/* Initialize buttons */
+#ifdef CONFIG_DK_LIBRARY
 	int ret = dk_buttons_init(ButtonEventHandler);
 	if (ret) {
 		LOG_ERR("dk_buttons_init() failed");
 		return chip::System::MapErrorZephyr(ret);
 	}
+#endif
 
 	/* Initialize function timer */
 	k_timer_init(&sFunctionTimer, &AppTask::FunctionTimerTimeoutCallback, nullptr);
@@ -183,10 +187,12 @@ CHIP_ERROR AppTask::Init()
 	uint8_t maxLightLevel = kDefaultMaxLevel;
 	Clusters::LevelControl::Attributes::MaxLevel::Get(kLightEndpointId, &maxLightLevel);
 
+#ifdef CONFIG_DK_LIBRARY
 	ret = mPWMDevice.Init(&sLightPwmDevice, minLightLevel, maxLightLevel, maxLightLevel);
 	if (ret != 0) {
 		return chip::System::MapErrorZephyr(ret);
 	}
+#endif
 	mPWMDevice.SetCallbacks(ActionInitiated, ActionCompleted);
 
 	/* Initialize CHIP server */

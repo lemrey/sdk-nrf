@@ -22,10 +22,12 @@ int PWMDevice::Init(const pwm_dt_spec *aPWMDevice, uint8_t aMinLevel, uint8_t aM
 	mLevel = aDefaultLevel;
 	mPwmDevice = aPWMDevice;
 
+#ifdef CONFIG_DK_LIBRARY
 	if (!device_is_ready(mPwmDevice->dev)) {
 		LOG_ERR("PWM device %s is not ready", mPwmDevice->dev->name);
 		return -ENODEV;
 	}
+#endif
 
 	Set(false);
 	return 0;
@@ -95,15 +97,18 @@ void PWMDevice::Set(bool aOn)
 
 void PWMDevice::SuppressOutput()
 {
+#ifdef CONFIG_DK_LIBRARY
 	pwm_set_pulse_dt(mPwmDevice, 0);
+#endif
 }
 
 void PWMDevice::ApplyLevel()
 {
+#ifdef CONFIG_DK_LIBRARY
 	const uint8_t maxEffectiveLevel = mMaxLevel - mMinLevel;
 	const uint8_t effectiveLevel =
 		mState == kState_On ? chip::min<uint8_t>(mLevel - mMinLevel, maxEffectiveLevel) : 0;
-
 	pwm_set_pulse_dt(mPwmDevice, static_cast<uint32_t>(static_cast<const uint64_t>(mPwmDevice->period) *
 							   effectiveLevel / maxEffectiveLevel));
+#endif
 }

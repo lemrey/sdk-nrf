@@ -44,6 +44,14 @@ endif # CHIP_WIFI
 config CHIP_ICD_SUBSCRIPTION_HANDLING
 	default y
 
+# TODO Temporary workaround for nRF54L15 target
+if SOC_NRF54L15
+
+config FPU
+	default n
+	
+endif
+
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
 source "Kconfig.zephyr"

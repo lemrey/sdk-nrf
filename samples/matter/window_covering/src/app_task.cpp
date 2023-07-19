@@ -124,11 +124,13 @@ CHIP_ERROR AppTask::Init()
 	UpdateStatusLED();
 
 	/* Initialize buttons */
+#ifdef CONFIG_DK_LIBRARY
 	int ret = dk_buttons_init(ButtonEventHandler);
 	if (ret) {
 		LOG_ERR("dk_buttons_init() failed");
 		return chip::System::MapErrorZephyr(ret);
 	}
+#endif
 
 	/* Initialize function timer */
 	k_timer_init(&sFunctionTimer, &AppTask::FunctionTimerTimeoutCallback, nullptr);

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#if !defined(CONFIG_EMULATOR_FPGA)
+#ifdef CONFIG_DK_LIBRARY
 
 #include <zephyr/devicetree.h>
 

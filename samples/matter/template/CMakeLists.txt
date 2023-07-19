@@ -47,7 +47,7 @@ target_sources(app PRIVATE
     ${COMMON_ROOT}/src/led_widget.cpp
 )
 
-if(CONFIG_SOC_SERIES_NRF54HX)
+if(CONFIG_SOC_SERIES_NRF54HX OR CONFIG_SOC_SERIES_NRF54LX)
 
     # FIXME Disabled -Werror due to warning in zephyr/drivers/ieee802154/ieee802154_nrf5.c
     # It is a workaround within sdk-nrf-next, and it should not be merged with sdk-nrf upstream.

@@ -22,8 +22,10 @@ using namespace ::chip::Credentials;
 using namespace ::chip::DeviceLayer;
 using namespace chip::app::Clusters::WindowCovering;
 
+#ifdef CONFIG_DK_LIBRARY
 static const struct pwm_dt_spec sLiftPwmDevice = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led1));
 static const struct pwm_dt_spec sTiltPwmDevice = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led2));
+#endif
 
 static constexpr uint32_t sMoveTimeoutMs{ 200 };
 
@@ -32,12 +34,14 @@ WindowCovering::WindowCovering()
 	mLiftLED.Init(LIFT_STATE_LED);
 	mTiltLED.Init(TILT_STATE_LED);
 
+#ifdef CONFIG_DK_LIBRARY
 	if (mLiftIndicator.Init(&sLiftPwmDevice, 0, 255) != 0) {
 		LOG_ERR("Cannot initialize the lift indicator");
 	}
 	if (mTiltIndicator.Init(&sTiltPwmDevice, 0, 255) != 0) {
 		LOG_ERR("Cannot initialize the tilt indicator");
 	}
+#endif
 }
 
 void WindowCovering::DriveCurrentLiftPosition(intptr_t)

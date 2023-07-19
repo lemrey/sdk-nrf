@@ -20,7 +20,7 @@ endif()
 
 if(CONFIG_FILE_NAME STREQUAL "prj_thread_wifi_switched.conf")
     set(PM_STATIC_YML_FILE ${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}/pm_static_thread_wifi_switched.yml)
-elseif(NOT (CONF_FILE STREQUAL "prj_no_dfu.conf" OR CONF_FILE STREQUAL "prj_fpga.conf"))
+elseif(NOT (CONF_FILE STREQUAL "prj_no_dfu.conf"))
     set(PM_STATIC_YML_FILE ${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}/pm_static_dfu.yml)
 endif()
 
@@ -51,7 +51,7 @@ target_sources(app PRIVATE
     ${COMMON_ROOT}/src/led_widget.cpp
 )
 
-if(CONFIG_SOC_SERIES_NRF54HX)
+if(CONFIG_SOC_SERIES_NRF54HX OR CONFIG_SOC_SERIES_NRF54LX)
 
     # FIXME Disabled -Werror due to warning in zephyr/drivers/ieee802154/ieee802154_nrf5.c
     # It is a workaround within sdk-nrf-next, and it should not be merged with sdk-nrf upstream.

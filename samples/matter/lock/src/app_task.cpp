@@ -186,7 +186,7 @@ CHIP_ERROR AppTask::Init()
 	UpdateStatusLED();
 
 	/* Initialize buttons */
-#if !defined(CONFIG_EMULATOR_FPGA)
+#ifdef CONFIG_DK_LIBRARY
 	int ret = dk_buttons_init(ButtonEventHandler);
 	if (ret) {
 		LOG_ERR("dk_buttons_init() failed");

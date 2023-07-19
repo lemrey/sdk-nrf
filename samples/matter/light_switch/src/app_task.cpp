@@ -38,6 +38,7 @@
 #endif
 
 #include <dk_buttons_and_leds.h>
+
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
@@ -156,11 +157,13 @@ CHIP_ERROR AppTask::Init()
 	UpdateStatusLED();
 
 	/* Initialize buttons */
+#ifdef CONFIG_DK_LIBRARY
 	int ret = dk_buttons_init(ButtonEventHandler);
 	if (ret) {
 		LOG_ERR("dk_buttons_init() failed");
 		return chip::System::MapErrorZephyr(ret);
 	}
+#endif
 
 	/* Initialize timers */
 	k_timer_init(&sFunctionTimer, AppTask::FunctionTimerTimeoutCallback, nullptr);
@@ -236,14 +239,14 @@ void AppTask::ButtonPushHandler(const AppEvent &event)
 			Instance().mFunction = FunctionEvent::SoftwareUpdate;
 			break;
 		case
-#if NUMBER_OF_BUTTONS == 2
+#if NUMBER_OF_BUTTONS == 4
+			SWITCH_BUTTON:
+#else
 			BLE_ADVERTISEMENT_START_AND_SWITCH_BUTTON:
 			if (!ConnectivityMgr().IsBLEAdvertisingEnabled() &&
 			    Server::GetInstance().GetFabricTable().FabricCount() == 0) {
 				break;
 			}
-#else
-			SWITCH_BUTTON:
 #endif
 			LOG_INF("Button has been pressed, keep in this state for at least 500 ms to change light sensitivity of binded lighting devices.");
 			Instance().StartTimer(Timer::DimmerTrigger, kDimmerTriggeredTimeout);
@@ -474,12 +477,12 @@ void AppTask::ButtonEventHandler(uint32_t buttonState, uint32_t hasChanged)
 		PostEvent(buttonEvent);
 	}
 
-#if NUMBER_OF_BUTTONS == 2
-	uint32_t buttonMask = BLE_ADVERTISEMENT_START_AND_SWITCH_BUTTON_MASK;
-	buttonEvent.ButtonEvent.PinNo = BLE_ADVERTISEMENT_START_AND_SWITCH_BUTTON;
-#else
+#if NUMBER_OF_BUTTONS == 4
 	uint32_t buttonMask = SWITCH_BUTTON_MASK;
 	buttonEvent.ButtonEvent.PinNo = SWITCH_BUTTON;
+#else
+	uint32_t buttonMask = BLE_ADVERTISEMENT_START_AND_SWITCH_BUTTON_MASK;
+	buttonEvent.ButtonEvent.PinNo = BLE_ADVERTISEMENT_START_AND_SWITCH_BUTTON;
 #endif
 
 	if (buttonMask & buttonState & hasChanged) {

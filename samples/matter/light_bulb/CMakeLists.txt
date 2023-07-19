@@ -49,6 +49,14 @@ target_sources(app PRIVATE
     ${COMMON_ROOT}/src/pwm_device.cpp
 )
 
+if(CONFIG_SOC_SERIES_NRF54HX OR CONFIG_SOC_SERIES_NRF54LX)
+
+    # FIXME Disabled -Werror due to warning in zephyr/drivers/ieee802154/ieee802154_nrf5.c
+    # It is a workaround within sdk-nrf-next, and it should not be merged with sdk-nrf upstream.
+    zephyr_compile_options(-Wno-error)
+
+endif()
+
 if(CONFIG_CHIP_OTA_REQUESTOR OR CONFIG_MCUMGR_TRANSPORT_BT)
     target_sources(app PRIVATE ${COMMON_ROOT}/src/ota_util.cpp)
 endif()
