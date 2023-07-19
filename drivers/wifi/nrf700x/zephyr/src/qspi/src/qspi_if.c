@@ -1251,6 +1251,13 @@ int qspi_enable_encryption(uint8_t *key)
 	if (qspi_config->encryption)
 		return -EALREADY;
 
+	int ret = qspi_device_init(&qspi_perip);
+
+	if (ret != 0) {
+		LOG_ERR("qspi_device_init failed: %d\n", ret);
+		return -EIO;
+	}
+
 	memcpy(qspi_config->p_cfg.key, key, 16);
 
 	err = nrfx_qspi_dma_encrypt(&qspi_config->p_cfg);
@@ -1266,6 +1273,8 @@ int qspi_enable_encryption(uint8_t *key)
 	}
 
 	qspi_config->encryption = true;
+
+	qspi_device_uninit(&qspi_perip);
 
 	return 0;
 #else
