@@ -15,9 +15,7 @@
 #include "tfm_spm_log.h"
 
 #include <hw_unique_key.h>
-#include <nrf_cc3xx_platform_kmu.h>
-#include <nrf_cc3xx_platform_identity_key.h>
-#include <nrf_cc3xx_platform_defines.h>
+#include <identity_key.h>
 
 #define TFM_NS_PARTITION_ID (-1)
 
@@ -25,41 +23,36 @@
 #error "MBEDTLS_PSA_CRYPTO_KEY_ID_ENCODES_OWNER must be selected in Mbed TLS config file"
 #endif
 
-#ifdef NRF5340_XXAA_APPLICATION
-#define HUK_KEY_LEN_BYTES  32
-#elif defined(NRF91_SERIES)
-#define HUK_KEY_LEN_BYTES  16
-#endif
-
+#ifdef CONFIG_HW_UNIQUE_KEY
 static enum tfm_plat_err_t tfm_plat_get_huk(uint8_t *buf, size_t buf_len,
 					    size_t *key_len,
 					    size_t *key_bits,
 					    psa_algorithm_t *algorithm,
 					    psa_key_type_t *type)
 {
-	if (buf_len < HUK_KEY_LEN_BYTES) {
+	if (buf_len < HUK_SIZE_BYTES) {
 		return TFM_PLAT_ERR_SYSTEM_ERR;
 	}
 
 	uint8_t label[] = "TFM_HW_UNIQ_KEY";
 
-	int err  = hw_unique_key_derive_key(HUK_KEYSLOT_MEXT, NULL,
-			0, label, sizeof(label), buf, buf_len);
+	int err = hw_unique_key_derive_key(HUK_KEYSLOT_MEXT, NULL, 0, label, sizeof(label), buf,
+					   buf_len);
 
-	if (err) {
+	if (err != HW_UNIQUE_KEY_SUCCESS) {
 		SPMLOG_DBGMSGVAL("hw_unique_key_derive_key err: ", err);
 
 		return TFM_PLAT_ERR_SYSTEM_ERR;
 	}
 
-	*key_len = HUK_KEY_LEN_BYTES;
-	*key_bits = HUK_KEY_LEN_BYTES * 8;
+	*key_len = HUK_SIZE_BYTES;
+	*key_bits = HUK_SIZE_BYTES * 8;
 	*algorithm = PSA_ALG_HKDF(PSA_ALG_SHA_256);
 	*type = PSA_KEY_TYPE_DERIVE;
 
 	return TFM_PLAT_ERR_SUCCESS;
 }
-
+#endif /* CONFIG_HW_UNQUE_KEY */
 
 #ifdef TFM_PARTITION_INITIAL_ATTESTATION
 static enum tfm_plat_err_t tfm_plat_get_iak(uint8_t *buf, size_t buf_len,
@@ -68,22 +61,21 @@ static enum tfm_plat_err_t tfm_plat_get_iak(uint8_t *buf, size_t buf_len,
 					    psa_algorithm_t *algorithm,
 					    psa_key_type_t *type)
 {
-	if (buf_len < 32) {
+	int err;
+
+	if (buf_len < IDENTITY_KEY_SIZE_BYTES) {
 		return TFM_PLAT_ERR_SYSTEM_ERR;
 	}
 
-	int err = nrf_cc3xx_platform_identity_key_retrieve(
-		NRF_KMU_SLOT_KIDENT,
-		buf);
-
-	if (err != NRF_CC3XX_PLATFORM_SUCCESS) {
-		SPMLOG_DBGMSGVAL("nrf_cc3xx_platform_identity_key_retrieve err: ", err);
+	err = identity_key_read(buf);
+	if (err != IDENTITY_KEY_SUCCESS) {
+		SPMLOG_DBGMSGVAL("identity_key_read err: ", err);
 
 		return TFM_PLAT_ERR_SYSTEM_ERR;
 	}
 
-	*key_len = 32;
-	*key_bits = *key_len * 8;
+	*key_len = IDENTITY_KEY_SIZE_BYTES;
+	*key_bits = IDENTITY_KEY_SIZE_BYTES * 8;
 	*algorithm = PSA_ALG_ECDSA(PSA_ALG_SHA_256);
 	*type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
 
@@ -98,15 +90,16 @@ enum tfm_plat_err_t tfm_plat_builtin_key_get_usage(psa_key_id_t key_id,
 	*usage = 0;
 
 	switch (key_id) {
-
+#ifdef CONFIG_HW_UNIQUE_KEY
 	case TFM_BUILTIN_KEY_ID_HUK:
 		/* Allow access to all partitions */
 		*usage = PSA_KEY_USAGE_DERIVE;
 		break;
+#endif /* CONFIG_HW_UNIQUE_KEY*/
 
+#ifdef TFM_PARTITION_INITIAL_ATTESTATION
 	case TFM_BUILTIN_KEY_ID_IAK:
 		switch(user) {
-#ifdef TFM_PARTITION_INITIAL_ATTESTATION
 		case TFM_SP_INITIAL_ATTESTATION:
 			*usage = PSA_KEY_USAGE_SIGN_HASH;
 #ifdef SYMMETRIC_INITIAL_ATTESTATION
@@ -126,13 +119,13 @@ enum tfm_plat_err_t tfm_plat_builtin_key_get_usage(psa_key_id_t key_id,
 			*usage = PSA_KEY_USAGE_VERIFY_HASH;
 			break;
 #endif /* TEST_S_ATTESTATION || TEST_NS_ATTESTATION */
-#endif /* TFM_PARTITION_INITIAL_ATTESTATION */
 
 		default:
 			return TFM_PLAT_ERR_NOT_PERMITTED;
 		}
 
 		break;
+#endif /* TFM_PARTITION_INITIAL_ATTESTATION */
 	default:
 		return TFM_PLAT_ERR_UNSUPPORTED;
 	}
@@ -146,12 +139,14 @@ enum tfm_plat_err_t tfm_plat_builtin_key_get_lifetime_and_slot(mbedtls_svc_key_i
 {
 	switch (MBEDTLS_SVC_KEY_ID_GET_KEY_ID(key_id)) {
 
+#ifdef CONFIG_HW_UNIQUE_KEY
 	case TFM_BUILTIN_KEY_ID_HUK:
 		*slot_number = TFM_BUILTIN_KEY_SLOT_HUK;
 		*lifetime = PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(
 			PSA_KEY_LIFETIME_PERSISTENT,
 			TFM_BUILTIN_KEY_LOADER_KEY_LOCATION);
 		break;
+#endif /* CONFIG_HW_UNQUE_KEY */
 
 #ifdef TFM_PARTITION_INITIAL_ATTESTATION
 	case TFM_BUILTIN_KEY_ID_IAK:
@@ -159,8 +154,8 @@ enum tfm_plat_err_t tfm_plat_builtin_key_get_lifetime_and_slot(mbedtls_svc_key_i
 		*lifetime = PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(
 			PSA_KEY_LIFETIME_PERSISTENT,
 			TFM_BUILTIN_KEY_LOADER_KEY_LOCATION);
-#endif /* TFM_PARTITION_INITIAL_ATTESTATION */
 		break;
+#endif /* TFM_PARTITION_INITIAL_ATTESTATION */
 
 	default:
 		return TFM_PLAT_ERR_UNSUPPORTED;
@@ -173,6 +168,7 @@ enum tfm_plat_err_t tfm_plat_builtin_key_get_lifetime_and_slot(mbedtls_svc_key_i
 
 enum tfm_plat_err_t tfm_plat_load_builtin_keys(void)
 {
+#if defined(CONFIG_HW_UNIQUE_KEY) || defined(TFM_PARTITION_INITIAL_ATTESTATION)
 	psa_status_t err;
 	mbedtls_svc_key_id_t key_id = MBEDTLS_SVC_KEY_ID_INIT;
 	psa_key_attributes_t attr = PSA_KEY_ATTRIBUTES_INIT;
@@ -183,6 +179,7 @@ enum tfm_plat_err_t tfm_plat_load_builtin_keys(void)
 	psa_algorithm_t algorithm;
 	psa_key_type_t type;
 
+#ifdef CONFIG_HW_UNIQUE_KEY
 	/* HUK */
 	plat_err = tfm_plat_get_huk(buf, sizeof(buf), &key_len, &key_bits,
 				    &algorithm, &type);
@@ -200,6 +197,7 @@ enum tfm_plat_err_t tfm_plat_load_builtin_keys(void)
 	if (err != PSA_SUCCESS) {
 		return TFM_PLAT_ERR_SYSTEM_ERR;
 	}
+#endif /* CONFIG_HW_UNIQUE_KEY */
 
 #ifdef TFM_PARTITION_INITIAL_ATTESTATION
 	/* IAK */
@@ -226,6 +224,7 @@ enum tfm_plat_err_t tfm_plat_load_builtin_keys(void)
 		return TFM_PLAT_ERR_SYSTEM_ERR;
 	}
 #endif /* TFM_PARTITION_INITIAL_ATTESTATION */
+#endif /* CONFIG_HW_UNIQUE_KEY || TFM_PARTITION_INITIAL_ATTESTATION */
 
 	return TFM_PLAT_ERR_SUCCESS;
 }

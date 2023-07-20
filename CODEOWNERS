@@ -88,7 +88,6 @@ Kconfig*                                  @tejlmand
 /lib/bin/                                 @rlubos @lemrey
 /lib/adp536x/                             @jtguggedal
 /lib/at_cmd_parser/                       @rlubos
-/lib/at_cmd_custom/                       @eivindj-nordic
 /lib/at_host/                             @rlubos
 /lib/at_monitor/                          @lemrey @rlubos
 /lib/at_shell/                            @jtguggedal @simensrostad
@@ -103,7 +102,6 @@ Kconfig*                                  @tejlmand
 /lib/modem_antenna/                       @tokangas
 /lib/modem_info/                          @rlubos
 /lib/modem_key_mgmt/                      @rlubos
-/lib/multicell_location/                  @jhirsi @tokangas
 /lib/multithreading_lock/                 @rugeGerritsen
 /lib/pdn/                                 @lemrey @rlubos
 /lib/ram_pwrdn/                           @mariuszpos @MarekPorwisz
@@ -115,17 +113,17 @@ Kconfig*                                  @tejlmand
 /lib/date_time/                           @trantanen @tokangas
 /lib/hw_id/                               @maxd-nordic
 /lib/wave_gen/                            @MarekPieta
-/lib/hw_unique_key/                       @oyvindronningstad @Vge0rge
-/lib/identity_key/                        @frkv @Vge0rge
+/lib/hw_unique_key/                       @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
+/lib/identity_key/                        @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /lib/modem_jwt/                           @jayteemo @SeppoTakalo
 /lib/modem_slm/                           @SeppoTakalo @VTPeltoketo @MarkusLassila
 /lib/modem_attest_token/                  @jayteemo
 /lib/qos/                                 @simensrostad
-/lib/pcm_mix/                             @koffes @alexsven @erikrobstad @rick1082 @gWacey
 /lib/contin_array/                        @koffes @alexsven @erikrobstad @rick1082 @gWacey
-/lib/tone/                                @koffes @alexsven @erikrobstad @rick1082 @gWacey
-/lib/pcm_stream_channel_modifier/         @koffes @alexsven @erikrobstad @rick1082 @gWacey
 /lib/data_fifo/                           @koffes @alexsven @erikrobstad @rick1082 @gWacey
+/lib/pcm_mix/                             @koffes @alexsven @erikrobstad @rick1082 @gWacey
+/lib/pcm_stream_channel_modifier/         @koffes @alexsven @erikrobstad @rick1082 @gWacey
+/lib/tone/                                @koffes @alexsven @erikrobstad @rick1082 @gWacey
 /modules/                                 @tejlmand
 /modules/mcuboot/                         @de-nordic @nordicjm
 /modules/cjson/                           @simensrostad @plskeggs @sigvartmh
@@ -139,7 +137,7 @@ Kconfig*                                  @tejlmand
 /samples/bluetooth/peripheral_fast_pair/  @MarekPieta @kapi-no @KAGA164
 /samples/bootloader/                      @hakonfam @oyvindronningstad
 /samples/matter/                          @Damian-Nordic @kkasperczyk-no
-/samples/crypto/                          @frkv @Vge0rge
+/samples/crypto/                          @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /samples/debug/ppi_trace/                 @nordic-krch @anangl
 /samples/hw_id/                           @maxd-nordic
 /samples/edge_impulse/                    @pdunaj
@@ -147,29 +145,19 @@ Kconfig*                                  @tejlmand
 /samples/app_event_manager/               @pdunaj @MarekPieta
 /samples/event_manager_proxy/             @rakons
 /samples/gazell/                          @leewkb4567
-/samples/keys/random_hw_unique_key/       @oyvindronningstad @Vge0rge
-/samples/keys/identity_key_generation/    @frkv @Vge0rge
-/samples/keys/identity_key_usage/         @frkv @Vge0rge
+/samples/keys/                            @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /samples/mpsl/                            @rugeGerritsen
 /samples/nfc/                             @grochu
 /samples/nrf_rpc/                         @doki-nordic @KAGA164
 /samples/nrf5340/empty_app_core/          @doki-nordic
-/samples/nrf9160/                         @rlubos @lemrey
-/samples/nrf9160/azure_*                  @jtguggedal @simensrostad @coderbyheart
-/samples/nrf9160/location/                @trantanen @jhirsi @tokangas
-/samples/nrf9160/lwm2m_client/            @rlubos @SeppoTakalo @jarlamsa @jheiskan81 @juhaylinen
-/samples/nrf9160/modem_shell/             @trantanen @jhirsi @tokangas
-/samples/nrf9160/nidd/                    @stig-bjorlykke
-/samples/nrf9160/nrf_cloud_*              @plskeggs @jayteemo @glarsennordic
 /samples/nrf9160/nrf_provisioning/        @SeppoTakalo @juhaylinen
-/samples/nrf9160/modem_trace_flash/       @gregersrygg @balaji-nordic
 /samples/nrf9160/sms/                     @trantanen @tokangas
 /samples/openthread/                      @rlubos @edmont @canisLupus1313 @mariuszpos
 /samples/nrf_profiler/                    @pdunaj
 /samples/peripheral/radio_test/           @KAGA164 @maje-emb
 /samples/peripheral/lpuart/               @nordic-krch
-/samples/peripheral/802154_phy_test/      @czeslawmakarski
-/samples/tfm/                             @SebastianBoe @joerchan
+/samples/peripheral/802154_phy_test/      @ankuns @jciupis @ahasztag
+/samples/tfm/                             @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /samples/zigbee/                          @tomchy @sebastiandraus
 /samples/CMakeLists.txt                   @tejlmand
 /samples/nrf5340/netboot/                 @hakonfam
@@ -203,7 +191,7 @@ Kconfig*                                  @tejlmand
 /subsys/dfu/                              @hakonfam @sigvartmh
 /subsys/dfu/dfu_multi_image/              @Damian-Nordic
 /subsys/dm/                               @maje-emb
-/subsys/ieee802154/                       @rlubos @czeslawmakarski
+/subsys/ieee802154/                       @rlubos @ankuns @jciupis @ahasztag
 /subsys/mgmt/                             @hakonfam @sigvartmh
 /subsys/emds/                             @balaklaka
 /subsys/esb/                              @lemrey
@@ -218,6 +206,7 @@ Kconfig*                                  @tejlmand
 /subsys/net/                              @rlubos
 /subsys/net/lib/mqtt_helper/              @simensrostad @jtguggedal
 /subsys/net/lib/azure_*                   @jtguggedal @simensrostad @coderbyheart
+/subsys/net/lib/aws_*                     @jtguggedal @simensrostad @coderbyheart
 /subsys/net/lib/ftp_client/               @junqingzou
 /subsys/net/lib/icalendar_parser/         @lats1980
 /subsys/net/lib/lwm2m_client_utils/       @rlubos @SeppoTakalo @jarlamsa @jheiskan81 @juhaylinen
@@ -231,9 +220,10 @@ Kconfig*                                  @tejlmand
 /subsys/pcd/                              @hakonfam
 /subsys/nrf_profiler/                     @pdunaj
 /subsys/shell/                            @nordic-krch
-/subsys/nonsecure/                        @SebastianBoe
+/subsys/nonsecure/                        @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
+/subsys/nrf_security/                     @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /modules/                                 @tejlmand
-/modules/tfm/                             @SebastianBoe @joerchan
+/modules/tfm/                             @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /subsys/zigbee/                           @tomchy @sebastiandraus
 /tests/                                   @gopiotr
 /tests/bluetooth/tester/                  @carlescufi @ludvigsj
@@ -244,12 +234,11 @@ Kconfig*                                  @tejlmand
 /tests/drivers/lpuart/                    @nordic-krch
 /tests/drivers/nrfx_integration_test/     @anangl
 /tests/lib/at_cmd_parser/                 @rlubos
-/tests/lib/at_cmd_custom/                 @eivindj-nordic
 /tests/lib/date_time/                     @trantanen @tokangas
 /tests/lib/edge_impulse/                  @pdunaj @MarekPieta
 /tests/lib/nrf_fuel_gauge/                @nordic-auko @aasinclair
 /tests/lib/gcf_sms/                       @eivindj-nordic
-/tests/lib/hw_unique_key*/                @oyvindronningstad @Vge0rge
+/tests/lib/hw_unique_key*/                @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /tests/lib/hw_id/                         @maxd-nordic
 /tests/lib/location/                      @trantanen @jhirsi @tokangas
 /tests/lib/lte_lc/                        @jtguggedal @tokangas @simensrostad @trantanen
@@ -262,9 +251,11 @@ Kconfig*                                  @tejlmand
 /tests/lib/nrf_modem_lib/                 @lemrey @MirkoCovizzi
 /tests/lib/nrf_modem_lib/nrf91_sockets/   @MirkoCovizzi
 /tests/lib/ram_pwrdn/                     @Damian-Nordic
-/tests/lib/tone/                          @koffes @alexsven @erikrobstad @rick1082 @gWacey
-/tests/lib/pcm_stream_channel_modifier/   @koffes @alexsven @erikrobstad @rick1082 @gWacey
+/tests/lib/contin_array/                  @koffes @alexsven @erikrobstad @rick1082 @gWacey
 /tests/lib/data_fifo/                     @koffes @alexsven @erikrobstad @rick1082 @gWacey
+/tests/lib/pcm_mix/                       @koffes @alexsven @erikrobstad @rick1082 @gWacey
+/tests/lib/pcm_stream_channel_modifier/   @koffes @alexsven @erikrobstad @rick1082 @gWacey
+/tests/lib/tone/                          @koffes @alexsven @erikrobstad @rick1082 @gWacey
 /tests/modules/lib/zcbor/                 @oyvindronningstad
 /tests/modules/mcuboot/direct_xip/        @hakonfam
 /tests/modules/mcuboot/external_flash/    @hakonfam @sigvartmh
@@ -293,6 +284,6 @@ Kconfig*                                  @tejlmand
 /tests/subsys/pcd/                        @hakonfam @sigvartmh
 /tests/subsys/nrf_profiler/               @pdunaj @MarekPieta
 /tests/subsys/zigbee/                     @tomchy @sebastiandraus
-/tests/tfm/                               @SebastianBoe @joerchan @torsteingrindvik @magnev
+/tests/tfm/                               @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky @torsteingrindvik @magnev
 /tests/unity/                             @nordic-krch
 /zephyr/                                  @carlescufi

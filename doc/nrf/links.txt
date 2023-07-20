@@ -37,6 +37,7 @@
 .. _`MCUboot repository`: https://github.com/mcu-tools/mcuboot
 
 .. _`sdk-mbedtls`: https://github.com/nrfconnect/sdk-mbedtls
+.. _`Arm Mbed TLS project`: https://github.com/ARMmbed/mbedtls
 
 .. _`nrfconnect GitHub organization`: https://github.com/nrfconnect
 .. |ncs_repo| replace:: https://github.com/nrfconnect/sdk-nrf-next
@@ -48,6 +49,9 @@
 .. _`sdk-nrfxlib`: https://github.com/nrfconnect/sdk-nrfxlib
 
 .. _`nRF Blinky`: https://github.com/NordicSemiconductor/Android-nRF-Blinky
+
+.. _`Source code for nRF Wi-Fi Provisioner mobile app for Android`: https://github.com/NordicSemiconductor/Android-nRF-Wi-Fi-Provisioner
+.. _`Source code for nRF Wi-Fi Provisioner mobile app for iOS`: https://github.com/NordicSemiconductor/IOS-nRF-Wi-Fi-Provisioner
 
 .. _`Ethernet over RTT for Linux`: https://github.com/doki-nordic/experimental-eth-rtt-link/
 
@@ -80,6 +84,8 @@
 .. _`nRF52820 CMakeLists.txt`: https://github.com/zephyrproject-rtos/zephyr/blob/main/boards/arm/nrf52833dk_nrf52820/CMakeLists.txt
 
 .. _`OpenThread CLI Reference`: https://github.com/openthread/openthread/blob/main/src/cli/README.md
+.. _`OpenThread CLI Reference - csl command`: https://github.com/openthread/openthread/blob/main/src/cli/README.md#csl
+.. _`OpenThread CLI Reference - pollperiod command`: https://github.com/openthread/openthread/blob/main/src/cli/README.md#pollperiod
 .. _`Commissioner CLI commands`: https://github.com/openthread/openthread/blob/main/src/cli/README_COMMISSIONER.md
 .. _`Joiner CLI commands`: https://github.com/openthread/openthread/blob/main/src/cli/README_JOINER.md
 
@@ -107,8 +113,6 @@
 .. _`Matter GitHub repository`: https://github.com/project-chip/connectedhomeip
 .. _`dedicated Matter fork`: https://github.com/nrfconnect/sdk-connectedhomeip
 .. _`Matter SDK version`: https://github.com/project-chip/connectedhomeip/releases
-.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/master/src/controller
-.. _`CHIP Certificate Tool source files`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/master/src/tools
 .. _`ZCL Advanced Platform`: https://github.com/project-chip/zap
 .. _`ZCL Advanced Platform releases`: https://github.com/project-chip/zap/releases
 .. _`Matter nRF Connect releases`: https://github.com/nrfconnect/sdk-connectedhomeip/releases
@@ -121,6 +125,14 @@
 
 .. _`bt_nus_service.cpp`: https://github.com/nrfconnect/sdk-nrf/blob/main/samples/matter/common/src/bt_nus_service.cpp
 .. _`bt_nus_service.h`: https://github.com/nrfconnect/sdk-nrf/blob/main/samples/matter/common/src/bt_nus_service.h
+
+.. ### Matter links that need updated SHA per release
+
+.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/9e6386c/src/controller
+.. _`CHIP Certificate Tool source files`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/9e6386c/src/tools
+.. _`LogModule enumeration`: https://github.com/nrfconnect/sdk-connectedhomeip/blob/9e6386c/src/lib/support/logging/Constants.h
+.. _`Matter SDK's Logging header`: https://github.com/nrfconnect/sdk-connectedhomeip/blob/9e6386c/src/lib/support/logging/CHIPLogging.h
+
 
 .. _`DCL Quick Start Guide`: https://github.com/zigbee-alliance/distributed-compliance-ledger/blob/master/docs/quickStartGuide.adoc
 
@@ -170,6 +182,7 @@
 
 .. _`latest release notes for nRF Connect for Visual Studio Code`: https://nrfconnect.github.io/vscode-nrf-connect/release_notes/connect/2022.11.140.html
 .. _`nRF Connect for Visual Studio Code`: https://nrfconnect.github.io/vscode-nrf-connect
+.. _`How to create devicetree files`: https://nrfconnect.github.io/vscode-nrf-connect/guides/how_to_create_dt_files.html
 .. _`Configuring with nRF Kconfig`: https://nrfconnect.github.io/vscode-nrf-connect/guides/work_with_kconfig.html
 .. _`How to create devicetree files`: https://nrfconnect.github.io/vscode-nrf-connect/guides/how_to_create_dt_files.html
 .. _`How to work with Devicetree Visual Editor`: https://nrfconnect.github.io/vscode-nrf-connect/guides/work_with_devicetree_editor.html
@@ -183,6 +196,7 @@
 .. _`How to connect to the terminal`: https://nrfconnect.github.io/vscode-nrf-connect/get_started/quick_debug.html
 .. _`nRF Terminal documentation`: https://nrfconnect.github.io/vscode-nrf-connect/terminal/nrfterminal.html
 .. _`Debugging overview`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_concepts.html
+.. _`How to debug`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_use.html
 .. _`How to debug applications for a multi-core System on Chip`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_use.html#how-to-debug-applications-for-a-multi-core-system-on-chip
 .. _`west module management`: https://nrfconnect.github.io/vscode-nrf-connect/guides/west_module_management.html
 .. _`Custom launch and debug configurations`: https://nrfconnect.github.io/vscode-nrf-connect/guides/debug_advanced.html#custom-launch-and-debug-configurations
@@ -382,6 +396,9 @@
 
 .. _`nRF21540 DK product page`: https://www.nordicsemi.com/Products/Low-power-short-range-wireless/nRF21540
 
+.. _`nPM1300 product website`: https://www.nordicsemi.com/products/npm1300
+.. _`nPM1300 EK product page`: https://www.nordicsemi.com/Products/Development-hardware/nPM1300-EK
+
 .. _`nRF Desktop reference design page`: https://www.nordicsemi.com/Products/Reference-designs/nRF-Desktop
 
 .. _`Nordic Semiconductor's IoT cloud platform`: https://www.nordicsemi.com/Products/Cloud-services
@@ -465,7 +482,7 @@
 .. _`AT+CGEREP set command`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/packet_domain/cgerep_set.html
 .. _`AT%CONEVAL`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/mob_termination_ctrl_status/coneval.html
 .. _`Modem trace AT command documentation`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/mob_termination_ctrl_status/xmodemtrace.html
-
+.. _`Battery voltage low level %XVBATLOWLVL`: https://infocenter.nordicsemi.com/topic/ref_at_commands/REF/at_commands/mob_termination_ctrl_status/xvbatlowlvl.html
 .. _`Debugging nRF5340 with SES`: https://infocenter.nordicsemi.com/topic/ug_gsg_ncs/UG/gsg/debug.html?cp=1_1_0_7
 
 .. _`nRF5340 Product Specification`: https://infocenter.nordicsemi.com/topic/ps_nrf5340/keyfeatures_html5.html
@@ -505,6 +522,7 @@
 .. _`Product specification for nRF70 Series devices`: https://infocenter.nordicsemi.com/topic/ps_nrf7002/keyfeatures_html5.html
 .. _`nRF7002 DK Hardware`: https://infocenter.nordicsemi.com/topic/ug_nrf7002_dk/UG/nrf7002_DK/intro.html
 .. _`nRF70 Series`: https://infocenter.nordicsemi.com/topic/struct_nrf70/struct/nrf70.html
+.. _`Measuring current`: https://infocenter.nordicsemi.com/topic/ug_nrf7002_dk/UG/nrf7002_DK/hw_measure_current.html
 
 .. _`Guidelines and application notes for nRF70 Series devices`: https://infocenter.nordicsemi.com/topic/struct_nrf70/struct/nrf70_guidelines.html
 
@@ -518,6 +536,9 @@
 .. _`Programming application and modem firmware on Thingy:91`: https://infocenter.nordicsemi.com/topic/ug_thingy91_gsg/UG/thingy91_gsg/updating_fw.html
 
 .. _`Measuring Current on Thingy:91`: https://infocenter.nordicsemi.com/topic/ug_thingy91/UG/thingy91/hw_description/hw_power_current_measurement.html
+
+.. _`nPM1300`: https://infocenter.nordicsemi.com/topic/struct_pmic/struct/npm1300.html
+.. _`nPM1300 EK User Guide`: https://infocenter.nordicsemi.com/topic/ug_npm1300_ek/UG/nPM1300_EK/intro.html
 
 .. _`Debugger access protection for nRF9160`: https://infocenter.nordicsemi.com/topic/ps_nrf9160/dif.html#debugger_access
 .. _`AP-Protect for nRF5340`: https://infocenter.nordicsemi.com/topic/ps_nrf5340/debugandtrace.html#access_port_protection
@@ -551,7 +572,8 @@
 .. _`Configuring Wireshark for Zigbee`: https://infocenter.nordicsemi.com/topic/ug_sniffer_802154/UG/sniffer_802154/configuring_sniffer_802154_zigbee.html
 
 .. _`Power Profiler Kit II (PPK2)`: https://infocenter.nordicsemi.com/topic/ug_ppk2/UG/ppk/PPK_user_guide_Intro.html
-
+.. _`Install the Power Profiler app`: https://infocenter.nordicsemi.com/topic/ug_ppk2/UG/common/nrf_connect_app_installing.html
+.. _`Using the Power Profiler app`: https://infocenter.nordicsemi.com/topic/ug_ppk2/UG/ppk/PPK_user_guide_Running_the_software.html
 .. _`anomaly 19`: https://infocenter.nordicsemi.com/topic/errata_nRF5340_EngA/ERR/nRF5340/EngineeringA/latest/anomaly_340_19.html
 
 .. _`nRF5 SDK Bootloader`: https://infocenter.nordicsemi.com/topic/sdk_nrf5_v17.0.2/lib_bootloader.html
@@ -582,6 +604,9 @@
 .. _`Errata 257`: https://infocenter.nordicsemi.com/index.jsp?topic=%2Ferrata_nRF52811_Rev2%2FERR%2FnRF52811%2FRev2%2Flatest%2Fconfig_811_257.html
 
 .. _`Errata 117`: https://infocenter.nordicsemi.com/index.jsp?topic=%2Ferrata_nRF5340_Rev1%2FERR%2FnRF5340%2FRev1%2Flatest%2Fanomaly_340_117.html
+
+.. _`Unauthorized Thread Network Key Update (SA-2023-234) vulnerability`: https://infocenter.nordicsemi.com/pdf/SA-2023-234-v1_1.pdf
+
 
 .. ### Source: academy.nordicsemi.com
 
@@ -787,6 +812,7 @@
 
 .. _`AWS IoT Just-in-time-provisioning`: https://aws.amazon.com/blogs/iot/just-in-time-registration-of-device-certificates-on-aws-iot/
 .. _`AWS IoT Device Shadow Topics`: https://docs.aws.amazon.com/iot/latest/developerguide/device-shadow-mqtt.html
+.. _`AWS IoT Device Shadow Service`: https://docs.aws.amazon.com/iot/latest/developerguide/iot-device-shadows.html
 
 .. _`AWS IoT Developer Guide`: https://docs.aws.amazon.com/iot/latest/developerguide/what-is-aws-iot.html
 .. _`AWS IoT MQTT`: https://docs.aws.amazon.com/iot/latest/developerguide/mqtt.html
@@ -822,6 +848,10 @@
 .. _`OpenThread Daemon`: https://openthread.io/platforms/co-processor/ot-daemon
 
 .. _`OpenThread CoAP API`: https://openthread.io/reference/group/api-coap
+
+.. _`IPv6 multicast addressing`: https://openthread.io/guides/thread-primer/ipv6-addressing#multicast
+
+.. _`Joining an existing Thread network`: https://openthread.io/guides/thread-primer/network-discovery#join_an_existing_network
 
 .. ### Source: threadgroup.*
 

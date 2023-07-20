@@ -19,7 +19,8 @@
 
 LOG_MODULE_REGISTER(identity_key);
 
-static void generate_random_secp256r1_private_key(uint8_t *key_buff)
+#if defined(CONFIG_IDENTITY_KEY_RANDOM)
+static int generate_random_secp256r1_private_key(uint8_t *key_buff)
 {
 	psa_status_t status;
 	psa_key_handle_t key_handle;
@@ -27,7 +28,10 @@ static void generate_random_secp256r1_private_key(uint8_t *key_buff)
 
 	/* Initialize PSA Crypto */
 	status = psa_crypto_init();
-	__ASSERT(status == PSA_SUCCESS, "psa_crypto_init failed! Error: %d", status);
+	if (status != PSA_SUCCESS) {
+		LOG_ERR("psa_crypto_init failed! Error: %d", status);
+		return -IDENTITY_KEY_ERR_GENERATION_FAILED;
+	}
 
 	/* Configure the key attributes */
 	psa_key_attributes_t key_attributes = PSA_KEY_ATTRIBUTES_INIT;
@@ -37,47 +41,78 @@ static void generate_random_secp256r1_private_key(uint8_t *key_buff)
 	 */
 	psa_set_key_usage_flags(&key_attributes, PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_EXPORT);
 	psa_set_key_lifetime(&key_attributes, PSA_KEY_LIFETIME_VOLATILE);
-	psa_set_key_algorithm(&key_attributes, PSA_ALG_ECDSA(PSA_ALG_SHA_256));
 	psa_set_key_type(&key_attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
 	psa_set_key_bits(&key_attributes, IDENTITY_KEY_SIZE_BYTES * 8);
 
 	status = psa_generate_key(&key_attributes, &key_handle);
-	__ASSERT(status == PSA_SUCCESS, "psa_generate_key failed! Error: %d", status);
+	if (status != PSA_SUCCESS) {
+		LOG_ERR("psa_generate_key failed! Error: %d", status);
+		return -IDENTITY_KEY_ERR_GENERATION_FAILED;
+	}
 
 	status = psa_export_key(key_handle, key_buff, IDENTITY_KEY_SIZE_BYTES, &olen);
-	__ASSERT(status == PSA_SUCCESS, "psa_export_key failed! Error: %d", status);
+	if (status != PSA_SUCCESS) {
+		LOG_ERR("psa_export_key failed! Error: %d", status);
+		return -IDENTITY_KEY_ERR_GENERATION_FAILED;
+	}
 
-	__ASSERT(olen == IDENTITY_KEY_SIZE_BYTES, "Exported size missmatch! Key size: %d", olen);
+	if (olen != IDENTITY_KEY_SIZE_BYTES) {
+		LOG_ERR("Exported size mismatch! Key size: %d", olen);
+		return -IDENTITY_KEY_ERR_GENERATION_FAILED;
+	}
 
 	status = psa_destroy_key(key_handle);
-	__ASSERT(status == PSA_SUCCESS, "psa_destroy_key failed! Error: %d", status);
+	if (status != PSA_SUCCESS) {
+		LOG_ERR("psa_destroy_key failed! Error: %d", status);
+		return -IDENTITY_KEY_ERR_GENERATION_FAILED;
+	}
+
+	return IDENTITY_KEY_SUCCESS;
 }
 
-void identity_key_write_random(void)
+int identity_key_write_random(void)
 {
+	int err;
 	uint8_t key_buff[IDENTITY_KEY_SIZE_BYTES];
 
-	/* This function will panic if the key generation fails */
-	generate_random_secp256r1_private_key(key_buff);
+	/* Generate the identity key */
+	err = generate_random_secp256r1_private_key(key_buff);
+	if (err != IDENTITY_KEY_SUCCESS) {
+		return err;
+	}
 
 	/* Write the key into KMU using the MKEK as encryption key */
-	identity_key_write_key(key_buff);
+	err = identity_key_write_key(key_buff);
+	if (err != IDENTITY_KEY_SUCCESS) {
+		return err;
+	}
 
 	/* Clear the unencrypted key from RAM for security reasons */
 	nrf_cc3xx_platform_identity_key_free(key_buff);
-}
 
-void identity_key_write_key(uint8_t key[IDENTITY_KEY_SIZE_BYTES])
+	return IDENTITY_KEY_SUCCESS;
+}
+#endif /* defined(CONFIG_IDENTITY_KEY_RANDOM)*/
+
+int identity_key_write_key(uint8_t key[IDENTITY_KEY_SIZE_BYTES])
 {
 	int err;
 
-	__ASSERT(identity_key_mkek_is_written(), "Could not find the MKEK!");
+	if (!identity_key_mkek_is_written()) {
+		LOG_ERR("Could not find the MKEK!");
+		return -IDENTITY_KEY_ERR_MKEK_MISSING;
+	}
 
 	err = nrf_cc3xx_platform_identity_key_store(NRF_KMU_SLOT_KIDENT, key);
-	__ASSERT(err == NRF_CC3XX_PLATFORM_SUCCESS, "Identity key write failed ! Error: %d", err);
+	if (err != NRF_CC3XX_PLATFORM_SUCCESS) {
+		LOG_ERR("Identity key write failed! Error: %d", err);
+		return -IDENTITY_KEY_ERR_WRITE_FAILED;
+	}
 
+	return IDENTITY_KEY_SUCCESS;
 }
 
+#if defined(CONFIG_IDENTITY_KEY_DUMMY)
 /* This key is used by the TF-M regression tests and it is taken from the TF-M
  * repository. It should ONLY be used for testing and debugging purposes.
  *
@@ -95,11 +130,12 @@ uint8_t dummy_identity_secp256r1_private_key[IDENTITY_KEY_SIZE_BYTES] = {
 	0x4B, 0x92, 0xA1, 0x93, 0x71, 0x34, 0x58, 0x5F
 };
 
-void identity_key_write_dummy(void)
+int identity_key_write_dummy(void)
 {
-	LOG_INF("WARNING: Using a dummy identity key not meant for production!");
-	identity_key_write_key(dummy_identity_secp256r1_private_key);
+	LOG_WRN("WARNING: Using a dummy identity key not meant for production!");
+	return identity_key_write_key(dummy_identity_secp256r1_private_key);
 }
+#endif /* defined(CONFIG_IDENTITY_KEY_DUMMY) */
 
 bool identity_key_mkek_is_written(void)
 {
@@ -117,20 +153,21 @@ int identity_key_read(uint8_t key[IDENTITY_KEY_SIZE_BYTES])
 
 	/* MKEK is required to retrieve key */
 	if (!identity_key_mkek_is_written()) {
-		return -ERR_IDENTITY_KEY_MKEK_MISSING;
+		return -IDENTITY_KEY_ERR_MKEK_MISSING;
 	}
 
 	if (!identity_key_is_written()) {
-		return -ERR_IDENTITY_KEY_MISSING;
+		return -IDENTITY_KEY_ERR_MISSING;
 	}
 
 	/* Retrieve the identity key */
 	err = nrf_cc3xx_platform_identity_key_retrieve(NRF_KMU_SLOT_KIDENT, key);
 	if (err != NRF_CC3XX_PLATFORM_SUCCESS) {
-		LOG_INF("The identity key read from: %d", NRF_KMU_SLOT_KIDENT);
-		LOG_INF("failed with error code: %d", err);
-		return -ERR_IDENTITY_KEY_READ_FAILED;
+		LOG_ERR("The identity key read from: %d failed with error code: %d",
+			NRF_KMU_SLOT_KIDENT,
+			err);
+		return -IDENTITY_KEY_ERR_READ_FAILED;
 	}
 
-	return 0;
+	return IDENTITY_KEY_SUCCESS;
 }

@@ -12,7 +12,9 @@
 #include <pm_config.h>
 #include <fprotect.h>
 #include <hal/nrf_acl.h>
-#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
+
+LOG_MODULE_DECLARE(hw_unique_key);
 
 /* The magic data identify the flash page which contains the key */
 static const uint32_t huk_magic[4] = {
@@ -21,11 +23,11 @@ static const uint32_t huk_magic[4] = {
 
 static uint32_t huk_addr = PM_HW_UNIQUE_KEY_PARTITION_ADDRESS;
 
-void hw_unique_key_write(enum hw_unique_key_slot kmu_slot, const uint8_t *key)
+int hw_unique_key_write(enum hw_unique_key_slot key_slot, const uint8_t *key)
 {
-	if (kmu_slot != HUK_KEYSLOT_KDR) {
-		printk("KMU slot must be HUK_KEYSLOT_KDR on nRF52840\r\n");
-		k_panic();
+	if (key_slot != HUK_KEYSLOT_KDR) {
+		LOG_ERR("Key slot must be HUK_KEYSLOT_KDR on nRF52840");
+		return -HW_UNIQUE_KEY_ERR_WRITE_FAILED;
 	}
 
 	nrfx_nvmc_words_write(huk_addr, huk_magic, sizeof(huk_magic)/4);
@@ -34,13 +36,15 @@ void hw_unique_key_write(enum hw_unique_key_slot kmu_slot, const uint8_t *key)
 	nrfx_nvmc_words_write(huk_addr + sizeof(huk_magic), key, HUK_SIZE_WORDS);
 	while (!nrfx_nvmc_write_done_check())
 		;
+
+	return HW_UNIQUE_KEY_SUCCESS;
 }
 
-bool hw_unique_key_is_written(enum hw_unique_key_slot kmu_slot)
+bool hw_unique_key_is_written(enum hw_unique_key_slot key_slot)
 {
-	if (kmu_slot != HUK_KEYSLOT_KDR) {
-		printk("KMU slot must be HUK_KEYSLOT_KDR on nRF52840\r\n");
-		k_panic();
+	if (key_slot != HUK_KEYSLOT_KDR) {
+		LOG_ERR("Key slot must be HUK_KEYSLOT_KDR on nRF52840");
+		return false;
 	}
 
 	uint32_t protection = fprotect_is_protected(huk_addr);
@@ -60,27 +64,29 @@ bool hw_unique_key_is_written(enum hw_unique_key_slot kmu_slot)
 	return false;
 }
 
-void hw_unique_key_load_kdr(void)
+int hw_unique_key_load_kdr(void)
 {
 	int err = -1;
 
 	/* Compare the huk_magic data with the content of the page */
 	if (memcmp((uint8_t *)huk_addr, huk_magic, sizeof(huk_magic) != 0)) {
-		printk("Could not load the HUK, magic data is not present\r\n");
-		k_panic();
+		LOG_ERR("Could not load the HUK, magic data is not present");
+		return -HW_UNIQUE_KEY_ERR_MISSING;
 	}
 
 	err = nrf_cc3xx_platform_kdr_load_key((uint8_t *)huk_addr +
 					      sizeof(huk_magic));
 	if (err != 0) {
-		printk("The HUK loading failed with error code: %d\r\n", err);
-		k_panic();
+		LOG_ERR("The HUK loading failed with error code: %d", err);
+		return -HW_UNIQUE_KEY_ERR_GENERIC_ERROR;
 	}
 
 	/* Lock the flash page which holds the key */
 	err = fprotect_area_no_access(huk_addr, CONFIG_FPROTECT_BLOCK_SIZE);
 	if (err != 0) {
-		printk("Fprotect failed with error code: %d\r\n", err);
-		k_panic();
+		LOG_ERR("Fprotect failed with error code: %d", err);
+		return -HW_UNIQUE_KEY_ERR_GENERIC_ERROR;
 	}
+
+	return HW_UNIQUE_KEY_SUCCESS;
 }

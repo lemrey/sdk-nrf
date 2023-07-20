@@ -15,8 +15,18 @@ menuconfig IDENTITY_KEY
 	  This option adds support for an identity key stored in the KMU.
 	  The key is stored in an encrypted form and is decrypted
 	  by the identity key APIs.
+	  The identity key is an ECC secp256r1 key pair.
 
 if IDENTITY_KEY
+
+config IDENTITY_KEY_RANDOM
+	bool "Enable writing random Identity Keys"
+	select PSA_WANT_ALG_ECDSA # Needed to set implicit config PSA_WANT_KEY_TYPE_ECC_KEY_PAIR
+	select PSA_WANT_ECC_SECP_R1_256
+	help
+	  Enable the identity_key_write_random() function.
+	  This uses the PSA APIs to generate a random identity key.
+	  Disable to save space.
 
 config IDENTITY_KEY_DUMMY
 	bool "Write a dummy identity key (not for production)"

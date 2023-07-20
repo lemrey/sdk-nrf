@@ -64,7 +64,11 @@ int main(void)
 	LOG_INF("Successfully switched to PSA lifecycle state PROVISIONING!");
 
 	LOG_INF("Generating random HUK keys (including MKEK)");
-	hw_unique_key_write_random();
+	err = hw_unique_key_write_random();
+	if (err != HW_UNIQUE_KEY_SUCCESS) {
+		LOG_INF("Failure: Writing random HUK keys failed. Exiting!");
+		return 0;
+	}
 
 	if (identity_key_is_written()) {
 		LOG_INF("Failure: Identity key slot already written. Exiting!");
@@ -74,10 +78,15 @@ int main(void)
 	LOG_INF("Writing the identity key to KMU");
 
 #ifdef CONFIG_IDENTITY_KEY_DUMMY
-	identity_key_write_dummy();
+	err = identity_key_write_dummy();
 #else
-	identity_key_write_random();
+	err = identity_key_write_random();
 #endif
+
+	if (err != IDENTITY_KEY_SUCCESS) {
+		LOG_INF("Failure: Identity key write failed! Exiting!");
+		return 0;
+	}
 
 	if (!identity_key_is_written()) {
 		LOG_INF("Failure: Identity key is not written! Exiting!");
