@@ -46,16 +46,10 @@
     - zigbee.osif.nvram
     - sample.openthread.coap_server
     - sample.openthread.coap_client
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp
-  comment: "CMake Error No board specified for domain 'CPUNET'.  This configuration is typically"
-
-- scenarios:
-    - sample.openthread.coap_server
-    - sample.openthread.coap_client
     - sample.nrf_security.openthread.integration
     - integration.nrf_security.openthread
   platforms:
+    - nrf5340dk_nrf5340_cpuapp
     - nrf5340dk_nrf5340_cpuapp_ns
   comment: "CMake Error No board specified for domain 'CPUNET'.  This configuration is typically"
 
@@ -71,6 +65,7 @@
     - sample.spm
   platforms:
     - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
     - nrf9160dk_nrf9160
   comment: "error: NRFX_PERIPHERAL_ID_GET redefined"
 
@@ -89,243 +84,6 @@
   comment: "error: NRFX_PERIPHERAL_ID_GET redefined"
 
 - scenarios:
-    - sample.openthread.coap_client.mtd.multiprotocol_ble
-    - sample.openthread.cli.usb
-    - sample.openthread.cli.thread_1_1
-    - sample.openthread.cli
-    - sample.psa_tls.server.rsa.cc3xx_oberon
-    - sample.psa_tls.server.ecdsa.cc3xx_oberon
-    - sample.psa_tls.client.rsa.cc3xx_oberon
-    - sample.psa_tls.client.ecdsa.cc3xx_oberon
-    - integration.nrf_security.sha256
-    - regions.settings_storage_tfm
-    - sample.bluetooth.mesh.light_ctrl.emds
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "error: nrfx_uarte_config_t has no member named pselrts"
-
-- scenarios:
-    - sample.psa_tls.server.rsa.cc3xx_oberon
-    - sample.psa_tls.server.ecdsa.cc3xx_oberon
-    - sample.psa_tls.client.rsa.cc3xx_oberon
-    - sample.psa_tls.client.ecdsa.cc3xx_oberon
-  platforms:
-    - nrf9160dk_nrf9160_ns
-  comment: "error: nrfx_uarte_config_t has no member named pselrts"
-
-- scenarios:
-    - sample.peripheral.lpuart_int_driven
-    - sample.nrf9160.udp
-    - sample.peripheral.lpuart
-    - samples.peripheral.lpuart_nrf9160dk_debug
-    - sample.nrf_profiler
-    - nrf_profiler.core
-    - sample.nrf9160.sms
-    - sample.nrf9160.nrf_cloud_rest_device_message
-    - sample.nrf9160.pdn
-    - samples.nrf9160.serial_lte_modem
-    - samples.nrf9160.serial_lte_modem.native_tls
-    - sample.nrf9160.multicell_location
-    - sample.nrf9160.mqtt_simple
-    - sample.nrf9160.nrf_cloud_rest_cell_pos
-    - sample.nrf9160.nrf_cloud_mqtt_multi_service
-    - sample.nrf9160.modem_callbacks
-    - sample.nrf9160.nrf_cloud_rest_fota
-    - sample.nrf9160.lte_ble_gateway
-    - sample.nrf9160.memfault
-    - sample.nrf9160.location.pgps
-    - sample.nrf9160.location.esp_wifi
-    - sample.nrf9160.location
-    - sample.nrf9160.https_client
-    - sample.nrf9160.http_update.modem_delta_update
-    - sample.nrf9160.http_update.full_modem_update
-    - sample.nrf9160.download_client
-    - sample.nrf9160.download.tfm
-    - sample.nrf9160.coap_client
-    - sample.nrf9160.http_update.application_update
-    - samples.nrf9160.ciphersuites
-    - sample.nrf9160.azure_iot_hub
-    - sample.nrf9160.fmfu_smp_svr
-    - sample.nrf9160.at_monitor
-    - sample.nrf9160.at_client
-    - at_sms_cert.functionality_test
-    - edge_impulse.ei_wrapper
-    - sample.edge_impulse.wrapper
-    - sample.nrf9160.azure_fota
-    - sample.nrf9160.aws_iot
-    - sample.ei_data_forwarder
-    - asset_tracker_v2.ui_module_test.tester
-    - asset_tracker_v2.gnss_module_test.tester
-    - sample.nrf9160.aws_fota
-    - asset_tracker_v2.debug_module_test.tester
-    - applications.asset_tracker_v2.nrf_cloud
-    - applications.asset_tracker_v2.memfault
-    - applications.asset_tracker_v2.nrf_cloud-pgps
-    - applications.asset_tracker_v2.lwm2m.low-power
-    - applications.asset_tracker_v2.lwm2m.debug
-    - applications.asset_tracker_v2.low-power
-    - applications.asset_tracker_v2.debug-memfault
-    - applications.asset_tracker_v2.debug
-    - sample.app_event_manager
-    - sample.app_event_manager_profiler_tracer
-    - applications.asset_tracker_v2.azure
-    - applications.asset_tracker_v2.aws-pgps
-    - applications.asset_tracker_v2.aws-all
-    - applications.asset_tracker_v2.aws
-    - applications.asset_tracker_v2.carrier
-    - applications.asset_tracker_v2.lwm2m.debug-memfault
-    - applications.asset_tracker_v2.lwm2m.debug-modem_trace
-    - applications.asset_tracker_v2.memfault-low-power
-    - asset_tracker_v2.lwm2m_codec
-    - asset_tracker_v2.lwm2m_integration
-    - sample.nrf9160.azure_iot_hub.dps
-    - sample.nrf9160.gnss
-    - sample.nrf9160.lwm2m_carrier
-    - sample.nrf9160.lwm2m_client
-    - sample.nrf9160.modem_shell.fota
-    - sample.nrf9160.modem_shell.non_offloading_ip_modem_uart_trace
-    - sample.nrf9160.modem_shell.pgps
-    - sample.nrf9160.modem_shell.rtt
-    - sample.nrf9160.modem_shell_modem_uart_trace
-    - sample.peripheral.lpuart_nrf9160dk_debug
-    - fast_pair.crypto.oberon
-    - nrf_cloud.nrf_cloud_init
-    - net.lib.fota_download
-    - net.lib.download_client
-    - fast_pair.crypto.tinycrypt
-    - app_event_manager.size_enabled
-    - app_event_manager.core
-    - sample.tfm.hello_world.bootloaders
-    - sample.tfm.helloworld
-    - lib.hw_unique_key_tfm
-    - tfm.secure_services
-    - sample.aes_cbc
-    - sample.aes_ccm
-    - sample.aes_ctr
-    - sample.tfm.secure_partition
-    - nrfx_integration_test.build
-    - sample.keys.hw_unique_key
-    - sample.sha256
-    - sample.rsa
-    - sample.rng
-    - sample.persistent_key_usage
-    - sample.hmac
-    - sample.hkdf
-    - sample.ecdsa
-    - sample.ecdh
-    - sample.aes_gcm.oberon
-    - sample.chacha_poly
-  platforms:
-    - nrf9160dk_nrf9160_ns
-    - thingy91_nrf9160_ns
-  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
-
-- scenarios:
-    - sample.nfc.writable_ndef_msg
-    - sample.nfc.tnep_tag
-    - sample.nfc.system_off
-    - sample.nfc.record_text
-    - sample.nfc.launch_app
-    - sample.ei_data_forwarder
-    - sample.edge_impulse.wrapper
-    - sample.tfm.hello_world.bootloaders
-    - sample.bluetooth.throughput
-    - sample.bluetooth.shell_bt_nus
-    - sample.bluetooth.peripheral_mds
-    - sample.bluetooth.peripheral_uart
-    - sample.bluetooth.peripheral_rscs
-    - sample.bluetooth.peripheral_nfc_pairing
-    - sample.bluetooth.peripheral_lbs
-    - sample.bluetooth.peripheral_hids_mouse.build
-    - sample.bluetooth.peripheral_hids_keyboard.build
-    - sample.bluetooth.peripheral_gatt_dm
-    - sample.bluetooth.fast_pair
-    - sample.bluetooth.peripheral_ancs_client.build
-    - sample.bluetooth.peripheral_cts_client.build
-    - sample.bluetooth.peripheral_ams_client.build
-    - sample.bluetooth.multiple_adv_sets.build
-    - sample.bluetooth.mesh.silvair_enocean
-    - sample.bluetooth.mesh.light_switch
-    - sample.bluetooth.mesh.light_ctrl
-    - sample.bluetooth.central_uart
-    - sample.bluetooth.central_dfu_smp.build
-    - sample.bluetooth.mesh.light
-    - sample.bluetooth.central_hids.build
-    - sample.bluetooth.central_bas.build
-    - sample.bluetooth.central_and_peripheral_hr.build
-    - sample.tfm.helloworld
-    - tfm.secure_services
-    - sample.aes_ccm
-    - sample.aes_cbc
-    - sample.tfm.secure_partition
-    - hw_unique_key_tfm
-    - sample.keys.hw_unique_key
-    - lib.hw_unique_key_tfm
-    - nrfx_integration_test.build
-    - sample.sha256
-    - sample.rsa
-    - sample.rng
-    - sample.persistent_key_usage
-    - sample.hmac
-    - sample.hkdf
-    - sample.sample.ecdsa
-    - sample.ecdh
-    - sample.chacha_poly
-    - sample.aes_gcm.cc312
-    - sample.aes_ctr
-    - sample.ecdsa
-    - sample.bluetooth.peripheral_power_profiling
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
-
-- scenarios:
-    - applications.asset_tracker_v2.aws
-    - applications.asset_tracker_v2.aws-all
-    - applications.asset_tracker_v2.aws-pgps
-    - applications.asset_tracker_v2.azure
-    - applications.asset_tracker_v2.debug
-    - applications.asset_tracker_v2.debug-memfault
-    - applications.asset_tracker_v2.low-power
-    - applications.asset_tracker_v2.lwm2m.debug
-    - applications.asset_tracker_v2.lwm2m.debug-memfault
-    - applications.asset_tracker_v2.lwm2m.debug-modem_trace
-    - applications.asset_tracker_v2.lwm2m.low-power
-    - applications.asset_tracker_v2.memfault
-    - applications.asset_tracker_v2.memfault-low-power
-    - applications.asset_tracker_v2.nrf_cloud
-    - applications.asset_tracker_v2.nrf_cloud-pgps
-    - sample.nrf9160.aws_iot
-    - sample.nrf9160.lwm2m_client
-    - sample.nrf9160.memfault
-    - sample.nrf9160.modem_shell.thingy91
-    - sample.nrf9160.modem_shell.thingy91_modem_uart_trace
-    - sample.nrf9160.multicell_location
-    - sample.nrf9160.nrf_cloud_mqtt_multi_service
-    - sample.nrf9160.udp
-    - applications.nrf9160.serial_lte_modem
-    - applications.nrf9160.serial_lte_modem.native_tls
-  platforms:
-    - thingy91_nrf9160_ns
-  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
-
-- scenarios:
-    - sample.bluetooth.mesh.light
-    - sample.bluetooth.mesh.light_ctrl
-    - sample.bluetooth.mesh.light_ctrl.emds
-    - sample.bluetooth.mesh.light_switch
-    - sample.bluetooth.mesh.sensor_server
-    - sample.bluetooth.peripheral_lbs
-    - sample.bluetooth.peripheral_lbs_no_security
-    - sample.bluetooth.peripheral_uart
-    - applications.machine_learning.zdebug
-    - applications.machine_learning.zdebug_rtt
-    - applications.machine_learning.zrelease
-  platforms:
-    - thingy53_nrf5340_cpuapp_ns
-  comment: "error: NRF_TIMER_FREQ_1MHz undeclared"
-
-- scenarios:
     - bluetooth.general.tester
   platforms:
     - qemu_x86
@@ -334,9 +92,24 @@
 - scenarios:
     - lib.modem_trace_uart
     - trace_backends.uart
+    - sample.nrf9160.modem_shell_modem_uart_trace
+    - applications.asset_tracker_v2.lwm2m.debug-modem_trace
+    - sample.nrf9160.modem_shell.thingy91_modem_uart_trace
+    - sample.nrf9160.modem_shell.non_offloading_ip_modem_uart_trace
   platforms:
     - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - thingy91_nrf9160_ns
   comment: "error: nrfx_uarte_config_t has no member named pselrts"
+
+- scenarios:
+    - edge_impulse.wrapper
+    - edge_impulse.ei_wrapper
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "fatal error: offsets.h: No such file or directory (CMake dependency issue?)"
 
 - scenarios:
     - applications.nrf_desktop.zrelease_b0
@@ -366,15 +139,18 @@
     - nrfx_integration_test.build
   platforms:
     - nrf9160dk_nrf9160
+    - nrf9160dk_nrf9160_ns
     - nrf52840dk_nrf52840
     - nrf5340dk_nrf5340_cpunet
     - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
   comment: "error: 'nrfx_egu_driver_api' defined but not used"
 
 - scenarios:
     - debug.cpu_load
   platforms:
     - nrf9160dk_nrf9160
+    - nrf9160dk_nrf9160_ns
     - nrf52840dk_nrf52840
   comment: "error: 'nrfx_timer_config_t' has no member named 'frequency'"
 
@@ -382,6 +158,7 @@
     - debug.cpu_load.shared_dppi
   platforms:
     - nrf9160dk_nrf9160
+    - nrf9160dk_nrf9160_ns
   comment: "error: 'NRF_TIMER_FREQ_1MHz' undeclared"
 
 - scenarios:
@@ -390,36 +167,14 @@
     - applications.nrf5340_audio.gateway
   platforms:
     - nrf5340_audio_dk_nrf5340_cpuapp
+    - nrf5340_audio_dk_nrf5340_cpuapp_ns
   comment: "error: NRFX_I2S is assigned in a configuration file, but is not directly user-configurable (has no prompt)."
-
-- scenarios:
-    - sample.bluetooth.peripheral_lbs_no_security
-    - sample.newlib_libc.sha256
-    - sample.nrf_security.sha256.integration
-    - sample.tfm.hello_world.full
-    - sample.tfm.hello_world.lvl2
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "Cannot specify link options for target 'tfm_ns' which is not built by this"
-
-- scenarios:
-    - applications.nrf9160.serial_lte_modem
-    - applications.nrf9160.serial_lte_modem.native_tls
-    - caf_sensor_aggregator.core
-    - fast_pair.storage.default
-    - sample.app_event_manager_shell
-    - sample.nrf9160.ciphersuites
-    - sample.nrf9160.modem_trace_backend
-    - sample.tfm.hello_world.full
-    - sample.tfm.hello_world.lvl2
-  platforms:
-    - nrf9160dk_nrf9160_ns
-  comment: "Cannot specify link options for target 'tfm_ns' which is not built by this"
 
 - scenarios:
     - sample.zigbee.ncp.usb.nrf5340dk_nrf5340_cpuapp
   platforms:
     - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
   comment: "TO BE invastigated under NCSDK-18845"
 
 - scenarios:
@@ -465,29 +220,6 @@
   comment: "error: 'nrfx_timer_config_t' has no member named 'frequency'"
 
 - scenarios:
-    - tfm.regression_lib_mode
-    - tfm.regression_ipc_lvl1
-    - tfm.regression_ipc_lvl2.mbedtls_builtin
-    - tfm.regression_ipc_lvl2.cc3xx
-    - tfm.regression_ipc_lvl2.oberon
-    - tfm.regression_ipc_lvl2.cc3xx_oberon
-    - tfm.psa_test_protected_storage
-    - tfm.psa_test_internal_trusted_storage
-    - tfm.psa_test_storage
-    - tfm.psa_test_crypto
-    - tfm.psa_test_initial_attestation
-    - sample.tfm.helloworld
-    - sample.tfm.hello_world.bootloaders
-    - sample.tfm.hello_world.full
-    - sample.tfm.hello_world.lvl2
-    - sample.tfm.psa_template
-    - sample.tfm.secure_peripheral
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp_ns
-    - nrf9160dk_nrf9160_ns
-  comment: "TF-M UART driver is broken with sdk-hal_nordic-next"
-
-- scenarios:
     - sample.hw_id.ble
   platforms:
     - nrf51dk_nrf51422
@@ -502,6 +234,10 @@
     - applications.nrf5340_audio.gateway_dfu_external
   platforms:
     - nrf5340_audio_dk_nrf5340_cpuapp
+    - nrf5340_audio_dk_nrf5340_cpuapp_ns
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf7002dk_nrf5340_cpuapp_ns
+    - thingy53_nrf5340_cpuapp_ns
   comment: "nrfx timer and i2s API changes break the application"
 
 - scenarios:
@@ -522,112 +258,6 @@
   comment: "ANT samples fail to build; need to change main()'s signature to int main(void)"
 
 - scenarios:
-    - sample.nrf9160.modem_shell.location_service_ext_pgps_nrf7002ek_wifi
-    - sample.nrf9160.modem_shell.location_cellular_no_wifi_no_gnss
-    - sample.nrf9160.modem_shell.location_wifi_cellular_no_gnss
-    - sample.nrf9160.modem_shell.nrf7002ek_wifi-debug
-    - sample.nrf9160.modem_shell.nrf7002ek_wifi
-    - sample.nrf9160.modem_shell.lwm2m_carrier
-    - sample.nrf9160.modem_shell.lwm2m_pgps
-    - gcf_sms.functionality_test
-    - asset_tracker_v2.nrf_cloud_codec_test
-    - applications.asset_tracker_v2.nrf7002ek_wifi
-    - sample.hw_id.device_id
-    - sample.hw_id.imei
-    - sample.nrf9160.modem_shell.location_service_ext
-    - asset_tracker_v2.location_module_test.tester
-    - boot_chains.secure_boot_and_bootloader_mcuboot
-    - boot_chains.bootloader_mcuboot
-    - applications.asset_tracker_v2.nrf_cloud-no-agps
-    - sample.nrf9160.modem_shell.location_gnss_wifi_no_cellular
-    - asset_tracker_v2.nrf_cloud_codec_mocked_cjson_test
-    - at_custom_cmd.functionality_test
-    - sample.nrf9160.modem_shell.lwm2m_bootstrap
-    - sample.net.mqtt
-    - applications.asset_tracker_v2.lwm2m.memfault
-    - tfm.psa_test_internal_trusted_storage_lvl2
-    - tfm.psa_test_protected_storage_lvl2
-    - tfm.psa_test_protected_storage_lvl1
-    - tfm.psa_test_storage_lvl1
-    - tfm.psa_test_storage_lvl2
-    - tfm.psa_test_initial_attestation_lvl2
-    - tfm.psa_test_crypto_lvl2
-    - tfm.psa_test_crypto_lvl1
-    - tfm.regression_sfn_lvl1
-    - sample.nrf9160.location.nrf7002ek_wifi
-    - samples.nrf9160.nidd
-    - sample.nrf7002.shell.scan_only_9160
-    - tfm.psa_test_internal_trusted_storage_lvl1
-    - sample.nrf9160.modem_shell_debug
-    - net.lib.nrf_cloud.cloud
-    - sample.net.mqtt.nrf9160.tls
-    - caf_sensor_manager.core
-    - sample.tfm.hello_world.bootloaders_debug
-    - fast_pair.storage.factory_reset.default
-    - sample.nrf9160.http_update.application_update.lwm2m_carrier
-    - sample.nrf9160.modem_shell.memfault_modem_trace_ram
-    - sample.nrf9160.modem_shell.memfault_modem_trace
-    - sample.nrf9160.modem_shell.location_wifi_no_cellular_no_gnss
-    - sample.nrf9160.modem_shell.location_gnss_no_wifi_no_cellular
-    - fast_pair.storage.account_key_storage.default
-    - tfm.psa_test_initial_attestation_lvl1
-    - sample.hw_id.uuid
-    - applications.nrf9160.serial_lte_modem.lwm2m_carrier
-    - sample.nrf9160.modem_trace_flash
-  platforms:
-    - nrf9160dk_nrf9160_ns
-  comment: "TFM-M doesn't build in HCS"
-
-- scenarios:
-    - boot_chains.secure_boot_and_bootloader_mcuboot
-    - sample.openthread.cli.low_power
-    - tfm.psa_test_crypto_lvl1
-    - tfm.psa_test_crypto_lvl2
-    - tfm.psa_test_storage_lvl2
-    - tfm.psa_test_storage_lvl1
-    - tfm.psa_test_protected_storage_lvl2
-    - sample.hw_id
-    - sample.hw_id.ble
-    - sample.hw_id.device_id
-    - tfm.regression_sfn_lvl1
-    - tfm.psa_test_internal_trusted_storage_lvl1
-    - sample.bluetooth.peripheral_nsms_no_security
-    - tfm.psa_test_initial_attestation_lvl1
-    - tfm.psa_test_initial_attestation_lvl2
-    - sample.tfm.hello_world.bootloaders_debug
-    - sample.app_event_manager_shell
-    - sample.app_event_manager
-    - sample.bluetooth.peripheral_cgm
-    - sample.bluetooth.peripheral_nsms
-    - tfm.psa_test_protected_storage_lvl1
-    - tfm.psa_test_internal_trusted_storage_lvl2
-    - sample.bluetooth.peripheral_lbs_bt_ota_dfu
-    - boot_chains.bootloader_mcuboot
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "TFM-M doesn't build in HCS"
-
-- scenarios:
-    - sample.bluetooth.peripheral_nsms
-    - sample.bluetooth.peripheral_nsms_no_security
-  platforms:
-    - thingy53_nrf5340_cpuapp_ns
-  comment: "TFM-M doesn't build in HCS"
-
-- scenarios:
-    - sample.net.mqtt
-    - samples.nrf9160.nidd
-    - applications.asset_tracker_v2.lwm2m.memfault
-    - applications.asset_tracker_v2.nrf_cloud-no-agps
-    - applications.nrf9160.serial_lte_modem.lwm2m_carrier
-    - sample.net.mqtt.nrf9160.tls
-    - sample.bluetooth.peripheral_nsms_no_security
-    - sample.bluetooth.peripheral_nsms
-  platforms:
-    - thingy91_nrf9160_ns
-  comment: "TFM-M doesn't build in HCS"
-
-- scenarios:
     - sample.bluetooth.mesh.light
     - sample.bluetooth.mesh.light_ctrl.emds
     - sample.bluetooth.mesh.light_switch
@@ -635,4 +265,5 @@
     - sample.bluetooth.mesh.sensor_server
   platforms:
     - thingy53_nrf5340_cpuapp
+    - thingy53_nrf5340_cpuapp_ns
   comment: "RAM region overflow"
