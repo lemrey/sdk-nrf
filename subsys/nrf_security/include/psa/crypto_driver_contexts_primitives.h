@@ -33,6 +33,8 @@
  */
 #if defined(PSA_CRYPTO_DRIVER_CC3XX)
 #include "cc3xx_crypto_primitives.h"
+#elif defined(PSA_CRYPTO_DRIVER_CRACEN)
+#include "cracen_psa_primitives.h"
 #endif /* PSA_CRYPTO_DRIVER_CC3XX */
 
 #if defined(PSA_CRYPTO_DRIVER_HAS_CIPHER_SUPPORT_OBERON)
@@ -58,6 +60,9 @@ typedef union {
 #if defined(PSA_CRYPTO_DRIVER_HAS_HASH_SUPPORT_OBERON)
 	oberon_hash_operation_t oberon_driver_ctx;
 #endif
+#if defined(PSA_CRYPTO_DRIVER_CRACEN)
+    cracen_hash_operation_t cracen_driver_ctx;
+#endif
 } psa_driver_hash_context_t;
 
 typedef union {
@@ -68,7 +73,9 @@ typedef union {
 #if defined(PSA_CRYPTO_DRIVER_HAS_CIPHER_SUPPORT_OBERON)
 	oberon_cipher_operation_t oberon_driver_ctx;
 #endif /* PSA_CRYPTO_DRIVER_CC3XX */
-
+#if defined(PSA_CRYPTO_DRIVER_CRACEN)
+    cracen_cipher_operation_t cracen_driver_ctx;
+#endif
 } psa_driver_cipher_context_t;
 
 #endif /* PSA_CRYPTO_DRIVER_CONTEXTS_PRIMITIVES_H */

@@ -223,6 +223,47 @@
 #cmakedefine PSA_CRYPTO_DRIVER_ALG_SPAKE2P_OBERON               @PSA_CRYPTO_DRIVER_ALG_SPAKE2P_OBERON@
 #cmakedefine PSA_CRYPTO_DRIVER_ALG_SRP_OBERON                   @PSA_CRYPTO_DRIVER_ALG_SRP_OBERON@
 
+/*
+ * CRACEN driver configuration
+ * NCSDK-20700: Make PSA CRACEN driver configurable.
+ */
+#cmakedefine PSA_CRYPTO_DRIVER_CRACEN                           @PSA_CRYPTO_DRIVER_CRACEN@
+#ifdef PSA_CRYPTO_DRIVER_CRACEN
+#define PSA_CRYPTO_DRIVER_HAS_CIPHER_SUPPORT_CRACEN             1
+#define PSA_CRYPTO_DRIVER_HAS_AEAD_SUPPORT_CRACEN               1
+#define PSA_CRYPTO_DRIVER_HAS_HASH_SUPPORT_CRACEN               1
+#define PSA_CRYPTO_DRIVER_HAS_MAC_SUPPORT_CRACEN                1
+#define PSA_CRYPTO_DRIVER_HAS_ASYM_SIGN_SUPPORT_CRACEN          1
+#define PSA_CRYPTO_DRIVER_HAS_ASYM_ENCRYPT_SUPPORT_CRACEN       1
+#define PSA_CRYPTO_DRIVER_HAS_ECC_SUPPORT_CRACEN                1
+#define PSA_CRYPTO_DRIVER_HAS_ACCEL_KEY_TYPES_CRACEN            1
+#define PSA_CRYPTO_DRIVER_ALG_CBC_NO_PADDING_CRACEN             1
+#define PSA_CRYPTO_DRIVER_ALG_CBC_PKCS7_CRACEN                  1
+#define PSA_CRYPTO_DRIVER_ALG_CCM_CRACEN                        1
+#define PSA_CRYPTO_DRIVER_ALG_CMAC_CRACEN                       1
+#define PSA_CRYPTO_DRIVER_ALG_CHACHA20_POLY1305_CRACEN          1
+#define PSA_CRYPTO_DRIVER_ALG_CTR_CRACEN                        1
+#define PSA_CRYPTO_DRIVER_ALG_DETERMINISTIC_ECDSA_CRACEN        1
+#define PSA_CRYPTO_DRIVER_ALG_ECB_NO_PADDING_CRACEN             1
+#define PSA_CRYPTO_DRIVER_ALG_ECDH_CRACEN                       1
+#define PSA_CRYPTO_DRIVER_ALG_ECDSA_CRACEN                      1
+#define PSA_CRYPTO_DRIVER_ALG_GCM_CRACEN                        1
+#define PSA_CRYPTO_DRIVER_ALG_HKDF_CRACEN                       1
+#define PSA_CRYPTO_DRIVER_ALG_HMAC_CRACEN                       1
+#define PSA_CRYPTO_DRIVER_ALG_SHA_1_CRACEN                      1
+#define PSA_CRYPTO_DRIVER_ALG_SHA_224_CRACEN                    1
+#define PSA_CRYPTO_DRIVER_ALG_SHA_256_CRACEN                    1
+#define PSA_CRYPTO_DRIVER_ALG_SHA_384_CRACEN                    1
+#define PSA_CRYPTO_DRIVER_ALG_SHA_512_CRACEN                    1
+#define PSA_CRYPTO_DRIVER_ALG_STREAM_CIPHER_CRACEN              1
+
+#define PSA_CRYPTO_DRIVER_ECC_MONTGOMERY_255_CRACEN             1
+#define PSA_CRYPTO_DRIVER_ECC_SECP_R1_224_CRACEN                1
+#define PSA_CRYPTO_DRIVER_ECC_SECP_R1_256_CRACEN                1
+
+#define MBEDTLS_PSA_CRYPTO_BUILTIN_KEYS                         1
+#endif
+
 /* Nordic specific */
 #cmakedefine PSA_NATIVE_ITS                                     @PSA_NATIVE_ITS@
 #cmakedefine PSA_EITS_BACKEND_ZEPHYR                            @PSA_EITS_BACKEND_ZEPHYR@
