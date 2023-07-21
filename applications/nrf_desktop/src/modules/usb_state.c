@@ -677,6 +677,34 @@ static int usb_init(void)
 	return err;
 }
 
+void usb_state_module_init(void)
+{
+	if (usb_init()) {
+		LOG_ERR("Cannot initialize");
+		module_set_state(MODULE_STATE_ERROR);
+	} else {
+		LOG_DBG("Initialized");
+
+		if (IS_ENABLED(CONFIG_DESKTOP_USB_STATE_INIT_STATE_WORKAROUND)) {
+			state = USB_STATE_POWERED;
+		}
+
+		module_set_state(MODULE_STATE_READY);
+	}
+}
+
+static void usb_init_thread_fn(void *dummy0, void *dummy1, void *dummy2)
+{
+	ARG_UNUSED(dummy0);
+	ARG_UNUSED(dummy1);
+	ARG_UNUSED(dummy2);
+
+	usb_state_module_init();
+}
+
+static struct k_thread usb_init_thread;
+static K_THREAD_STACK_DEFINE(usb_init_thread_stack, CONFIG_DESKTOP_USB_STATE_INIT_THREAD_STACK_SIZE);
+
 static bool app_event_handler(const struct app_event_header *aeh)
 {
 	if (is_hid_report_event(aeh)) {
@@ -694,11 +722,16 @@ static bool app_event_handler(const struct app_event_header *aeh)
 			__ASSERT_NO_MSG(!initialized);
 			initialized = true;
 
-			if (usb_init()) {
-				LOG_ERR("Cannot initialize");
-				module_set_state(MODULE_STATE_ERROR);
+			if (IS_ENABLED(CONFIG_DESKTOP_USB_STATE_INIT_THREAD)) {
+				k_thread_create(&usb_init_thread,
+						usb_init_thread_stack,
+						K_THREAD_STACK_SIZEOF(usb_init_thread_stack),
+						usb_init_thread_fn,
+						NULL, NULL, NULL,
+						CONFIG_DESKTOP_USB_STATE_INIT_THREAD_PRIORITY, 0,
+						K_MSEC(CONFIG_DESKTOP_USB_STATE_INIT_THREAD_DELAY_MS));
 			} else {
-				module_set_state(MODULE_STATE_READY);
+				usb_state_module_init();
 			}
 		}
 

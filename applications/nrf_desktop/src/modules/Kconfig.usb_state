@@ -41,6 +41,43 @@ config DESKTOP_USB_PM_ENABLE
 	help
 	  This enables small module that blocks power down if the USB is active.
 
+config DESKTOP_USB_STATE_INIT_STATE_WORKAROUND
+	bool
+	default y if SOC_SERIES_NRF54HX
+	help
+	  For some USB controllers, the USB_DC_SUSPEND event may be received
+	  before the USB_DC_CONNECTED event. Setting initial state of the USB
+	  state module to USB_STATE_POWERED prevents assertion failure during
+	  application boot.
+	  The workaround is needed for the nRF54HX SoC use-case.
+
+config DESKTOP_USB_STATE_INIT_THREAD
+	bool
+	default y if SOC_SERIES_NRF54HX
+	help
+	  Initialize USB stack in a separate thread instead of doing it in
+	  the context of the system workqueue.
+	  For the nRF54HX SoC use-case, the usb_init() function blocks while
+	  waiting for a synchronization object that is received after the system
+	  controller sends the USB service event through the NRFS and IPC with
+	  the ICMSG backend to the application core.
+	  The ICMSG backend uses the system workqueue context for both
+	  initialization and on the incoming message handling, so calling the
+	  usb_init() function from the same context causes deadlock during
+	  application boot.
+
+config DESKTOP_USB_STATE_INIT_THREAD_STACK_SIZE
+	int
+	default 2048
+
+config DESKTOP_USB_STATE_INIT_THREAD_PRIORITY
+	int
+	default 0
+
+config DESKTOP_USB_STATE_INIT_THREAD_DELAY_MS
+	int
+	default 0
+
 config USB_HID_POLL_INTERVAL_MS
 	default 1
 	help
