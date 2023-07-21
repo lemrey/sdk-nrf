@@ -173,3 +173,7 @@
 .. nrf7140dk_nrf7140_cpuapp
 
 | nRF7140 PDK | | ``nrf7140dk_nrf7140_cpuapp`` | ``nrf7140dk_nrf7140_cpuapp`` |
+
+.. nrf54l15dk_nrf54l15_cpuapp@soc1
+
+| nRF54L15 | | ``nrf54l15dk_nrf54l15_cpuapp`` | ``nrf54l15dk_nrf54l15_cpuapp`` |
