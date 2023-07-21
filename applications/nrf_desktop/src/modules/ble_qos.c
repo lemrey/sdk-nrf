@@ -33,10 +33,17 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_DESKTOP_BLE_QOS_LOG_LEVEL);
 #define INVALID_BLACKLIST 0xFFFF
 
 #if CONFIG_DESKTOP_BLE_QOS_STATS_PRINTOUT_ENABLE
-# if DT_PROP(DT_NODELABEL(usbd), num_in_endpoints) < 4
-# error Too few USB IN Endpoints enabled. \
+
+#if !(DT_NODE_EXISTS(DT_NODELABEL(usbhs)) && DT_NODE_HAS_STATUS(DT_NODELABEL(usbhs), okay)) && \
+    !(DT_NODE_EXISTS(DT_NODELABEL(usbd)) && DT_NODE_HAS_STATUS(DT_NODELABEL(usbd), okay))
+#error No instance of USB peripheral available.
+#endif
+
+#if DT_NODE_EXISTS(DT_NODELABEL(usbd)) && (DT_PROP(DT_NODELABEL(usbd), num_in_endpoints) < 4)
+#error Too few USB IN Endpoints enabled. \
 	Modify appropriate dts.overlay to increase num-in-endpoints to 4 or more
-# endif
+#endif
+
 #endif
 
 #ifndef ROUNDED_DIV

@@ -45,7 +45,13 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_DESKTOP_USB_STATE_LOG_LEVEL);
   #define CONFIG_USB_HID_PROTOCOL_CODE -1
 #endif
 
-#if DT_PROP(DT_NODELABEL(usbd), num_in_endpoints) < (CONFIG_USB_HID_DEVICE_COUNT + 1)
+#if !(DT_NODE_EXISTS(DT_NODELABEL(usbhs)) && DT_NODE_HAS_STATUS(DT_NODELABEL(usbhs), okay)) && \
+    !(DT_NODE_EXISTS(DT_NODELABEL(usbd)) && DT_NODE_HAS_STATUS(DT_NODELABEL(usbd), okay))
+#error No instance of USB peripheral available.
+#endif
+
+#if DT_NODE_EXISTS(DT_NODELABEL(usbd)) && \
+    (DT_PROP(DT_NODELABEL(usbd), num_in_endpoints) < (CONFIG_USB_HID_DEVICE_COUNT + 1))
   #error Too few USB IN Endpoints enabled. Modify dts.overlay file.
 #endif
 

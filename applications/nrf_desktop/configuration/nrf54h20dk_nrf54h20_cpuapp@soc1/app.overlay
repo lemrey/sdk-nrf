@@ -9,6 +9,18 @@
 		zephyr,console = &uart136;
 	};
 
+	/* The application core communicates with the system controller
+	 * through the NRFS service regarding USBHS peripheral. */
+	ipc_to_cpusys: ipc_to_cpusys {
+		compatible = "zephyr,ipc-icmsg";
+		tx-region = <&ipc_shm_cpuapp_cpusys>;
+		rx-region = <&ipc_shm_cpusys_cpuapp>;
+		mboxes = <&vevif_cpusys 12>,
+			 <&bellboard_cpuapp 6>;
+		mbox-names = "tx", "rx";
+		status = "okay";
+	};
+
 	/* Redefine leds to fit CAF requirements. */
 	/delete-node/ leds;
 
@@ -73,4 +85,13 @@
 &uart136 {
 	status = "okay";
 	memory-regions = <&ram3x_cpuapp>;
+};
+
+&vevif_cpusys {
+	status = "okay";
+};
+
+/* Configure App core USBHS. */
+zephyr_udc0: &usbhs {
+	status = "okay";
 };
