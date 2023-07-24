@@ -8,6 +8,7 @@
 
 set(NRFXLIB_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../../nrfxlib)
 set(NRF_SECURITY_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
+set(ZEPHYR_NRF_MODULE_DIR ${NRF_DIR})
 
 include(${NRF_SECURITY_ROOT}/cmake/extensions.cmake)
 
