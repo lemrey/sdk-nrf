@@ -36,8 +36,8 @@ docutils==0.16
 ecdsa==0.16.1
 future==0.18.3
 gcovr==4.2
-gitlint==0.15.0
 grpcio-tools==1.51.1
+gitlint==0.16.0
 idna==2.10
 imagesize==1.2.0
 imgtool==1.7.0
@@ -87,7 +87,7 @@ regex==2022.3.15
 requests==2.25.1
 ruamel.yaml.clib==0.2.6
 ruamel.yaml==0.17.21
-sh==1.14.1
+sh==1.14.2
 six==1.15.0
 snowballstemmer==2.1.0
 sortedcontainers==2.3.0
