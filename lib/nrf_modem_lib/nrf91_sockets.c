@@ -92,7 +92,6 @@ static void z_to_nrf_ipv4(const struct sockaddr *z_in,
 {
 	const struct sockaddr_in *ptr = (const struct sockaddr_in *)z_in;
 
-	nrf_out->sin_len = sizeof(struct nrf_sockaddr_in);
 	nrf_out->sin_port = ptr->sin_port;
 	nrf_out->sin_family = NRF_AF_INET;
 	nrf_out->sin_addr.s_addr = ptr->sin_addr.s_addr;
@@ -114,7 +113,6 @@ static void z_to_nrf_ipv6(const struct sockaddr *z_in,
 	const struct sockaddr_in6 *ptr = (const struct sockaddr_in6 *)z_in;
 
 	/* nrf_out->sin6_flowinfo field not used */
-	nrf_out->sin6_len = sizeof(struct nrf_sockaddr_in6);
 	nrf_out->sin6_port = ptr->sin6_port;
 	nrf_out->sin6_family = NRF_AF_INET6;
 	memcpy(nrf_out->sin6_addr.s6_addr, ptr->sin6_addr.s6_addr,
@@ -127,7 +125,7 @@ static void nrf_to_z_ipv6(struct sockaddr *z_out,
 {
 	struct sockaddr_in6 *ptr = (struct sockaddr_in6 *)z_out;
 
-	/* nrf_sockaddr_in6 fields .sin6_flowinfo and .sin6_len not used */
+	/* nrf_sockaddr_in6 field .sin6_flowinfo not used */
 	ptr->sin6_port = nrf_in->sin6_port;
 	ptr->sin6_family = AF_INET6;
 	memcpy(ptr->sin6_addr.s6_addr, nrf_in->sin6_addr.s6_addr,
