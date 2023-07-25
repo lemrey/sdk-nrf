@@ -550,21 +550,8 @@ Missing :file:`CMakeLists.txt`
   You can `download this file <nRF52820 CMakeLists.txt_>`_ from the upstream Zephyr repository.
   After you add it, the file is automatically included by the build system.
 
-Nordic Thingy:53
-================
-
-.. rst-class:: v2-2-0
-
-NCSDK-18263: |NCS| samples may fail to boot on Thingy:53
-  |NCS| samples and applications that are not listed under :ref:`thingy53_compatible_applications` fail to boot on Nordic Thingy:53.
-  The MCUboot bootloader is not built together with these samples, but the Thingy:53's :ref:`static Partition Manager memory map <ug_pm_static>` requires it (the application image does not start at the beginning of the internal ``FLASH``.)
-
-  **Workaround:** Revert the ``9a8680372fdb6e09f3d6537c8c6751dd5c50bf86`` commit in the sdk-zephyr repository and revert the ``1f9765df5acbb36afff0ce40c94ba65d44d19d70`` commit in sdk-nrf.
-  During conflict resolution, make sure to update the :file:`west.yml` file in the sdk-nrf to point to the reverting commit in the sdk-zephyr.
-
-
-Thread
-======
+CVE-2023-2626: Security vulnerability
+  Due to this issue, |NCS| v2.4.0 will not undergo the certification process, and is not intended to be used in final Thread products.
 
 .. rst-class:: v2-3-0 v2-2-0 v2-1-4 v2-1-3 v2-1-2 v2-1-1 v2-1-0 v2-0-2 v2-0-1
 

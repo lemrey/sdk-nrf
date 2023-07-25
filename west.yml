@@ -58,8 +58,8 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/introduction/index.html
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
-      repo-path: sdk-zephyr-next
-      revision: d6711d9049ae90e802405443380ccad8523682af
+      repo-path: sdk-zephyr
+      revision: v3.3.99-ncs1
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -132,37 +132,15 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: dd8b58ae33f2f49879bcaccec819a71e84295fe0
-    - name: doc-internal
-      repo-path: doc-internal
-      path: modules/doc-internal
-      revision: 3611de6869193990305dfac75f8e3e35197d4fbc
-      groups:
-      - doc-internal
-    - name: ic-next
-      repo-path: sdk-ic-next
-      path: modules/ic-next
-      revision: eb4ed5a66e34b16b6824113f858d1989a2fab71e
-    - name: sdk-secdom
-      revision: 3cde0d4de65cdfaf465366e5c269a87b6beefc6d
-      path: core_fw/secdom
-    - name: nrf-regtool
-      revision: 57e430e30f822e203e4cda64bccd8235364625e1
-      path: modules/lib/nrf-regtool
-    - name: nrfs
-      path: modules/lib/nrfs
-      revision: 0da69c811e852ed73a589fb390b4c19ee81e6426
-    - name: sdk-sysctrl
-      revision: 4512dc8b97fbf321976a030931d4bebb5066e463
-      path: core_fw/sysctrl
+      revision: v2.4.0
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
-      revision: d890b4198c6856846d6ee63e0b294596fe8b0d5d
+      revision: v1.7.0-ncs1
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
-      revision: 03c0a3645398a02055df0ffbd43153a2c93d68a7
+      revision: v2.4.0
       submodules:
         - name: nlio
           path: third_party/nlio/repo
@@ -180,14 +158,14 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: 07464fd50e1cebe69b6258f2b55719ee8e6f2041
+      revision: v2.4.0
       groups:
         - nrf-802154
     - name: dragoon
       # Only for internal Nordic development
       repo-path: dragoon.git
       remote: dragoon
-      revision: 3db178f15035b5ebd87ab3b3dd3bfdc68fb7465a
+      revision: 6dfb5a0c9ed62b9ff28b865276ee4fce67066156
       submodules: true
       groups:
         - dragoon
@@ -202,7 +180,7 @@ manifest:
           compare-by-default: false
     - name: homekit
       repo-path: sdk-homekit
-      revision: 2ecf5993ca6f4662517e4e287aec0eb979962112
+      revision: v2.4.0
       groups:
         - homekit
     - name: find-my

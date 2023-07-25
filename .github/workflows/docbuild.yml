@@ -105,9 +105,9 @@ jobs:
           cd ../../doc/_build
           zip -rq ../../cache/html.zip html
 
-      - name: Archive cache
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') }}
-        uses: actions/upload-artifact@v2
+      - name: Store
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'external') || contains(github.event.pull_request.labels.*.name, 'CI-trusted-author') }}
+        uses: actions/upload-artifact@v3
         with:
           name: cache
           path: ncs/nrf/cache

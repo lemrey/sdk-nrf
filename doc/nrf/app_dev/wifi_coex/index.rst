@@ -115,7 +115,7 @@ The *DT property* is the name of the devicetree node property that configures th
 Enabling nRF700x Wi-Fi coexistence
 ----------------------------------
 
-To enable Wi-Fi coexistence on the nRF700x, do the following:
+To enable Wi-Fi coexistence on the nRF700x, complete the following steps:
 
 1. Add the following node to the devicetree source file:
 
@@ -228,9 +228,9 @@ To enable the generic three-wire coexistence, do the following:
 
    The ``*childImageName*`` string must assume one of the following values:
 
-   *  ``multiprotocol_rpmsg`` for multiprotocol applications having support for both 802.15.4 and Bluetooth.
-   *  ``802154_rpmsg`` for applications having support for 802.15.4, but not for Bluetooth.
-   *  ``hci_rpmsg`` for application having support for Bluetooth, but not for 802.15.4.
+   * ``multiprotocol_rpmsg`` for multiprotocol applications having support for both 802.15.4 and Bluetooth.
+   * ``802154_rpmsg`` for applications having support for 802.15.4, but not for Bluetooth.
+   * ``hci_rpmsg`` for application having support for Bluetooth, but not for 802.15.4.
 
 #. Enable the following Kconfig options:
 
