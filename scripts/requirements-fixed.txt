@@ -106,7 +106,7 @@ sphinxcontrib-serializinghtml==1.1.4
 sphinxcontrib-svg2pdfconverter==1.1.1
 setuptools==65.5.1
 setuptools-scm==7.1.0
-svada==1.0.1
+svada==2.0.0
 tabulate==0.8.7
 toml==0.10.2
 tomli==2.0.1
