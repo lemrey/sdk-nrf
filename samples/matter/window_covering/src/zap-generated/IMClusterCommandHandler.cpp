@@ -326,90 +326,6 @@ namespace app
 
 		} // namespace Identify
 
-		namespace NetworkCommissioning
-		{
-			void DispatchServerCommand(CommandHandler *apCommandObj,
-						   const ConcreteCommandPath &aCommandPath, TLV::TLVReader &aDataTlv)
-			{
-				CHIP_ERROR TLVError = CHIP_NO_ERROR;
-				bool wasHandled = false;
-				{
-					switch (aCommandPath.mCommandId) {
-					case Commands::ScanNetworks::Id: {
-						Commands::ScanNetworks::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled =
-								emberAfNetworkCommissioningClusterScanNetworksCallback(
-									apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::AddOrUpdateThreadNetwork::Id: {
-						Commands::AddOrUpdateThreadNetwork::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled =
-								emberAfNetworkCommissioningClusterAddOrUpdateThreadNetworkCallback(
-									apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::RemoveNetwork::Id: {
-						Commands::RemoveNetwork::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled =
-								emberAfNetworkCommissioningClusterRemoveNetworkCallback(
-									apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::ConnectNetwork::Id: {
-						Commands::ConnectNetwork::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled =
-								emberAfNetworkCommissioningClusterConnectNetworkCallback(
-									apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::ReorderNetwork::Id: {
-						Commands::ReorderNetwork::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled =
-								emberAfNetworkCommissioningClusterReorderNetworkCallback(
-									apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					default: {
-						// Unrecognized command ID, error status will apply.
-						apCommandObj->AddStatus(
-							aCommandPath,
-							Protocols::InteractionModel::Status::UnsupportedCommand);
-						ChipLogError(Zcl,
-							     "Unknown command " ChipLogFormatMEI
-							     " for cluster " ChipLogFormatMEI,
-							     ChipLogValueMEI(aCommandPath.mCommandId),
-							     ChipLogValueMEI(aCommandPath.mClusterId));
-						return;
-					}
-					}
-				}
-
-				if (CHIP_NO_ERROR != TLVError || !wasHandled) {
-					apCommandObj->AddStatus(aCommandPath,
-								Protocols::InteractionModel::Status::InvalidCommand);
-					ChipLogProgress(Zcl, "Failed to dispatch command, TLVError=%" CHIP_ERROR_FORMAT,
-							TLVError.Format());
-				}
-			}
-
-		} // namespace NetworkCommissioning
-
 		namespace OtaSoftwareUpdateRequestor
 		{
 			void DispatchServerCommand(CommandHandler *apCommandObj,
@@ -647,15 +563,6 @@ namespace app
 						}
 						break;
 					}
-					case Commands::GoToLiftValue::Id: {
-						Commands::GoToLiftValue::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfWindowCoveringClusterGoToLiftValueCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
 					case Commands::GoToLiftPercentage::Id: {
 						Commands::GoToLiftPercentage::DecodableType commandData;
 						TLVError = DataModel::Decode(aDataTlv, commandData);
@@ -663,15 +570,6 @@ namespace app
 							wasHandled =
 								emberAfWindowCoveringClusterGoToLiftPercentageCallback(
 									apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::GoToTiltValue::Id: {
-						Commands::GoToTiltValue::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfWindowCoveringClusterGoToTiltValueCallback(
-								apCommandObj, aCommandPath, commandData);
 						}
 						break;
 					}
@@ -731,9 +629,6 @@ namespace app
 			break;
 		case Clusters::Identify::Id:
 			Clusters::Identify::DispatchServerCommand(apCommandObj, aCommandPath, aReader);
-			break;
-		case Clusters::NetworkCommissioning::Id:
-			Clusters::NetworkCommissioning::DispatchServerCommand(apCommandObj, aCommandPath, aReader);
 			break;
 		case Clusters::OtaSoftwareUpdateRequestor::Id:
 			Clusters::OtaSoftwareUpdateRequestor::DispatchServerCommand(apCommandObj, aCommandPath,

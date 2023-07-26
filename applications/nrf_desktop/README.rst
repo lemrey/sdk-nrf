@@ -223,7 +223,7 @@ These inputs are not synchronized with the HID report transmission to the host.
 When the mouse is constantly in use, the motion module is kept in the fetching state.
 In this state, the nRF Desktop mouse forwards the data from the motion sensor to the host in the following way:
 
-a. USB state (or Bluetooth HIDS) sends a HID mouse report to the host and submits ``hid_report_sent_event``.
+1. USB state (or Bluetooth HIDS) sends a HID mouse report to the host and submits ``hid_report_sent_event``.
 #. The event triggers sampling of the motion sensor.
 #. A dedicated thread is used to fetch the sample from the sensor.
 #. After the sample is fetched, the thread forwards it to the :ref:`nrf_desktop_hid_state` as ``motion_event``.
@@ -862,11 +862,41 @@ Selecting a build type from command line
    :end-before: build_types_selection_cmd_end
 
 .. note::
-   If nRF Desktop is built with `Fast Pair`_ support, you must provide your own Fast Pair Model ID and Anti Spoofing private key as CMake options.
+   If nRF Desktop is built with `Fast Pair`_ support, you must provide Fast Pair Model ID and Anti Spoofing private key as CMake options.
+   You can use either your own provisioning data or the provisioning data obtained by Nordic Semiconductor for development purposes.
+   The following debug devices are meant to be used with the nRF Desktop and have been registered:
+
+   * NCS keyboard - The Fast Pair Provider meant to be used with keyboards:
+
+      * Device name: NCS keyboard
+      * Model ID: ``0x52FF02``
+      * Anti-spoofing key (base64, uncompressed): ``8E8ulwhSIp/skZeg27xmWv2SxRxTOagypHrf2OdrhGY=``
+      * Type: Input device
+      * Additional features: Data only connection, Support personalized name, Ringing device unsupported
+
+   * NCS gaming mouse - Fast Pair Provider meant to be used with gaming mice:
+
+      * Device name: NCS gaming mouse
+      * Model ID: ``0x8E717D``
+      * Anti-spoofing key (base64, uncompressed): ``dZxFzP7X9CcfLPC0apyRkmgsh3n2EbWo9NFNXfVuxAM=``
+      * Type: Input device
+      * Additional features: Data only connection, Support personalized name, Ringing device unsupported
+
    See :ref:`ug_bt_fast_pair_provisioning` documentation for the following information:
 
    * Registering a Fast Pair Provider
    * Provisioning a Fast Pair Provider in |NCS|
+
+.. nrf_desktop_fastpair_important_start
+
+.. important::
+   This is the debug Fast Pair provisioning data obtained by Nordic for the development purposes.
+   It should not be used in production.
+
+   To test with the debug mode Model ID, you must configure the Android device to include the debug results while displaying the nearby Fast Pair Providers.
+   For details, see `Verifying Fast Pair`_ in the GFPS documentation.
+
+.. nrf_desktop_fastpair_important_end
 
 .. _nrf_desktop_testing_steps:
 
@@ -1102,7 +1132,8 @@ nRF52840 Gaming Mouse (nrf52840gmouse_nrf52840)
         * Bluetooth is configured to use Nordic's SoftDevice link layer.
 
       * The configuration with the B0 bootloader is set as default.
-      * The board supports debug :ref:`nrf_desktop_bluetooth_guide_fast_pair` configuration (:file:`prj_fast_pair.conf`).
+      * The board supports debug (:file:`prj_fast_pair.conf`) and release (:file:`prj_release_fast_pair.conf`) :ref:`nrf_desktop_bluetooth_guide_fast_pair` configurations.
+        Both configurations use the MCUboot bootloader built in the direct-xip mode (``MCUBOOT+XIP``), and they support the firmware updates using the :ref:`nrf_desktop_dfu` and the :ref:`nrf_desktop_dfu_mcumgr`.
 
 nRF52832 Desktop Mouse (nrf52dmouse_nrf52832) and nRF52810 Desktop Mouse (nrf52810dmouse_nrf52810)
       * Both reference designs are meant for the project-specific hardware and are defined in :file:`nrf/boards/arm/nrf52dmouse_nrf52832` and :file:`nrf/boards/arm/nrf52810dmouse_nrf52810`, respectively.
@@ -1117,6 +1148,7 @@ Sample mouse, keyboard or dongle (nrf52840dk_nrf52840)
       * Inputs are simulated based on the hardware button presses.
       * The configuration with the B0 bootloader is set as default.
       * The board supports debug :ref:`nrf_desktop_bluetooth_guide_fast_pair` configuration that acts as a mouse (:file:`prj_fast_pair.conf`).
+        The configuration uses the MCUboot bootloader built in the direct-xip mode (``MCUBOOT+XIP``), and supports firmware updates using the :ref:`nrf_desktop_dfu` and the :ref:`nrf_desktop_dfu_mcumgr`.
 
 Sample dongle (nrf52833dk_nrf52833)
       * The configuration uses the nRF52833 Development Kit.
@@ -1138,6 +1170,7 @@ nRF52832 Desktop Keyboard (nrf52kbd_nrf52832)
       * Bluetooth is configured to use Nordic's SoftDevice link layer.
       * The preconfigured build types configure the device without the bootloader in debug mode and with B0 bootloader in release mode due to memory size limits.
       * The board supports release :ref:`nrf_desktop_bluetooth_guide_fast_pair` configuration (:file:`prj_release_fast_pair.conf`).
+        The configuration uses the MCUboot bootloader built in the direct-xip mode (``MCUBOOT+XIP``), and supports firmware updates using the :ref:`nrf_desktop_dfu` and the :ref:`nrf_desktop_dfu_mcumgr`.
 
 nRF52840 USB Dongle (nrf52840dongle_nrf52840) and nRF52833 USB Dongle (nrf52833dongle_nrf52833)
       * Since the nRF52840 Dongle is generic and defined in Zephyr, project-specific changes are applied in the DTS overlay file.
@@ -1423,10 +1456,10 @@ This code snippet will change the **SPI1** interrupt priority from default ``1``
 Flash memory layout
 ===================
 
-Depending on whether the bootloader is enabled, the partition layout on the flash memory is set by defining one of the following options:
+The flash memory is set by defining one of the following options:
 
 * `Memory layout in DTS`_ (bootloader is not enabled)
-* `Memory layout in partition manager`_ (bootloader is enabled)
+* `Memory layout in partition manager`_ (either bootloader or :ref:`nrf_desktop_bluetooth_guide_fast_pair` is enabled)
 
 The set of required partitions differs depending on configuration:
 
@@ -1472,10 +1505,15 @@ Take into account the following points:
 
 * For the :ref:`background firmware upgrade <nrf_desktop_bootloader_background_dfu>`, you must define the secondary image partition.
   This is because the update image is stored on the secondary image partition while the device is running firmware from the primary partition.
+  For this reason, the feature is not available for devices with smaller flash size, because the size of the required flash memory is essentially doubled.
+  The devices with smaller flash size can use either USB serial recovery or the MCUboot bootloader with the secondary image partition located on an external flash.
 * When you use :ref:`USB serial recovery <nrf_desktop_bootloader_serial_dfu>`, you do not need the secondary image partition.
   The firmware image is overwritten by the bootloader.
 
+For an example of configuration, see the static partition maps defined for the existing configuration that uses a given DFU method.
 For more information about how to configure the flash memory layout using the partition manager, see :ref:`partition_manager`.
+
+.. _nrf_desktop_pm_external_flash:
 
 External flash configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1641,7 +1679,7 @@ The GATT Service is implemented by the :ref:`nrf_desktop_dev_descr`.
 Apart from the GATT Services, an nRF Desktop peripheral device must enable and configure the following application modules:
 
 * :ref:`nrf_desktop_ble_adv` - Controls the Bluetooth advertising.
-* :ref:`nrf_desktop_ble_latency` - Keeps the connection latency low when the :ref:`nrf_desktop_config_channel` is being used or when an update image is being received by the :ref:`nrf_desktop_ble_smp`.
+* :ref:`nrf_desktop_ble_latency` - Keeps the connection latency low when the :ref:`nrf_desktop_config_channel` is used or when either the :ref:`nrf_desktop_ble_smp` or :ref:`nrf_desktop_dfu_mcumgr` receive an update image.
   This is done to ensure quick data transfer.
 
 Optionally, you can also enable the following module:
@@ -1682,12 +1720,15 @@ The nRF Desktop peripheral that integrates Fast Pair behaves as follows:
     This allows to pair only with the Fast Pair Seekers linked to Google Accounts that are already associated with the nRF Desktop device.
     In this mode the device by default rejects normal Bluetooth pairing (:ref:`CONFIG_DESKTOP_FAST_PAIR_LIMIT_NORMAL_PAIRING <config_desktop_app_options>` option is enabled).
     The Fast Pair UI indication is hidden after the Provider reaches :kconfig:option:`CONFIG_CAF_BLE_STATE_MAX_LOCAL_ID_BONDS` bonded peers on the used local identity.
+  * The :ref:`nrf_desktop_factory_reset` is enabled by default if the :ref:`nrf_desktop_config_channel` is supported by the device.
+    The factory reset operation removes both Fast Pair and Bluetooth non-volatile data.
+    The factory reset operation is triggered using the configuration channel.
 
 After successful erase advertising procedure, the peripheral removes all of the bonds of a given Bluetooth local identity.
 
 Apart from that, the following changes are applied in configurations that support Fast Pair:
 
-* The static :ref:`partition_manager` configuration is modified to introduce a dedicated FLASH partition used to store the Fast Pair provisioning data.
+* The static :ref:`partition_manager` configuration is modified to introduce a dedicated flash partition used to store the Fast Pair provisioning data.
 * Bluetooth privacy feature (:kconfig:option:`CONFIG_BT_PRIVACY`) is enabled.
 * The fast and slow advertising intervals defined in the :ref:`nrf_desktop_ble_adv` are aligned with Fast Pair expectations.
 * The Bluetooth advertising filter accept list (:kconfig:option:`CONFIG_CAF_BLE_ADV_FILTER_ACCEPT_LIST`) is disabled to allow Fast Pair Seekers other than the bonded one to connect outside of the pairing mode.
@@ -1728,18 +1769,22 @@ The nRF Desktop application can use one of the following bootloaders:
   The MCUboot bootloader can be used in the following scenarios:
 
   * :ref:`Background DFU <nrf_desktop_bootloader_background_dfu>`.
-    In this scenario, the MCUboot swaps the application images located on the secondary and primary slot before booting the new image.
-    Because of this, the image is not booted directly from the secondary image slot.
-    The swap operation takes additional time, but an external FLASH can be used as the secondary image slot.
+    In this scenario, the MCUboot either swaps the application images located on the secondary and primary slot before booting a new image (``swap mode``) or boots a new application image directly from the secondary image slot (``direct-xip mode``).
+    The swap operation significantly increases boot time after a successful image transfer, but an external flash can be used as the secondary image slot.
 
     You can use the MCUboot for the background DFU through the :ref:`nrf_desktop_config_channel` and :ref:`nrf_desktop_dfu`.
     The MCUboot can also be used for the background DFU over Simple Management Protocol (SMP).
-    The SMP can be used to transfer the new firmware image in the background from an Android device.
-    In that case, the :ref:`nrf_desktop_ble_smp` is used to handle the image transfer.
+    The SMP can be used to transfer the new firmware image in the background, for example, from an Android device.
+    In that case, either the :ref:`nrf_desktop_ble_smp` or :ref:`nrf_desktop_dfu_mcumgr` is used to handle the image transfer.
+    The :ref:`nrf_desktop_ble_smp` relies on a generic module implemented in the Common Application Framework (CAF).
+    The :ref:`nrf_desktop_dfu_mcumgr` uses an application-specific implementation that allows to synchronize a secondary image slot access with the :ref:`nrf_desktop_dfu` using the :ref:`nrf_desktop_dfu_lock`.
 
   * :ref:`USB serial recovery <nrf_desktop_bootloader_serial_dfu>`.
     In this scenario, the MCUboot bootloader supports the USB serial recovery.
     The USB serial recovery can be used for memory-limited devices that support the USB connection.
+    In this mode, unlike in the background DFU mode, the DFU image transfer is handled by the bootloader.
+    The application is not running and it can be overwritten.
+    Because of that, only one application slot may be used.
 
   For more information about the MCUboot, see the :ref:`MCUboot <mcuboot:mcuboot_wrapper>` documentation.
 
@@ -1751,12 +1796,15 @@ The nRF Desktop application can use one of the following bootloaders:
     Make sure that you use your own private key for the release version of the devices.
     Do not use the debug key for production.
 
+If your configuration enables the bootloader, make sure to define a static flash memory layout in the Partition Manager.
+See :ref:`nrf_desktop_flash_memory_layout` documentation section for details.
+
 Configuring the B0 bootloader
 -----------------------------
 
-To enable the B0 bootloader, select the :kconfig:option:`CONFIG_SECURE_BOOT` Kconfig option.
+To enable the B0 bootloader, select the :kconfig:option:`CONFIG_SECURE_BOOT` Kconfig option in the application configuration.
 
-The B0 bootloader requires the following options enabled:
+The B0 bootloader additionally requires enabling the following options in the application configuration:
 
 * :kconfig:option:`CONFIG_SB_SIGNING_KEY_FILE` - Required for providing the signature used for image signing and verification.
 * :kconfig:option:`CONFIG_FW_INFO` - Required for the application versioning information.
@@ -1766,18 +1814,82 @@ The B0 bootloader requires the following options enabled:
   You can do that by rebuilding the application from scratch or by changing the configuration of the main image through menuconfig.
 * :kconfig:option:`CONFIG_BUILD_S1_VARIANT` - Required for the build system to be able to construct the application binaries for both application's slots in flash memory.
 
+.. _nrf_desktop_configuring_mcuboot_bootloader:
+
 Configuring the MCUboot bootloader
 ----------------------------------
 
-To enable the MCUboot bootloader, select the :kconfig:option:`CONFIG_BOOTLOADER_MCUBOOT` Kconfig option.
+To enable the MCUboot bootloader, select the :kconfig:option:`CONFIG_BOOTLOADER_MCUBOOT` Kconfig option in the application configuration.
 
-Configure the MCUboot bootloader with the following options:
+The MCUboot private key path (:kconfig:option:`CONFIG_BOOT_SIGNATURE_KEY_FILE`) must be set only in the MCUboot bootloader configuration file.
+The key is used both by the build system (to sign the application update images) and by the bootloader (to verify the application signature using public key derived from the selected private key).
 
-* :kconfig:option:`CONFIG_BOOT_SIGNATURE_KEY_FILE` - This option defines the path to the private key that is used to sign the application and that is used by the bootloader to verify the application signature.
-  The key must be defined only in the MCUboot bootloader configuration file.
-* :kconfig:option:`CONFIG_IMG_MANAGER` and :kconfig:option:`CONFIG_MCUBOOT_IMG_MANAGER` - These options allow the application to manage the DFU image.
-  Enable both of them only for configurations that support :ref:`background DFU <nrf_desktop_bootloader_background_dfu>`.
-  For these configurations, the :ref:`nrf_desktop_dfu` uses the provided API to request firmware upgrade and confirm the running image.
+The MCUboot bootloader configuration depends on the selected way of performing image upgrade.
+For detailed information about the available MCUboot bootloader modes, see the following sections.
+
+Swap mode
+~~~~~~~~~
+
+In the swap mode, the MCUboot bootloader moves the image to the primary slot before booting it.
+The swap mode is the image upgrade mode used by default for the :ref:`background DFU <nrf_desktop_bootloader_background_dfu>`.
+
+If the swap mode is used, the application must request firmware upgrade and confirm the running image.
+For this purpose, make sure to enable :kconfig:option:`CONFIG_IMG_MANAGER` and :kconfig:option:`CONFIG_MCUBOOT_IMG_MANAGER` Kconfig options in the application configuration.
+These options allow the :ref:`nrf_desktop_dfu`, :ref:`nrf_desktop_ble_smp`, and :ref:`nrf_desktop_dfu_mcumgr` to manage the DFU image.
+
+.. note::
+  When the MCUboot bootloader is in the swap mode, it can use a secondary image slot located on the external flash.
+  For details on using an external flash for the secondary image slot, see the :ref:`nrf_desktop_pm_external_flash` section.
+
+Direct-xip mode
+~~~~~~~~~~~~~~~
+
+The direct-xip mode is used for the :ref:`background DFU <nrf_desktop_bootloader_background_dfu>`.
+In this mode, the MCUboot bootloader boots an image directly from a given slot, so the swap operation is not needed.
+Make sure to enable the :kconfig:option:`CONFIG_BOOT_BUILD_DIRECT_XIP_VARIANT` Kconfig option in the application configuration to build application update images for both slots.
+
+Enable the ``CONFIG_BOOT_DIRECT_XIP`` Kconfig option in the bootloader configuration to make the MCUboot run the image directly from both image slots.
+The nRF Desktop's bootloader configurations do not enable the revert mechanism (``CONFIG_BOOT_DIRECT_XIP_REVERT``).
+When the direct-xip mode is enabled (the :kconfig:option:`CONFIG_BOOT_BUILD_DIRECT_XIP_VARIANT` Kconfig option is set in the application configuration), the application modules that control the DFU transport do not request firmware upgrades and do not confirm the running image.
+In that scenario, the MCUboot bootloader simply boots the image with the higher image version.
+
+By default, the MCUboot bootloader ignores the build number while comparing image versions.
+Enable the ``CONFIG_BOOT_VERSION_CMP_USE_BUILD_NUMBER`` Kconfig option in the bootloader configuration to use the build number while comparing image versions.
+To apply the same option for the :ref:`nrf_desktop_ble_smp` or :ref:`nrf_desktop_dfu_mcumgr`, enable the :kconfig:option:`CONFIG_MCUMGR_GRP_IMG_VERSION_CMP_USE_BUILD_NUMBER` Kconfig option in the application configuration.
+
+It is recommended to also enable the :kconfig:option:`CONFIG_MCUMGR_GRP_IMG_REJECT_DIRECT_XIP_MISMATCHED_SLOT` Kconfig option in the application configuration to make sure that MCUmgr rejects application image updates with invalid start address.
+This prevents uploading an update image build for improper slot through the MCUmgr's Simple Management Protocol (SMP).
+
+Serial recovery mode
+~~~~~~~~~~~~~~~~~~~~
+
+In the :ref:`USB serial recovery <nrf_desktop_bootloader_serial_dfu>` mode, the MCUboot bootloader uses a built-in foreground DFU transport over serial interface through USB.
+The application is not involved in the foreground DFU transport, therefore it can be directly overwritten by the bootloader.
+Because of that, the configuration with the serial recovery mode requires only a single application slot.
+
+Enable the USB serial recovery DFU using the following configuration options:
+
+* ``CONFIG_MCUBOOT_SERIAL`` - This option enables the serial recovery DFU.
+* ``CONFIG_BOOT_SERIAL_CDC_ACM`` - This option enables the serial interface through USB.
+
+  .. note::
+    Make sure to enable and properly configure the USB subsystem in the bootloader configuration.
+    See :ref:`usb_api` for more information.
+
+If the predefined button is pressed during the boot, the MCUboot bootloader enters the serial recovery mode instead of booting the application.
+The GPIO pin used to trigger the serial recovery mode is configured using Devicetree Specification (DTS).
+The pin is configured with the ``mcuboot-button0`` alias.
+The ``mcuboot-led0`` alias can be used to define the LED activated in the serial recovery mode.
+The ``CONFIG_MCUBOOT_INDICATION_LED`` Kconfig option must be selected to enable the LED.
+By default, both the GPIO pin and the LED are defined in the board's DTS file.
+See :file:`boards/arm/nrf52833dongle_nrf52833/nrf52833dongle_nrf52833.dts` for an example of board's DTS file used by the nRF Desktop application.
+
+For an example of bootloader Kconfig configuration file defined by the application, see the MCUboot bootloader debug configuration defined for nRF52833 dongle (:file:`applications/nrf_desktop/configuration/nrf52833dongle_nrf52833/child_image/mcuboot/prj.conf`).
+
+.. note::
+  The nRF Desktop devices use either the serial recovery DFU with a single application slot or the background DFU.
+  Both mentioned firmware upgrade methods are not used simultaneously by any of the configurations.
+  For example, the ``nrf52840dk_nrf52840`` board in ``prj_mcuboot_smp.conf`` uses only the background DFU and does not enable the serial recovery feature.
 
 .. _nrf_desktop_bootloader_background_dfu:
 
@@ -1785,34 +1897,26 @@ Background Device Firmware Upgrade
 ==================================
 
 The nRF Desktop application uses the :ref:`nrf_desktop_config_channel` and :ref:`nrf_desktop_dfu` for the background DFU process.
+From the application perspective, the update image transfer during the background DFU process is very similar for both MCUboot and B0 bootloader.
 The firmware update process has three stages, discussed below.
 At the end of these three stages, the nRF Desktop application will be rebooted with the new firmware package installed.
 
 .. note::
-    The background DFU mode requires two application slots in the flash memory.
-    For this reason, the feature is not available for devices with smaller flash size, because the size of the flash memory required is essentially doubled.
-    The devices with smaller flash size can use either :ref:`nrf_desktop_bootloader_serial_dfu` or MCUboot bootloader with the secondary image partition located on an external flash.
-
-The background firmware upgrade can also be performed over the Simple Management Protocol (SMP).
-For more detailed information about the DFU over SMP, read the :ref:`nrf_desktop_ble_smp` documentation.
+  The background firmware upgrade can also be performed over the Simple Management Protocol (SMP).
+  For more details about the DFU over SMP, read the :ref:`nrf_desktop_ble_smp` or :ref:`nrf_desktop_dfu_mcumgr` documentation.
 
 Update image generation
 -----------------------
 
-The update image is generated in the build directory when building the firmware if the bootloader is enabled in the configuration:
+The update image is generated in the build directory when building the firmware with the enabled bootloader.
 
-* The :file:`zephyr/dfu_application.zip` file is used by both B0 and MCUboot bootloader for the background DFU through the :ref:`nrf_desktop_config_channel` and :ref:`nrf_desktop_dfu`.
-  This package contains firmware images along with additional metadata.
+The :file:`zephyr/dfu_application.zip` file is used by both B0 and MCUboot bootloader for the background DFU through the :ref:`nrf_desktop_config_channel` and :ref:`nrf_desktop_dfu`.
+The package contains firmware images along with additional metadata.
+If the used bootloader boots the application directly from either slot 0 or slot 1, the host script transfers the update image that can be run from the unused slot.
+Otherwise, the image is always uploaded to the slot 1 and then moved to slot 0 by the bootloader before boot.
 
-  .. note::
-      By default, the build process for the B0 bootloader will construct an image for the first slot (slot 0 or S0).
-      To ensure that application is built for both slots, select the :kconfig:option:`CONFIG_BUILD_S1_VARIANT` Kconfig option.
-
-      When this option is selected, the :file:`zephyr/dfu_application.zip` file contains both images.
-      The update tool checks if the currently running image runs from either slot 0 or slot 1.
-      It then transfers the update image that can be run from the unused slot.
-
-* The :file:`zephyr/app_update.bin` is used for the background DFU through the :ref:`nrf_desktop_ble_smp`.
+.. note::
+  Make sure to properly configure the bootloader to ensure that the build system generates the :file:`zephyr/dfu_application.zip` archive containing all of the required update images.
 
 Update image transfer
 ---------------------
@@ -1828,10 +1932,34 @@ Depending on the side on which the process is handled:
 * On the host side, the process is handled by the :ref:`nrf_desktop_config_channel_script`.
   See the tool documentation for more information about how to execute the background DFU process on the host.
 
-If the MCUboot bootloader is selected, the update image can also be transferred in the background through the :ref:`nrf_desktop_ble_smp`.
+.. _nrf_desktop_image_transfer_over_smp:
 
-Update image verification and swap
-----------------------------------
+Image transfer over SMP
+~~~~~~~~~~~~~~~~~~~~~~~
+
+If the MCUboot bootloader is selected, the update image can also be transferred in the background either through the :ref:`nrf_desktop_ble_smp` or :ref:`nrf_desktop_dfu_mcumgr`.
+The `nRF Connect for Mobile`_ application uses binary files for the image transfer over the Simple Management Protocol (SMP).
+The :guilabel:`DFU` button appears in the tab of the connected Bluetooth device that supports the image transfer over the SMP.
+After pressing the button, you can select the :file:`*.bin` file used for the firmware update.
+
+After building your application for configuration with either the :ref:`nrf_desktop_ble_smp` or :ref:`nrf_desktop_dfu_mcumgr` enabled, the following firmware update files are generated in the build directory:
+
+ * :file:`zephyr/app_update.bin` - The application image that is bootable from the primary slot.
+ * :file:`zephyr/mcuboot_secondary_app_update.bin` - The application image that is bootable from the secondary slot.
+   The file is generated only if the MCUboot bootloader is built in the direct-xip mode.
+
+If the MCUboot bootloader uses the built-in direct-xip mode, you must upload the image for the slot that is currently unused.
+If the MCUboot bootloader built-in swap mode is used, the :file:`zephyr/app_update.bin` file must always be used.
+The :file:`zephyr/app_update.bin` file is the application image that can be booted from the primary slot.
+In the swap mode, the MCUboot bootloader always moves the new application image to the primary slot before booting it.
+
+.. note::
+  If the :kconfig:option:`CONFIG_MCUMGR_GRP_IMG_REJECT_DIRECT_XIP_MISMATCHED_SLOT` Kconfig option is enabled in the application configuration, the device rejects update image upload for the invalid slot.
+  It is recommended to enable the option if the application uses MCUboot in the direct-xip mode.
+  The upload rejection can be used as a simple mechanism of verifying which image update should be used.
+
+Update image verification and application image update
+------------------------------------------------------
 
 Once the update image transfer is completed, the background DFU process will continue after the device reboot.
 If :ref:`nrf_desktop_config_channel_script` is used, the reboot is triggered by the script right after the image transfer completes.
@@ -1846,48 +1974,13 @@ Otherwise, the old version is used.
 Serial recovery DFU
 ===================
 
-The nRF Desktop application also supports the serial recovery DFU mode through USB.
-In this mode, unlike in :ref:`background DFU mode <nrf_desktop_bootloader_background_dfu>`, the application is overwritten and only one application slot is used.
-This mode can so be used on devices with a limited amount of flash memory available.
+The serial recovery DFU is a feature of MCUboot and it needs to be enabled in the bootloader's configuration.
+For the configuration details, see the :ref:`nrf_desktop_configuring_mcuboot_bootloader` section.
 
-.. note::
-   The serial recovery DFU and the background DFU cannot be enabled at the same time on the same device.
-
-The serial recovery DFU is a feature of the bootloader.
-For the serial recovery DFU to be performed, the bootloader must be able to access the USB subsystem.
-This is not possible for the B0, and you have to use :ref:`MCUboot <mcuboot:mcuboot_wrapper>` instead.
-
-As only one application slot is available, the transfer of the new version of the application cannot be done while the application is running.
 To start the serial recovery DFU, the device should boot into recovery mode, in which the bootloader will be waiting for a new image upload to start.
-In the serial recovery DFU mode, the new image is transferred through USB.
-If the transfer is interrupted, the device will not be able to boot the application and automatically start in the serial recovery DFU mode.
-
-Configuring serial recovery DFU
--------------------------------
-
-Configure :ref:`MCUboot <mcuboot:mcuboot_wrapper>` to enable the serial recovery DFU through USB.
-The MCUboot configuration for a given board and :ref:`build type <nrf_desktop_requirements_build_types>` should be written to :file:`applications/nrf_desktop/configuration/your_board_name/mcuboot_buildtype.conf`.
-For an example of the configuration, see the ``release_mcuboot`` build type of the nRF52820 or the nRF52833 dongle.
-
-Not every configuration with MCUboot in the nRF Desktop supports the USB serial recovery.
-For example, the ``mcuboot_smp`` configuration for the nRF52840 Development Kit supports the MCUboot bootloader with background firmware upgrade.
-
-Select the following Kconfig options to enable the serial recovery DFU:
-
-* ``CONFIG_MCUBOOT_SERIAL`` - This option enables the serial recovery DFU.
-* ``CONFIG_BOOT_SERIAL_CDC_ACM`` - This option enables the serial interface through USB.
-
-  .. note::
-        The USB subsystem must be enabled and properly configured.
-        See :ref:`usb_api` for more information.
-
-The GPIO pin used to trigger the serial recovery mode is configured using Devicetree Specification (DTS).
-The pin is configured with the ``mcuboot-button0`` alias.
-The ``mcuboot-led0`` alias can be used to define LED activated in the serial recovery mode.
-The ``CONFIG_MCUBOOT_INDICATION_LED`` Kconfig option must be selected to enable the LED.
-
-By default, both the GPIO pin and the LED are defined in board's DTS file.
-See :file:`boards/arm/nrf52833dongle_nrf52833/nrf52833dongle_nrf52833.dts` for an example of configuration.
+In the serial recovery DFU mode, the new image is transferred through an USB CDC ACM class instance.
+The bootloader overwrites the existing application located on the primary slot with the new application image.
+If the transfer is interrupted, the device will not be able to boot the incomplete application, and the image upload must be performed again.
 
 Once the device enters the serial recovery mode, you can use the :ref:`mcumgr <zephyr:device_mgmt>` to:
 
@@ -1901,6 +1994,8 @@ For example, the following line will start the upload of the new image to the de
 .. code-block:: console
 
   mcumgr -t 60 --conntype serial --connstring=/dev/ttyACM0 image upload build-nrf52833dongle_nrf52833/zephyr/app_update.bin
+
+The command assumes that ``/dev/ttyACM0`` serial device is used by the MCUboot bootloader for the serial recovery.
 
 fwupd support
 =============
@@ -1938,7 +2033,7 @@ In this console snippet:
 * ``NordicHidBootloader`` - This optional line selects the bootloader that the device is running.
   If the device does not have the information about the underlying bootloader, the ``NordicHidBootloader`` option is used to select a proper bootloader type.
   If there is no information about the bootloader, both in metadata and from the device, the update procedure will fail.
-  The possible values are either ``B0`` or ``MCUBOOT``.
+  The possible values are either ``B0``, ``MCUBOOT`` or ``MCUBOOT+XIP``.
 
 .. note::
    As the ``nordic_hid`` plugin communicates with the device using the Configuration channel, the device update is not allowed through the Serial recovery DFU.
@@ -2053,6 +2148,9 @@ These are valid for events that have many listeners or sources, and are gathered
    doc/cpu_meas.rst
    doc/dev_descr.rst
    doc/dfu.rst
+   doc/dfu_mcumgr.rst
+   doc/dfu_lock.rst
+   doc/factory_reset.rst
    doc/failsafe.rst
    doc/fast_pair_app.rst
    doc/fn_keys.rst

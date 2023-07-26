@@ -149,49 +149,79 @@ static bool check_valid_data_rate(const struct shell *shell,
 }
 
 
-static bool check_valid_channel(unsigned char chan_num)
+static bool check_valid_chan_2g(unsigned char chan_num)
 {
-	if (((chan_num >= 1) && (chan_num <= 14)) ||
-		(chan_num == 32) ||
-		(chan_num == 36) ||
-		(chan_num == 40) ||
-		(chan_num == 44) ||
-		(chan_num == 48) ||
-		(chan_num == 52) ||
-		(chan_num == 56) ||
-		(chan_num == 60) ||
-		(chan_num == 64) ||
-		(chan_num == 68) ||
-		(chan_num == 96) ||
-		(chan_num == 100) ||
-		(chan_num == 104) ||
-		(chan_num == 108) ||
-		(chan_num == 112) ||
-		(chan_num == 116) ||
-		(chan_num == 120) ||
-		(chan_num == 124) ||
-		(chan_num == 128) ||
-		(chan_num == 132) ||
-		(chan_num == 136) ||
-		(chan_num == 140) ||
-		(chan_num == 144) ||
-		(chan_num == 149) ||
-		(chan_num == 153) ||
-		(chan_num == 157) ||
-		(chan_num == 159) ||
-		(chan_num == 161) ||
-		(chan_num == 163) ||
-		(chan_num == 165) ||
-		(chan_num == 167) ||
-		(chan_num == 169) ||
-		(chan_num == 171) ||
-		(chan_num == 173) ||
-		(chan_num == 175) ||
-		(chan_num == 177)) {
+	if ((chan_num >= 1) && (chan_num <= 14)) {
 		return true;
 	}
 
 	return false;
+}
+
+
+#ifndef CONFIG_BOARD_NRF7001
+static bool check_valid_chan_5g(unsigned char chan_num)
+{
+	if ((chan_num == 32) ||
+	    (chan_num == 36) ||
+	    (chan_num == 40) ||
+	    (chan_num == 44) ||
+	    (chan_num == 48) ||
+	    (chan_num == 52) ||
+	    (chan_num == 56) ||
+	    (chan_num == 60) ||
+	    (chan_num == 64) ||
+	    (chan_num == 68) ||
+	    (chan_num == 96) ||
+	    (chan_num == 100) ||
+	    (chan_num == 104) ||
+	    (chan_num == 108) ||
+	    (chan_num == 112) ||
+	    (chan_num == 116) ||
+	    (chan_num == 120) ||
+	    (chan_num == 124) ||
+	    (chan_num == 128) ||
+	    (chan_num == 132) ||
+	    (chan_num == 136) ||
+	    (chan_num == 140) ||
+	    (chan_num == 144) ||
+	    (chan_num == 149) ||
+	    (chan_num == 153) ||
+	    (chan_num == 157) ||
+	    (chan_num == 159) ||
+	    (chan_num == 161) ||
+	    (chan_num == 163) ||
+	    (chan_num == 165) ||
+	    (chan_num == 167) ||
+	    (chan_num == 169) ||
+	    (chan_num == 171) ||
+	    (chan_num == 173) ||
+	    (chan_num == 175) ||
+	    (chan_num == 177)) {
+		return true;
+	}
+
+	return false;
+}
+#endif /* CONFIG_BOARD_NRF7001 */
+
+
+static bool check_valid_channel(unsigned char chan_num)
+{
+	bool ret = false;
+
+	ret = check_valid_chan_2g(chan_num);
+
+	if (ret) {
+		goto out;
+	}
+
+#ifndef CONFIG_BOARD_NRF7001
+	ret = check_valid_chan_5g(chan_num);
+#endif /* CONFIG_BOARD_NRF7001 */
+
+out:
+	return ret;
 }
 
 
@@ -256,6 +286,14 @@ static int check_channel_settings(const struct shell *shell,
 enum wifi_nrf_status nrf_wifi_radio_test_conf_init(struct rpu_conf_params *conf_params)
 {
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
+	unsigned char country_code[NRF_WIFI_COUNTRY_CODE_LEN] = {0};
+
+	/* Check and save regulatory country code currently set */
+	if (strlen(conf_params->country_code)) {
+		memcpy(country_code,
+		       conf_params->country_code,
+		       NRF_WIFI_COUNTRY_CODE_LEN);
+	}
 
 	memset(conf_params,
 	       0,
@@ -289,7 +327,17 @@ enum wifi_nrf_status nrf_wifi_radio_test_conf_init(struct rpu_conf_params *conf_
 	conf_params->ru_index = 1;
 	conf_params->tx_pkt_cw = 15;
 	conf_params->phy_calib = NRF_WIFI_DEF_PHY_CALIB;
-	memcpy(conf_params->country_code, "00", 3);
+
+	/* Store back the currently set country code */
+	if (strlen(country_code)) {
+		memcpy(conf_params->country_code,
+		       country_code,
+		       NRF_WIFI_COUNTRY_CODE_LEN);
+	} else {
+		memcpy(conf_params->country_code,
+		       "00",
+		       NRF_WIFI_COUNTRY_CODE_LEN);
+	}
 out:
 	return status;
 }
@@ -1331,7 +1379,8 @@ static int nrf_wifi_radio_test_set_rx(const struct shell *shell,
 	return 0;
 }
 
-#ifdef CONFIG_BOARD_NRF7002DK_NRF5340
+#if defined(CONFIG_BOARD_NRF7002DK_NRF7001_NRF5340_CPUAPP) || \
+	defined(CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP)
 static int nrf_wifi_radio_test_ble_ant_switch_ctrl(const struct shell *shell,
 					     size_t argc,
 					     const char *argv[])
@@ -1349,7 +1398,7 @@ static int nrf_wifi_radio_test_ble_ant_switch_ctrl(const struct shell *shell,
 
 	return ble_ant_switch(val);
 }
-#endif /* CONFIG_BOARD_NRF7002DK_NRF5340 */
+#endif /* CONFIG_BOARD_NRF700XDK_NRF5340 */
 
 
 static int nrf_wifi_radio_test_rx_cap(const struct shell *shell,
@@ -1872,12 +1921,13 @@ static int nrf_wifi_radio_test_show_cfg(const struct shell *shell,
 		      "rx_capture_length = %d\n",
 		      conf_params->capture_length);
 
-#ifdef CONFIG_BOARD_NRF7002DK_NRF5340
+#if defined(CONFIG_BOARD_NRF7002DK_NRF7001_NRF5340_CPUAPP) || \
+	defined(CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP)
 	shell_fprintf(shell,
 		      SHELL_INFO,
 		      "ble_ant_switch_ctrl = %d\n",
 		      conf_params->ble_ant_switch_ctrl);
-#endif /* CONFIG_BOARD_NRF7002DK_NRF5340 */
+#endif /* CONFIG_BOARD_NRF700XDK_NRF5340 */
 
 	shell_fprintf(shell,
 		      SHELL_INFO,
@@ -2141,7 +2191,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 		      NULL,
 		      "0 - Legacy mode\n"
 		      "1 - HT mode\n"
+#ifndef CONFIG_BOARD_NRF7001
 		      "2 - VHT mode\n"
+#endif /* CONFIG_BOARD_NRF7001 */
 		      "3 - HE(SU) mode\n"
 		      "4 - HE(ER SU) mode\n"
 		      "5 - HE (TB) mode                                   ",
@@ -2239,7 +2291,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 		      nrf_wifi_radio_test_set_rx,
 		      2,
 		      0),
-#ifdef CONFIG_BOARD_NRF7002DK_NRF5340
+#if defined(CONFIG_BOARD_NRF7002DK_NRF7001_NRF5340_CPUAPP) || \
+	defined(CONFIG_BOARD_NRF7002DK_NRF5340_CPUAPP)
 	SHELL_CMD_ARG(ble_ant_switch_ctrl,
 		      NULL,
 		      "0 - Switch set to use the BLE antenna\n"
@@ -2247,7 +2300,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 		      nrf_wifi_radio_test_ble_ant_switch_ctrl,
 		      2,
 		      0),
-#endif /* CONFIG_BOARD_NRF7002DK_NRF5340 */
+#endif /* CONFIG_BOARD_NRF700XDK_NRF5340 */
 	SHELL_CMD_ARG(rx_lna_gain,
 		      NULL,
 		      "<val> - LNA gain to be configured.\n"
@@ -2290,7 +2343,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 	SHELL_CMD_ARG(tx_tone,
 		      NULL,
 		      "<TONE CONTROL>\n"
-		      "   0: Disable tone\n"
+		      "0: Disable tone\n"
 		      "1: Enable tone                                       ",
 		      nrf_wifi_radio_test_tx_tone,
 		      2,

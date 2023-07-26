@@ -1,7 +1,7 @@
 sample:
-    description: This app provides an example of signing/verifying using ECDSA
-        signatures
-    name: ECDSA example
+  description: |
+    This app provides an example of signing/verifying using ECDSA signatures
+  name: ECDSA example
 tests:
   sample.ecdsa:
     tags: introduction psa cc3xx

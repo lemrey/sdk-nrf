@@ -7,9 +7,11 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/drivers/sensor.h>
 #include <bluetooth/mesh/models.h>
 #include <bluetooth/mesh/sensor_types.h>
 #include <dk_buttons_and_leds.h>
+#include <float.h>
 #include "model_handler.h"
 
 #if DT_NODE_HAS_STATUS(DT_NODELABEL(bme680), okay)
@@ -45,8 +47,14 @@ static struct bt_mesh_sensor_column temp_range = {
 static const struct device *dev = DEVICE_DT_GET(SENSOR_NODE);
 static uint32_t tot_temp_samps;
 static uint32_t col_samps[ARRAY_SIZE(columns)];
+static struct sensor_value pres_mot_thres;
+static double amb_light_level_ref;
+static double amb_light_level_gain = 1.0;
+/* Using a dummy ambient light value because we do not have a real ambient light sensor. */
+static double dummy_ambient_light_value;
 
-static int32_t prev_pres;
+static int32_t pres_detect;
+static uint32_t prev_detect;
 
 static int chip_temp_get(struct bt_mesh_sensor_srv *srv,
 			 struct bt_mesh_sensor *sensor,
@@ -207,8 +215,92 @@ static struct bt_mesh_sensor rel_chip_temp_runtime = {
 		},
 };
 
+static void presence_motion_threshold_get(struct bt_mesh_sensor_srv *srv,
+	struct bt_mesh_sensor *sensor,
+	const struct bt_mesh_sensor_setting *setting,
+	struct bt_mesh_msg_ctx *ctx,
+	struct sensor_value *rsp)
+{
+	rsp[0] = pres_mot_thres;
+	printk("Presence motion threshold: %u [%d ms]\n", rsp[0].val1, 100 * rsp[0].val1);
+}
+
+static int presence_motion_threshold_set(struct bt_mesh_sensor_srv *srv,
+	struct bt_mesh_sensor *sensor,
+	const struct bt_mesh_sensor_setting *setting,
+	struct bt_mesh_msg_ctx *ctx,
+	const struct sensor_value *value)
+{
+	pres_mot_thres = value[0];
+	printk("Presence motion threshold: %u [%d ms]\n", value[0].val1, 100 * value[0].val1);
+
+	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
+		int err;
+
+		err = settings_save_one("presence/motion_threshold",
+					&pres_mot_thres, sizeof(pres_mot_thres));
+		if (err) {
+			printk("Error storing setting (%d)\n", err);
+		} else {
+			printk("Stored setting\n");
+		}
+	}
+	return 0;
+}
+
+static struct bt_mesh_sensor_setting presence_motion_threshold_setting[] = { {
+	.type = &bt_mesh_sensor_motion_threshold,
+	.get = presence_motion_threshold_get,
+	.set = presence_motion_threshold_set,
+} };
+
+static int presence_motion_threshold_settings_restore(const char *name,
+	size_t len,
+	settings_read_cb read_cb,
+	void *cb_arg)
+{
+	const char *next;
+	int rc;
+
+	if (!(settings_name_steq(name, "motion_threshold", &next) && !next)) {
+		return -ENOENT;
+	}
+
+	if (len != sizeof(pres_mot_thres)) {
+		return -EINVAL;
+	}
+
+	rc = read_cb(cb_arg, &pres_mot_thres, sizeof(pres_mot_thres));
+	if (rc < 0) {
+		return rc;
+	}
+
+	printk("Restored presence motion threshold setting\n");
+	return 0;
+}
+
+struct settings_handler presence_motion_threshold_conf = {
+	.name = "presence",
+	.h_set = presence_motion_threshold_settings_restore
+};
+
+static int presence_detected_get(struct bt_mesh_sensor_srv *srv,
+				 struct bt_mesh_sensor *sensor,
+				 struct bt_mesh_msg_ctx *ctx,
+				 struct sensor_value *rsp)
+{
+	rsp->val1 = pres_detect;
+
+	return 0;
+};
+
 static struct bt_mesh_sensor presence_sensor = {
 	.type = &bt_mesh_sensor_presence_detected,
+	.get = presence_detected_get,
+	.settings = {
+		.list = (const struct bt_mesh_sensor_setting *)&presence_motion_threshold_setting,
+		.count = ARRAY_SIZE(presence_motion_threshold_setting),
+	},
 };
 
 static int time_since_presence_detected_get(struct bt_mesh_sensor_srv *srv,
@@ -216,10 +308,15 @@ static int time_since_presence_detected_get(struct bt_mesh_sensor_srv *srv,
 					struct bt_mesh_msg_ctx *ctx,
 					struct sensor_value *rsp)
 {
-	if (prev_pres) {
-		rsp->val1 = (k_uptime_get_32() - prev_pres) / MSEC_PER_SEC;
-	} else {
+	if (pres_detect) {
 		rsp->val1 = 0;
+	} else if (prev_detect) {
+		rsp->val1 = (k_uptime_get_32() - prev_detect) / MSEC_PER_SEC;
+	} else {
+		/* Before first detection, the time since last detection is unknown. Returning
+		 * unknown value until a detection is done. Value is defined in specification.
+		 */
+		rsp->val1 = 0xFFFF;
 	}
 
 	return 0;
@@ -230,19 +327,214 @@ static struct bt_mesh_sensor time_since_presence_detected = {
 	.get = time_since_presence_detected_get,
 };
 
-static struct bt_mesh_sensor *const sensors[] = {
-	&chip_temp,
-	&rel_chip_temp_runtime,
+static void amb_light_level_gain_get(struct bt_mesh_sensor_srv *srv,
+				     struct bt_mesh_sensor *sensor,
+				     const struct bt_mesh_sensor_setting *setting,
+				     struct bt_mesh_msg_ctx *ctx,
+				     struct sensor_value *rsp)
+{
+	(void)sensor_value_from_double(rsp, amb_light_level_gain);
+	printk("Ambient light level gain: %s\n", bt_mesh_sensor_ch_str(rsp));
+};
+
+static void amb_light_level_gain_store(double gain)
+{
+	amb_light_level_gain = gain;
+
+	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
+		int err;
+
+		err = settings_save_one("amb_light_level/gain",
+					&amb_light_level_gain, sizeof(amb_light_level_gain));
+		if (err) {
+			printk("Error storing setting (%d)\n", err);
+		} else {
+			printk("Stored setting\n");
+		}
+	}
+}
+
+static int amb_light_level_gain_set(struct bt_mesh_sensor_srv *srv,
+				    struct bt_mesh_sensor *sensor,
+				    const struct bt_mesh_sensor_setting *setting,
+				    struct bt_mesh_msg_ctx *ctx,
+				    const struct sensor_value *value)
+{
+	amb_light_level_gain_store(sensor_value_to_double(value));
+	printk("Ambient light level gain: %s\n", bt_mesh_sensor_ch_str(value));
+
+	return 0;
+}
+
+static int amb_light_level_ref_set(struct bt_mesh_sensor_srv *srv,
+				   struct bt_mesh_sensor *sensor,
+				   const struct bt_mesh_sensor_setting *setting,
+				   struct bt_mesh_msg_ctx *ctx,
+				   const struct sensor_value *value)
+{
+	struct sensor_value gain_value_tmp;
+
+	amb_light_level_ref = sensor_value_to_double(value);
+
+	/* When using the a real ambient light sensor the sensor value should be
+	 * read and used instead of the dummy value.
+	 */
+	if (dummy_ambient_light_value > 0.0) {
+		amb_light_level_gain_store(amb_light_level_ref / dummy_ambient_light_value);
+	} else {
+		amb_light_level_gain_store(FLT_MAX);
+	}
+
+	sensor_value_from_double(&gain_value_tmp, amb_light_level_gain);
+
+	printk("Ambient light level ref(%s) ", bt_mesh_sensor_ch_str(value));
+	printk("gain(%s)\n", bt_mesh_sensor_ch_str(&gain_value_tmp));
+
+	return 0;
+}
+
+static void amb_light_level_ref_get(struct bt_mesh_sensor_srv *srv,
+				     struct bt_mesh_sensor *sensor,
+				     const struct bt_mesh_sensor_setting *setting,
+				     struct bt_mesh_msg_ctx *ctx,
+				     struct sensor_value *rsp)
+{
+	(void)sensor_value_from_double(rsp, amb_light_level_ref);
+	printk("Ambient light level ref: %s\n", bt_mesh_sensor_ch_str(rsp));
+};
+
+static struct bt_mesh_sensor_setting amb_light_level_setting[] = {
+	{
+		.type = &bt_mesh_sensor_gain,
+		.get = amb_light_level_gain_get,
+		.set = amb_light_level_gain_set,
+	},
+	{
+		.type = &bt_mesh_sensor_present_amb_light_level,
+		.get = amb_light_level_ref_get,
+		.set = amb_light_level_ref_set,
+	},
+};
+
+static int amb_light_level_gain_settings_restore(const char *name,
+						 size_t len,
+						 settings_read_cb read_cb,
+						 void *cb_arg)
+{
+	const char *next;
+	int rc;
+
+	if (!(settings_name_steq(name, "gain", &next) && !next)) {
+		return -ENOENT;
+	}
+
+	if (len != sizeof(amb_light_level_gain)) {
+		return -EINVAL;
+	}
+
+	rc = read_cb(cb_arg, &amb_light_level_gain, sizeof(amb_light_level_gain));
+	if (rc < 0) {
+		return rc;
+	}
+
+	printk("Restored ambient light level gain setting\n");
+	return 0;
+}
+
+struct settings_handler amb_light_level_gain_conf = {
+	.name = "amb_light_level",
+	.h_set = amb_light_level_gain_settings_restore
+};
+
+static struct bt_mesh_sensor_column amb_light_level_range = {
+	.start = { .val1 = 0, .val2 = 0},
+	.end = { .val1 = 167772, .val2 = 130000 },
+};
+
+static int amb_light_level_get(struct bt_mesh_sensor_srv *srv,
+			       struct bt_mesh_sensor *sensor,
+			       struct bt_mesh_msg_ctx *ctx,
+			       struct sensor_value *rsp)
+{
+	int err;
+
+	/* Report ambient light as dummy value, and changing it by pressing
+	 * a button. The logic and hardware for measuring the actual ambient
+	 * light usage of the device should be implemented here.
+	 */
+	double reported_value = amb_light_level_gain * dummy_ambient_light_value;
+
+	err = sensor_value_from_double(rsp, reported_value);
+	if (err) {
+		printk("Error getting ambient light level sensor data (%d)\n", err);
+	}
+
+	if (!bt_mesh_sensor_value_in_column(rsp, &amb_light_level_range)) {
+		if (amb_light_level_range.start.val1 == amb_light_level_range.end.val1) {
+			if (rsp->val2 <= amb_light_level_range.start.val2) {
+				*rsp = amb_light_level_range.start;
+			} else {
+				*rsp = amb_light_level_range.end;
+			}
+		} else if (rsp->val1 <= amb_light_level_range.start.val1) {
+			*rsp = amb_light_level_range.start;
+		} else {
+			*rsp = amb_light_level_range.end;
+		}
+	}
+
+	return err;
+}
+
+static const struct bt_mesh_sensor_descriptor present_amb_light_desc = {
+	.tolerance = {
+		.negative = {
+			.val1 = 0,
+		},
+		.positive = {
+			.val1 = 0,
+		}
+	},
+	.sampling_type = BT_MESH_SENSOR_SAMPLING_UNSPECIFIED,
+	.period = 0,
+	.update_interval = 0,
+};
+
+
+static struct bt_mesh_sensor present_amb_light_level = {
+	.type = &bt_mesh_sensor_present_amb_light_level,
+	.get = amb_light_level_get,
+	.descriptor = &present_amb_light_desc,
+	.settings = {
+		.list = (const struct bt_mesh_sensor_setting *)&amb_light_level_setting,
+		.count = ARRAY_SIZE(amb_light_level_setting),
+	},
+};
+
+static struct bt_mesh_sensor *const ambient_light_sensor[] = {
+	&present_amb_light_level,
+};
+
+static struct bt_mesh_sensor *const occupancy_sensor[] = {
 	&presence_sensor,
 	&time_since_presence_detected,
 };
 
-static struct bt_mesh_sensor_srv sensor_srv =
-	BT_MESH_SENSOR_SRV_INIT(sensors, ARRAY_SIZE(sensors));
+static struct bt_mesh_sensor *const chip_temp_sensor[] = {
+	&chip_temp,
+	&rel_chip_temp_runtime,
+};
 
-static struct k_work_delayable end_of_presence_work;
+static struct bt_mesh_sensor_srv ambient_light_sensor_srv =
+	BT_MESH_SENSOR_SRV_INIT(ambient_light_sensor, ARRAY_SIZE(ambient_light_sensor));
+static struct bt_mesh_sensor_srv occupancy_sensor_srv =
+	BT_MESH_SENSOR_SRV_INIT(occupancy_sensor, ARRAY_SIZE(occupancy_sensor));
+static struct bt_mesh_sensor_srv chip_temp_sensor_srv =
+	BT_MESH_SENSOR_SRV_INIT(chip_temp_sensor, ARRAY_SIZE(chip_temp_sensor));
 
-static void end_of_presence(struct k_work *work)
+static struct k_work_delayable presence_detected_work;
+
+static void presence_detected(struct k_work *work)
 {
 	int err;
 
@@ -250,15 +542,28 @@ static void end_of_presence(struct k_work *work)
 	 * .val1 can only be '0' or '1'
 	 */
 	struct sensor_value val = {
-		.val1 = 0,
+		.val1 = 1,
 	};
 
-	err = bt_mesh_sensor_srv_pub(&sensor_srv, NULL, &presence_sensor, &val);
+	err = bt_mesh_sensor_srv_pub(&occupancy_sensor_srv, NULL, &presence_sensor, &val);
 
 	if (err) {
 		printk("Error publishing end of presence (%d)\n", err);
 	}
+
+	pres_detect = 1;
 }
+
+static const double dummy_amb_light_values[] = {
+	0.01,
+	100.00,
+	200.00,
+	500.00,
+	750.00,
+	1000.00,
+	10000.00,
+	167772.13,
+};
 
 static void button_handler_cb(uint32_t pressed, uint32_t changed)
 {
@@ -266,26 +571,53 @@ static void button_handler_cb(uint32_t pressed, uint32_t changed)
 		return;
 	}
 
-	if (pressed & BIT(0)) {
+	if (pressed & changed & BIT(0)) {
+		k_work_reschedule(&presence_detected_work, K_MSEC(100 * pres_mot_thres.val1));
+	}
+
+	if ((!pressed) & changed & BIT(0)) {
+		if (!pres_detect) {
+			k_work_cancel_delayable(&presence_detected_work);
+		} else {
+			int err;
+
+			/* This sensor value must be boolean -
+			 * .val1 can only be '0' or '1'
+			 */
+			struct sensor_value val = {
+				.val1 = 0,
+			};
+
+			err = bt_mesh_sensor_srv_pub(&occupancy_sensor_srv, NULL,
+						&presence_sensor, &val);
+
+			if (err) {
+				printk("Error publishing presence (%d)\n", err);
+			}
+
+			pres_detect = 0;
+			prev_detect = k_uptime_get_32();
+		}
+	}
+
+	if (pressed & changed & BIT(1)) {
 		int err;
+		static int amb_light_idx;
+		struct sensor_value val;
 
-		/* This sensor value must be boolean -
-		 * .val1 can only be '0' or '1'
-		 */
-		struct sensor_value val = {
-			.val1 = 1,
-		};
+		dummy_ambient_light_value = dummy_amb_light_values[amb_light_idx++];
+		amb_light_idx = amb_light_idx % ARRAY_SIZE(dummy_amb_light_values);
 
-		err = bt_mesh_sensor_srv_pub(&sensor_srv, NULL,
-					     &presence_sensor, &val);
-
+		err = sensor_value_from_double(&val, dummy_ambient_light_value);
 		if (err) {
-			printk("Error publishing presence (%d)\n", err);
+			printk("Error getting ambient light level sensor data (%d)\n", err);
 		}
 
-		prev_pres = k_uptime_get_32();
-
-		k_work_reschedule(&end_of_presence_work, K_MSEC(2000));
+		err = bt_mesh_sensor_srv_pub(&ambient_light_sensor_srv, NULL,
+					     &present_amb_light_level, &val);
+		if (err) {
+			printk("Error publishing present ambient light level (%d)\n", err);
+		}
 	}
 }
 
@@ -353,7 +685,13 @@ static struct bt_mesh_elem elements[] = {
 		     BT_MESH_MODEL_LIST(BT_MESH_MODEL_CFG_SRV,
 					BT_MESH_MODEL_HEALTH_SRV(&health_srv,
 								 &health_pub),
-					BT_MESH_MODEL_SENSOR_SRV(&sensor_srv)),
+					BT_MESH_MODEL_SENSOR_SRV(&ambient_light_sensor_srv)),
+		     BT_MESH_MODEL_NONE),
+	BT_MESH_ELEM(2,
+		     BT_MESH_MODEL_LIST(BT_MESH_MODEL_SENSOR_SRV(&occupancy_sensor_srv)),
+		     BT_MESH_MODEL_NONE),
+	BT_MESH_ELEM(3,
+		     BT_MESH_MODEL_LIST(BT_MESH_MODEL_SENSOR_SRV(&chip_temp_sensor_srv)),
 		     BT_MESH_MODEL_NONE),
 };
 
@@ -366,7 +704,7 @@ static const struct bt_mesh_comp comp = {
 const struct bt_mesh_comp *model_handler_init(void)
 {
 	k_work_init_delayable(&attention_blink_work, attention_blink);
-	k_work_init_delayable(&end_of_presence_work, end_of_presence);
+	k_work_init_delayable(&presence_detected_work, presence_detected);
 
 	if (!device_is_ready(dev)) {
 		printk("Temperature sensor not ready\n");
@@ -379,6 +717,8 @@ const struct bt_mesh_comp *model_handler_init(void)
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
 		settings_subsys_init();
 		settings_register(&temp_range_conf);
+		settings_register(&presence_motion_threshold_conf);
+		settings_register(&amb_light_level_gain_conf);
 	}
 
 	return &comp;

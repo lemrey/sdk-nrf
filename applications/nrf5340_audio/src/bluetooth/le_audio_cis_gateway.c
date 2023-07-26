@@ -547,9 +547,19 @@ static void stream_stopped_cb(struct bt_bap_stream *stream, uint8_t reason)
 		headsets[channel_index].hci_wrn_printed = false;
 	}
 
-	if (!ep_state_check(headsets[AUDIO_CH_L].sink_stream.ep, BT_BAP_EP_STATE_STREAMING) &&
-	    !ep_state_check(headsets[AUDIO_CH_R].sink_stream.ep, BT_BAP_EP_STATE_STREAMING)) {
-		le_audio_event_publish(LE_AUDIO_EVT_NOT_STREAMING);
+	/* Check if the other stream is streaming, send event if not */
+	if (stream == &headsets[AUDIO_CH_L].sink_stream) {
+		if (!ep_state_check(headsets[AUDIO_CH_R].sink_stream.ep,
+				    BT_BAP_EP_STATE_STREAMING)) {
+			le_audio_event_publish(LE_AUDIO_EVT_NOT_STREAMING);
+		}
+	} else if (stream == &headsets[AUDIO_CH_R].sink_stream) {
+		if (!ep_state_check(headsets[AUDIO_CH_L].sink_stream.ep,
+				    BT_BAP_EP_STATE_STREAMING)) {
+			le_audio_event_publish(LE_AUDIO_EVT_NOT_STREAMING);
+		}
+	} else {
+		LOG_WRN("Unknown stream");
 	}
 }
 
@@ -557,9 +567,19 @@ static void stream_released_cb(struct bt_bap_stream *stream)
 {
 	LOG_DBG("Audio Stream %p released", (void *)stream);
 
-	if (!ep_state_check(headsets[AUDIO_CH_L].sink_stream.ep, BT_BAP_EP_STATE_STREAMING) &&
-	    !ep_state_check(headsets[AUDIO_CH_R].sink_stream.ep, BT_BAP_EP_STATE_STREAMING)) {
-		le_audio_event_publish(LE_AUDIO_EVT_NOT_STREAMING);
+	/* Check if the other stream is streaming, send event if not */
+	if (stream == &headsets[AUDIO_CH_L].sink_stream) {
+		if (!ep_state_check(headsets[AUDIO_CH_R].sink_stream.ep,
+				    BT_BAP_EP_STATE_STREAMING)) {
+			le_audio_event_publish(LE_AUDIO_EVT_NOT_STREAMING);
+		}
+	} else if (stream == &headsets[AUDIO_CH_R].sink_stream) {
+		if (!ep_state_check(headsets[AUDIO_CH_L].sink_stream.ep,
+				    BT_BAP_EP_STATE_STREAMING)) {
+			le_audio_event_publish(LE_AUDIO_EVT_NOT_STREAMING);
+		}
+	} else {
+		LOG_WRN("Unknown stream");
 	}
 }
 
@@ -570,7 +590,6 @@ static void stream_recv_cb(struct bt_bap_stream *stream, const struct bt_iso_rec
 	int ret;
 	bool bad_frame = false;
 	uint8_t channel_index;
-	static uint32_t data_size_mismatch_cnt;
 
 	if (receive_cb == NULL) {
 		LOG_ERR("The RX callback has not been set");
@@ -587,19 +606,8 @@ static void stream_recv_cb(struct bt_bap_stream *stream, const struct bt_iso_rec
 		return;
 	}
 
-	uint32_t octets_per_frame = bt_codec_cfg_get_octets_per_frame(stream->codec);
-
-	if (buf->len != octets_per_frame && bad_frame != true) {
-		data_size_mismatch_cnt++;
-		if ((data_size_mismatch_cnt % 500) == 1) {
-			LOG_DBG("Data size mismatch, received: %d, codec: %d, total: %d", buf->len,
-				octets_per_frame, data_size_mismatch_cnt);
-		}
-
-		return;
-	}
-
-	receive_cb(buf->data, buf->len, bad_frame, info->ts, channel_index);
+	receive_cb(buf->data, buf->len, bad_frame, info->ts, channel_index,
+		   bt_codec_cfg_get_octets_per_frame(stream->codec));
 }
 #endif /* (CONFIG_BT_AUDIO_RX) */
 
@@ -756,7 +764,7 @@ static void discover_sink_cb(struct bt_conn *conn, struct bt_codec *codec, struc
 	uint8_t temp_cap_index = 0;
 
 	if (params->err == BT_ATT_ERR_ATTRIBUTE_NOT_FOUND) {
-		LOG_INF("No sinks found");
+		LOG_WRN("No sinks found");
 		return;
 	} else if (params->err) {
 		LOG_ERR("Discovery failed: %d", params->err);
@@ -879,7 +887,7 @@ static void discover_source_cb(struct bt_conn *conn, struct bt_codec *codec, str
 	uint8_t temp_cap_index = 0;
 
 	if (params->err == BT_ATT_ERR_ATTRIBUTE_NOT_FOUND) {
-		LOG_INF("No sources found");
+		LOG_WRN("No sources found");
 		return;
 	} else if (params->err) {
 		LOG_ERR("Discovery failed: %d", params->err);
@@ -1350,11 +1358,6 @@ static int iso_stream_send(uint8_t const *const data, size_t size, struct le_aud
 	int ret;
 	struct net_buf *buf;
 
-	if (!ep_state_check(headset.sink_stream.ep, BT_BAP_EP_STATE_STREAMING)) {
-		LOG_DBG("%s channel not connected", headset.ch_name);
-		return 0;
-	}
-
 	/* net_buf_alloc allocates buffers for APP->NET transfer over HCI RPMsg,
 	 * but when these buffers are released it is not guaranteed that the
 	 * data has actually been sent. The data might be queued on the NET core,
@@ -1622,19 +1625,24 @@ int le_audio_send(struct encoded_audio enc_audio)
 		}
 	}
 
-	ret = iso_stream_send(enc_audio.data, data_size_pr_stream, headsets[AUDIO_CH_L]);
-	if (ret) {
-		LOG_DBG("Failed to send data to left channel");
+	if (ep_state_check(headsets[AUDIO_CH_L].sink_stream.ep, BT_BAP_EP_STATE_STREAMING)) {
+		ret = iso_stream_send(enc_audio.data, data_size_pr_stream, headsets[AUDIO_CH_L]);
+		if (ret) {
+			LOG_DBG("Failed to send data to left channel");
+		}
 	}
 
-	if (enc_audio.num_ch == 1) {
-		ret = iso_stream_send(enc_audio.data, data_size_pr_stream, headsets[AUDIO_CH_R]);
-	} else {
-		ret = iso_stream_send(&enc_audio.data[data_size_pr_stream], data_size_pr_stream,
-				      headsets[AUDIO_CH_R]);
-	}
-	if (ret) {
-		LOG_DBG("Failed to send data to right channel");
+	if (ep_state_check(headsets[AUDIO_CH_R].sink_stream.ep, BT_BAP_EP_STATE_STREAMING)) {
+		if (enc_audio.num_ch == 1) {
+			ret = iso_stream_send(enc_audio.data, data_size_pr_stream,
+					      headsets[AUDIO_CH_R]);
+		} else {
+			ret = iso_stream_send(&enc_audio.data[data_size_pr_stream],
+					      data_size_pr_stream, headsets[AUDIO_CH_R]);
+		}
+		if (ret) {
+			LOG_DBG("Failed to send data to right channel");
+		}
 	}
 
 	return 0;

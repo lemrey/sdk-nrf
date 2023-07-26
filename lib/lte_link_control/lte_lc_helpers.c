@@ -120,7 +120,7 @@ void event_handler_list_dispatch(const struct lte_lc_evt *const evt)
 	k_mutex_lock(&list_mtx, K_FOREVER);
 
 	/* Dispatch events to all registered handlers */
-	LOG_DBG("Dispatching events:");
+	LOG_DBG("Dispatching event: type=%d", evt->type);
 	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&handler_list, curr, tmp, node) {
 		LOG_DBG(" - handler=0x%08X", (uint32_t)curr->handler);
 		curr->handler(evt);
@@ -1393,6 +1393,11 @@ int parse_mdmev(const char *at_response, enum lte_lc_modem_evt *modem_evt)
 		[LTE_LC_MODEM_EVT_RESET_LOOP] = AT_MDMEV_RESET_LOOP,
 		[LTE_LC_MODEM_EVT_BATTERY_LOW] = AT_MDMEV_BATTERY_LOW,
 		[LTE_LC_MODEM_EVT_OVERHEATED] = AT_MDMEV_OVERHEATED,
+		[LTE_LC_MODEM_EVT_NO_IMEI] = AT_MDMEV_NO_IMEI,
+		[LTE_LC_MODEM_EVT_CE_LEVEL_0] = AT_MDMEV_CE_LEVEL_0,
+		[LTE_LC_MODEM_EVT_CE_LEVEL_1] = AT_MDMEV_CE_LEVEL_1,
+		[LTE_LC_MODEM_EVT_CE_LEVEL_2] = AT_MDMEV_CE_LEVEL_2,
+		[LTE_LC_MODEM_EVT_CE_LEVEL_3] = AT_MDMEV_CE_LEVEL_3,
 	};
 
 	if (at_response == NULL || modem_evt == NULL) {

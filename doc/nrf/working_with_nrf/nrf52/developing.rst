@@ -133,8 +133,13 @@ Consider using these features in your project to speed up the FOTA update proces
 FOTA in Bluetooth mesh
 ======================
 
-To perform FOTA update when working with the Bluetooth mesh protocol, use point-to-point Device Firmware Update (DFU) over Bluetooth Low Energy as described in `FOTA over Bluetooth Low Energy`_ above.
-See also :ref:`ug_bt_mesh_fota` for more details about FOTA in Bluetooth mesh.
+When performing a FOTA update when working with the Bluetooth mesh protocol, use one of the following DFU methods:
+
+* DFU over Bluetooth mesh using the Zephyr Bluetooth mesh DFU subsystem.
+  The specification that the Bluetooth mesh DFU subsystem is based on is not adopted yet, and therefore this feature should be used for experimental purposes only.
+* Point-to-point DFU over Bluetooth Low Energy as described in `FOTA over Bluetooth Low Energy`_ above.
+
+For more information about both methods, see :ref:`ug_bt_mesh_fota`.
 
 .. fota_upgrades_bt_mesh_end
 
@@ -229,9 +234,7 @@ In Step 5, choose the :file:`.hex` file for the application you are programming.
 Building and programming using |VSC|
 ====================================
 
-|vsc_extension_instructions|
-
-Complete the following steps after installing the |nRFVSC|:
+Complete the following steps to build and program using the |nRFVSC|:
 
 .. |sample_path_vsc| replace:: :file:`nrf/applications/nrf_desktop`
 
@@ -239,7 +242,7 @@ Complete the following steps after installing the |nRFVSC|:
 
 .. include:: ../../includes/vsc_build_and_run.txt
 
-#. Connect the nRF52 Series DK to the computer with a micro-USB cable, and then turn on the DK.
+3. Connect the nRF52 Series DK to the computer with a micro-USB cable, and then turn on the DK.
 
    **LED1** starts blinking.
 

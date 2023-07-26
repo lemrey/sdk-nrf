@@ -67,7 +67,6 @@ The response for the three different data types is sent as separate events:
 
 * Static data as :c:enum:`MODEM_EVT_MODEM_STATIC_DATA_READY`
 * Dynamic data as :c:enum:`MODEM_EVT_MODEM_DYNAMIC_DATA_READY`
-* Battery voltage as :c:enum:`MODEM_EVT_BATTERY_DATA_READY`
 
 If the sampling of data fails, a corresponding error message is sent through one of the following events:
 
@@ -87,10 +86,7 @@ Module states
 
 The modem module has an internal state machine with the following states:
 
-  * ``STATE_INIT`` - The initial state of the module in which it awaits the modem to be initialized.
-    The module enters this state only if the :ref:`liblwm2m_carrier_readme` library is enabled because the modem is automatically initialized otherwise.
   * ``STATE_DISCONNECTED`` - The module has performed all required initializations and is ready to establish an LTE connection.
-    This is the initial state for applications that do not use the :ref:`liblwm2m_carrier_readme` library.
   * ``STATE_CONNECTING`` - The modem is currently searching for a suitable LTE network and attempting to establish a connection.
   * ``STATE_CONNECTED`` - The device is connected to an LTE network.
   * ``STATE_SHUTDOWN`` - The module has been shut down after receiving a request from the utility module.
@@ -117,15 +113,6 @@ CONFIG_MODEM_THREAD_STACK_SIZE -  Configuration for thread stack size
 CONFIG_MODEM_SEND_ALL_SAMPLED_DATA - Configuration for sending all sampled data
    By default, the modem module sends only events with sampled data that has changed since the last sampling.
    To send unchanged data also, enable this option.
-
-.. _CONFIG_MODEM_AUTO_REQUEST_POWER_SAVING_FEATURES:
-
-CONFIG_MODEM_AUTO_REQUEST_POWER_SAVING_FEATURES - Configuration for automatic requests of PSM
-   The module automatically requests PSM from the LTE network.
-   If PSM is granted by the network, it results in reduction of the modem's power consumption.
-   Note that the device is not reachable from the cloud when it is in PSM.
-   The device exits PSM whenever the application sends data, or the configured PSM TAU (Tracking Area Update) interval has passed.
-   To not request PSM from the network, disable this option.
 
 For more information on LTE configuration options, see :ref:`lte_lc_readme`.
 

@@ -16,9 +16,10 @@ LOG_MODULE_DECLARE(download_client);
 static char host[CONFIG_DOWNLOAD_CLIENT_MAX_HOSTNAME_SIZE];
 static char file[CONFIG_DOWNLOAD_CLIENT_MAX_FILENAME_SIZE];
 
+static int sec_tag_list[1];
 static struct download_client downloader;
 static struct download_client_cfg config = {
-	.sec_tag = -1,
+	.sec_tag_list = sec_tag_list,
 };
 
 static const struct shell *shell_instance;
@@ -53,6 +54,9 @@ static int callback(const struct download_client_evt *event)
 			    event->error);
 		downloaded = 0;
 		break;
+	case DOWNLOAD_CLIENT_EVT_CLOSED:
+		shell_print(shell_instance, "socket closed");
+		break;
 	}
 	return 0;
 }
@@ -73,7 +77,7 @@ static int cmd_dc_config_pdn_id(const struct shell *shell, size_t argc,
 {
 	if (argc != 2) {
 		shell_warn(shell, "usage: dc config pdn <pdn_id>\n");
-		return 0;
+		return -EINVAL;
 	}
 
 	config.pdn_id = atoi(argv[1]);
@@ -87,16 +91,17 @@ static int cmd_dc_config_sec_tag(const struct shell *shell, size_t argc,
 {
 	if (argc != 2) {
 		shell_warn(shell, "usage: dc config sec_tag <sec_tag>\n");
-		return 0;
+		return -EINVAL;
 	}
 
-	config.sec_tag = atoi(argv[1]);
+	sec_tag_list[0] = atoi(argv[1]);
+	config.sec_tag_count = 1;
 
-	shell_print(shell, "Security tag set: %d\n", config.sec_tag);
+	shell_print(shell, "Security tag set: %d\n", config.sec_tag_list[0]);
 	return 0;
 }
 
-static int cmd_dc_connect(const struct shell *shell, size_t argc, char **argv)
+static int cmd_dc_set_host(const struct shell *shell, size_t argc, char **argv)
 {
 	int err;
 
@@ -104,44 +109,17 @@ static int cmd_dc_connect(const struct shell *shell, size_t argc, char **argv)
 
 	if (argc != 2) {
 		shell_warn(shell, "usage: dc connect <host>|<url>");
-		return 0;
+		return -EINVAL;
 	}
 
 	memcpy(host, argv[1], MIN(strlen(argv[1]) + 1, sizeof(host)));
 
-	err = download_client_connect(&downloader, host, &config);
+	err = download_client_set_host(&downloader, host, &config);
 	if (err) {
-		shell_warn(shell, "download_client_connect() failed, err %d",
+		shell_warn(shell, "download_client_set_host() failed, err %d",
 			   err);
-	} else {
-		shell_print(shell, "Connected");
+		return -ENOEXEC;
 	}
-
-	return 0;
-}
-
-static int cmd_dc_pause(const struct shell *shell, size_t argc, char **argv)
-{
-	if (argc != 1) {
-		shell_warn(shell, "usage: dc pause");
-		return 0;
-	}
-
-	download_client_pause(&downloader);
-	shell_print(shell, "Paused");
-
-	return 0;
-}
-
-static int cmd_dc_resume(const struct shell *shell, size_t argc, char **argv)
-{
-	if (argc != 1) {
-		shell_warn(shell, "usage: dc resume");
-		return 0;
-	}
-
-	download_client_resume(&downloader);
-	shell_print(shell, "Resuming");
 
 	return 0;
 }
@@ -152,7 +130,7 @@ static int cmd_dc_download(const struct shell *shell, size_t argc, char **argv)
 
 	if (argc != 2) {
 		shell_warn(shell, "usage: dc download <url>");
-		return 0;
+		return -ENOEXEC;
 	}
 
 	memcpy(file, argv[1], MIN(strlen(argv[1]) + 1, sizeof(file)));
@@ -161,6 +139,51 @@ static int cmd_dc_download(const struct shell *shell, size_t argc, char **argv)
 	if (err) {
 		shell_warn(shell, "download_client_start() failed, err %d",
 			   err);
+	} else {
+		shell_print(shell, "Downloading");
+	}
+	return 0;
+}
+
+static int cmd_dc_get(const struct shell *shell, size_t argc, char **argv)
+{
+	int err;
+	size_t from = 0;
+	char *f = file;
+
+	if (argc < 2) {
+		shell_warn(shell, "usage: dc get <url> [<file>|NULL] [offset]");
+		return -EINVAL;
+	}
+
+	shell_instance = shell;
+
+	memcpy(host, argv[1], MIN(strlen(argv[1]) + 1, sizeof(host)));
+	if (argc > 2) {
+		memcpy(file, argv[2], MIN(strlen(argv[2]) + 1, sizeof(file)));
+		if (strstr(file, "NULL")) {
+			f = NULL;
+		}
+	} else {
+		f = NULL;
+	}
+
+	if (argc > 3) {
+		errno = 0;
+		from = strtol(argv[3], NULL, 0);
+		if (errno == ERANGE) {
+			shell_warn(shell, "invalid offset");
+			return -EINVAL;
+		}
+	}
+
+
+	err = download_client_get(&downloader, host, &config, f, from);
+
+	if (err) {
+		shell_warn(shell, "download_client_get() failed, err %d",
+			   err);
+		return -ENOEXEC;
 	} else {
 		shell_print(shell, "Downloading");
 	}
@@ -181,12 +204,11 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_config,
 
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_dc,
 	SHELL_CMD(config, &sub_config, "Configure", cmd_dc_config),
-	SHELL_CMD(connect, NULL, "Connect to a host", cmd_dc_connect),
+	SHELL_CMD(set_host, NULL, "Set a target host", cmd_dc_set_host),
 	SHELL_CMD(disconnect, NULL, "Disconnect from a host",
 		  cmd_dc_disconnect),
 	SHELL_CMD(download, NULL, "Download a file", cmd_dc_download),
-	SHELL_CMD(pause, NULL, "Pause download", cmd_dc_pause),
-	SHELL_CMD(resume, NULL, "Resume download", cmd_dc_resume),
+	SHELL_CMD(get, NULL, "Download", cmd_dc_get),
 	SHELL_SUBCMD_SET_END
 );
 

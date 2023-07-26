@@ -12,7 +12,7 @@ This sample allows you to test Nordic Semiconductor's Wi-Fi® chipsets.
 Requirements
 ************
 
-The sample supports the following development kit:
+The sample supports the following development kits:
 
 .. table-from-sample-yaml::
 
@@ -44,19 +44,19 @@ The following is an example of the CLI command:
 
    west build -b nrf7002dk_nrf5340_cpuapp
 
-To build for the nRF7002 EK, use the ``nrf7002dk_nrf5340_cpuapp`` build target with the ``SHIELD`` CMake option set to ``nrf7002_ek``.
+To build for the nRF7002 EK with nRF5340 DK, use the ``nrf5340dk_nrf5340_cpuapp`` build target with the ``SHIELD`` CMake option set to ``nrf7002ek``.
 The following is an example of the CLI command:
 
 .. code-block:: console
 
-   west build -b nrf5340dk_nrf5340_cpuapp -- -DSHIELD=nrf7002_ek
+   west build -b nrf5340dk_nrf5340_cpuapp -- -DSHIELD=nrf7002ek
 
-To build for the nRF9160 DK, use the ``nrf9160dk_nrf9160_ns`` build target with the ``SHIELD`` CMake option set to ``nrf7002_ek`` and scan-only overlay configuration.
+To build for the nRF9160 DK, use the ``nrf9160dk_nrf9160_ns`` build target with the ``SHIELD`` CMake option set to ``nrf7002ek`` and scan-only overlay configuration.
 The following is an example of the CLI command:
 
 .. code-block:: console
 
-   west build -b nrf9160dk_nrf9160_ns -- -DOVERLAY_CONFIG=overlay-scan-only.conf -DSHIELD=nrf7002_ek
+   west build -b nrf9160dk_nrf9160_ns -- -DOVERLAY_CONFIG=overlay-scan-only.conf -DSHIELD=nrf7002ek
 
 See also :ref:`cmake_options` for instructions on how to provide CMake options.
 
@@ -76,8 +76,8 @@ Supported CLI commands
      - | Connect to an access point with below parameters:
        | <SSID>
        | <Channel number> (optional: 0 means all)
-       | <Passphrase> (optional: valid only for secured SSIDs)
-       | <KEY_MGMT> (optional: 0-None, 1-WPA2, 2-WPA2-256, 3-WPA3)
+       | <PSK> (optional: valid only for secured SSIDs)
+       | <Security type> (optional: 0-None, 1-PSK, 2-PSK-256, 3-SAE)
        | <MFP> (optional: 0-Disable, 1-Optional, 2-Required)
    * - disconnect
      - Disconnect from the current access point
@@ -120,6 +120,15 @@ Supported CLI commands
        |
        | -f: Force to use this regulatory hint over any other regulatory hints.
        | (Note that this may cause regulatory compliance issues.)
+   * - ps_timeout
+     - | Configure Wi-Fi power save inactivity timer (in ms)
+   * - ps_listen_interval
+     - | Configure Wi-Fi power save for the Listen interval
+       | <0-65535>
+   * - ps_wakeup_mode
+     - | Configure Wi-Fi power save for wakeup mode
+       | dtim - Wakeup mode for the DTIM interval
+       | listen_interval - Wakeup mode for the Listen interval
 
 ``wifi_cred`` is an extension to the Wi-Fi command line.
 It adds the following commands to interact with the :ref:`lib_wifi_credentials` library:
@@ -214,7 +223,7 @@ This sample uses the following `sdk-nrfxlib`_ library:
 
 * :ref:`nrfxlib:nrf_security`
 
-This sample also uses modules that can be found in the following locations in the |NCS| folder structure:
+This sample also uses modules found in the following locations in the |NCS| folder structure:
 
 * :file:`modules/lib/hostap`
 * :file:`modules/mbedtls`

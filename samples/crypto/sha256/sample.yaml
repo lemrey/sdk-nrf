@@ -1,6 +1,6 @@
 sample:
-    description: This app provides an example of hashing using SHA256
-    name: SHA256 example
+  description: This app provides an example of hashing using SHA256
+  name: SHA256 example
 tests:
   sample.sha256:
     tags: introduction psa cc3xx

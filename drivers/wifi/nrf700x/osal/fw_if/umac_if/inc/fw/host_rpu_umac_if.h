@@ -2666,7 +2666,7 @@ struct nrf_wifi_umac_config_twt_info {
 	unsigned short twt_target_wake_interval_mantissa;
 	/*unsigned char target_wake_time[8];*/
 	unsigned long long target_wake_time;
-	unsigned short nominal_min_twt_wake_duration;
+	unsigned int nominal_min_twt_wake_duration;
 	unsigned char dialog_token;
 	unsigned char twt_resp_status;
 } __NRF_WIFI_PKD;
@@ -2878,6 +2878,9 @@ struct nrf_wifi_umac_event_new_scan_results {
 #define NRF_WIFI_802_11AC (1 << 4)
 #define NRF_WIFI_802_11AX (1 << 5)
 
+#define NRF_WIFI_MFP_REQUIRED (1 << 0)
+#define NRF_WIFI_MFP_CAPABLE  (1 << 1)
+
 struct umac_display_results {
 	struct nrf_wifi_ssid ssid;
 	unsigned char mac_addr[NRF_WIFI_ETH_ADDR_LEN];
@@ -2889,7 +2892,7 @@ struct umac_display_results {
 	unsigned short capability;
 	struct nrf_wifi_signal signal;
 	unsigned char twt_support;
-	unsigned char reserved2;
+	unsigned char mfp_flag;
 	unsigned char reserved3;
 	unsigned char reserved4;
 } __NRF_WIFI_PKD;
@@ -3212,6 +3215,12 @@ struct nrf_wifi_umac_cmd_config_extended_ps {
 #define NRF_WIFI_MAX_TWT_FLOWS 8
 #define NRF_WIFI_PS_MODE_LEGACY 0
 #define NRF_WIFI_PS_MODE_WMM 1
+
+/**
+ * Most APs have a DTIM value of 3, so we are expecting
+ * a minimum listen interval of 3 beacon intervals.
+ */
+#define NRF_WIFI_LISTEN_INTERVAL_MIN 3
 
 struct nrf_wifi_umac_event_power_save_info {
 	struct nrf_wifi_umac_hdr umac_hdr;
@@ -3563,10 +3572,10 @@ struct nrf_wifi_umac_event_cmd_status {
 	unsigned int cmd_status;
 } __NRF_WIFI_PKD;
 
-struct nrf_wifi_umac_event_coalescing {
+struct nrf_wifi_umac_event_coalesce {
 	struct nrf_wifi_umac_hdr umac_hdr;
 	unsigned char sta_addr[NRF_WIFI_ETH_ADDR_LEN];
 	unsigned short tid;
-	unsigned char coalescing; /*1 = enable coalescing 0 = disable coalescing*/
+	unsigned char coalesce; /*1 = enable coalesce 0 = disable coalesce*/
 } __NRF_WIFI_PKD;
 #endif /* __HOST_RPU_UMAC_IF_H */

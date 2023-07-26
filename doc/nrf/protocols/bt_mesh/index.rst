@@ -30,6 +30,7 @@ Make also sure to check the official `Bluetooth mesh glossary`_.
    architecture
    configuring
    model_config_app
+   nlc
    fota
    node_removal
    vendor_model/index

@@ -805,7 +805,7 @@ Libraries for networking
 * Added:
 
   * The :ref:`lib_mqtt_helper` library that simplifies Zephyr MQTT API and socket handling.
-  * The :ref:`lib_nrf_cloud_alerts` library for sending notifications of critical device events to nRF Cloud, using either REST or MQTT connections.
+  * The :ref:`lib_nrf_cloud_alert` library for sending notifications of critical device events to nRF Cloud, using either REST or MQTT connections.
 
 * :ref:`lib_azure_iot_hub` library:
 
@@ -1016,7 +1016,7 @@ Documentation
 * Added:
 
   * A page about :ref:`ug_matter_device_security` in the Matter protocol section.
-  * Template for the :ref:`Ecosystem integration <Ecosystem_integration>` user guides.
+  * Template for the :ref:`Integration <integration_template>` user guides.
   * A page on :ref:`ug_avsystem`.
   * The :ref:`ug_nrf70_developing` user guide.
   * A page on :ref:`ug_nrf70_features`.

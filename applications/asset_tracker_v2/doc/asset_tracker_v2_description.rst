@@ -22,6 +22,8 @@ Requirements
 
 .. include:: /includes/tfm.txt
 
+.. include:: /includes/external_flash_nrf91.txt
+
 Overview
 ********
 
@@ -78,7 +80,7 @@ See the :ref:`nRF_asset_tracker` section for more details.
 Carrier library support
 ***********************
 
-See the section :ref:`using_the_lwm2m_carrier_library` for steps on how to connect to a operator's device management platform, necessary in some LTE networks.
+See the section :ref:`using_the_lwm2m_carrier_library` for steps on how to connect to an operator's device management platform, necessary in some LTE networks.
 
 .. _atv2_application_configuration:
 
@@ -191,8 +193,8 @@ After programming the application and all the prerequisites to your development 
    <inf> app_event_manager: APP_EVT_DATA_GET - Requested data types (MOD_DYN, BAT, ENV, LOCATION)
    <inf> app_event_manager: LOCATION_MODULE_EVT_ACTIVE
    <inf> app_event_manager: SENSOR_EVT_ENVIRONMENTAL_NOT_SUPPORTED
+   <inf> app_event_manager: SENSOR_EVT_FUEL_GAUGE_NOT_SUPPORTED
    <inf> app_event_manager: MODEM_EVT_MODEM_DYNAMIC_DATA_NOT_READY
-   <inf> app_event_manager: MODEM_EVT_BATTERY_DATA_READY
    <inf> app_event_manager: LOCATION_MODULE_EVT_INACTIVE
    <inf> app_event_manager: LOCATION_MODULE_EVT_GNSS_DATA_READY
    <inf> app_event_manager: DATA_EVT_DATA_READY

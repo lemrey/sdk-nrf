@@ -47,6 +47,14 @@ enum sensor_module_event_type {
 	/** Environmental sensors are not supported on the current board. */
 	SENSOR_EVT_ENVIRONMENTAL_NOT_SUPPORTED,
 
+	/** Battery fuel gauge data has been sampled.
+	 *  Payload is of type @ref sensor_module_data (bat).
+	 */
+	SENSOR_EVT_FUEL_GAUGE_READY,
+
+	/** Battery data is not supported on the current board. */
+	SENSOR_EVT_FUEL_GAUGE_NOT_SUPPORTED,
+
 	/** The sensor module has performed all procedures to prepare for
 	 *  a shutdown of the system. The event carries the ID (id) of the module.
 	 */
@@ -90,6 +98,14 @@ struct sensor_module_impact_data {
 	double magnitude;
 };
 
+/** @brief Structure used to provide battery level. */
+struct sensor_module_batt_lvl_data {
+	/** Uptime when the data was sampled. */
+	int64_t timestamp;
+	/** Battery level in percentage. */
+	int battery_level;
+};
+
 /** @brief Sensor module event. */
 struct sensor_module_event {
 	/** Sensor module application event header. */
@@ -103,6 +119,8 @@ struct sensor_module_event {
 		struct sensor_module_accel_data accel;
 		/** Variable that contains impact data. */
 		struct sensor_module_impact_data impact;
+		/** Variable that contains battery level data. */
+		struct sensor_module_batt_lvl_data bat;
 		/** Module ID, used when acknowledging shutdown requests. */
 		uint32_t id;
 		/** Code signifying the cause of error. */

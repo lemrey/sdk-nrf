@@ -25,8 +25,7 @@ For official documentation, see the `TF-M documentation`_.
 
 The TF-M implementation in |NCS| is currently demonstrated in the following samples:
 
-- The :ref:`tfm_hello_world` sample
-- The :ref:`tfm_secure_peripheral_partition` sample
+- All :ref:`tfm_samples` in this SDK
 - All :ref:`cryptography samples <crypto_samples>` in this SDK
 - A series of :ref:`TF-M integration samples <zephyr:tfm_integration-samples>` available in Zephyr
 - The :ref:`https_client` sample for nRF9160 in this SDK
@@ -129,25 +128,17 @@ There are several options to get UART output from the secure TF-M:
 Limitations
 ***********
 
-The following services are not supported:
+The following limitations apply to TF-M and its usage:
 
-* Audit Log service in IPC model
-* Firmware Update service
-* Attestation service
+* Firmware Update service is not supported.
+* The following crypto modules or ciphers are not supported:
 
-The following Crypto modules or ciphers are not supported:
+  * AES output feedback (AES-OFB) mode.
+  * AES cipher feedback (AES-CFB) mode.
 
-* OFB
-* CFB
-
-Isolation level 3 is not supported.
-
-In Isolation level 2 or higher, the number of peripherals configured as secure in Application Root of Trust (ARoT) is limited by the number of available MPU regions.
-
-Nordic platforms support only the GCC toolchain for building TF-M.
-
-Enabling Floating point support in TF-M is currently not supported.
-Enabling Floating point Hard ABI (:kconfig:option:`CONFIG_FP_HARDABI`) in the application is currently not supported.
+* Isolation level 3 is not supported.
+* In Isolation level 2 or higher, the number of peripherals configured as secure in Application Root of Trust (ARoT) is limited by the number of available MPU regions.
+* Nordic Semiconductor devices only support the GCC toolchain for building TF-M.
 
 .. _ug_tfm_partition_alignment_requirements:
 
@@ -164,7 +155,7 @@ But when the static partitions are used, the user is responsible for following t
 If you are experiencing any partition alignment issues when using the Partition Manager, check the :ref:`known_issues` page on the main branch.
 
 The partitions which need to be aligned to the SPU flash region size are partitions ``tfm_nonsecure`` and ``nonsecure_storage``.
-Both the partition start address and the partition size need to be aligned with the NRF_SPU flash region size:kconfig:option:`CONFIG_NRF_SPU_FLASH_REGION_SIZE`.
+Both the partition start address and the partition size need to be aligned with the NRF_SPU flash region size :kconfig:option:`CONFIG_NRF_SPU_FLASH_REGION_SIZE`.
 
 Note that the ``tfm_nonsecure`` partition is placed after the ``tfm_secure`` partition, thus the end address of the ``tfm_secure`` partition is the same as the start address of the ``tfm_nonsecure`` partition.
 As a result, altering the size of the ``tfm_secure`` partition affects the start address of the ``tfm_nonsecure`` partition.

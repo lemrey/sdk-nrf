@@ -107,7 +107,7 @@
 .. _`Matter GitHub repository`: https://github.com/project-chip/connectedhomeip
 .. _`dedicated Matter fork`: https://github.com/nrfconnect/sdk-connectedhomeip
 .. _`Matter SDK version`: https://github.com/project-chip/connectedhomeip/releases
-.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/c9ba5705/src/controller
+.. _`other controller setups`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/master/src/controller
 .. _`CHIP Certificate Tool source files`: https://github.com/nrfconnect/sdk-connectedhomeip/tree/master/src/tools
 .. _`ZCL Advanced Platform`: https://github.com/project-chip/zap
 .. _`ZCL Advanced Platform releases`: https://github.com/project-chip/zap/releases
@@ -117,6 +117,10 @@
 .. _`Matter SDK tagged as v1.0.0`: https://github.com/project-chip/connectedhomeip/releases/tag/v1.0.0
 .. _`Testing with Apple Devices`: https://github.com/project-chip/connectedhomeip/blob/master/docs/guides/darwin.md
 .. _`Matter factory data Kconfig options`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/kconfig/index.html#!CHIP_FACTORY_DATA
+.. _`Bluetooth LE Arbiter's header file`: https://github.com/nrfconnect/sdk-connectedhomeip/blob/master/src/platform/Zephyr/BLEAdvertisingArbiter.h
+
+.. _`bt_nus_service.cpp`: https://github.com/nrfconnect/sdk-nrf/blob/main/samples/matter/common/src/bt_nus_service.cpp
+.. _`bt_nus_service.h`: https://github.com/nrfconnect/sdk-nrf/blob/main/samples/matter/common/src/bt_nus_service.h
 
 .. _`DCL Quick Start Guide`: https://github.com/zigbee-alliance/distributed-compliance-ledger/blob/master/docs/quickStartGuide.adoc
 
@@ -166,8 +170,12 @@
 
 .. _`latest release notes for nRF Connect for Visual Studio Code`: https://nrfconnect.github.io/vscode-nrf-connect/release_notes/connect/2022.11.140.html
 .. _`nRF Connect for Visual Studio Code`: https://nrfconnect.github.io/vscode-nrf-connect
-.. _`Configuring with nRF Kconfig`: https://nrfconnect.github.io/vscode-nrf-connect/guides/ncs_configure_app.html
-.. _`Installing using Visual Studio Code`:
+.. _`Configuring with nRF Kconfig`: https://nrfconnect.github.io/vscode-nrf-connect/guides/work_with_kconfig.html
+.. _`How to create devicetree files`: https://nrfconnect.github.io/vscode-nrf-connect/guides/how_to_create_dt_files.html
+.. _`How to work with Devicetree Visual Editor`: https://nrfconnect.github.io/vscode-nrf-connect/guides/work_with_devicetree_editor.html
+.. _`Devicetree support overview`: https://nrfconnect.github.io/vscode-nrf-connect/guides/ncs_configure_app.html#devicetree-overview
+.. _`Devicetree language support`: https://nrfconnect.github.io/vscode-nrf-connect/guides/ncs_configure_app.html#devicetree-language-support
+.. _`How to install the extension`:
 .. _`Installing on Linux`: https://nrfconnect.github.io/vscode-nrf-connect/get_started/install.html
 .. _`How to build an application`: https://nrfconnect.github.io/vscode-nrf-connect/get_started/build_app_ncs.html
 .. _`Migrating IDE`: https://nrfconnect.github.io/vscode-nrf-connect/reference/ui_sidebar_welcome.html#open-an-existing-application
@@ -181,6 +189,7 @@
 .. _`Application-specific flash options`: https://nrfconnect.github.io/vscode-nrf-connect/guides/bd_work_with_boards.html#how-to-flash-boards
 .. _`How to work with build configurations`: https://nrfconnect.github.io/vscode-nrf-connect/guides/build_config.html
 .. _`Memory report`: https://nrfconnect.github.io/vscode-nrf-connect/guides/memory_overview.html
+.. _`Kconfig action in the Actions View`: https://nrfconnect.github.io/vscode-nrf-connect/reference/ui_sidebar_actions.html
 
 .. _`SPAKE2+ Python Tool page`: https://project-chip.github.io/connectedhomeip-doc/scripts/tools/spake2p/README.html
 
@@ -293,6 +302,7 @@
 .. _`Repositories and revisions for v1.9.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.1/nrf/introduction.html#repositories-and-revisions
 .. _`Repositories and revisions`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.0/nrf/introduction.html#repositories-and-revisions
 
+.. _`Modem library changelog for v2.4.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.4.0/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v2.3.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.3.0/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v2.2.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.2.0/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v2.1.4`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.4/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
@@ -307,6 +317,7 @@
 .. _`Modem library changelog for v1.9.1`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.1/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 .. _`Modem library changelog for v1.9.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.9.0/nrfxlib/nrf_modem/doc/CHANGELOG.html#nrf-modem-changelog
 
+.. _`LwM2M carrier library changelog for v2.4.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.4.0/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
 .. _`LwM2M carrier library changelog for v2.3.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.3.0/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
 .. _`LwM2M carrier library changelog for v2.2.0`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.2.0/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
 .. _`LwM2M carrier library changelog for v2.1.4`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.4/nrf/libraries/bin/lwm2m_carrier/CHANGELOG.html#liblwm2m-carrier-changelog
@@ -329,6 +340,10 @@
 .. _`Threads`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/kernel/services/threads/index.html#threads
 
 .. _`Network Traffic Generator`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/connectivity/networking/api/zperf.html#zperf-network-traffic-generator
+
+.. _`Zephyr Logging`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/services/logging/index.html
+.. _`Dictionary-based Logging`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/services/logging/index.html#dictionary-based-logging
+.. _`Run-time Filtering`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/services/logging/index.html#run-time-filtering
 
 .. ### Source: www.nordicsemi.com
 
@@ -378,6 +393,8 @@
 
 .. #### Source: www.nordicsemi.com/Events/
 
+
+.. _`nRF Connect SDK v2.4.0 webinar`: https://www.nordicsemi.com/Events/2023/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v240
 .. _`nRF Connect SDK v2.3.0 webinar`: https://www.nordicsemi.com/Events/2023/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v23?utm_campaign=2023%20Webinars&utm_source=developer.nordicsemi.com&utm_medium=Release%20notes%20%7C%20Webinar-link%20%7C%20Exciting%20new%20features%20in%20nRF%20Connect%20SDK%20v2.3&utm_content=Release%20notes%20%7C%20Webinar-link%20%7C%20Exciting%20new%20features%20in%20nRF%20Connect%20SDK%20v2.3
 .. _`nRF Connect SDK v2.2.0 webinar`: https://www.nordicsemi.com/Events/2022/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v220?utm_campaign=2022%20Webinars&utm_source=developer.nordicsemi.com&utm_medium=Release%20notes%20%7C%20Webinar-link%20%7C%20Exciting%20new%20features%20in%20nRF%20Connect%20SDK%20v2.2&utm_content=Release%20notes%20%7C%20Webinar-link%20%7C%20Exciting%20new%20features%20in%20nRF%20Connect%20SDK%20v2.2
 .. _`nRF Connect SDK v2.1.0 webinar`: https://www.nordicsemi.com/Events/2022/Webinar-Exciting-new-features-in-nRF-Connect-SDK-v210?utm_campaign=2022%20Webinars&utm_source=Documentation&utm_medium=Link%20to%20webinar%20%7C%20from%20documentation&utm_content=Link%20to%20webinar%20%7C%20from%20documentation
@@ -420,6 +437,7 @@
 
 .. _`nRF Connect Programmer`: https://infocenter.nordicsemi.com/topic/ug_nc_programmer/UG/nrf_connect_programmer/ncp_introduction.html
 .. _`Programming the nRF52840 Dongle`: https://infocenter.nordicsemi.com/topic/ug_nc_programmer/UG/nrf_connect_programmer/ncp_programming_dongle.html
+.. _`Programming a Development Kit`: https://infocenter.nordicsemi.com/topic/ug_nc_programmer/UG/common/ncp_programming_dk.html
 
 .. _`nRF pynrfjprog`: https://infocenter.nordicsemi.com/topic/ug_pynrfjprog/UG/pynrfjprog/pynrfjprog_lpage.html
 
@@ -431,6 +449,7 @@
 
 .. _`nRF9160 DK Hardware`: https://infocenter.nordicsemi.com/topic/ug_nrf91_dk/UG/nrf91_DK/intro.html
 .. _`nRF9160 DK board control section in the nRF9160 DK User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf91_dk/UG/nrf91_DK/board_controller.html
+.. _`External memory section in the nRF9160 DK User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf91_dk/UG/nrf91_DK/external_memory.html
 .. _`Device programming section in the nRF9160 DK User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf91_dk/UG/nrf91_DK/mcu_device_programming.html
 .. _`VDD supply rail section in the nRF9160 DK User Guide`: https://infocenter.nordicsemi.com/topic/ug_nrf91_dk/UG/nrf91_DK/power_sources_vdd.html
 
@@ -483,6 +502,7 @@
 
 .. _`Product specification for nRF70 Series devices`: https://infocenter.nordicsemi.com/topic/ps_nrf7002/keyfeatures_html5.html
 .. _`nRF7002 DK Hardware`: https://infocenter.nordicsemi.com/topic/ug_nrf7002_dk/UG/nrf7002_DK/intro.html
+.. _`nRF70 Series`: https://infocenter.nordicsemi.com/topic/struct_nrf70/struct/nrf70.html
 
 .. _`Guidelines and application notes for nRF70 Series devices`: https://infocenter.nordicsemi.com/topic/struct_nrf70/struct/nrf70_guidelines.html
 
@@ -629,12 +649,15 @@
 
 .. _`Bluetooth mesh model specification`:
 .. _`Bluetooth mesh profile specification`: https://www.bluetooth.com/specifications/specs/
+.. _`Bluetooth NLC profile specifications`: https://www.bluetooth.com/specifications/specs/
 
 .. _`Bluetooth mesh model overview`: https://www.bluetooth.com/bluetooth-resources/bluetooth-mesh-models/
 .. _`Bluetooth mesh glossary`: https://www.bluetooth.com/learn-about-bluetooth/recent-enhancements/mesh/mesh-glossary/
 .. _`Bluetooth mesh FAQ`: https://www.bluetooth.com/learn-about-bluetooth/bluetooth-technology/topology-options/le-mesh/mesh-faq/
 .. _`Bluetooth mesh study guide`: https://www.bluetooth.com/bluetooth-resources/bluetooth-mesh-developer-study-guide/
 .. _`Bluetooth mesh introduction blog`: https://www.bluetooth.com/blog/introducing-bluetooth-mesh-networking
+
+.. _`Bluetooth SIG's Assigned Numbers`: https://www.bluetooth.com/specifications/assigned-numbers/
 
 .. _`Auracast™`: https://www.bluetooth.com/auracast/how-it-works/
 
@@ -847,6 +870,7 @@
 
 .. _`Edge Impulse`: https://www.edgeimpulse.com/
 .. _`Edge Impulse studio`: https://studio.edgeimpulse.com/login
+.. _`Edge Impulse studio signup`: https://studio.edgeimpulse.com/signup
 .. _`Edge Impulse getting started guide`: https://docs.edgeimpulse.com/docs/getting-started
 .. _`embedded machine learning`: https://docs.edgeimpulse.com/docs/what-is-embedded-machine-learning-anyway
 .. _`Continuous motion recognition tutorial`: https://docs.edgeimpulse.com/docs/continuous-motion-recognition
@@ -935,7 +959,7 @@
 .. _`Matter Attestation of Security template`: https://groups.csa-iot.org/wg/members-all/document/27432
 .. _`Connectivity Standards Alliance Certification Web Tool`: https://zigbeecertifiedproducts.knack.com/zigbee-certified#home/
 .. _`CSA Certified Products Database`: https://csa-iot.org/csa-iot_products/
-
+.. _`CSA blog post`: https://csa-iot.org/newsroom/matter-1-1-release-enhancements-for-developers-and-devices/
 .. _`Distributed Compliance Ledger`: https://webui.dcl.csa-iot.org/
 
 .. ### Source: Chocolatey
@@ -1010,6 +1034,7 @@
 .. _`ARM Flash Patch and Breakpoint Unit`: https://developer.arm.com/documentation/100166/0001/Debug/Flash-Patch-and-Breakpoint-Unit--FPB-
 .. _`GNU Arm Embedded Toolchain`: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
 .. _`IDAU`: https://developer.arm.com/docs/100690/latest/attribution-units-sau-and-idau
+.. _`ARM CoreSight`: https://developer.arm.com/documentation/100536/0302
 
 .. ### Source: etsi.org
 
@@ -1148,7 +1173,7 @@
 
 .. _`Baltimore CyberTrust Root certificate`: https://cacerts.digicert.com/BaltimoreCyberTrustRoot.crt.pem
 
-.. _`DigiCert Global Root G2`: https://cacerts.digicert.com/DigiCertGlobalG2TLSRSASHA2562020CA1.crt.pem
+.. _`DigiCert Global Root G2`: https://cacerts.digicert.com/DigiCertGlobalRootG2.crt.pem
 
 .. _`SKY66112-11 page`: https://www.skyworksinc.com/en/Products/Front-end-Modules/SKY66112-11
 

@@ -45,9 +45,10 @@ When the module receives an :c:enum:`APP_EVT_DATA_GET` event and the :c:enum:`AP
 When data sampling has been carried out, the :c:enum:`SENSOR_EVT_ENVIRONMENTAL_DATA_READY` event is sent from the module with the sampled environmental sensor values.
 
 .. note::
-   The nRF9160 DK does not have any external sensors.
+   The nRF9160 DK does not have any external sensors and battery fuel gauge.
    If the sensor module is queried for sensor data when building for the DK, the event :c:enum:`SENSOR_EVT_ENVIRONMENTAL_NOT_SUPPORTED` is sent out by the module
    upon data sampling.
+   For battery fuel gauge data, :c:enum:`SENSOR_EVT_FUEL_GAUGE_NOT_SUPPORTED` is sent.
 
 Motion activity detection
 =========================
@@ -86,7 +87,7 @@ Motion impact detection
 =======================
 
 Motion impact is detected when the magnitude (root sum squared) of acceleration exceeds the configured threshold value.
-To enable motion impact detection, you must include :kconfig:option:`CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION` when building the application.
+To enable motion impact detection, you must include :ref:`CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION <CONFIG_EXTERNAL_SENSORS_IMPACT_DETECTION>` when building the application.
 
 The threshold is configured using the :kconfig:option:`CONFIG_ADXL372_ACTIVITY_THRESHOLD` option.
 The accelerometer records acceleration magnitude when it is in the active mode and reports the peak magnitude once it reverts to the inactive mode.
@@ -113,7 +114,7 @@ Perform the following steps to enable BSEC:
 #. Disable the Zephyr BME680 driver by setting :kconfig:option:`CONFIG_BME680` to false.
 #. Enable the external sensors API BSEC integration layer by enabling :ref:`CONFIG_EXTERNAL_SENSORS_BME680_BSEC <CONFIG_EXTERNAL_SENSORS_BME680_BSEC>` option.
 
-Air quality readings are provided with the :c:enumerator:`SENSOR_EVT_ENVIRONMENTAL_DATA_READY` event.
+Air quality readings are provided with the :c:enum:`SENSOR_EVT_ENVIRONMENTAL_DATA_READY` event.
 
 To check and configure the BSEC configuration options, see :ref:`external_sensor_API_BSEC_configurations` section.
 
@@ -171,7 +172,8 @@ Module states
 The sensor module has an internal state machine with the following states:
 
 * ``STATE_INIT`` - The initial state of the module in which it awaits its initial configuration from the data module.
-* ``STATE_RUNNING`` - The module is initialized and can be queried for sensor data. It will also send :c:enum:`SENSOR_EVT_MOVEMENT_DATA_READY` on movement.
+* ``STATE_RUNNING`` - The module is initialized and can be queried for sensor data.
+  It will also send :c:enum:`SENSOR_EVT_MOVEMENT_DATA_READY` on movement.
 * ``STATE_SHUTDOWN`` - The module has been shut down after receiving a request from the utility module.
 
 State transitions take place based on events from other modules, such as the app module, data module, and utility module.

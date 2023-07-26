@@ -1115,6 +1115,21 @@ enum wifi_nrf_status wifi_nrf_fmac_twt_setup(void *fmac_dev_ctx,
 enum wifi_nrf_status wifi_nrf_fmac_twt_teardown(void *fmac_dev_ctx,
 						unsigned char if_idx,
 						struct nrf_wifi_umac_config_twt_info *twt_info);
+
+/**
+ * wifi_nrf_fmac_get_conn_info() - Get connection info from RPU
+ * @fmac_dev_ctx: Pointer to the UMAC IF context for a RPU WLAN device.
+ * @if_idx: Index of the interface.
+ *
+ * This function is used to send a command
+ * to RPU to fetch the connection information.
+ *
+ * Returns: Status
+ *              Pass: %WIFI_NRF_STATUS_SUCCESS
+ *              Fail: %WIFI_NRF_STATUS_FAIL
+ */
+enum wifi_nrf_status wifi_nrf_fmac_get_conn_info(void *fmac_dev_ctx,
+						unsigned char if_idx);
 #endif /* !CONFIG_NRF700X_RADIO_TEST */
 
 
@@ -1166,10 +1181,8 @@ void wifi_nrf_fmac_dev_rem(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx);
  * @rf_params_usr: RF parameters (if any) to be passed to the RPU.
  * @sleep_type: Type of RPU sleep.
  * @phy_calib: PHY calibration flags to be passed to the RPU.
- * @ant_gain_2g: Antenna gain value for 2.4 GHz band.
- * @ant_gain_5g_band1: Antenna gain value for 5 GHz band (5150 MHz - 5350 MHz).
- * @ant_gain_5g_band2: Antenna gain value for 5 GHz band (5470 MHz - 5730 MHz).
- * @ant_gain_5g_band3: Antenna gain value for 5 GHz band (5730 MHz - 5895 MHz).
+ * @op_band: Flag to notify operational band(s) to RPU.
+ * @tx_pwr_ctrl_params: Parameters which control TX power;
  *
  * This function initializes the firmware of an RPU instance.
  *
@@ -1185,10 +1198,8 @@ enum wifi_nrf_status wifi_nrf_fmac_dev_init(struct wifi_nrf_fmac_dev_ctx *fmac_d
 					    int sleep_type,
 #endif /* CONFIG_NRF_WIFI_LOW_POWER */
 					    unsigned int phy_calib,
-					    unsigned char ant_gain_2g,
-					    unsigned char ant_gain_5g_band1,
-					    unsigned char ant_gain_5g_band2,
-					    unsigned char ant_gain_5g_band3);
+					    enum op_band op_band,
+					    struct nrf_wifi_tx_pwr_ctrl_params *tx_pwr_ctrl_params);
 
 
 /**
@@ -1222,18 +1233,16 @@ enum wifi_nrf_status wifi_nrf_fmac_fw_load(struct wifi_nrf_fmac_dev_ctx *fmac_de
 /**
  * wifi_nrf_fmac_ver_get() - Get FW versions from the RPU.
  * @fmac_dev_ctx: Pointer to the UMAC IF context for a RPU WLAN device.
- * @umac_ver: Pointer to the address where the UMAC version needs to be copied.
- * @lmac_ver: Pointer to the address where the LMAC version needs to be copied.
+ * @fw_ver: Pointer to the address where the FW version needs to be copied.
  *
- * This function is used to get Firmware versions from the RPU.
+ * This function is used to get Firmware version from the RPU.
  *
  * Returns: Status
  *		Pass: %WIFI_NRF_STATUS_SUCCESS
  *		Fail: %WIFI_NRF_STATUS_FAIL
  */
 enum wifi_nrf_status wifi_nrf_fmac_ver_get(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
-					  unsigned int *umac_ver,
-					  unsigned int *lmac_ver);
+					  unsigned int *fw_ver);
 
 
 /**
@@ -1391,4 +1400,33 @@ enum wifi_nrf_status wifi_nrf_fmac_get_host_rpu_ps_ctrl_state(void *fmac_dev_ctx
 							      int *rpu_ps_ctrl_state);
 #endif /* CONFIG_NRF_WIFI_LOW_POWER */
 #endif
+
+/**
+ * @brief Configure WLAN listen interval.
+ * @param[in] fmac_dev_ctx Pointer to the UMAC IF context for a RPU WLAN device.
+ * @params[in] if_idx Index of the interface on which power management is to be set.
+ * @params[in] listen_intvl listen interval to be configured.
+ *
+ * @details This function is used to send a command to RPU to configure listen interval.
+ *
+ * @return #wifi_nrf_status
+ */
+enum wifi_nrf_status wifi_nrf_fmac_set_listen_interval(void *fmac_dev_ctx,
+						       unsigned char if_idx,
+						       unsigned short listen_interval);
+
+/**
+ * @brief Configure WLAN PS wakeup mode to DTIM interval or listen interval.
+ * @param[in] fmac_dev_ctx Pointer to the UMAC IF context for a RPU WLAN device.
+ * @param[in] if_idx Index of the interface on which power management is to be set.
+ * @param[in] ps_wakeup_mode Enable listen interval based ps(default dtim based)
+ *
+ * @details This function is used to configure PS wakeup mode, either DTIM Interval
+ *	    or Listen interval based. Default is DTIM interval based mode.
+ *
+ * @return #wifi_nrf_status
+ */
+enum wifi_nrf_status wifi_nrf_fmac_set_ps_wakeup_mode(void *fmac_dev_ctx,
+						      unsigned char if_idx,
+						      bool ps_wakeup_mode);
 #endif /* __FMAC_API_H__ */

@@ -84,8 +84,6 @@ struct k_poll_signal mosh_signal;
 char mosh_at_resp_buf[MOSH_AT_CMD_RESPONSE_MAX_LEN];
 K_MUTEX_DEFINE(mosh_at_resp_buf_mutex);
 
-K_SEM_DEFINE(mosh_carrier_lib_initialized, 0, 1);
-
 static const char *modem_crash_reason_get(uint32_t reason)
 {
 	switch (reason) {
@@ -245,43 +243,14 @@ int main(void)
 		MOSH_COMMON_WORKQ_PRIORITY,
 		&cfg);
 
-#if !defined(CONFIG_LWM2M_CARRIER)
 	err = nrf_modem_lib_init();
-	switch (err) {
-	case 0:
-		/* Modem library was initialized successfully. */
-		break;
-	case NRF_MODEM_DFU_RESULT_OK:
-		printk("Modem firmware update successful!\n");
-		printk("Modem will run the new firmware after reboot\n");
-		sys_reboot(SYS_REBOOT_WARM);
-		return 0;
-	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
-	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
-		printk("Modem firmware update failed!\n");
-		printk("Modem will run non-updated firmware on reboot.\n");
-		sys_reboot(SYS_REBOOT_WARM);
-		return 0;
-	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
-	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
-		printk("Modem firmware update failed!\n");
-		printk("Fatal error.\n");
-		sys_reboot(SYS_REBOOT_WARM);
-		return 0;
-	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
-		printk("Modem firmware update cancelled due to low power.\n");
-		printk("Please reboot once you have sufficient power for the DFU\n");
-		break;
-	default:
+	if (err) {
 		/* Modem library initialization failed. */
-		printk("Could not initialize nrf_modem_lib, err %d.\n", err);
-		printk("Fatal error.\n");
+		printk("Could not initialize nrf_modem_lib, err %d\n", err);
+		printk("Fatal error\n");
 		return 0;
 	}
-#else
-	/* Wait until the LwM2M carrier library has initialized the modem library. */
-	k_sem_take(&mosh_carrier_lib_initialized, K_FOREVER);
-#endif
+
 	lte_lc_init();
 #if defined(CONFIG_MOSH_PPP)
 	ppp_ctrl_init();

@@ -15,6 +15,10 @@
 #include <modem/nrf_modem_lib.h>
 #include <modem/pdn.h>
 
+#if defined(CONFIG_MEMFAULT)
+#include <memfault/ports/zephyr/http.h>
+#endif
+
 #define MODULE modem_module
 
 #include "modules_common.h"
@@ -46,10 +50,6 @@ struct modem_msg_data {
 
 /* Modem module super states. */
 static enum state_type {
-	/* Initialization state where all libraries that the module depends
-	 * on need to be initialized before you can enter any other state.
-	 */
-	STATE_INIT,
 	STATE_DISCONNECTED,
 	STATE_CONNECTING,
 	STATE_CONNECTED,
@@ -86,6 +86,16 @@ NRF_MODEM_LIB_ON_INIT(asset_tracker_init_hook, on_modem_lib_init, NULL);
 
 static void on_modem_lib_init(int ret, void *ctx)
 {
+	int err;
+
+	if (ret == 0) {
+		/* LTE LC is uninitialized on every modem shutdown. */
+		err = lte_lc_init();
+		if (err) {
+			LOG_ERR("lte_lc_init, error: %d", err);
+		}
+	}
+
 	k_sem_give(&nrf_modem_initialized);
 }
 
@@ -105,8 +115,6 @@ static inline int adjust_rsrp(int input);
 static char *state2str(enum state_type state)
 {
 	switch (state) {
-	case STATE_INIT:
-		return "STATE_INIT";
 	case STATE_DISCONNECTED:
 		return "STATE_DISCONNECTED";
 	case STATE_CONNECTING:
@@ -334,22 +342,12 @@ static void print_carrier_error(const lwm2m_carrier_event_t *evt)
 			"Failed to connect to the LTE network",
 		[LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL] =
 			"Failed to disconnect from the LTE network",
-		[LWM2M_CARRIER_ERROR_FOTA_PKG] =
-			"Package refused from modem",
-		[LWM2M_CARRIER_ERROR_FOTA_PROTO] =
-			"Protocol error",
-		[LWM2M_CARRIER_ERROR_FOTA_CONN] =
-			"Connection to remote server failed",
-		[LWM2M_CARRIER_ERROR_FOTA_CONN_LOST] =
-			"Connection to remote server lost",
 		[LWM2M_CARRIER_ERROR_FOTA_FAIL] =
 			"Modem firmware update failed",
 		[LWM2M_CARRIER_ERROR_CONFIGURATION] =
 			"Illegal object configuration detected",
 		[LWM2M_CARRIER_ERROR_INIT] =
 			"Initialization failure",
-		[LWM2M_CARRIER_ERROR_INTERNAL] =
-			"Internal failure",
 		[LWM2M_CARRIER_ERROR_RUN] =
 			"Configuration failure",
 	};
@@ -396,11 +394,6 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *evt)
 	int err = 0;
 
 	switch (evt->type) {
-	case LWM2M_CARRIER_EVENT_INIT: {
-		LOG_INF("LWM2M_CARRIER_EVENT_INIT");
-		SEND_EVENT(modem, MODEM_EVT_CARRIER_INITIALIZED);
-		break;
-	}
 	case LWM2M_CARRIER_EVENT_LTE_LINK_UP: {
 		LOG_INF("LWM2M_CARRIER_EVENT_LTE_LINK_UP");
 		SEND_EVENT(modem, MODEM_EVT_CARRIER_EVENT_LTE_LINK_UP_REQUEST);
@@ -429,6 +422,9 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *evt)
 		SEND_EVENT(modem, MODEM_EVT_CARRIER_FOTA_PENDING);
 		break;
 	}
+	case LWM2M_CARRIER_EVENT_FOTA_SUCCESS:
+		LOG_INF("LWM2M_CARRIER_EVENT_FOTA_SUCCESS");
+		break;
 	case LWM2M_CARRIER_EVENT_REBOOT: {
 		LOG_INF("LWM2M_CARRIER_EVENT_REBOOT");
 		SEND_EVENT(modem, MODEM_EVT_CARRIER_REBOOT_REQUEST);
@@ -440,20 +436,17 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *evt)
 		 */
 		return 1;
 	}
+	case LWM2M_CARRIER_EVENT_MODEM_INIT:
+		LOG_INF("LWM2M_CARRIER_EVENT_MODEM_INIT");
+		err = nrf_modem_lib_init();
+		break;
+	case LWM2M_CARRIER_EVENT_MODEM_SHUTDOWN:
+		LOG_INF("LWM2M_CARRIER_EVENT_MODEM_SHUTDOWN");
+		err = nrf_modem_lib_shutdown();
+		break;
 	case LWM2M_CARRIER_EVENT_ERROR: {
-		const lwm2m_carrier_event_error_t *err = evt->data.error;
-
 		LOG_ERR("LWM2M_CARRIER_EVENT_ERROR");
 		print_carrier_error(evt);
-
-		bool fota_error = err->type == LWM2M_CARRIER_ERROR_FOTA_PKG ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_PROTO ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_CONN ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_CONN_LOST ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_FAIL;
-		if (fota_error) {
-			SEND_EVENT(modem, MODEM_EVT_CARRIER_FOTA_STOPPED);
-		}
 		break;
 	}
 	}
@@ -637,52 +630,6 @@ static bool data_type_is_requested(enum app_module_data_type *data_list,
 	return false;
 }
 
-static int battery_data_get(void)
-{
-	int err;
-
-	/* Replace this function with a function that specifically
-	 * requests battery.
-	 */
-	err = modem_info_params_get(&modem_param);
-	if (err) {
-		LOG_ERR("modem_info_params_get, error: %d", err);
-		return err;
-	}
-
-	struct modem_module_event *modem_module_event = new_modem_module_event();
-
-	__ASSERT(modem_module_event, "Not enough heap left to allocate event");
-
-	modem_module_event->data.bat.battery_voltage = modem_param.device.battery.value;
-	modem_module_event->data.bat.timestamp = k_uptime_get();
-	modem_module_event->type = MODEM_EVT_BATTERY_DATA_READY;
-
-	APP_EVENT_SUBMIT(modem_module_event);
-
-	return 0;
-}
-
-static int configure_low_power(void)
-{
-	int err;
-	bool enable = IS_ENABLED(CONFIG_MODEM_AUTO_REQUEST_POWER_SAVING_FEATURES);
-
-	err = lte_lc_psm_req(enable);
-	if (err) {
-		LOG_ERR("lte_lc_psm_req, error: %d", err);
-		return err;
-	}
-
-	if (enable) {
-		LOG_DBG("PSM requested");
-	} else {
-		LOG_DBG("PSM disabled");
-	}
-
-	return 0;
-}
-
 static int lte_connect(void)
 {
 	int err;
@@ -728,22 +675,17 @@ static int setup(void)
 {
 	int err;
 
-	err = lte_lc_init();
+#if IS_ENABLED(CONFIG_MEMFAULT) && !IS_ENABLED(CONFIG_MEMFAULT_NCS_PROVISION_CERTIFICATES)
+	err = memfault_zephyr_port_install_root_certs();
 	if (err) {
-		LOG_ERR("lte_lc_init, error: %d", err);
-		return err;
+		LOG_ERR("Failed to provision certificates, error: %d", err);
 	}
+#endif
 
 	/* Setup a callback for the default PDP context. */
 	err = pdn_default_ctx_cb_reg(pdn_event_handler);
 	if (err) {
 		LOG_ERR("pdn_default_ctx_cb_reg, error: %d", err);
-		return err;
-	}
-
-	err = configure_low_power();
-	if (err) {
-		LOG_ERR("configure_low_power, error: %d", err);
 		return err;
 	}
 
@@ -761,20 +703,6 @@ static int setup(void)
 	}
 
 	return 0;
-}
-
-/* Message handler for STATE_INIT */
-static void on_state_init(struct modem_msg_data *msg)
-{
-	if (IS_EVENT(msg, modem, MODEM_EVT_CARRIER_INITIALIZED)) {
-		int err;
-
-		state_set(STATE_DISCONNECTED);
-
-		err = setup();
-		__ASSERT(err == 0, "Failed running setup()");
-		SEND_EVENT(modem, MODEM_EVT_INITIALIZED);
-	}
 }
 
 /* Message handler for STATE_DISCONNECTED. */
@@ -860,24 +788,19 @@ static void on_all_states(struct modem_msg_data *msg)
 
 	if (IS_EVENT(msg, cloud, CLOUD_EVT_USER_ASSOCIATED)) {
 
-		/* Re-enable low power features after cloud has been associated. */
-		int err = configure_low_power();
+		if (IS_ENABLED(CONFIG_LTE_PSM_REQ)) {
+			/* Re-enable low power features after cloud has been associated. */
+			int err = lte_lc_psm_req(true);
 
-		if (err) {
-			LOG_ERR("configure_low_power, error: %d", err);
-			SEND_ERROR(modem, MODEM_EVT_ERROR, err);
+			if (err) {
+				LOG_ERR("lte_lc_psm_req, error: %d", err);
+				SEND_ERROR(modem, MODEM_EVT_ERROR, err);
+			}
 		}
 	}
 
 	if (IS_EVENT(msg, app, APP_EVT_START)) {
 		int err;
-
-		if (IS_ENABLED(CONFIG_LWM2M_CARRIER)) {
-			/* The carrier library handles the LTE connection
-			 * establishment.
-			 */
-			return;
-		}
 
 		err = lte_connect();
 		if (err) {
@@ -913,19 +836,6 @@ static void on_all_states(struct modem_msg_data *msg)
 					MODEM_EVT_MODEM_DYNAMIC_DATA_NOT_READY);
 			}
 		}
-
-		if (data_type_is_requested(msg->module.app.data_list,
-					   msg->module.app.count,
-					   APP_DATA_BATTERY)) {
-
-			int err;
-
-			err = battery_data_get();
-			if (err) {
-				SEND_EVENT(modem,
-					MODEM_EVT_BATTERY_DATA_NOT_READY);
-			}
-		}
 	}
 
 	if (IS_EVENT(msg, util, UTIL_EVT_SHUTDOWN_REQUEST)) {
@@ -950,26 +860,19 @@ static void module_thread_fn(void)
 
 	k_sem_take(&nrf_modem_initialized, K_FOREVER);
 
-	if (IS_ENABLED(CONFIG_LWM2M_CARRIER)) {
-		state_set(STATE_INIT);
-	} else {
-		state_set(STATE_DISCONNECTED);
-		SEND_EVENT(modem, MODEM_EVT_INITIALIZED);
+	state_set(STATE_DISCONNECTED);
+	SEND_EVENT(modem, MODEM_EVT_INITIALIZED);
 
-		err = setup();
-		if (err) {
-			LOG_ERR("Failed setting up the modem, error: %d", err);
-			SEND_ERROR(modem, MODEM_EVT_ERROR, err);
-		}
+	err = setup();
+	if (err) {
+		LOG_ERR("Failed setting up the modem, error: %d", err);
+		SEND_ERROR(modem, MODEM_EVT_ERROR, err);
 	}
 
 	while (true) {
 		module_get_next_msg(&self, &msg);
 
 		switch (state) {
-		case STATE_INIT:
-			on_state_init(&msg);
-			break;
 		case STATE_DISCONNECTED:
 			on_state_disconnected(&msg);
 			break;

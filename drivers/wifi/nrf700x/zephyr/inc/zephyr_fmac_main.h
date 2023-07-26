@@ -29,7 +29,14 @@
 #include <fmac_api.h>
 #include <host_rpu_umac_if.h>
 
+#define NRF700X_DRIVER_VERSION "1.2.4.0"
+
 #ifndef CONFIG_NRF700X_RADIO_TEST
+/* Use same timeout as WPA supplicant, this is high mainly to handle
+ * connected scan.
+ */
+#define WIFI_NRF_SCAN_TIMEOUT (K_SECONDS(30))
+
 struct wifi_nrf_vif_ctx_zep {
 	const struct device *zep_dev_ctx;
 	struct net_if *zep_net_if_ctx;
@@ -41,6 +48,7 @@ struct wifi_nrf_vif_ctx_zep {
 	bool scan_in_progress;
 	int scan_type;
 	unsigned int scan_res_cnt;
+	struct k_work_delayable scan_timeout_work;
 
 	struct net_eth_addr mac_addr;
 
@@ -48,6 +56,7 @@ struct wifi_nrf_vif_ctx_zep {
 	enum wifi_nrf_fmac_if_op_state if_op_state;
 	enum wifi_nrf_fmac_if_carr_state if_carr_state;
 	struct wpa_signal_info *signal_info;
+	struct wpa_conn_info *conn_info;
 #ifdef CONFIG_WPA_SUPP
 	struct zep_wpa_supp_dev_callbk_fns supp_callbk_fns;
 #endif /* CONFIG_WPA_SUPP */
@@ -69,6 +78,7 @@ struct wifi_nrf_vif_ctx_zep {
 		unsigned int ext_capa_len;
 	} iface_ext_capa;
 	bool cookie_resp_received;
+	bool twt_in_progress;
 };
 
 struct wifi_nrf_vif_ctx_map {
@@ -99,4 +109,7 @@ struct wifi_nrf_drv_priv_zep {
 	/* TODO: Replace with a linked list to handle unlimited RPUs */
 	struct wifi_nrf_ctx_zep rpu_ctx_zep;
 };
+
+void wifi_nrf_scan_timeout_work(struct k_work *work);
+const char *wifi_nrf_get_drv_version(void);
 #endif /* __ZEPHYR_FMAC_MAIN_H__ */

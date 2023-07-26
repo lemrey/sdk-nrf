@@ -22,6 +22,8 @@ The sample supports the following development kits:
 
 .. include:: /includes/tfm.txt
 
+.. include:: /includes/external_flash_nrf91.txt
+
 .. _nrf_cloud_mqtt_multi_service_features:
 
 Features
@@ -582,7 +584,7 @@ Building and running
 Building with nRF7002 EK Wi-Fi scanning support (for nRF9160 DK)
 ================================================================
 
-To build the sample with nRF7002 EK Wi-Fi scanning support, use the ``-DSHIELD=nrf7002_ek``, ``-DDTC_OVERLAY_FILE=nrf9160dk_with_nrf7002ek.overlay`` and  ``-DOVERLAY_CONFIG=overlay-nrf7002ek-wifi-scan-only.conf`` options.
+To build the sample with nRF7002 EK Wi-Fi scanning support, use the ``-DSHIELD=nrf7002ek``, ``-DDTC_OVERLAY_FILE=nrf9160dk_with_nrf7002ek.overlay`` and  ``-DOVERLAY_CONFIG=overlay-nrf7002ek-wifi-scan-only.conf`` options.
 
 This enables the Wi-Fi location tracking method automatically.
 
@@ -590,7 +592,7 @@ For example:
 
 .. code-block:: console
 
-   west build -p -b nrf9160dk_nrf9160_ns -- -DSHIELD=nrf7002_ek -DDTC_OVERLAY_FILE="nrf9160dk_with_nrf7002ek.overlay" -DOVERLAY_CONFIG="overlay-nrf7002ek-wifi-scan-only.conf"
+   west build -p -b nrf9160dk_nrf9160_ns -- -DSHIELD=nrf7002ek -DDTC_OVERLAY_FILE="nrf9160dk_with_nrf7002ek.overlay" -DOVERLAY_CONFIG="overlay-nrf7002ek-wifi-scan-only.conf"
 
 This is only supported on the `Nordic nRF9160 DK`_ with an attached nRF7002 EK.
 

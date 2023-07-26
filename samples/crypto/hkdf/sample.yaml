@@ -1,6 +1,6 @@
 sample:
-    description: HMAC key derivation function example
-    name: HKDF example
+  description: HMAC key derivation function example
+  name: HKDF example
 tests:
   sample.hkdf:
     tags: introduction psa cc3xx

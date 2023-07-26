@@ -1,9 +1,8 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2021, Nordic Semiconductor ASA.
+#
+# Copyright (c) 2021 - 2023, Nordic Semiconductor ASA.
 #
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
-#-------------------------------------------------------------------------------
 
 # NOTE: All code in this folder and subfolders is run as part of the TF-M
 #       build, not in a Zephyr context.
@@ -96,12 +95,6 @@ endif()
 
 if (${TFM_PARTITION_CRYPTO})
   target_link_libraries(platform_s PRIVATE platform_cc3xx)
-
-  # NCSDK-19561 cc3xx libraries requires heap.
-  target_compile_definitions(platform_region_defs
-    INTERFACE
-        ENABLE_HEAP
-  )
 
   # Needed in order to get crypto partition modules flags
   target_link_libraries(platform_s PRIVATE tfm_psa_rot_partition_crypto)

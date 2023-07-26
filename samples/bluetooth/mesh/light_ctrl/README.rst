@@ -9,6 +9,11 @@ Bluetooth: Mesh light fixture
 
 The Bluetooth® mesh light fixture sample demonstrates how to set up a light control mesh server model application, and control a dimmable LED with Bluetooth mesh using the :ref:`bt_mesh_onoff_readme`.
 
+This sample demonstrates how to implement the following :ref:`ug_bt_mesh_nlc`:
+
+  * Basic Lightness Controller NLC Profile
+  * Energy Monitor NLC Profile
+
 Requirements
 ************
 
@@ -253,22 +258,22 @@ This sample uses the following |NCS| libraries:
 
 In addition, it uses the following Zephyr libraries:
 
-* ``include/drivers/hwinfo.h``
+* :file:`include/drivers/hwinfo.h`
 * :ref:`zephyr:kernel_api`:
 
-  * ``include/kernel.h``
+  * :file:`include/kernel.h`
 
 * :ref:`zephyr:pwm_api`:
 
-  * ``drivers/pwm.h``
+  * :file:`drivers/pwm.h`
 
 * :ref:`zephyr:bluetooth_api`:
 
-  * ``include/bluetooth/bluetooth.h``
+  * :file:`include/bluetooth/bluetooth.h`
 
 * :ref:`zephyr:bluetooth_mesh`:
 
-  * ``include/bluetooth/mesh.h``
+  * :file:`include/bluetooth/mesh.h`
 
 The sample also uses the following secure firmware component:
 

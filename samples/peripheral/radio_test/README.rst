@@ -241,9 +241,10 @@ Testing with RSSI Viewer
 Dependencies
 ************
 
-This sample uses the following |NCS| library:
+This sample uses the following |NCS| libraries:
 
   * :ref:`shell_ipc_readme`
+  * :ref:`fem_al_lib`
 
 This sample has the following nrfx dependencies:
 

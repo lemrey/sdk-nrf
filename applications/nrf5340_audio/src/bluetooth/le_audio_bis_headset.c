@@ -173,7 +173,6 @@ static void stream_stopped_cb(struct bt_bap_stream *stream, uint8_t reason)
 static void stream_recv_cb(struct bt_bap_stream *stream, const struct bt_iso_recv_info *info,
 			   struct net_buf *buf)
 {
-	static uint32_t recv_cnt, data_size_mismatch_cnt;
 	bool bad_frame = false;
 
 	if (receive_cb == NULL) {
@@ -185,23 +184,8 @@ static void stream_recv_cb(struct bt_bap_stream *stream, const struct bt_iso_rec
 		bad_frame = true;
 	}
 
-	if (buf->len != active_stream.codec->octets_per_sdu && bad_frame != true) {
-		data_size_mismatch_cnt++;
-		if ((data_size_mismatch_cnt % 500) == 1) {
-			LOG_DBG("Data size mismatch, received: %d, codec: %d, total: %d", buf->len,
-				active_stream.codec->octets_per_sdu, data_size_mismatch_cnt);
-		}
-
-		return;
-	}
-
-	receive_cb(buf->data, buf->len, bad_frame, info->ts, active_stream_index);
-
-	recv_cnt++;
-	if ((recv_cnt % 1000U) == 0U) {
-		LOG_DBG("Received %d total ISO packets for stream %d", recv_cnt,
-			active_stream_index);
-	}
+	receive_cb(buf->data, buf->len, bad_frame, info->ts, active_stream_index,
+		   active_stream.codec->octets_per_sdu);
 }
 
 static struct bt_bap_stream_ops stream_ops = {
@@ -494,11 +478,13 @@ static int change_active_brdcast_src(void)
 {
 	int ret;
 
-	if (active_stream.stream->ep->status.state == BT_BAP_EP_STATE_STREAMING) {
-		ret = bt_bap_broadcast_sink_stop(broadcast_sink);
-		if (ret) {
-			LOG_ERR("Failed to stop broadcast sink: %d", ret);
-			return ret;
+	if (active_stream.stream != NULL && active_stream.stream->ep != NULL) {
+		if (active_stream.stream->ep->status.state == BT_BAP_EP_STATE_STREAMING) {
+			ret = bt_bap_broadcast_sink_stop(broadcast_sink);
+			if (ret) {
+				LOG_ERR("Failed to stop broadcast sink: %d", ret);
+				return ret;
+			}
 		}
 	}
 
@@ -578,6 +564,10 @@ int le_audio_config_get(uint32_t *bitrate, uint32_t *sampling_rate, uint32_t *pr
 
 int le_audio_volume_up(void)
 {
+	if (active_stream.stream == NULL || active_stream.stream->ep == NULL) {
+		return -EFAULT;
+	}
+
 	if (active_stream.stream->ep->status.state != BT_BAP_EP_STATE_STREAMING) {
 		return -ECANCELED;
 	}
@@ -587,6 +577,10 @@ int le_audio_volume_up(void)
 
 int le_audio_volume_down(void)
 {
+	if (active_stream.stream == NULL || active_stream.stream->ep == NULL) {
+		return -EFAULT;
+	}
+
 	if (active_stream.stream->ep->status.state != BT_BAP_EP_STATE_STREAMING) {
 		return -ECANCELED;
 	}
@@ -596,6 +590,10 @@ int le_audio_volume_down(void)
 
 int le_audio_volume_mute(void)
 {
+	if (active_stream.stream == NULL || active_stream.stream->ep == NULL) {
+		return -EFAULT;
+	}
+
 	if (active_stream.stream->ep->status.state != BT_BAP_EP_STATE_STREAMING) {
 		return -ECANCELED;
 	}

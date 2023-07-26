@@ -58,6 +58,7 @@ Kconfig*                                  @tejlmand
 /doc/mcuboot/                             @carlescufi
 /doc/nrfxlib/                             @gmarull
 /doc/versions.json                        @carlescufi
+/doc/custom.properties                    @gmarull
 # All subfolders
 /drivers/                                 @anangl
 /drivers/serial/                          @nordic-krch @anangl
@@ -87,17 +88,18 @@ Kconfig*                                  @tejlmand
 /lib/bin/                                 @rlubos @lemrey
 /lib/adp536x/                             @jtguggedal
 /lib/at_cmd_parser/                       @rlubos
-/lib/at_custom_cmd/                       @eivindj-nordic
+/lib/at_cmd_custom/                       @eivindj-nordic
 /lib/at_host/                             @rlubos
 /lib/at_monitor/                          @lemrey @rlubos
 /lib/at_shell/                            @jtguggedal @simensrostad
 /lib/gcf_sms/                             @eivindj-nordic
 /lib/nrf_modem_lib/                       @rlubos @lemrey
 /lib/edge_impulse/                        @pdunaj
+/lib/fem_al/                              @KAGA164
 /lib/fprotect/                            @hakonfam
 /lib/flash_patch/                         @hakonfam
-/lib/location/                            @trantanen @hiltunent @jhirsi @tokangas
-/lib/lte_link_control/                    @jtguggedal @tokangas @simensrostad
+/lib/location/                            @trantanen @jhirsi @tokangas
+/lib/lte_link_control/                    @jtguggedal @tokangas @simensrostad @trantanen
 /lib/modem_antenna/                       @tokangas
 /lib/modem_info/                          @rlubos
 /lib/modem_key_mgmt/                      @rlubos
@@ -135,7 +137,7 @@ Kconfig*                                  @tejlmand
 /samples/bluetooth/direction_finding_connectionless_rx/ @ppryga-nordic @alwa-nordic
 /samples/bluetooth/direction_finding_connectionless_tx/ @ppryga-nordic @alwa-nordic
 /samples/bluetooth/peripheral_fast_pair/  @MarekPieta @kapi-no @KAGA164
-/samples/bootloader/                      @hakonfam @SebastianBoe
+/samples/bootloader/                      @hakonfam @oyvindronningstad
 /samples/matter/                          @Damian-Nordic @kkasperczyk-no
 /samples/crypto/                          @frkv @Vge0rge
 /samples/debug/ppi_trace/                 @nordic-krch @anangl
@@ -154,12 +156,14 @@ Kconfig*                                  @tejlmand
 /samples/nrf5340/empty_app_core/          @doki-nordic
 /samples/nrf9160/                         @rlubos @lemrey
 /samples/nrf9160/azure_*                  @jtguggedal @simensrostad @coderbyheart
-/samples/nrf9160/location/                @trantanen @hiltunent @jhirsi @tokangas
+/samples/nrf9160/location/                @trantanen @jhirsi @tokangas
 /samples/nrf9160/lwm2m_client/            @rlubos @SeppoTakalo @jarlamsa @jheiskan81 @juhaylinen
-/samples/nrf9160/modem_shell/             @trantanen @hiltunent @jhirsi @tokangas
+/samples/nrf9160/modem_shell/             @trantanen @jhirsi @tokangas
 /samples/nrf9160/nidd/                    @stig-bjorlykke
 /samples/nrf9160/nrf_cloud_*              @plskeggs @jayteemo @glarsennordic
+/samples/nrf9160/nrf_provisioning/        @SeppoTakalo @juhaylinen
 /samples/nrf9160/modem_trace_flash/       @gregersrygg @balaji-nordic
+/samples/nrf9160/sms/                     @trantanen @tokangas
 /samples/openthread/                      @rlubos @edmont @canisLupus1313 @mariuszpos
 /samples/nrf_profiler/                    @pdunaj
 /samples/peripheral/radio_test/           @KAGA164 @maje-emb
@@ -193,7 +197,7 @@ Kconfig*                                  @tejlmand
 /subsys/bluetooth/adv_prov/               @MarekPieta @kapi-no @KAGA164
 /subsys/bluetooth/services/fast_pair/     @MarekPieta @kapi-no @KAGA164
 /subsys/bluetooth/services/wifi_prov/     @wentong-li @bama-nordic
-/subsys/bootloader/                       @hakonfam @SebastianBoe
+/subsys/bootloader/                       @hakonfam @sigvartmh
 /subsys/caf/                              @pdunaj
 /subsys/debug/                            @nordic-krch @anangl
 /subsys/dfu/                              @hakonfam @sigvartmh
@@ -218,6 +222,7 @@ Kconfig*                                  @tejlmand
 /subsys/net/lib/icalendar_parser/         @lats1980
 /subsys/net/lib/lwm2m_client_utils/       @rlubos @SeppoTakalo @jarlamsa @jheiskan81 @juhaylinen
 /subsys/net/lib/nrf_cloud/                @plskeggs @jayteemo @glarsennordic
+/subsys/net/lib/nrf_provisioning/         @SeppoTakalo @juhaylinen
 /subsys/net/lib/zzhc/                     @junqingzou
 /subsys/net/lib/wifi_credentials/         @maxd-nordic
 /subsys/nfc/                              @grochu @anangl
@@ -232,21 +237,23 @@ Kconfig*                                  @tejlmand
 /subsys/zigbee/                           @tomchy @sebastiandraus
 /tests/                                   @gopiotr
 /tests/bluetooth/tester/                  @carlescufi @ludvigsj
+/tests/bluetooth/iso/                     @koffes @alexsven @erikrobstad @rick1082 @gWacey @Frodevan
 /tests/crypto/                            @torsteingrindvik @magnev
 /tests/drivers/flash_patch/               @oyvindronningstad
 /tests/drivers/fprotect/                  @oyvindronningstad
 /tests/drivers/lpuart/                    @nordic-krch
 /tests/drivers/nrfx_integration_test/     @anangl
 /tests/lib/at_cmd_parser/                 @rlubos
-/tests/lib/at_custom_cmd/                 @eivindj-nordic
+/tests/lib/at_cmd_custom/                 @eivindj-nordic
 /tests/lib/date_time/                     @trantanen @tokangas
 /tests/lib/edge_impulse/                  @pdunaj @MarekPieta
+/tests/lib/nrf_fuel_gauge/                @nordic-auko @aasinclair
 /tests/lib/gcf_sms/                       @eivindj-nordic
 /tests/lib/hw_unique_key*/                @oyvindronningstad @Vge0rge
 /tests/lib/hw_id/                         @maxd-nordic
-/tests/lib/location/                      @trantanen @hiltunent @jhirsi @tokangas
-/tests/lib/lte_lc/                        @jtguggedal @tokangas @simensrostad
-/tests/lib/lte_lc_api/                    @maxd-nordic
+/tests/lib/location/                      @trantanen @jhirsi @tokangas
+/tests/lib/lte_lc/                        @jtguggedal @tokangas @simensrostad @trantanen
+/tests/lib/lte_lc_api/                    @maxd-nordic @trantanen @tokangas
 /tests/lib/modem_jwt/                     @SeppoTakalo
 /tests/lib/modem_info/                    @maxd-nordic
 /tests/lib/qos/                           @simensrostad
@@ -279,6 +286,7 @@ Kconfig*                                  @tejlmand
 /tests/subsys/net/lib/fota_download/      @hakonfam @sigvartmh
 /tests/subsys/net/lib/lwm2m_*/            @SeppoTakalo @jarlamsa @jheiskan81 @juhaylinen
 /tests/subsys/net/lib/nrf_cloud/          @tony-le-24
+/tests/subsys/net/lib/nrf_provisioning/   @SeppoTakalo @juhaylinen
 /tests/subsys/net/lib/wifi_credentials*/  @maxd-nordic
 /tests/subsys/net/lib/mqtt_helper/        @simensrostad @jtguggedal
 /tests/subsys/partition_manager/region/   @hakonfam @sigvartmh

@@ -7,7 +7,7 @@ Device Firmware Upgrade module
    :local:
    :depth: 2
 
-Use the DFU module to:
+Use the DFU module to perform the following:
 
 * Obtain the update image from :ref:`nrf_desktop_config_channel` and store it in the appropriate flash memory partition.
 * Erase the flash memory partition in the background before storing the update image.
@@ -29,12 +29,6 @@ To perform the firmware upgrade, you must enable the bootloader.
 You can use the DFU module with either MCUboot or B0 bootloader.
 For more information on how to enable the bootloader, see the :ref:`nrf_desktop_bootloader` documentation.
 
-.. note::
-   If you selected the MCUboot bootloader, the DFU module:
-
-   * Requests the image upgrade after the whole image is transferred over the :ref:`nrf_desktop_config_channel`.
-   * Confirms the running image after device reboot.
-
 Enable the DFU module using the :ref:`CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_ENABLE <config_desktop_app_options>` option.
 It requires the transport option :ref:`CONFIG_DESKTOP_CONFIG_CHANNEL_ENABLE <config_desktop_app_options>` to be selected, as it uses :ref:`nrf_desktop_config_channel` for the transmission of the update image.
 
@@ -47,6 +41,26 @@ If the buffer is small, the host must perform the DFU progress synchronization m
    The received update image chunks are stored on the dedicated flash memory partition when the current version of the device firmware is running.
    For this reason, make sure that you use configuration with two image partitions.
    For more information on configuring the memory layout in the application, see the :ref:`nrf_desktop_flash_memory_layout` documentation.
+
+MCUboot bootloader mode
+=======================
+
+The MCUboot bootloader can either move the image to the primary slot before booting it (``swap mode``) or boot the image directly from the secondary slot (``direct-xip mode``).
+
+If the MCUboot bootloader in the swap mode is selected, the DFU module does the following:
+
+ * Requests the image upgrade after the whole image is transferred over the :ref:`nrf_desktop_config_channel`.
+ * Confirms the running image after the device is rebooted.
+
+If the MCUboot bootloader's direct-xip mode is used, the module does not mark the newly uploaded image as pending and does not confirm it after a successful boot.
+In that case, the DFU module assumes that the MCUboot direct-xip bootloader simply boots an image with the higher version, so there is no need to mark the image as pending and confirm it.
+
+The :ref:`CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_MCUBOOT_DIRECT_XIP <config_desktop_app_options>` option is used to inform the DFU module that the device uses the MCUboot bootloader in the direct-xip mode.
+If the option is enabled, the DFU module reports the ``MCUBOOT+XIP`` bootloader name instead of ``MCUBOOT`` to indicate that the bootloader working in the direct-xip mode is used.
+The option depends on enabling the MCUboot bootloader (:kconfig:option:`CONFIG_BOOTLOADER_MCUBOOT`) and is enabled by default if the direct-xip variant of the application image is built (:kconfig:option:`CONFIG_BOOT_BUILD_DIRECT_XIP_VARIANT`).
+
+.. note::
+   The configured MCUboot bootloader mode needs to be manually aligned for both bootloader and application image.
 
 Device identification information
 =================================
@@ -63,6 +77,23 @@ These values are fetched using the :ref:`devinfo <dfu_devinfo>` configuration ch
    By default, the reported Vendor ID, Product ID, and generation are aligned with the values defined globally for the nRF Desktop application.
    The default values of Kconfig options used by the DFU module are based on respectively :ref:`CONFIG_DESKTOP_DEVICE_VID <config_desktop_app_options>`, :ref:`CONFIG_DESKTOP_DEVICE_PID <config_desktop_app_options>` and :ref:`CONFIG_DESKTOP_DEVICE_GENERATION <config_desktop_app_options>`.
 
+Flash access synchronization with other DFU methods
+===================================================
+
+The DFU module leverages the :ref:`nrf_desktop_dfu_lock` to synchronize flash access with other DFU methods (for example, SMP DFU).
+If multiple DFU transports are enabled in your application configuration, make sure that the following conditions are met:
+
+* The :ref:`CONFIG_DESKTOP_DFU_LOCK <config_desktop_app_options>` option is enabled
+* All of the used DFU transports use the :ref:`nrf_desktop_dfu_lock`.
+
+On each DFU attempt, the module attempts to claim ownership over the DFU flash using the DFU Lock API.
+It holds the DFU owner status until the DFU process is completed or timed out.
+The lock is also kept during the background erase operation as it changes the DFU flash memory content.
+
+If the module is not the current DFU owner and cannot claim the DFU lock, it desists from performing requested actions that either modify the DFU flash content or reboot the device.
+
+The module also automatically starts the background erase operation of the DFU flash once it becomes the lock owner after another DFU method.
+
 Implementation details
 **********************
 
@@ -71,7 +102,7 @@ The DFU module implementation is centered around the transmission and the storag
 * `Protocol operations`_ - How the module exchanges information with the host.
 * `Partition preparation`_ - How the module prepares for receiving an image.
 
-The firmware transfer operation can also be carried out by :ref:`nrf_desktop_ble_smp`.
+The firmware transfer operation can also be carried out either by the :ref:`nrf_desktop_ble_smp` or :ref:`nrf_desktop_dfu_mcumgr`.
 The application user must not perform more than one firmware upgrade at a time.
 The modification of the data by multiple application modules would result in a broken image that would be rejected by the bootloader.
 
@@ -118,6 +149,8 @@ The device generation allows to distinguish configurations that use the same boa
 reboot
    Perform the fetch operation on this option to trigger an instant reboot of the device.
 
+   |nrf_desktop_command_note_with_dfu_lock|
+
 .. _dfu_start:
 
 start
@@ -134,6 +167,8 @@ start
    If the transmission is interrupted, the current offset position is stored along with the image checksum and size until the device is rebooted.
    The host tool can restart the update image transfer after the interruption, but the checksum, the requested offset, and the size of the image must match the information stored by the device.
 
+   |nrf_desktop_command_note_with_dfu_lock|
+
 .. _dfu_data:
 
 data
@@ -145,6 +180,8 @@ data
 
    For performance reasons, the :ref:`nrf_desktop_config_channel` set operation does not return any information back to the host.
    To check that the update process is correct, the host tool must perform fetch operation on the ``sync`` option at regular intervals.
+
+   |nrf_desktop_command_note_with_dfu_lock|
 
    .. note::
        The DFU module does not check if the update image contains any valid data.
@@ -161,9 +198,10 @@ sync
    * Information regarding the status of the update process.
      The module can report one of the following states:
 
+     * :c:macro:`DFU_STATE_ACTIVE_OTHER` - Another DFU process is ongoing and the application is receiving the new image from the host over a different DFU transport.
      * :c:macro:`DFU_STATE_CLEANING` - The module is erasing the secondary image flash area.
      * :c:macro:`DFU_STATE_STORING` - The module is writing data to the secondary image flash area.
-     * :c:macro:`DFU_STATE_ACTIVE` - The DFU is ongoing and the module is receiving the new image from the host.
+     * :c:macro:`DFU_STATE_ACTIVE_CONFIG_CHANNEL` - The DFU is ongoing and the module is receiving the new image from the host.
      * :c:macro:`DFU_STATE_INACTIVE` - The module is not performing any operation, and the DFU can be started.
 
    * Size of the update image being transmitted.

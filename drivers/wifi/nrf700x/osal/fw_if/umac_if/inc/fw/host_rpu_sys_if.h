@@ -247,14 +247,14 @@ struct rpu_conf_rx_radio_test_params {
 struct umac_rx_dbg_params {
 	unsigned int lmac_events;
 	unsigned int rx_events;
-	unsigned int rx_coalised_events;
+	unsigned int rx_coalesce_events;
 	unsigned int total_rx_pkts_from_lmac;
 
 	unsigned int max_refill_gap;
 	unsigned int current_refill_gap;
 
-	unsigned int out_oforedr_mpdus;
-	unsigned int reoredr_free_mpdus;
+	unsigned int out_of_order_mpdus;
+	unsigned int reorder_free_mpdus;
 
 	unsigned int umac_consumed_pkts;
 	unsigned int host_consumed_pkts;
@@ -286,7 +286,7 @@ struct umac_rx_dbg_params {
 	unsigned int rx_packet_action_count;
 	unsigned int rx_packet_probe_req_count;
 	unsigned int rx_packet_other_mgmt_count;
-	signed char max_coalised_pkts;
+	signed char max_coalesce_pkts;
 	unsigned int null_skb_pointer_from_lmac;
 	unsigned int unexpected_mgmt_pkt;
 
@@ -294,16 +294,16 @@ struct umac_rx_dbg_params {
 
 struct umac_tx_dbg_params {
 	unsigned int tx_cmd;
-	unsigned int tx_non_coalescing_pkts_rcvd_from_host;
-	unsigned int tx_coalescing_pkts_rcvd_from_host;
-	unsigned int tx_max_coalescing_pkts_rcvd_from_host;
+	unsigned int tx_non_coalesce_pkts_rcvd_from_host;
+	unsigned int tx_coalesce_pkts_rcvd_from_host;
+	unsigned int tx_max_coalesce_pkts_rcvd_from_host;
 	unsigned int tx_cmds_max_used;
 	unsigned int tx_cmds_currently_in_use;
 	unsigned int tx_done_events_send_to_host;
 	unsigned int tx_done_success_pkts_to_host;
 	unsigned int tx_done_failure_pkts_to_host;
 	unsigned int tx_cmds_with_crypto_pkts_rcvd_from_host;
-	unsigned int tx_cmds_with_non_cryptot_pkts_rcvd_from_host;
+	unsigned int tx_cmds_with_non_crypto_pkts_rcvd_from_host;
 	unsigned int tx_cmds_with_broadcast_pkts_rcvd_from_host;
 	unsigned int tx_cmds_with_multicast_pkts_rcvd_from_host;
 	unsigned int tx_cmds_with_unicast_pkts_rcvd_from_host;
@@ -568,6 +568,53 @@ struct nrf_wifi_sys_params {
 #endif /* !CONFIG_NRF700X_RADIO_TEST */
 } __NRF_WIFI_PKD;
 
+
+/**
+ * struct nrf_wifi_tx_pow_ctrl_params - Parameters which control TX power.
+ * @ant_gain_2g: Antenna gain for 2.4 GHz band.
+ * @ant_gain_5g_band1 : Antenna gain for 5 GHz band (5150 MHz - 5350 MHz).
+ * ant_gain_5g_band2 : Antenna gain for 5 GHz band (5470 MHz - 5730 MHz).
+ * ant_gain_5g_band3 : Antenna gain for 5 GHz band (5730 MHz - 5895 MHz).
+ * @band_edge_2g_lo: Transmit power backoff (in dB) for lower edge of 2.4 GHz frequency band.
+ * @band_edge_2g_hi: Transmit power backoff (in dB) for upper edge of 2.4 GHz frequency band.
+ * @band_edge_5g_unii_1_lo: Transmit power backoff (in dB) for lower edge of UNII-1 frequency band.
+ * @band_edge_5g_unii_1_hi: Transmit power backoff (in dB) for upper edge of UNII-1 frequency band.
+ * @band_edge_5g_unii_2a_lo: Transmit power backoff (in dB) for lower edge of UNII-2A frequency band
+ * @band_edge_5g_unii_2a_hi: Transmit power backoff (in dB) for upper edge of UNII-2A frequency band
+ * @band_edge_5g_unii_2c_lo: Transmit power backoff (in dB) for lower edge of UNII-2C frequency band
+ * @band_edge_5g_unii_2c_hi: Transmit power backoff (in dB) for upper edge of UNII-2C frequency band
+ * @band_edge_5g_unii_3_lo: Transmit power backoff (in dB) for lower edge of UNII-3 frequency band.
+ * @band_edge_5g_unii_3_hi: Transmit power backoff (in dB) for upper edge of UNII-3 frequency band.
+ * @band_edge_5g_unii_4_lo: Transmit power backoff (in dB) for lower edge of UNII-4 frequency band.
+ * @band_edge_5g_unii_4_hi: Transmit power backoff (in dB) for upper edge of UNII-4 frequency band.
+ *
+ * System parameters provided for controlling TX power.
+ */
+
+struct nrf_wifi_tx_pwr_ctrl_params {
+	unsigned char ant_gain_2g;
+	unsigned char ant_gain_5g_band1;
+	unsigned char ant_gain_5g_band2;
+	unsigned char ant_gain_5g_band3;
+	unsigned char band_edge_2g_lo;
+	unsigned char band_edge_2g_hi;
+	unsigned char band_edge_5g_unii_1_lo;
+	unsigned char band_edge_5g_unii_1_hi;
+	unsigned char band_edge_5g_unii_2a_lo;
+	unsigned char band_edge_5g_unii_2a_hi;
+	unsigned char band_edge_5g_unii_2c_lo;
+	unsigned char band_edge_5g_unii_2c_hi;
+	unsigned char band_edge_5g_unii_3_lo;
+	unsigned char band_edge_5g_unii_3_hi;
+	unsigned char band_edge_5g_unii_4_lo;
+	unsigned char band_edge_5g_unii_4_hi;
+} __NRF_WIFI_PKD;
+
+enum op_band {
+	BAND_ALL,
+	BAND_24G
+};
+
 /**
  * struct nrf_wifi_cmd_sys_init - Initialize UMAC
  * @sys_head: umac header, see &nrf_wifi_sys_head
@@ -575,7 +622,8 @@ struct nrf_wifi_sys_params {
  * @sys_params: iftype, mac address, see nrf_wifi_sys_params
  * @rx_buf_pools: LMAC Rx buffs pool params, see struct rx_buf_pool_params
  * @data_config_params: Data configuration params, see struct nrf_wifi_data_config_params
- * @tcp_ip_checksum_offload: 0: Native checksum, 1: Offload checksum
+ * @tcp_ip_checksum_offload: 0:umac checksum disable 1: umac checksum enable
+ * @op_band: operating band see &enum op_band
  * After host driver bringup host sends the NRF_WIFI_CMD_INIT to the RPU.
  * then RPU initializes and responds with NRF_WIFI_EVENT_BUFF_CONFIG.
  */
@@ -589,10 +637,8 @@ struct nrf_wifi_cmd_sys_init {
 	struct temp_vbat_config temp_vbat_config_params;
 	unsigned char tcp_ip_checksum_offload;
 	unsigned char country_code[NRF_WIFI_COUNTRY_CODE_LEN];
-	unsigned char ant_gain_2g;
-	unsigned char ant_gain_5g_band1;
-	unsigned char ant_gain_5g_band2;
-	unsigned char ant_gain_5g_band3;
+	unsigned int op_band;
+	struct nrf_wifi_tx_pwr_ctrl_params tx_pwr_ctrl_params;
 } __NRF_WIFI_PKD;
 
 /**

@@ -1,7 +1,8 @@
 sample:
-    description: This app provides an example of performing encryption and
-        decryption using Chacha20-Poly1305
-    name: Chacha20-Poly1305 example
+  description: |
+    This app provides an example of performing encryption and decryption using
+    Chacha20-Poly1305
+  name: Chacha20-Poly1305 example
 tests:
   sample.chacha_poly:
     tags: introduction psa cc3xx

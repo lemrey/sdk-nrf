@@ -70,14 +70,29 @@ For more information about files generated as output of the build process, see :
 See the following sections for details regarding building and programming the firmware for Thingy:53 in various environments.
 See :ref:`thingy53_app_update` for more detailed information about updating firmware on Thingy:53.
 
+.. _thingy53_build_pgm_targets_wifi:
+
+Building Wi-Fi applications on Thingy:53
+----------------------------------------
+
+You can use the Nordic Thingy:53 with the nRF7002 Expansion Board (EB) for Wi-Fi development.
+Connect the nRF7002 EB to the **P9** connector on Thingy:53.
+
+To build for the nRF7002 EB with Thingy:53, use the ``thingy53_nrf5340_cpuapp`` build target with the CMake ``SHIELD`` variable set to ``nrf7002eb``.
+For example, you can use the following command when building on the command line:
+
+.. code-block::
+
+   west build -b thingy53_nrf5340_cpuapp -- -DSHIELD=nrf7002eb
+
+For the compatible Wi-Fi samples in the |NCS|, see the :ref:`wifi_samples` section.
+
 .. _thingy53_build_pgm_vscode:
 
 Building and programming using |VSC|
 ====================================
 
-|vsc_extension_instructions|
-
-Complete the following steps after installing the |nRFVSC|:
+Complete the following steps to build and program using the |nRFVSC|:
 
 .. |sample_path_vsc| replace:: :file:`nrf/samples/bluetooth/peripheral_lbs`
 
@@ -85,7 +100,7 @@ Complete the following steps after installing the |nRFVSC|:
 
 .. include:: ../../includes/vsc_build_and_run.txt
 
-#. Program the sample or application:
+3. Program the sample or application:
 
    a. Connect the Nordic Thingy:53 to the debug out port on a 10-pin external debug probe, for example nRF5340 DK, using a 10-pin JTAG cable.
    #. Connect the external debug probe to the PC using a USB cable.

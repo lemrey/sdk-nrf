@@ -19,9 +19,7 @@ The sample supports the following development kit, version 0.14.0 or higher:
 
 .. include:: /includes/tfm.txt
 
-On the nRF9160 DK, set the control signal from the nRF52840 board controller MCU (**P0.19**) to *high* to let the nRF9160 communicate with the external flash memory.
-Enable the ``external_flash_pins_routing`` node in devicetree.
-See :ref:`zephyr:nrf9160dk_board_controller_firmware` for details on building the firmware for the nRF52840 board controller MCU.
+.. include:: /includes/external_flash_nrf91.txt
 
 Overview
 ********
@@ -36,7 +34,7 @@ The sample proceeds as follows:
 #. It prevalidates the update if the firmware supports the prevalidation process.
 #. It then programs the update to the modem, using the :ref:`lib_fmfu_fdev` library.
 
-The current version of this sample downloads two different versions of the firmware, namely 1.3.0 and 1.3.1.
+The current version of this sample downloads two different versions of the firmware, namely 1.3.3 and 1.3.4.
 The sample then selects the version which is currently not installed.
 
 Configuration

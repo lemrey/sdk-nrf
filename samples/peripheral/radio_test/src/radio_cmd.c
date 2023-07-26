@@ -15,7 +15,7 @@
 #endif /* !defined(CONFIG_SOC_SERIES_NRF54HX) */
 
 #if CONFIG_FEM
-#include "fem.h"
+#include "fem_al/fem_al.h"
 #endif /* CONFIG_FEM */
 
 #include "radio_test.h"

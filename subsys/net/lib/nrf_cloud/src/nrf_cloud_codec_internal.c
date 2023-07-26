@@ -8,8 +8,11 @@
 #include "nrf_cloud_mem.h"
 #include "nrf_cloud_fsm.h"
 #include <net/nrf_cloud_codec.h>
+#include "nrf_cloud_log_internal.h"
 #include <net/nrf_cloud_location.h>
-#include <net/nrf_cloud_alerts.h>
+#include <net/nrf_cloud_alert.h>
+#include <net/nrf_cloud_log.h>
+#include <zephyr/logging/log_output.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
@@ -48,6 +51,8 @@ static const char *const sensor_type_str[] = {
 	[NRF_CLOUD_SENSOR_AIR_PRESS] = NRF_CLOUD_JSON_APPID_VAL_AIR_PRESS,
 	[NRF_CLOUD_SENSOR_AIR_QUAL] = NRF_CLOUD_JSON_APPID_VAL_AIR_QUAL,
 	[NRF_CLOUD_LTE_LINK_RSRP] = NRF_CLOUD_JSON_APPID_VAL_RSRP,
+	[NRF_CLOUD_LOG] = NRF_CLOUD_JSON_APPID_VAL_LOG,
+	[NRF_CLOUD_DICTIONARY_LOG] = NRF_CLOUD_JSON_APPID_VAL_DICTIONARY_LOG,
 	[NRF_CLOUD_DEVICE_INFO] = NRF_CLOUD_JSON_APPID_VAL_DEVICE,
 	[NRF_CLOUD_SENSOR_LIGHT] = NRF_CLOUD_JSON_APPID_VAL_LIGHT,
 };
@@ -285,6 +290,9 @@ int nrf_cloud_sensor_data_encode(const struct nrf_cloud_sensor_data *sensor,
 	ret += json_add_str_cs(root_obj, NRF_CLOUD_JSON_DATA_KEY, sensor->data.ptr);
 	ret += json_add_str_cs(root_obj, NRF_CLOUD_JSON_MSG_TYPE_KEY,
 			       NRF_CLOUD_JSON_MSG_TYPE_VAL_DATA);
+	if (sensor->ts_ms != NRF_CLOUD_NO_TIMESTAMP) {
+		ret += json_add_num_cs(root_obj, NRF_CLOUD_MSG_TIMESTAMP_KEY, sensor->ts_ms);
+	}
 
 	if (ret != 0) {
 		cJSON_Delete(root_obj);
@@ -486,23 +494,51 @@ int nrf_cloud_shadow_control_decode(struct nrf_cloud_data const *const input,
 		return -ESRCH; /* invalid input or no JSON parsed */
 	}
 
-	/* A delta update will have the config inside of state */
+	/* A delta update will have the control inside of state. */
 	state_obj = cJSON_GetObjectItem(input_obj, NRF_CLOUD_JSON_KEY_STATE);
-	control_obj = cJSON_GetObjectItem(
-		state_obj ? state_obj : input_obj, NRF_CLOUD_JSON_KEY_CTRL);
-
+	if (state_obj) {
+		control_obj = cJSON_GetObjectItem(state_obj, NRF_CLOUD_JSON_KEY_CTRL);
+		if (control_obj) {
+			LOG_DBG("Control inside of state");
+		}
+	}
+	/* A shadow/get/accepted on initial connect will have control inside of desired. */
+	if (control_obj == NULL) {
+		state_obj = cJSON_GetObjectItem(input_obj, NRF_CLOUD_JSON_KEY_DES);
+		if (state_obj) {
+			control_obj = cJSON_GetObjectItem(state_obj, NRF_CLOUD_JSON_KEY_CTRL);
+			if (control_obj) {
+				LOG_DBG("Control inside of desired");
+			}
+		}
+	}
+	/* If there is no delta and no desired, but there is reported, use that. */
+	if (control_obj == NULL) {
+		state_obj = cJSON_GetObjectItem(input_obj, NRF_CLOUD_JSON_KEY_REP);
+		if (state_obj) {
+			control_obj = cJSON_GetObjectItem(state_obj, NRF_CLOUD_JSON_KEY_CTRL);
+			if (control_obj) {
+				LOG_DBG("Control inside of reported");
+			}
+		}
+	}
 	if (control_obj == NULL) {
 		LOG_DBG("Shadow delta does not have control section");
 		*status = NRF_CLOUD_CTRL_NOT_PRESENT;
 		goto end;
 	}
-	LOG_INF("Shadow delta has control section");
+
+	bool differs = false;
 
 	alert_obj = cJSON_GetObjectItem(control_obj, NRF_CLOUD_JSON_KEY_ALERT);
 	if (alert_obj == NULL) {
 		LOG_DBG(NRF_CLOUD_JSON_KEY_ALERT " not found");
 	} else if (cJSON_IsBool(alert_obj)) {
-		data->alerts_enabled = cJSON_IsTrue(alert_obj);
+		if (data->alerts_enabled != cJSON_IsTrue(alert_obj)) {
+			differs = true;
+			data->alerts_enabled = cJSON_IsTrue(alert_obj);
+			LOG_INF("AlertsEn changed to %u", data->alerts_enabled);
+		}
 	} else {
 		LOG_WRN(NRF_CLOUD_JSON_KEY_ALERT " is not a bool");
 	}
@@ -511,14 +547,20 @@ int nrf_cloud_shadow_control_decode(struct nrf_cloud_data const *const input,
 	if (log_obj == NULL) {
 		LOG_DBG(NRF_CLOUD_JSON_KEY_LOG " not found");
 	} else if (cJSON_IsNumber(log_obj)) {
-		data->log_level = (int)cJSON_GetNumberValue(log_obj);
+		if (data->log_level != (int)cJSON_GetNumberValue(log_obj)) {
+			differs = true;
+			data->log_level = (int)cJSON_GetNumberValue(log_obj);
+			LOG_INF("LogLvl changed to %u", data->log_level);
+		}
 	} else {
 		LOG_WRN(NRF_CLOUD_JSON_KEY_LOG " is not a number");
 	}
 
-	if (state_obj == NULL) {
-		/* If this is not a delta update, no response data is required */
-		LOG_DBG("Got shadow: %s", (const char *)input->ptr);
+	if ((state_obj == NULL) && !differs) {
+		/* If this is not a delta update, and our settings match,
+		 * then no shadow update is required.
+		 */
+		LOG_DBG("No response needed. Got shadow: %s", (const char *)input->ptr);
 		*status = NRF_CLOUD_CTRL_NO_REPLY;
 	} else {
 		LOG_DBG("Got delta: %s", (const char *)input->ptr);
@@ -542,8 +584,6 @@ int nrf_cloud_shadow_control_response_encode(struct nrf_cloud_ctrl_data const *c
 	/* Prepare JSON response for the delta */
 	cJSON *root_obj = cJSON_CreateObject();
 	cJSON *state_obj = cJSON_AddObjectToObjectCS(root_obj, NRF_CLOUD_JSON_KEY_STATE);
-	cJSON *desired_obj = cJSON_AddObjectToObjectCS(state_obj, NRF_CLOUD_JSON_KEY_DES);
-	int des_ret = json_add_null_cs(desired_obj, NRF_CLOUD_JSON_KEY_CFG);
 	cJSON *reported_obj = cJSON_AddObjectToObjectCS(state_obj, NRF_CLOUD_JSON_KEY_REP);
 	cJSON *control_obj = cJSON_AddObjectToObjectCS(reported_obj, NRF_CLOUD_JSON_KEY_CTRL);
 	int alert_ret = json_add_bool_cs(control_obj, NRF_CLOUD_JSON_KEY_ALERT,
@@ -552,7 +592,7 @@ int nrf_cloud_shadow_control_response_encode(struct nrf_cloud_ctrl_data const *c
 
 	/* If any object could not be created, we ran out of memory */
 	if (!(root_obj && state_obj && reported_obj && control_obj &&
-	      !des_ret && !alert_ret && !log_ret)) {
+	      !alert_ret && !log_ret)) {
 		err = -ENOMEM;
 		goto end;
 	}
@@ -561,7 +601,7 @@ int nrf_cloud_shadow_control_response_encode(struct nrf_cloud_ctrl_data const *c
 		err = -ENOMEM;
 		goto end;
 	}
-	LOG_INF("Sending shadow back: %s", buffer);
+	LOG_DBG("Sending shadow back: %s", buffer);
 
 	output->ptr = buffer;
 	output->len = strlen(buffer);
@@ -651,7 +691,7 @@ int nrf_cloud_state_encode(uint32_t reported_state, const bool update_desired_to
 		struct nrf_cloud_data m_endp;
 
 		/* Get the endpoint information. */
-		nct_dc_endpoint_get(&tx_endp, &rx_endp, NULL, &m_endp);
+		nct_dc_endpoint_get(&tx_endp, &rx_endp, NULL, NULL, &m_endp);
 		ret += json_add_str_cs(reported_obj, NRF_CLOUD_JSON_KEY_TOPIC_PRFX, m_endp.ptr);
 
 		/* Clear pairing config and pairingStatus fields. */
@@ -724,6 +764,7 @@ int nrf_cloud_data_endpoint_decode(const struct nrf_cloud_data *input,
 				   struct nrf_cloud_data *tx_endpoint,
 				   struct nrf_cloud_data *rx_endpoint,
 				   struct nrf_cloud_data *bulk_endpoint,
+				   struct nrf_cloud_data *bin_endpoint,
 				   struct nrf_cloud_data *m_endpoint)
 {
 	__ASSERT_NO_MSG(input != NULL);
@@ -732,6 +773,7 @@ int nrf_cloud_data_endpoint_decode(const struct nrf_cloud_data *input,
 	__ASSERT_NO_MSG(tx_endpoint != NULL);
 	__ASSERT_NO_MSG(rx_endpoint != NULL);
 	__ASSERT_NO_MSG(bulk_endpoint != NULL);
+	__ASSERT_NO_MSG(bin_endpoint != NULL);
 
 	int err;
 	cJSON *root_obj;
@@ -799,6 +841,22 @@ int nrf_cloud_data_endpoint_decode(const struct nrf_cloud_data *input,
 	bulk_endpoint->len = snprintk((char *)bulk_endpoint->ptr, bulk_ep_len_temp, "%s%s",
 				       (char *)tx_endpoint->ptr,
 				       NRF_CLOUD_BULK_MSG_TOPIC);
+
+	/* Populate bin endpoint topic by copying and appending /bin to the parsed
+	 * tx endpoint (d2c) topic.
+	 */
+	size_t bin_ep_len_temp = tx_endpoint->len + sizeof(NRF_CLOUD_JSON_VAL_TOPIC_BIN);
+
+	bin_endpoint->ptr = nrf_cloud_calloc(bin_ep_len_temp, 1);
+	if (bin_endpoint->ptr == NULL) {
+		cJSON_Delete(root_obj);
+		LOG_ERR("Could not allocate memory for bin topic");
+		return -ENOMEM;
+	}
+
+	bin_endpoint->len = snprintk((char *)bin_endpoint->ptr, bin_ep_len_temp, "%s%s",
+				       (char *)tx_endpoint->ptr,
+				       NRF_CLOUD_JSON_VAL_TOPIC_BIN);
 
 	err = json_decode_and_alloc(json_object_decode(topic_obj,
 		NRF_CLOUD_JSON_KEY_CLOUD_TO_DEVICE), rx_endpoint);
@@ -1002,6 +1060,16 @@ static int nrf_cloud_encode_service_info_ui(const struct nrf_cloud_svc_info_ui *
 		if (ui->rsrp) {
 			cJSON_AddItemToArray(array,
 				cJSON_CreateString(sensor_type_str[NRF_CLOUD_LTE_LINK_RSRP]));
+			++item_cnt;
+		}
+		if (ui->log) {
+			cJSON_AddItemToArray(array,
+				cJSON_CreateString(sensor_type_str[NRF_CLOUD_LOG]));
+			++item_cnt;
+		}
+		if (ui->dictionary_log) {
+			cJSON_AddItemToArray(array,
+				cJSON_CreateString(sensor_type_str[NRF_CLOUD_DICTIONARY_LOG]));
 			++item_cnt;
 		}
 
@@ -1729,78 +1797,6 @@ err_cleanup:
 	return ret;
 }
 
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-int nrf_cloud_pgps_response_decode(const char *const response,
-	struct nrf_cloud_pgps_result *const result)
-{
-	if (!response || !result ||
-	    !result->host || !result->host_sz ||
-	    !result->path || !result->path_sz) {
-		return -EINVAL;
-	}
-
-	char *host_ptr = NULL;
-	char *path_ptr = NULL;
-	int err = 0;
-	cJSON *rsp_obj = cJSON_Parse(response);
-
-	if (!rsp_obj) {
-		LOG_ERR("P-GPS response does not contain valid JSON");
-		err = -EBADMSG;
-		goto cleanup;
-	}
-
-	/* MQTT response is an array, REST is key/value map */
-	if (cJSON_IsArray(rsp_obj)) {
-		if (get_string_from_array(rsp_obj, NRF_CLOUD_PGPS_RCV_ARRAY_IDX_HOST, &host_ptr) ||
-		    get_string_from_array(rsp_obj, NRF_CLOUD_PGPS_RCV_ARRAY_IDX_PATH, &path_ptr)) {
-			LOG_ERR("Invalid P-GPS array response format");
-			err = -EPROTO;
-			goto cleanup;
-		}
-	} else if (get_string_from_obj(rsp_obj, NRF_CLOUD_PGPS_RCV_REST_HOST, &host_ptr) ||
-		   get_string_from_obj(rsp_obj, NRF_CLOUD_PGPS_RCV_REST_PATH, &path_ptr)) {
-		enum nrf_cloud_error nrf_err;
-
-		/* Check for a potential P-GPS JSON error message from nRF Cloud */
-		err = nrf_cloud_error_msg_decode(response, NRF_CLOUD_JSON_APPID_VAL_PGPS,
-						     NRF_CLOUD_JSON_MSG_TYPE_VAL_DATA, &nrf_err);
-		if (!err) {
-			LOG_ERR("nRF Cloud returned P-GPS error: %d", nrf_err);
-			err = -EFAULT;
-		} else {
-			LOG_ERR("Invalid P-GPS response format");
-			err = -EPROTO;
-		}
-
-		goto cleanup;
-	}
-
-	if (!host_ptr || !path_ptr) {
-		err = -ENOSTR;
-		goto cleanup;
-	}
-
-	if ((result->host_sz <= strlen(host_ptr)) ||
-	    (result->path_sz <= strlen(path_ptr))) {
-		err = -ENOBUFS;
-		goto cleanup;
-	}
-
-	strncpy(result->host, host_ptr, result->host_sz);
-	LOG_DBG("host: %s", result->host);
-
-	strncpy(result->path, path_ptr, result->path_sz);
-	LOG_DBG("path: %s", result->path);
-
-cleanup:
-	if (rsp_obj) {
-		cJSON_Delete(rsp_obj);
-	}
-	return err;
-}
-#endif /* CONFIG_NRF_CLOUD_PGPS */
-
 int get_string_from_array(const cJSON *const array, const int index,
 			  char **string_out)
 {
@@ -2387,30 +2383,6 @@ bool nrf_cloud_disconnection_request_decode(const char *const buf)
 	return ret;
 }
 
-#if defined(CONFIG_NRF_MODEM)
-int nrf_cloud_modem_pvt_data_encode(const struct nrf_modem_gnss_pvt_data_frame	* const mdm_pvt,
-				    cJSON * const pvt_data_obj)
-{
-	if (!mdm_pvt || !pvt_data_obj) {
-		return -EINVAL;
-	}
-
-	struct nrf_cloud_gnss_pvt pvt = {
-		.lon =		mdm_pvt->longitude,
-		.lat =		mdm_pvt->latitude,
-		.accuracy =	mdm_pvt->accuracy,
-		.alt =		mdm_pvt->altitude,
-		.has_alt =	1,
-		.speed =	mdm_pvt->speed,
-		.has_speed =	1,
-		.heading =	mdm_pvt->heading,
-		.has_heading =	1
-	};
-
-	return nrf_cloud_pvt_data_encode(&pvt, pvt_data_obj);
-}
-#endif
-
 int nrf_cloud_pvt_data_encode(const struct nrf_cloud_gnss_pvt * const pvt,
 			      cJSON * const pvt_data_obj)
 {
@@ -2450,7 +2422,7 @@ int nrf_cloud_gnss_msg_json_encode(const struct nrf_cloud_gnss_data * const gnss
 	    json_add_str_cs(gnss_msg_obj,
 			    NRF_CLOUD_JSON_MSG_TYPE_KEY,
 			    NRF_CLOUD_JSON_MSG_TYPE_VAL_DATA) ||
-	    ((gnss->ts_ms > NRF_CLOUD_NO_TIMESTAMP) &&
+	    ((gnss->ts_ms != NRF_CLOUD_NO_TIMESTAMP) &&
 	     json_add_num_cs(gnss_msg_obj, NRF_CLOUD_MSG_TIMESTAMP_KEY, gnss->ts_ms))) {
 		ret = -ENOMEM;
 		goto cleanup;
@@ -2533,7 +2505,7 @@ cleanup:
 
 int nrf_cloud_alert_encode(const struct nrf_cloud_alert_info *alert, struct nrf_cloud_data *output)
 {
-#if defined(CONFIG_NRF_CLOUD_ALERTS)
+#if defined(CONFIG_NRF_CLOUD_ALERT)
 	int ret;
 
 	__ASSERT_NO_MSG(alert != NULL);
@@ -2550,10 +2522,11 @@ int nrf_cloud_alert_encode(const struct nrf_cloud_alert_info *alert, struct nrf_
 	if (alert->value != NRF_CLOUD_ALERT_UNUSED_VALUE) {
 		ret += json_add_num_cs(root_obj, NRF_CLOUD_JSON_ALERT_VALUE, alert->value);
 	}
-	if (alert->ts_ms > 0) {
+	if (alert->ts_ms > NRF_CLOUD_NO_TIMESTAMP) {
 		ret += json_add_num_cs(root_obj, NRF_CLOUD_MSG_TIMESTAMP_KEY, alert->ts_ms);
 	}
-	if (!alert->ts_ms || IS_ENABLED(CONFIG_NRF_CLOUD_ALERTS_SEQ_ALWAYS)) {
+	if ((alert->ts_ms <= NRF_CLOUD_NO_TIMESTAMP) ||
+	    IS_ENABLED(CONFIG_NRF_CLOUD_ALERT_SEQ_ALWAYS)) {
 		ret += json_add_num_cs(root_obj, NRF_CLOUD_JSON_ALERT_SEQUENCE, alert->sequence);
 	}
 	if (alert->description != NULL) {
@@ -2581,7 +2554,7 @@ int nrf_cloud_alert_encode(const struct nrf_cloud_alert_info *alert, struct nrf_
 	ARG_UNUSED(alert);
 	output->ptr = NULL;
 	output->len = 0;
-#endif /* CONFIG_NRF_CLOUD_ALERTS */
+#endif /* CONFIG_NRF_CLOUD_ALERT */
 	return 0;
 }
 
@@ -2691,7 +2664,138 @@ static int agps_types_array_json_encode(cJSON * const obj,
 	return err;
 }
 
+int nrf_cloud_agps_req_data_json_encode(const enum nrf_cloud_agps_type * const types,
+					const size_t type_count,
+					const struct lte_lc_cell * const cell_inf,
+					const bool fetch_cell_inf,
+					const bool filtered_ephem, const uint8_t mask_angle,
+					cJSON * const data_obj_out)
+{
+	if (!types || !type_count || !data_obj_out) {
+		return -EINVAL;
+	}
+
+	int err;
+
+	if (filtered_ephem) {
+		if ((json_add_bool_cs(data_obj_out, NRF_CLOUD_JSON_FILTERED_KEY, true)) ||
+		    (json_add_num_cs(data_obj_out, NRF_CLOUD_JSON_KEY_ELEVATION_MASK,
+		    mask_angle))) {
+			err = -ENOMEM;
+			goto cleanup;
+		}
+		LOG_DBG("Requesting filtered ephemerides with elevation mask angle = %u degrees",
+			mask_angle);
+	}
+
+	/* Add the cell info if provided or fetch flag set */
+	if (cell_inf || fetch_cell_inf) {
+		err = nrf_cloud_cell_info_json_encode(data_obj_out, cell_inf);
+		if (err) {
+			LOG_ERR("Failed to add cellular network info to A-GPS request: %d", err);
+			goto cleanup;
+		}
+	}
+
+	/* Add the requested types */
+	err = agps_types_array_json_encode(data_obj_out, types, type_count);
+	if (err) {
+		LOG_ERR("Failed to add types array to A-GPS request %d", err);
+		goto cleanup;
+	}
+
+	return 0;
+
+cleanup:
+	/* On failure, remove any items added to the provided object */
+	cJSON_DeleteItemFromObject(data_obj_out, NRF_CLOUD_JSON_FILTERED_KEY);
+	cJSON_DeleteItemFromObject(data_obj_out, NRF_CLOUD_JSON_KEY_ELEVATION_MASK);
+	return err;
+}
+
+#if defined(CONFIG_NRF_MODEM)
+int nrf_cloud_modem_pvt_data_encode(const struct nrf_modem_gnss_pvt_data_frame	* const mdm_pvt,
+				    cJSON * const pvt_data_obj)
+{
+	if (!mdm_pvt || !pvt_data_obj) {
+		return -EINVAL;
+	}
+
+	struct nrf_cloud_gnss_pvt pvt = {
+		.lon =		mdm_pvt->longitude,
+		.lat =		mdm_pvt->latitude,
+		.accuracy =	mdm_pvt->accuracy,
+		.alt =		mdm_pvt->altitude,
+		.has_alt =	1,
+		.speed =	mdm_pvt->speed,
+		.has_speed =	1,
+		.heading =	mdm_pvt->heading,
+		.has_heading =	1
+	};
+
+	return nrf_cloud_pvt_data_encode(&pvt, pvt_data_obj);
+}
+#endif /* CONFIG_NRF_MODEM */
+
 #if defined(CONFIG_NRF_CLOUD_AGPS)
+int nrf_cloud_agps_req_json_encode(const struct nrf_modem_gnss_agps_data_frame * const request,
+				   cJSON * const agps_req_obj_out)
+{
+	if (!agps_req_obj_out || !request) {
+		return -EINVAL;
+	}
+
+	int err;
+	cJSON *data_obj = NULL;
+	enum nrf_cloud_agps_type types[NRF_CLOUD_AGPS__LAST];
+	uint8_t mask_angle = NRF_CLOUD_AGPS_MASK_ANGLE_NONE;
+	int type_count = nrf_cloud_agps_type_array_get(request, types, ARRAY_SIZE(types));
+
+	if (type_count < 0) {
+		if (type_count == -ENODATA) {
+			LOG_INF("No A-GPS data types requested");
+		}
+		return type_count;
+	}
+
+	/* Create request JSON containing a data object */
+	if (json_add_str_cs(agps_req_obj_out,
+			    NRF_CLOUD_JSON_APPID_KEY,
+			    NRF_CLOUD_JSON_APPID_VAL_AGPS) ||
+	    json_add_str_cs(agps_req_obj_out,
+			    NRF_CLOUD_JSON_MSG_TYPE_KEY,
+			    NRF_CLOUD_JSON_MSG_TYPE_VAL_DATA)) {
+		err = -ENOMEM;
+		goto cleanup;
+	}
+
+	data_obj = cJSON_AddObjectToObject(agps_req_obj_out, NRF_CLOUD_JSON_DATA_KEY);
+	if (!data_obj) {
+		err = -ENOMEM;
+		goto cleanup;
+	}
+
+#if defined(CONFIG_NRF_CLOUD_AGPS_FILTERED)
+	mask_angle = CONFIG_NRF_CLOUD_AGPS_ELEVATION_MASK;
+#endif
+
+	/* Populate the request payload */
+	err = nrf_cloud_agps_req_data_json_encode(types, type_count, NULL, true,
+						  IS_ENABLED(CONFIG_NRF_CLOUD_AGPS_FILTERED),
+						  mask_angle, data_obj);
+	if (!err) {
+		return 0;
+	}
+
+cleanup:
+	/* On failure, remove any items added to the provided object */
+	cJSON_DeleteItemFromObject(agps_req_obj_out, NRF_CLOUD_JSON_APPID_KEY);
+	cJSON_DeleteItemFromObject(agps_req_obj_out, NRF_CLOUD_JSON_MSG_TYPE_KEY);
+	cJSON_DeleteItemFromObject(agps_req_obj_out, NRF_CLOUD_JSON_DATA_KEY);
+
+	return err;
+}
+
 int nrf_cloud_agps_type_array_get(const struct nrf_modem_gnss_agps_data_frame * const request,
 				  enum nrf_cloud_agps_type *array, const size_t array_size)
 {
@@ -2749,113 +2853,77 @@ int nrf_cloud_agps_type_array_get(const struct nrf_modem_gnss_agps_data_frame * 
 }
 #endif /* CONFIG_NRF_CLOUD_AGPS */
 
-int nrf_cloud_agps_req_data_json_encode(const enum nrf_cloud_agps_type * const types,
-					const size_t type_count,
-					const struct lte_lc_cell * const cell_inf,
-					const bool filtered_ephem, const uint8_t mask_angle,
-					cJSON * const data_obj_out)
+#if defined(CONFIG_NRF_CLOUD_PGPS)
+int nrf_cloud_pgps_response_decode(const char *const response,
+	struct nrf_cloud_pgps_result *const result)
 {
-	if (!types || !type_count || !data_obj_out) {
+	if (!response || !result ||
+	    !result->host || !result->host_sz ||
+	    !result->path || !result->path_sz) {
 		return -EINVAL;
 	}
 
-	int err;
+	char *host_ptr = NULL;
+	char *path_ptr = NULL;
+	int err = 0;
+	cJSON *rsp_obj = cJSON_Parse(response);
 
-	if (filtered_ephem) {
-		if ((json_add_bool_cs(data_obj_out, NRF_CLOUD_JSON_FILTERED_KEY, true)) ||
-		    (json_add_num_cs(data_obj_out, NRF_CLOUD_JSON_KEY_ELEVATION_MASK,
-		    mask_angle))) {
-			err = -ENOMEM;
+	if (!rsp_obj) {
+		LOG_ERR("P-GPS response does not contain valid JSON");
+		err = -EBADMSG;
+		goto cleanup;
+	}
+
+	/* MQTT response is an array, REST is key/value map */
+	if (cJSON_IsArray(rsp_obj)) {
+		if (get_string_from_array(rsp_obj, NRF_CLOUD_PGPS_RCV_ARRAY_IDX_HOST, &host_ptr) ||
+		    get_string_from_array(rsp_obj, NRF_CLOUD_PGPS_RCV_ARRAY_IDX_PATH, &path_ptr)) {
+			LOG_ERR("Invalid P-GPS array response format");
+			err = -EPROTO;
 			goto cleanup;
 		}
-		LOG_DBG("Requesting filtered ephemerides with elevation mask angle = %u degrees",
-			mask_angle);
-	}
+	} else if (get_string_from_obj(rsp_obj, NRF_CLOUD_PGPS_RCV_REST_HOST, &host_ptr) ||
+		   get_string_from_obj(rsp_obj, NRF_CLOUD_PGPS_RCV_REST_PATH, &path_ptr)) {
+		enum nrf_cloud_error nrf_err;
 
-	/* Add the cell info */
-	err = nrf_cloud_cell_info_json_encode(data_obj_out, cell_inf);
-	if (err) {
-		LOG_ERR("Failed to add cellular network info to A-GPS request: %d", err);
-		goto cleanup;
-	}
-
-	/* Add the requested types */
-	err = agps_types_array_json_encode(data_obj_out, types, type_count);
-	if (err) {
-		LOG_ERR("Failed to add types array to A-GPS request %d", err);
-		goto cleanup;
-	}
-
-	return 0;
-
-cleanup:
-	/* On failure, remove any items added to the provided object */
-	cJSON_DeleteItemFromObject(data_obj_out, NRF_CLOUD_JSON_FILTERED_KEY);
-	cJSON_DeleteItemFromObject(data_obj_out, NRF_CLOUD_JSON_KEY_ELEVATION_MASK);
-	return err;
-}
-
-#if defined(CONFIG_NRF_CLOUD_AGPS)
-int nrf_cloud_agps_req_json_encode(const struct nrf_modem_gnss_agps_data_frame * const request,
-				   cJSON * const agps_req_obj_out)
-{
-	if (!agps_req_obj_out || !request) {
-		return -EINVAL;
-	}
-
-	int err;
-	cJSON *data_obj = NULL;
-	enum nrf_cloud_agps_type types[NRF_CLOUD_AGPS__LAST];
-	uint8_t mask_angle = NRF_CLOUD_AGPS_MASK_ANGLE_NONE;
-	int type_count = nrf_cloud_agps_type_array_get(request, types, ARRAY_SIZE(types));
-
-	if (type_count < 0) {
-		if (type_count == -ENODATA) {
-			LOG_INF("No A-GPS data types requested");
+		/* Check for a potential P-GPS JSON error message from nRF Cloud */
+		err = nrf_cloud_error_msg_decode(response, NRF_CLOUD_JSON_APPID_VAL_PGPS,
+						     NRF_CLOUD_JSON_MSG_TYPE_VAL_DATA, &nrf_err);
+		if (!err) {
+			LOG_ERR("nRF Cloud returned P-GPS error: %d", nrf_err);
+			err = -EFAULT;
+		} else {
+			LOG_ERR("Invalid P-GPS response format");
+			err = -EPROTO;
 		}
-		return type_count;
-	}
 
-	/* Create request JSON containing a data object */
-	if (json_add_str_cs(agps_req_obj_out,
-			    NRF_CLOUD_JSON_APPID_KEY,
-			    NRF_CLOUD_JSON_APPID_VAL_AGPS) ||
-	    json_add_str_cs(agps_req_obj_out,
-			    NRF_CLOUD_JSON_MSG_TYPE_KEY,
-			    NRF_CLOUD_JSON_MSG_TYPE_VAL_DATA)) {
-		err = -ENOMEM;
 		goto cleanup;
 	}
 
-	data_obj = cJSON_AddObjectToObject(agps_req_obj_out, NRF_CLOUD_JSON_DATA_KEY);
-	if (!data_obj) {
-		err = -ENOMEM;
+	if (!host_ptr || !path_ptr) {
+		err = -ENOSTR;
 		goto cleanup;
 	}
 
-#if defined(CONFIG_NRF_CLOUD_AGPS_FILTERED)
-	mask_angle = CONFIG_NRF_CLOUD_AGPS_ELEVATION_MASK;
-#endif
-
-	/* Populate the request payload */
-	err = nrf_cloud_agps_req_data_json_encode(types, type_count, NULL,
-						  IS_ENABLED(CONFIG_NRF_CLOUD_AGPS_FILTERED),
-						  mask_angle, data_obj);
-	if (!err) {
-		return 0;
+	if ((result->host_sz <= strlen(host_ptr)) ||
+	    (result->path_sz <= strlen(path_ptr))) {
+		err = -ENOBUFS;
+		goto cleanup;
 	}
+
+	strncpy(result->host, host_ptr, result->host_sz);
+	LOG_DBG("host: %s", result->host);
+
+	strncpy(result->path, path_ptr, result->path_sz);
+	LOG_DBG("path: %s", result->path);
 
 cleanup:
-	/* On failure, remove any items added to the provided object */
-	cJSON_DeleteItemFromObject(agps_req_obj_out, NRF_CLOUD_JSON_APPID_KEY);
-	cJSON_DeleteItemFromObject(agps_req_obj_out, NRF_CLOUD_JSON_MSG_TYPE_KEY);
-	cJSON_DeleteItemFromObject(agps_req_obj_out, NRF_CLOUD_JSON_DATA_KEY);
-
+	if (rsp_obj) {
+		cJSON_Delete(rsp_obj);
+	}
 	return err;
 }
-#endif /* CONFIG_NRF_CLOUD_AGPS */
 
-#if defined(CONFIG_NRF_CLOUD_PGPS)
 int nrf_cloud_pgps_req_data_json_encode(const struct gps_pgps_request * const request,
 					cJSON * const data_obj_out)
 {
@@ -3025,4 +3093,60 @@ int nrf_cloud_json_to_url_params_convert(char *const buf, const size_t buf_size,
 	}
 
 	return 0;
+}
+
+static int encode_json_log(struct nrf_cloud_log_context *ctx, uint8_t *buf, size_t size,
+			   struct nrf_cloud_data *output)
+{
+	int ret;
+	cJSON *root_obj = cJSON_CreateObject();
+
+	if (root_obj == NULL) {
+		return -ENOMEM;
+	}
+
+	ret = json_add_str_cs(root_obj, NRF_CLOUD_JSON_APPID_KEY, NRF_CLOUD_JSON_APPID_VAL_LOG);
+	if (ctx != NULL) {
+		ret += json_add_num_cs(root_obj, NRF_CLOUD_JSON_LOG_KEY_DOMAIN, ctx->dom_id);
+		ret += json_add_num_cs(root_obj, NRF_CLOUD_JSON_LOG_KEY_LEVEL, ctx->level);
+		if (ctx->src_name != NULL) {
+			ret += json_add_str_cs(root_obj, NRF_CLOUD_JSON_LOG_KEY_SOURCE,
+					       ctx->src_name);
+		}
+		if (ctx->ts > 0) {
+			ret += json_add_num_cs(root_obj, NRF_CLOUD_MSG_TIMESTAMP_KEY, ctx->ts);
+		}
+		if (!ctx->ts || IS_ENABLED(CONFIG_NRF_CLOUD_LOG_SEQ_ALWAYS)) {
+			ret += json_add_num_cs(root_obj, NRF_CLOUD_JSON_LOG_KEY_SEQUENCE,
+					       ctx->sequence);
+		}
+	}
+
+	ret += json_add_str_cs(root_obj, NRF_CLOUD_JSON_LOG_KEY_MESSAGE, (const char *)buf);
+	if (ret != 0) {
+		cJSON_Delete(root_obj);
+		return -ENOMEM;
+	}
+
+	char *buffer = cJSON_PrintUnformatted(root_obj);
+
+	cJSON_Delete(root_obj);
+
+	if (buffer == NULL) {
+		return -ENOMEM;
+	}
+
+	output->ptr = buffer;
+	output->len = strlen(buffer);
+	return 0;
+}
+
+int nrf_cloud_log_json_encode(struct nrf_cloud_log_context *ctx, uint8_t *buf, size_t size,
+			 struct nrf_cloud_data *output)
+{
+	__ASSERT_NO_MSG(ctx != NULL);
+	__ASSERT_NO_MSG(buf != NULL);
+	__ASSERT_NO_MSG(output != NULL);
+
+	return encode_json_log(ctx, buf, size, output);
 }

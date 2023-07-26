@@ -20,6 +20,8 @@ LOG_MODULE_DECLARE(wifi_nrf, CONFIG_WIFI_LOG_LEVEL);
 
 K_SEM_DEFINE(wait_for_event_sem, 0, 1);
 
+#define ACTION_FRAME_RESP_TIMEOUT_MS 5000
+
 static int get_wifi_nrf_auth_type(int wpa_auth_alg)
 {
 	if (wpa_auth_alg & WPA_AUTH_ALG_OPEN) {
@@ -136,6 +138,7 @@ void wifi_nrf_wpa_supp_event_proc_scan_done(void *if_priv,
 		vif_ctx_zep->supp_callbk_fns.scan_done(vif_ctx_zep->supp_drv_if_ctx,
 			&event);
 	}
+	k_work_cancel_delayable(&vif_ctx_zep->scan_timeout_work);
 }
 
 void wifi_nrf_wpa_supp_event_proc_scan_res(void *if_priv,
@@ -540,6 +543,8 @@ int wifi_nrf_wpa_supp_scan2(void *if_priv, struct wpa_driver_scan_params *params
 	vif_ctx_zep->scan_type = SCAN_CONNECT;
 	vif_ctx_zep->scan_in_progress = true;
 
+	k_work_schedule(&vif_ctx_zep->scan_timeout_work, WIFI_NRF_SCAN_TIMEOUT);
+
 	ret = 0;
 out:
 	if (scan_info)
@@ -729,6 +734,19 @@ int wifi_nrf_wpa_supp_authenticate(void *if_priv, struct wpa_driver_auth_params 
 
 	if (type != NRF_WIFI_AUTHTYPE_MAX) {
 		auth_info.auth_type = type;
+	}
+
+	if (type == NRF_WIFI_AUTHTYPE_SHARED_KEY) {
+		size_t key_len = params->wep_key_len[params->wep_tx_keyidx];
+		struct nrf_wifi_umac_key_info *key_info = &auth_info.key_info;
+
+		key_info->cipher_suite = wpa_alg_to_cipher_suite(params->auth_alg, key_len);
+		memcpy(key_info->key.nrf_wifi_key,
+			   params->wep_key[params->wep_tx_keyidx],
+			   key_len);
+		key_info->key.nrf_wifi_key_len = key_len;
+		key_info->valid_fields |= NRF_WIFI_KEY_VALID | NRF_WIFI_KEY_IDX_VALID |
+			NRF_WIFI_CIPHER_SUITE_VALID;
 	}
 
 	if (params->local_state_change) {
@@ -1243,6 +1261,10 @@ int wifi_nrf_nl80211_send_mlme(void *if_priv, const u8 *data,
 	 * to 0 always.
 	 */
 	if (wait_time || !noack) {
+		if (!noack && !wait_time) {
+			wait_time = ACTION_FRAME_RESP_TIMEOUT_MS;
+		}
+
 		while (!vif_ctx_zep->cookie_resp_received &&
 			timeout++ < wait_time) {
 			k_sleep(K_MSEC(1));
@@ -1584,4 +1606,63 @@ void wifi_nrf_wpa_supp_event_mac_chgd(void *if_priv)
 	if (vif_ctx_zep->supp_drv_if_ctx && vif_ctx_zep->supp_callbk_fns.mac_changed) {
 		vif_ctx_zep->supp_callbk_fns.mac_changed(vif_ctx_zep->supp_drv_if_ctx);
 	}
+
+}
+
+
+int wifi_nrf_supp_get_conn_info(void *if_priv, struct wpa_conn_info *info)
+{
+	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+	struct wifi_nrf_ctx_zep *rpu_ctx_zep = NULL;
+	struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx = NULL;
+	enum wifi_nrf_status ret = WIFI_NRF_STATUS_FAIL;
+	int sem_ret;
+
+	if (!if_priv || !info) {
+		LOG_ERR("%s: Invalid params\n", __func__);
+		goto out;
+	}
+
+	vif_ctx_zep = if_priv;
+	rpu_ctx_zep = vif_ctx_zep->rpu_ctx_zep;
+	fmac_dev_ctx = rpu_ctx_zep->rpu_ctx;
+
+	vif_ctx_zep->conn_info = info;
+	ret = wifi_nrf_fmac_get_conn_info(rpu_ctx_zep->rpu_ctx, vif_ctx_zep->vif_idx);
+	if (ret != WIFI_NRF_STATUS_SUCCESS) {
+		LOG_ERR("%s: Failed to get beacon info\n", __func__);
+		goto out;
+	}
+
+	sem_ret = k_sem_take(&wait_for_event_sem, K_MSEC(RPU_RESP_EVENT_TIMEOUT));
+	if (sem_ret) {
+		LOG_ERR("%s: Failed to get station info, ret = %d\n", __func__, sem_ret);
+		ret = WIFI_NRF_STATUS_FAIL;
+		goto out;
+	}
+
+out:
+	return ret;
+}
+
+
+void wifi_nrf_supp_event_proc_get_conn_info(void *if_priv,
+					   struct nrf_wifi_umac_event_conn_info *info,
+					   unsigned int event_len)
+{
+	struct wifi_nrf_vif_ctx_zep *vif_ctx_zep = NULL;
+	struct wpa_conn_info *conn_info = NULL;
+
+	if (!if_priv || !info) {
+		LOG_ERR("%s: Invalid params\n", __func__);
+		k_sem_give(&wait_for_event_sem);
+		return;
+	}
+	vif_ctx_zep = if_priv;
+	conn_info = vif_ctx_zep->conn_info;
+
+	conn_info->beacon_interval = info->beacon_interval;
+	conn_info->dtim_period = info->dtim_interval;
+	conn_info->twt_capable = info->twt_capable;
+	k_sem_give(&wait_for_event_sem);
 }

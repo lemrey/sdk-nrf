@@ -6,12 +6,16 @@
 zephyr_library()
 zephyr_library_sources(
 	src/nrf_cloud_codec_internal.c
+	src/nrf_cloud_log.c
 	src/nrf_cloud_mem.c
 	src/nrf_cloud_client_id.c
 	src/nrf_cloud_fota_common.c)
 zephyr_library_sources_ifdef(
-	CONFIG_NRF_CLOUD_ALERTS
-	src/nrf_cloud_alerts.c)
+	CONFIG_NRF_CLOUD_ALERT
+	src/nrf_cloud_alert.c)
+zephyr_library_sources_ifdef(
+	CONFIG_NRF_CLOUD_LOG_BACKEND
+	src/nrf_cloud_log_backend.c)
 zephyr_library_sources_ifdef(
 	CONFIG_MODEM_JWT
 	src/nrf_cloud_jwt.c)
@@ -29,13 +33,15 @@ zephyr_library_sources_ifdef(
 	src/nrf_cloud_agps.c
 	src/nrf_cloud_agps_utils.c
 	src/nrf_cloud_pgps.c
-	src/nrf_cloud_pgps_utils.c)
+	src/nrf_cloud_pgps_utils.c
+	src/nrf_cloud_download.c)
 zephyr_library_sources_ifdef(
 	CONFIG_NRF_CLOUD_LOCATION
 	src/nrf_cloud_location.c)
 zephyr_library_sources_ifdef(
 	CONFIG_NRF_CLOUD_FOTA
-	src/nrf_cloud_fota.c)
+	src/nrf_cloud_fota.c
+	src/nrf_cloud_download.c)
 zephyr_library_sources_ifdef(
 	CONFIG_NRF_CLOUD_REST
 	src/nrf_cloud_rest.c)

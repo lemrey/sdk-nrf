@@ -1,7 +1,7 @@
 sample:
-    description: This app provides an example of performing RSA signing and
-        verification
-    name: RSA example
+  description: |
+    This app provides an example of performing RSA signing and verification
+  name: RSA example
 tests:
   sample.rsa:
     tags: introduction psa cc3xx

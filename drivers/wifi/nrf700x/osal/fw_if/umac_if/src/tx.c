@@ -9,6 +9,7 @@
  * FMAC IF Layer of the Wi-Fi driver.
  */
 
+#include <zephyr/sys/__assert.h>
 #include "list.h"
 #include "queue.h"
 #include "hal_api.h"
@@ -28,6 +29,8 @@ static void set_spare_desc_q_map(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 {
 	unsigned short spare_desc_indx = 0;
 
+	__ASSERT(fmac_dev_ctx->fpriv->num_tx_tokens_per_ac != 0, "num_tx_tokens_per_ac is zero");
+
 	spare_desc_indx = (desc % (fmac_dev_ctx->fpriv->num_tx_tokens_per_ac *
 				   WIFI_NRF_FMAC_AC_MAX));
 
@@ -45,6 +48,8 @@ static void clear_spare_desc_q_map(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
 				   int tx_done_q)
 {
 	unsigned short spare_desc_indx = 0;
+
+	__ASSERT(fmac_dev_ctx->fpriv->num_tx_tokens_per_ac != 0, "num_tx_tokens_per_ac is zero");
 
 	spare_desc_indx = (desc % (fmac_dev_ctx->fpriv->num_tx_tokens_per_ac *
 				   WIFI_NRF_FMAC_AC_MAX));
@@ -1027,9 +1032,34 @@ out:
 	return status;
 }
 
+#ifdef CONFIG_NRF700X_TX_DONE_WQ_ENABLED
+static void tx_done_tasklet_fn(unsigned long data)
+{
+	struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx = (struct wifi_nrf_fmac_dev_ctx *)data;
 
-enum wifi_nrf_status wifi_nrf_fmac_tx_done_event_process(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
-							 struct nrf_wifi_tx_buff_done *config)
+	void *tx_done_tasklet_event_q = (void *)fmac_dev_ctx->tx_config.tx_done_tasklet_event_q;
+
+	struct nrf_wifi_tx_buff_done *config = wifi_nrf_utils_q_dequeue(
+		fmac_dev_ctx->fpriv->opriv,
+		tx_done_tasklet_event_q);
+
+	if (!config) {
+		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+				      "%s: TX done event Q is empty\n",
+				      __func__);
+		return;
+	}
+
+	(void) wifi_nrf_fmac_tx_done_event_process(fmac_dev_ctx, config);
+
+	wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
+			       config);
+}
+#endif /* CONFIG_NRF700X_TX_DONE_WQ_ENABLED */
+
+enum wifi_nrf_status (wifi_nrf_fmac_tx_done_event_process)(
+	struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx,
+	struct nrf_wifi_tx_buff_done *config)
 {
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 
@@ -1121,9 +1151,7 @@ out:
 
 enum wifi_nrf_status tx_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 {
-	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct wifi_nrf_fmac_priv *fpriv = NULL;
-	void *mem_ptr = NULL;
 	void *q_ptr = NULL;
 	unsigned int i = 0;
 	unsigned int j = 0;
@@ -1155,13 +1183,7 @@ enum wifi_nrf_status tx_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 				wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
 						      "%s: Unable to allocate data_pending_txq\n",
 						      __func__);
-
-				mem_ptr = fmac_dev_ctx->tx_config.send_pkt_coalesce_count_p;
-
-				wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-						       mem_ptr);
-
-				goto out;
+				goto coal_q_free;
 			}
 		}
 
@@ -1179,20 +1201,7 @@ enum wifi_nrf_status tx_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
 				      "%s: Unable to allocate pkt_info_p\n",
 				      __func__);
-
-		for (i = 0; i < WIFI_NRF_FMAC_AC_MAX; i++) {
-			for (j = 0; j < MAX_SW_PEERS; j++) {
-				q_ptr = fmac_dev_ctx->tx_config.data_pending_txq[j][i];
-
-				wifi_nrf_utils_q_free(fpriv->opriv,
-						      q_ptr);
-			}
-		}
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.send_pkt_coalesce_count_p);
-
-		goto out;
+		goto tx_q_free;
 	}
 
 	for (i = 0; i < fpriv->num_tx_tokens; i++) {
@@ -1202,23 +1211,7 @@ enum wifi_nrf_status tx_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 			wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
 					      "%s: Unable to allocate pkt list\n",
 					      __func__);
-
-			wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-					       fmac_dev_ctx->tx_config.pkt_info_p);
-
-			for (i = 0; i < WIFI_NRF_FMAC_AC_MAX; i++) {
-				for (j = 0; j < MAX_SW_PEERS; j++) {
-					q_ptr = fmac_dev_ctx->tx_config.data_pending_txq[j][i];
-
-					wifi_nrf_utils_q_free(fpriv->opriv,
-							      q_ptr);
-				}
-			}
-
-			wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-					       fmac_dev_ctx->tx_config.send_pkt_coalesce_count_p);
-
-			goto out;
+			goto tx_q_setup_free;
 		}
 	}
 
@@ -1235,30 +1228,8 @@ enum wifi_nrf_status tx_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
 				      "%s: Unable to allocate buf_pool_bmp_p\n",
 				      __func__);
-
-		for (i = 0; i < fpriv->num_tx_tokens; i++) {
-			wifi_nrf_utils_list_free(fpriv->opriv,
-						 fmac_dev_ctx->tx_config.pkt_info_p[i].pkt);
-		}
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.pkt_info_p);
-
-		for (i = 0; i < WIFI_NRF_FMAC_AC_MAX; i++) {
-			for (j = 0; j < MAX_SW_PEERS; j++) {
-				q_ptr = fmac_dev_ctx->tx_config.data_pending_txq[j][i];
-
-				wifi_nrf_utils_q_free(fpriv->opriv,
-						      q_ptr);
-			}
-		}
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.send_pkt_coalesce_count_p);
-
-		goto out;
+		goto tx_pkt_info_free;
 	}
-
 
 	wifi_nrf_osal_mem_set(fmac_dev_ctx->fpriv->opriv,
 			      fmac_dev_ctx->tx_config.buf_pool_bmp_p,
@@ -1275,31 +1246,7 @@ enum wifi_nrf_status tx_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
 				      "%s: Unable to allocate TX lock\n",
 				      __func__);
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.buf_pool_bmp_p);
-
-		for (i = 0; i < fpriv->num_tx_tokens; i++) {
-			wifi_nrf_utils_list_free(fpriv->opriv,
-						 fmac_dev_ctx->tx_config.pkt_info_p[i].pkt);
-		}
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.pkt_info_p);
-
-		for (i = 0; i < WIFI_NRF_FMAC_AC_MAX; i++) {
-			for (j = 0; j < MAX_SW_PEERS; j++) {
-				q_ptr = fmac_dev_ctx->tx_config.data_pending_txq[j][i];
-
-				wifi_nrf_utils_q_free(fpriv->opriv,
-						      q_ptr);
-			}
-		}
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.send_pkt_coalesce_count_p);
-
-		goto out;
+		goto tx_buff_map_free;
 	}
 
 	wifi_nrf_osal_spinlock_init(fmac_dev_ctx->fpriv->opriv,
@@ -1311,41 +1258,69 @@ enum wifi_nrf_status tx_init(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
 				      "%s: Unable to allocate Wakeup Client List\n",
 				      __func__);
-
-		wifi_nrf_osal_spinlock_free(fmac_dev_ctx->fpriv->opriv,
-					    fmac_dev_ctx->tx_config.tx_lock);
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.buf_pool_bmp_p);
-
-		for (i = 0; i < fpriv->num_tx_tokens; i++) {
-			wifi_nrf_utils_list_free(fpriv->opriv,
-						 fmac_dev_ctx->tx_config.pkt_info_p[i].pkt);
-		}
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.pkt_info_p);
-
-		for (i = 0; i < WIFI_NRF_FMAC_AC_MAX; i++) {
-			for (j = 0; j < MAX_SW_PEERS; j++) {
-				q_ptr = fmac_dev_ctx->tx_config.data_pending_txq[j][i];
-
-				wifi_nrf_utils_q_free(fpriv->opriv,
-						      q_ptr);
-			}
-		}
-
-		wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
-				       fmac_dev_ctx->tx_config.send_pkt_coalesce_count_p);
-
-		goto out;
+		goto tx_spin_lock_free;
 	}
 
 	fmac_dev_ctx->twt_sleep_status = WIFI_NRF_FMAC_TWT_STATE_AWAKE;
 
-	status = WIFI_NRF_STATUS_SUCCESS;
+#ifdef CONFIG_NRF700X_TX_DONE_WQ_ENABLED
+	fmac_dev_ctx->tx_done_tasklet = wifi_nrf_osal_tasklet_alloc(fpriv->opriv,
+								    WIFI_NRF_TASKLET_TYPE_TX_DONE);
+	if (!fmac_dev_ctx->tx_done_tasklet) {
+		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+				      "%s: Unable to allocate tx_done_tasklet\n",
+				      __func__);
+		goto wakeup_client_q_free;
+	}
+	fmac_dev_ctx->tx_config.tx_done_tasklet_event_q = wifi_nrf_utils_q_alloc(fpriv->opriv);
+	if (!fmac_dev_ctx->tx_config.tx_done_tasklet_event_q) {
+		wifi_nrf_osal_log_err(fmac_dev_ctx->fpriv->opriv,
+				      "%s: Unable to allocate tx_done_tasklet_event_q\n",
+				      __func__);
+		goto tx_done_tasklet_free;
+	}
+
+	wifi_nrf_osal_tasklet_init(fmac_dev_ctx->fpriv->opriv,
+				   fmac_dev_ctx->tx_done_tasklet,
+				   tx_done_tasklet_fn,
+				   (unsigned long)fmac_dev_ctx);
+#endif /* CONFIG_NRF700X_TX_DONE_WQ_ENABLED */
+	return WIFI_NRF_STATUS_SUCCESS;
+#ifdef CONFIG_NRF700X_TX_DONE_WQ_ENABLED
+tx_done_tasklet_free:
+	wifi_nrf_osal_tasklet_free(fpriv->opriv,
+				   fmac_dev_ctx->tx_done_tasklet);
+wakeup_client_q_free:
+	wifi_nrf_utils_q_free(fpriv->opriv, fmac_dev_ctx->tx_config.wakeup_client_q);
+#endif /* CONFIG_NRF700X_TX_DONE_WQ_ENABLED */
+tx_spin_lock_free:
+	wifi_nrf_osal_spinlock_free(fmac_dev_ctx->fpriv->opriv,
+					fmac_dev_ctx->tx_config.tx_lock);
+tx_buff_map_free:
+	wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
+					fmac_dev_ctx->tx_config.buf_pool_bmp_p);
+tx_pkt_info_free:
+	for (i = 0; i < fpriv->num_tx_tokens; i++) {
+		wifi_nrf_utils_list_free(fpriv->opriv,
+						fmac_dev_ctx->tx_config.pkt_info_p[i].pkt);
+	}
+tx_q_setup_free:
+	wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
+							fmac_dev_ctx->tx_config.pkt_info_p);
+tx_q_free:
+	for (i = 0; i < WIFI_NRF_FMAC_AC_MAX; i++) {
+		for (j = 0; j < MAX_SW_PEERS; j++) {
+			q_ptr = fmac_dev_ctx->tx_config.data_pending_txq[j][i];
+
+			wifi_nrf_utils_q_free(fpriv->opriv,
+							q_ptr);
+		}
+	}
+coal_q_free:
+	wifi_nrf_osal_mem_free(fmac_dev_ctx->fpriv->opriv,
+					fmac_dev_ctx->tx_config.send_pkt_coalesce_count_p);
 out:
-	return status;
+	return WIFI_NRF_STATUS_FAIL;
 }
 
 
@@ -1357,8 +1332,13 @@ void tx_deinit(struct wifi_nrf_fmac_dev_ctx *fmac_dev_ctx)
 
 	fpriv = fmac_dev_ctx->fpriv;
 
+#ifdef CONFIG_NRF700X_TX_DONE_WQ_ENABLED
 	/* TODO: Need to deinit network buffers? */
-
+	wifi_nrf_osal_tasklet_free(fpriv->opriv,
+				   fmac_dev_ctx->tx_done_tasklet);
+	wifi_nrf_utils_q_free(fpriv->opriv,
+			      fmac_dev_ctx->tx_config.tx_done_tasklet_event_q);
+#endif /* CONFIG_NRF700X_TX_DONE_WQ_ENABLED */
 	wifi_nrf_utils_q_free(fpriv->opriv,
 			      fmac_dev_ctx->tx_config.wakeup_client_q);
 

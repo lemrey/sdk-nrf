@@ -28,6 +28,13 @@ config BOOT_BUILD_DIRECT_XIP_VARIANT
 	help
 	  Build a variant of the 'app' image which can be used for DIRECT_XIP.
 
+choice MCUBOOT_BOOTLOADER_MODE
+	default MCUBOOT_BOOTLOADER_MODE_DIRECT_XIP if BOOT_BUILD_DIRECT_XIP_VARIANT
+	help
+	  Automatically inform application that MCUboot has been configured for
+	  DirectXIP operation if a direct XIP variant of the app image is built.
+endchoice
+
 # The name of this configuration needs to match the requirements set by the
 # script `partition_manager.py`. See `pm.yml` in the application directory
 # of MCUBoot.
@@ -51,7 +58,7 @@ config MCUBOOT_IMAGE_VERSION
 
 menuconfig MCUBOOT_HARDWARE_DOWNGRADE_PREVENTION
 	bool "Downgrade prevention using hardware security counters"
-	depends on SOC_NRF5340_CPUAPP || SOC_NRF9160
+	depends on SOC_NRF5340_CPUAPP || SOC_SERIES_NRF91X
 	help
 	  This option can be enabled by the application and will ensure
 	  that the MCUBOOT_HW_DOWNGRADE_PREVENTION Kconfig option is

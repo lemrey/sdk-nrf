@@ -357,19 +357,19 @@ enum wifi_nrf_status hal_rpu_ps_wake(struct wifi_nrf_hal_dev_ctx *hal_dev_ctx)
 		do {
 			idle_time_us = wifi_nrf_osal_time_elapsed_us(hal_dev_ctx->hpriv->opriv,
 								     idle_time_start_us);
-		} while ((idle_time_us / 1000) < RPU_PS_POLL_IDLE_TIMEOUT);
+		} while ((idle_time_us / 1000) < RPU_PS_WAKE_INTERVAL_MS);
 
 		elapsed_time_usec = wifi_nrf_osal_time_elapsed_us(hal_dev_ctx->hpriv->opriv,
 								  start_time_us);
 		elapsed_time_sec = (elapsed_time_usec / 1000000);
-	} while (elapsed_time_sec < RPU_PS_WAKE_TIMEOUT);
+	} while (elapsed_time_sec < RPU_PS_WAKE_TIMEOUT_S);
 
 	if (status != WIFI_NRF_STATUS_SUCCESS) {
 		wifi_nrf_osal_log_err(hal_dev_ctx->hpriv->opriv,
 				      "%s: RPU is not ready for more than %d sec,"
 				      "reg_val = 0x%X rpu_ps_state_mask = 0x%X\n",
 				      __func__,
-				      RPU_PS_WAKE_TIMEOUT,
+				      RPU_PS_WAKE_TIMEOUT_S,
 				      reg_val,
 				      rpu_ps_state_mask);
 		goto out;
@@ -380,7 +380,7 @@ out:
 	if (!hal_dev_ctx->irq_ctx) {
 		wifi_nrf_osal_timer_schedule(hal_dev_ctx->hpriv->opriv,
 					     hal_dev_ctx->rpu_ps_timer,
-					     RPU_PS_IDLE_TIMEOUT);
+					     CONFIG_NRF700X_RPU_PS_IDLE_TIMEOUT_MS);
 	}
 	return status;
 }
@@ -979,7 +979,7 @@ out:
 }
 
 
-static void rx_tasklet_fn(unsigned long data)
+static void event_tasklet_fn(unsigned long data)
 {
 	enum wifi_nrf_status status = WIFI_NRF_STATUS_FAIL;
 	struct wifi_nrf_hal_dev_ctx *hal_dev_ctx = NULL;
@@ -1121,18 +1121,19 @@ struct wifi_nrf_hal_dev_ctx *wifi_nrf_hal_dev_add(struct wifi_nrf_hal_priv *hpri
 	wifi_nrf_osal_spinlock_init(hpriv->opriv,
 				    hal_dev_ctx->lock_rx);
 
-	hal_dev_ctx->rx_tasklet = wifi_nrf_osal_tasklet_alloc(hpriv->opriv);
+	hal_dev_ctx->event_tasklet = wifi_nrf_osal_tasklet_alloc(hpriv->opriv,
+		WIFI_NRF_TASKLET_TYPE_BH);
 
-	if (!hal_dev_ctx->rx_tasklet) {
+	if (!hal_dev_ctx->event_tasklet) {
 		wifi_nrf_osal_log_err(hpriv->opriv,
-				      "%s: Unable to allocate rx_tasklet\n",
+				      "%s: Unable to allocate event_tasklet\n",
 				      __func__);
 		goto lock_rx_free;
 	}
 
 	wifi_nrf_osal_tasklet_init(hpriv->opriv,
-				   hal_dev_ctx->rx_tasklet,
-				   rx_tasklet_fn,
+				   hal_dev_ctx->event_tasklet,
+				   event_tasklet_fn,
 				   (unsigned long)hal_dev_ctx);
 
 #ifdef CONFIG_NRF_WIFI_LOW_POWER
@@ -1229,7 +1230,7 @@ bal_dev_free:
 	wifi_nrf_bal_dev_rem(hal_dev_ctx->bal_dev_ctx);
 tasklet_free:
 	wifi_nrf_osal_tasklet_free(hpriv->opriv,
-					hal_dev_ctx->rx_tasklet);
+					hal_dev_ctx->event_tasklet);
 lock_rx_free:
 	wifi_nrf_osal_spinlock_free(hpriv->opriv,
 					hal_dev_ctx->lock_rx);
@@ -1269,10 +1270,10 @@ void wifi_nrf_hal_dev_rem(struct wifi_nrf_hal_dev_ctx *hal_dev_ctx)
 	}
 
 	wifi_nrf_osal_tasklet_kill(hal_dev_ctx->hpriv->opriv,
-				   hal_dev_ctx->rx_tasklet);
+				   hal_dev_ctx->event_tasklet);
 
 	wifi_nrf_osal_tasklet_free(hal_dev_ctx->hpriv->opriv,
-				   hal_dev_ctx->rx_tasklet);
+				   hal_dev_ctx->event_tasklet);
 
 	wifi_nrf_osal_spinlock_free(hal_dev_ctx->hpriv->opriv,
 				    hal_dev_ctx->lock_hal);
@@ -1395,7 +1396,7 @@ enum wifi_nrf_status wifi_nrf_hal_irq_handler(void *data)
 	}
 
 	wifi_nrf_osal_tasklet_schedule(hal_dev_ctx->hpriv->opriv,
-				       hal_dev_ctx->rx_tasklet);
+				       hal_dev_ctx->event_tasklet);
 
 out:
 	return status;

@@ -87,10 +87,10 @@ int coap_initiate_retransmission(struct download_client *dl)
 	return 0;
 }
 
-int coap_block_update(struct download_client *client, struct coap_packet *pkt, size_t *blk_off)
+static int coap_block_update(struct download_client *client, struct coap_packet *pkt,
+			     size_t *blk_off, bool *more)
 {
 	int err, new_current;
-	bool more;
 
 	*blk_off = client->coap.block_ctx.current %
 		   coap_block_size_to_bytes(client->coap.block_ctx.block_size);
@@ -108,7 +108,7 @@ int coap_block_update(struct download_client *client, struct coap_packet *pkt, s
 	if (new_current < client->coap.block_ctx.current) {
 		LOG_WRN("Block out of order %d, expected %d", new_current,
 			client->coap.block_ctx.current);
-		return 1;
+		return -1;
 	} else if (new_current > client->coap.block_ctx.current) {
 		LOG_WRN("Block out of order %d, expected %d", new_current,
 			client->coap.block_ctx.current);
@@ -120,13 +120,13 @@ int coap_block_update(struct download_client *client, struct coap_packet *pkt, s
 		return err;
 	}
 
-	if (client->file_size == 0) {
+	if (client->file_size == 0 && client->coap.block_ctx.total_size > 0) {
 		LOG_DBG("Total size: %d", client->coap.block_ctx.total_size);
 		client->file_size = client->coap.block_ctx.total_size;
 	}
 
-	more = coap_next_block(pkt, &client->coap.block_ctx);
-	if (!more) {
+	*more = coap_next_block(pkt, &client->coap.block_ctx);
+	if (!*more) {
 		LOG_DBG("Last block received");
 	}
 
@@ -141,6 +141,7 @@ int coap_parse(struct download_client *client, size_t len)
 	uint16_t payload_len;
 	const uint8_t *payload;
 	struct coap_packet response;
+	bool more;
 
 	/* TODO: currently we stop download on every error, but this is mostly not necessary
 	 * and we can just request the same block again using retry mechanism
@@ -149,37 +150,37 @@ int coap_parse(struct download_client *client, size_t len)
 	err = coap_packet_parse(&response, client->buf, len, NULL, 0);
 	if (err) {
 		LOG_ERR("Failed to parse CoAP packet, err %d", err);
-		return -1;
+		return -EBADMSG;
 	}
 
-	err = coap_block_update(client, &response, &blk_off);
+	err = coap_block_update(client, &response, &blk_off, &more);
 	if (err) {
-		return err;
+		return -EBADMSG;
 	}
 
 	if (coap_header_get_id(&response) != client->coap.pending.id) {
 		LOG_ERR("Response is not pending");
-		return -1;
+		return -EBADMSG;
 	}
 
 	coap_pending_clear(&client->coap.pending);
 
 	if (coap_header_get_type(&response) != COAP_TYPE_ACK) {
 		LOG_ERR("Response must be of coap type ACK");
-		return -1;
+		return -EBADMSG;
 	}
 
 	response_code = coap_header_get_code(&response);
 	if (response_code != COAP_RESPONSE_CODE_OK &&
 	    response_code != COAP_RESPONSE_CODE_CONTENT) {
 		LOG_ERR("Server responded with code 0x%x", response_code);
-		return -1;
+		return -EBADMSG;
 	}
 
 	payload = coap_packet_get_payload(&response, &payload_len);
 	if (!payload) {
 		LOG_WRN("No CoAP payload!");
-		return -1;
+		return -EBADMSG;
 	}
 
 	/* TODO: because our buffer is large enough for the whole datagram,
@@ -194,6 +195,11 @@ int coap_parse(struct download_client *client, size_t len)
 
 	client->offset += payload_len - blk_off;
 	client->progress += payload_len - blk_off;
+
+	if (!more) {
+		/* Mark the end, in case we did not know the total size */
+		client->file_size = client->progress;
+	}
 
 	return 0;
 }

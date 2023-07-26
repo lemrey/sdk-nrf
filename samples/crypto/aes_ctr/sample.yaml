@@ -1,7 +1,8 @@
 sample:
-    description: This app provides an example of performing AES encryption and
-        decryption using AES CTR mode
-    name: AES CTR example
+  description: |
+    This app provides an example of performing AES encryption and decryption
+    using AES CTR mode
+  name: AES CTR example
 tests:
   sample.aes_ctr:
     tags: introduction psa cc3xx

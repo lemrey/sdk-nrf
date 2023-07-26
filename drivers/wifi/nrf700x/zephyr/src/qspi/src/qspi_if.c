@@ -9,7 +9,7 @@
  * Zephyr OS layer of the Wi-Fi driver.
  */
 
-#define DT_DRV_COMPAT nordic_nrf7002_qspi
+#define DT_DRV_COMPAT nordic_nrf700x_qspi
 
 #include <errno.h>
 #include <string.h>
@@ -1096,8 +1096,6 @@ int qspi_init(struct qspi_config *config)
 
 	k_sem_init(&qspi_config->lock, 1, 1);
 
-	LOG_INF("QSPI freq = %d MHz\n", INST_0_SCK_FREQUENCY/MHZ(1));
-	LOG_INF("QSPI latency = %d\n", qspi_config->qspi_slave_latency);
 	return rc;
 }
 

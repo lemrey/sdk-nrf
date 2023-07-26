@@ -12,7 +12,7 @@ from pathlib import Path
 import subprocess
 import sys
 from textwrap import dedent
-from typing import Any, NamedTuple, Optional, TYPE_CHECKING
+from typing import Any, List, NamedTuple, Optional, TYPE_CHECKING
 
 from west import log
 from west.commands import WestCommand
@@ -30,7 +30,8 @@ except ImportError:
              "with pip3.")
 
 import ncs_west_helpers as nwh
-from pygit2_helpers import commit_affects_files, commit_title
+from pygit2_helpers import commit_affects_files, commit_title, \
+    title_has_sauce, title_is_revert
 
 WEST_V0_13_0_OR_LATER = version.parse(west_version) >= version.parse('0.13.0')
 
@@ -157,7 +158,7 @@ class NcsWestCommand(WestCommand):
         # we want to build an ncs_pmap too. if we have a projects arg,
         # we'll use that. otherwise, we'll just use all the projects
         # in the NCS west manifest.
-        if hasattr(args, 'projects'):
+        if hasattr(args, 'projects') and args.projects:
             try:
                 projects = self.manifest.get_projects(
                     args.projects, only_cloned=True)
@@ -167,13 +168,21 @@ class NcsWestCommand(WestCommand):
                 unknown, uncloned = ve.args
                 if unknown:
                     log.die('unknown projects:', ', '.join(unknown))
-                if uncloned:
-                    log.die('uncloned downstream projects:',
-                            ', '.join(u.name for u in uncloned) + '\n' +
-                            'Run "west update", then retry.')
+                self.die_if_any_uncloned(uncloned)
         else:
-            projects = self.manifest.projects
+            projects = [project for project in self.manifest.projects
+                        if self.to_upstream_repository(project) is not None]
+            self.die_if_any_uncloned(projects)
         self.ncs_pmap = {p.name: p for p in projects}
+
+    @staticmethod
+    def die_if_any_uncloned(projects: List[Project]) -> None:
+        uncloned = [project for project in projects if not project.is_cloned()]
+        if not uncloned:
+            return
+        log.die('uncloned downstream projects:',
+                ', '.join(project.name for project in uncloned) + '\n' +
+                'Run "west update", then retry.')
 
     def zephyr_manifest(self) -> Manifest:
         # Load the upstream manifest. Since west v0.13, the resulting
@@ -382,7 +391,17 @@ class NcsLoot(NcsWestCommand):
             if self.args.sha_only:
                 log.inf(sha)
             else:
-                log.inf(f'{index+1}. {sha} {title}')
+                # Emit a warning if we have a non-revert patch with an
+                # incorrect sauce tag. (Again, downstream might carry
+                # reverts of upstream patches, which we shouldn't warn
+                # about.)
+                if not title_has_sauce(title) and not title_is_revert(title):
+                    space = ' ' * len(f'{index+1}. ')
+                    sauce_note = \
+                        f'\n{space}[NOTE: commit title is missing a sauce tag]'
+                else:
+                    sauce_note = ''
+                log.inf(f'{index+1}. {sha} {title}{sauce_note}')
 
             if self.args.json:
                 json_sha_list.append(sha)

@@ -263,6 +263,16 @@ struct wifi_nrf_fmac_callbk_fns {
 	void (*event_get_ps_info)(void *if_priv,
 		struct nrf_wifi_umac_event_power_save_info *get_ps_config,
 		unsigned int event_len);
+
+	void (*get_conn_info_callbk_fn)(void *os_vif_ctx,
+					struct nrf_wifi_umac_event_conn_info *info,
+					unsigned int event_len);
+#ifdef CONFIG_WIFI_MGMT_RAW_SCAN_RESULTS
+	void (*rx_bcn_prb_resp_callbk_fn)(void *os_vif_ctx,
+					  void *frm,
+					  unsigned short frequency,
+					  signed short signal);
+#endif /* CONFIG_WIFI_MGMT_RAW_SCAN_RESULTS */
 };
 
 
@@ -377,6 +387,9 @@ struct tx_config {
 	 * Second four bits Spare desc2 queue number
 	 */
 	unsigned int spare_desc_queue_map;
+#ifdef CONFIG_NRF700X_TX_DONE_WQ_ENABLED
+	void *tx_done_tasklet_event_q;
+#endif /* CONFIG_NRF700X_TX_DONE_WQ_ENABLED */
 };
 
 
@@ -477,6 +490,13 @@ struct wifi_nrf_fmac_dev_ctx {
 	bool alpha2_valid;
 	unsigned char alpha2[3];
 	enum wifi_nrf_fmac_twt_state twt_sleep_status;
+#ifdef CONFIG_NRF700X_TX_DONE_WQ_ENABLED
+	void *tx_done_tasklet;
+#endif /* CONFIG_NRF700X_TX_DONE_WQ_ENABLED */
+#ifdef CONFIG_NRF700X_RX_WQ_ENABLED
+	void *rx_tasklet;
+	void *rx_tasklet_event_q;
+#endif /* CONFIG_NRF700X_RX_WQ_ENABLED */
 };
 
 

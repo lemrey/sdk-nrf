@@ -20,11 +20,14 @@
 
 LOG_MODULE_REGISTER(slm_fota, CONFIG_SLM_LOG_LEVEL);
 
-/* file_uri: scheme://hostname[:port]path */
-#define FILE_URI_MAX	256
+/* file_uri: scheme://hostname[:port]path[?parameters] */
+#define FILE_URI_MAX	2048
 #define SCHEMA_HTTP	"http"
 #define SCHEMA_HTTPS	"https"
-#define URI_HOST_MAX	64
+#define URI_HOST_MAX	CONFIG_DOWNLOAD_CLIENT_MAX_HOSTNAME_SIZE
+#define URI_SCHEMA_MAX	8
+#define ERASE_WAIT_TIME 20
+#define ERASE_POLL_TIME 2
 
 /* Some features need fota_download update */
 #define FOTA_FUTURE_FEATURE	0
@@ -41,7 +44,7 @@ enum slm_fota_operation {
 	SLM_FOTA_ERASE_MFW
 };
 
-static char path[SLM_MAX_URL];
+static char path[FILE_URI_MAX];
 static char hostname[URI_HOST_MAX];
 
 /* global functions defined in different files */
@@ -141,14 +144,10 @@ static int do_fota_erase_mfw(void)
 		}
 	}
 
-	/* Based on measurement, erasing takes about 10 seconds */
-	#define WAIT_TIME 10
-	#define POLL_TIME 2
-
 	int time_elapsed = 0;
 
 	do {
-		k_sleep(K_SECONDS(POLL_TIME));
+		k_sleep(K_SECONDS(ERASE_POLL_TIME));
 		err = nrf_modem_delta_dfu_offset(&offset);
 		if (err != 0 && err != NRF_MODEM_DELTA_DFU_ERASE_PENDING) {
 			LOG_ERR("failed in delta dfu offset: %d", err);
@@ -158,10 +157,10 @@ static int do_fota_erase_mfw(void)
 			LOG_INF("Erase completed");
 			break;
 		}
-		time_elapsed += POLL_TIME;
-	} while (time_elapsed < WAIT_TIME);
+		time_elapsed += ERASE_POLL_TIME;
+	} while (time_elapsed < ERASE_WAIT_TIME);
 
-	if (time_elapsed >= WAIT_TIME) {
+	if (time_elapsed >= ERASE_WAIT_TIME) {
 		LOG_WRN("Erase timeout");
 		return -ETIME;
 	}
@@ -177,7 +176,7 @@ static int do_fota_start(int op, const char *file_uri, int sec_tag,
 		/* UNINIT checker fix, assumed UF_SCHEMA existence */
 		.field_set = 0
 	};
-	char schema[8];
+	char schema[URI_SCHEMA_MAX];
 
 	http_parser_url_init(&parser);
 	ret = http_parser_parse_url(file_uri, strlen(file_uri), 0, &parser);
@@ -185,19 +184,37 @@ static int do_fota_start(int op, const char *file_uri, int sec_tag,
 		LOG_ERR("Parse URL error");
 		return -EINVAL;
 	}
+
+	/* Schema stores http/https information */
 	memset(schema, 0x00, 8);
 	if (parser.field_set & (1 << UF_SCHEMA)) {
-		strncpy(schema, file_uri + parser.field_data[UF_SCHEMA].off,
-			parser.field_data[UF_SCHEMA].len);
+		if (parser.field_data[UF_SCHEMA].len < URI_SCHEMA_MAX) {
+			strncpy(schema, file_uri + parser.field_data[UF_SCHEMA].off,
+				parser.field_data[UF_SCHEMA].len);
+		} else {
+			LOG_ERR("URL schema length %d too long, exceeds the max length of %d",
+				parser.field_data[UF_SCHEMA].len, URI_SCHEMA_MAX);
+			return -ENOMEM;
+		}
 	} else {
 		LOG_ERR("Parse schema error");
 		return -EINVAL;
 	}
-	memset(path, 0x00, SLM_MAX_URL);
+
+	/* Path includes folder and file information */
+	/* This stores also the query data after folder and file description */
+	memset(path, 0x00, FILE_URI_MAX);
 	if (parser.field_set & (1 << UF_PATH)) {
 		/* Remove the leading '/' as some HTTP servers don't like it */
-		strncpy(path, file_uri + parser.field_data[UF_PATH].off + 1,
-			parser.field_data[UF_PATH].len - 1);
+		if ((strlen(file_uri) - parser.field_data[UF_PATH].off + 1) < FILE_URI_MAX) {
+			strncpy(path, file_uri + parser.field_data[UF_PATH].off + 1,
+				strlen(file_uri) - parser.field_data[UF_PATH].off - 1);
+		} else {
+			LOG_ERR("URL path length %d too long, exceeds the max length of %d",
+					strlen(file_uri) - parser.field_data[UF_PATH].off - 1,
+					FILE_URI_MAX);
+			return -ENOMEM;
+		}
 	} else {
 		LOG_ERR("Parse path error");
 		return -EINVAL;
@@ -222,7 +239,7 @@ static int do_fota_start(int op, const char *file_uri, int sec_tag,
 	char *tmp = strrchr(path, '/');
 
 	if (tmp != NULL) {
-		char path2[SLM_MAX_URL] = { 0 };
+		char path2[FILE_URI_MAX] = { 0 };
 
 		memcpy(path2, path, tmp - path + 1);
 		tmp = delimiter + 1;
@@ -231,8 +248,20 @@ static int do_fota_start(int op, const char *file_uri, int sec_tag,
 	}
 #endif
 
+	/* Stores everything before path (schema, hostname, port) */
 	memset(hostname, 0x00, URI_HOST_MAX);
-	strncpy(hostname, file_uri, strlen(file_uri) - parser.field_data[UF_PATH].len);
+	if (parser.field_set & (1 << UF_HOST)) {
+		if (parser.field_data[UF_PATH].off < URI_HOST_MAX) {
+			strncpy(hostname, file_uri, parser.field_data[UF_PATH].off);
+		} else {
+			LOG_ERR("URL host name length %d too long, exceeds the max length of %d",
+					parser.field_data[UF_PATH].off, URI_HOST_MAX);
+			return -ENOMEM;
+		}
+	} else {
+		LOG_ERR("Parse host error");
+		return -EINVAL;
+	}
 
 	/* start HTTP(S) FOTA */
 	if (slm_util_cmd_casecmp(schema, SCHEMA_HTTPS)) {

@@ -9,7 +9,8 @@
 #include <dk_buttons_and_leds.h>
 #include "model_handler.h"
 
-#define GET_DATA_INTERVAL 3000
+#define GET_DATA_INTERVAL 60000
+#define GET_DATA_INTERVAL_QUICK 3000
 
 static void sensor_cli_data_cb(struct bt_mesh_sensor_cli *cli,
 			       struct bt_mesh_msg_ctx *ctx,
@@ -17,22 +18,25 @@ static void sensor_cli_data_cb(struct bt_mesh_sensor_cli *cli,
 			       const struct sensor_value *value)
 {
 	if (sensor->id == bt_mesh_sensor_present_dev_op_temp.id) {
-		printk("Chip temperature: %s\n",
-		       bt_mesh_sensor_ch_str(value));
+		printk("Chip temperature: %s\n", bt_mesh_sensor_ch_str(value));
 	} else if (sensor->id == bt_mesh_sensor_presence_detected.id) {
 		if (value->val1) {
 			printk("Presence detected\n");
 		} else {
-			printk("End of presence\n");
+			printk("No presence detected\n");
 		}
 	} else if (sensor->id ==
 		   bt_mesh_sensor_time_since_presence_detected.id) {
-		if (value->val1) {
+		if (!value->val1) {
+			printk("Presence detected, or under 1 second since presence detected\n");
+		} else if (value->val1 == 0xFFFF) {
+			printk("Unknown last presence detected\n");
+		} else {
 			printk("%s second(s) since last presence detected\n",
 			       bt_mesh_sensor_ch_str(value));
-		} else {
-			printk("No presence detected, or under 1 second since presence detected\n");
 		}
+	} else if (sensor->id == bt_mesh_sensor_present_amb_light_level.id) {
+		printk("Ambient light level: %s\n", bt_mesh_sensor_ch_str(value));
 	}
 }
 
@@ -91,10 +95,11 @@ static void get_data(struct k_work *work)
 	int err;
 
 	/* Only one message can be published at a time. Swap sensor after each timeout. */
-	switch (sensor_idx++ % 3) {
+	switch (sensor_idx++) {
 	case (0): {
-		err = bt_mesh_sensor_cli_get(&sensor_cli, NULL, &bt_mesh_sensor_present_dev_op_temp,
-					     NULL);
+		err = bt_mesh_sensor_cli_get(
+			&sensor_cli, NULL, &bt_mesh_sensor_present_dev_op_temp,
+			NULL);
 		if (err) {
 			printk("Error getting chip temperature (%d)\n", err);
 		}
@@ -106,8 +111,7 @@ static void get_data(struct k_work *work)
 			&bt_mesh_sensor_rel_runtime_in_a_dev_op_temp_range, NULL, NULL,
 			NULL);
 		if (err) {
-			printk("Error getting relative chip temperature data (%d)\n",
-			       err);
+			printk("Error getting relative chip temperature data (%d)\n", err);
 		}
 		break;
 	}
@@ -116,13 +120,26 @@ static void get_data(struct k_work *work)
 			&sensor_cli, NULL, &bt_mesh_sensor_time_since_presence_detected,
 			NULL);
 		if (err) {
-			printk("Error getting time since presence detected (%d)\n",
-			       err);
+			printk("Error getting time since presence detected (%d)\n", err);
+		}
+		break;
+	}
+	case (3): {
+		err = bt_mesh_sensor_cli_get(
+			&sensor_cli, NULL, &bt_mesh_sensor_present_amb_light_level, NULL);
+		if (err) {
+			printk("Error getting ambient light level (%d)\n", err);
 		}
 		break;
 	}
 	}
-	k_work_schedule(&get_data_work, K_MSEC(GET_DATA_INTERVAL));
+
+	if (sensor_idx % 4) {
+		k_work_schedule(&get_data_work, K_MSEC(GET_DATA_INTERVAL_QUICK));
+	} else {
+		k_work_schedule(&get_data_work, K_MSEC(GET_DATA_INTERVAL));
+		sensor_idx = 0;
+	}
 }
 
 static const struct sensor_value temp_ranges[][2] = {
@@ -132,6 +149,14 @@ static const struct sensor_value temp_ranges[][2] = {
 	{ { 40 }, { 50 } },
 };
 
+static const struct sensor_value presence_motion_threshold[] = {
+	{   0 },
+	{  25 },
+	{  50 },
+	{  75 },
+	{ 100 },
+};
+
 static void button_handler_cb(uint32_t pressed, uint32_t changed)
 {
 	if (!bt_mesh_is_provisioned()) {
@@ -139,9 +164,10 @@ static void button_handler_cb(uint32_t pressed, uint32_t changed)
 	}
 
 	static uint32_t temp_idx;
+	static uint32_t motion_threshold_idx;
 	int err;
 
-	if (pressed & BIT(0)) {
+	if (pressed & changed & BIT(0)) {
 		err = bt_mesh_sensor_cli_setting_get(&sensor_cli, NULL,
 						     &bt_mesh_sensor_present_dev_op_temp,
 						     &bt_mesh_sensor_dev_op_temp_range_spec, NULL);
@@ -149,21 +175,32 @@ static void button_handler_cb(uint32_t pressed, uint32_t changed)
 			printk("Error getting range setting (%d)\n", err);
 		}
 	}
-	if (pressed & BIT(1)) {
+	if (pressed & changed & BIT(1)) {
 		err = bt_mesh_sensor_cli_setting_set(
 			&sensor_cli, NULL, &bt_mesh_sensor_present_dev_op_temp,
 			&bt_mesh_sensor_dev_op_temp_range_spec,
-			&temp_ranges[temp_idx++ % ARRAY_SIZE(temp_ranges)][0], NULL);
+			&temp_ranges[temp_idx++][0], NULL);
 		if (err) {
 			printk("Error setting range setting (%d)\n", err);
 		}
+		temp_idx = temp_idx % ARRAY_SIZE(temp_ranges);
 	}
-	if (pressed & BIT(2)) {
+	if (pressed & changed & BIT(2)) {
 		err = bt_mesh_sensor_cli_desc_get(&sensor_cli, NULL,
 						  &bt_mesh_sensor_present_dev_op_temp, NULL);
 		if (err) {
 			printk("Error getting sensor descriptor (%d)\n", err);
 		}
+	}
+	if (pressed & changed & BIT(3)) {
+		err = bt_mesh_sensor_cli_setting_set(
+			&sensor_cli, NULL, &bt_mesh_sensor_presence_detected,
+			&bt_mesh_sensor_motion_threshold,
+			&presence_motion_threshold[motion_threshold_idx++], NULL);
+		if (err) {
+			printk("Error setting motion threshold setting (%d)\n", err);
+		}
+		motion_threshold_idx = motion_threshold_idx % ARRAY_SIZE(presence_motion_threshold);
 	}
 }
 

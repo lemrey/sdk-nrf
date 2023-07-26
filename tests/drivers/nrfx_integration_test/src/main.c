@@ -15,11 +15,12 @@
 
 NRFX_STATIC_ASSERT(true);
 
-static void test_build(void)
+ZTEST(test_nrfx_integration, test_build)
 {
 	IRQn_Type dummy_irq_number = (IRQn_Type)0;
 	nrfx_atomic_t dummy_atomic_object;
 	volatile uint32_t used_resources;
+	volatile uint32_t test_val;
 
 	NRFX_ASSERT(true);
 
@@ -44,17 +45,15 @@ static void test_build(void)
 	NRFX_ATOMIC_FETCH_XOR(&dummy_atomic_object, 0);
 	NRFX_ATOMIC_FETCH_ADD(&dummy_atomic_object, 0);
 	NRFX_ATOMIC_FETCH_SUB(&dummy_atomic_object, 0);
+	NRFX_ATOMIC_CAS(&dummy_atomic_object, 0, 1);
+
+	test_val = NRFX_CLZ(1);
+	test_val = NRFX_CTZ(1);
 
 	used_resources = NRFX_DPPI_CHANNELS_USED | NRFX_DPPI_GROUPS_USED |
 			 NRFX_PPI_CHANNELS_USED | NRFX_PPI_GROUPS_USED |
+			 NRFX_GPIOTE_CHANNELS_USED |
 			 NRFX_EGUS_USED | NRFX_TIMERS_USED;
 }
 
-void test_main(void)
-{
-	ztest_test_suite(test_nrfx_integration,
-		ztest_unit_test(test_build)
-	);
-
-	ztest_run_test_suite(test_nrfx_integration);
-}
+ZTEST_SUITE(test_nrfx_integration, NULL, NULL, NULL, NULL, NULL);

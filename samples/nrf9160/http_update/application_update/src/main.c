@@ -50,6 +50,20 @@ static void fota_dl_handler(const struct fota_download_evt *evt)
 }
 
 #if defined(CONFIG_LWM2M_CARRIER)
+NRF_MODEM_LIB_ON_INIT(carrier_on_modem_lib_init, on_modem_lib_init, NULL);
+
+static void on_modem_lib_init(int ret, void *ctx)
+{
+	ARG_UNUSED(ctx);
+
+	if (ret != 0) {
+		return;
+	}
+
+	/* LTE LC is uninitialized on every modem shutdown. */
+	lte_lc_init();
+}
+
 static void lte_event_handler(const struct lte_lc_evt *const evt)
 {
 	/* This event handler is not in use here. */
@@ -69,22 +83,12 @@ void print_err(const lwm2m_carrier_event_t *evt)
 			"Failed to connect to the LTE network",
 		[LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL] =
 			"Failed to disconnect from the LTE network",
-		[LWM2M_CARRIER_ERROR_FOTA_PKG] =
-			"Package refused from modem",
-		[LWM2M_CARRIER_ERROR_FOTA_PROTO] =
-			"Protocol error",
-		[LWM2M_CARRIER_ERROR_FOTA_CONN] =
-			"Connection to remote server failed",
-		[LWM2M_CARRIER_ERROR_FOTA_CONN_LOST] =
-			"Connection to remote server lost",
 		[LWM2M_CARRIER_ERROR_FOTA_FAIL] =
 			"Modem firmware update failed",
 		[LWM2M_CARRIER_ERROR_CONFIGURATION] =
 			"Illegal object configuration detected",
 		[LWM2M_CARRIER_ERROR_INIT] =
 			"Initialization failure",
-		[LWM2M_CARRIER_ERROR_INTERNAL] =
-			"Internal failure",
 		[LWM2M_CARRIER_ERROR_RUN] =
 			"Configuration failure",
 	};
@@ -128,14 +132,9 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 	int err = 0;
 
 	switch (event->type) {
-	case LWM2M_CARRIER_EVENT_INIT:
-		printk("LWM2M_CARRIER_EVENT_INIT\n");
-		err = lte_lc_init();
-		lte_lc_register_handler(lte_event_handler);
-		break;
 	case LWM2M_CARRIER_EVENT_LTE_LINK_UP:
 		printk("LWM2M_CARRIER_EVENT_LTE_LINK_UP\n");
-		err = lte_lc_connect_async(NULL);
+		err = lte_lc_connect_async(lte_event_handler);
 		break;
 	case LWM2M_CARRIER_EVENT_LTE_LINK_DOWN:
 		printk("LWM2M_CARRIER_EVENT_LTE_LINK_DOWN\n");
@@ -158,8 +157,19 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 	case LWM2M_CARRIER_EVENT_FOTA_START:
 		printk("LWM2M_CARRIER_EVENT_FOTA_START\n");
 		break;
+	case LWM2M_CARRIER_EVENT_FOTA_SUCCESS:
+		printk("LWM2M_CARRIER_EVENT_FOTA_SUCCESS\n");
+		break;
 	case LWM2M_CARRIER_EVENT_REBOOT:
 		printk("LWM2M_CARRIER_EVENT_REBOOT\n");
+		break;
+	case LWM2M_CARRIER_EVENT_MODEM_INIT:
+		printk("LWM2M_CARRIER_EVENT_MODEM_INIT\n");
+		err = nrf_modem_lib_init();
+		break;
+	case LWM2M_CARRIER_EVENT_MODEM_SHUTDOWN:
+		printk("LWM2M_CARRIER_EVENT_MODEM_SHUTDOWN\n");
+		err = nrf_modem_lib_shutdown();
 		break;
 	case LWM2M_CARRIER_EVENT_ERROR:
 		printk("LWM2M_CARRIER_EVENT_ERROR\n");
@@ -178,13 +188,12 @@ int main(void)
 	printk("HTTP application update sample started\n");
 	printk("Using version %d\n", CONFIG_APPLICATION_VERSION);
 
-#if !defined(CONFIG_LWM2M_CARRIER)
 	err = nrf_modem_lib_init();
-	if (err) {
-		printk("Failed to initialize modem library!");
+	if (err < 0) {
+		printk("Failed to initialize modem library!\n");
 		return 0;
 	}
-#endif
+
 	/* This is needed so that MCUBoot won't revert the update */
 	boot_write_img_confirmed();
 

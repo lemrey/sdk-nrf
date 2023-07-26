@@ -5,7 +5,7 @@
 
 menuconfig NRF_MODEM_LIB
 	bool "Modem library"
-	depends on SOC_NRF9160_SICA
+	depends on SOC_SERIES_NRF91X
 	imply NRFX_IPC
 	imply NET_SOCKETS_OFFLOAD
 	imply NET_SOCKETS_POSIX_NAMES if !POSIX_API
@@ -21,5 +21,6 @@ menuconfig NRF_MODEM_LIB
 if NRF_MODEM_LIB
 
 rsource "Kconfig.modemlib"
+rsource "lte_connectivity/Kconfig"
 
 endif # NRF_MODEM_LIB

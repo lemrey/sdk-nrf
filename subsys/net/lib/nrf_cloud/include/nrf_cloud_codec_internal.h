@@ -12,7 +12,7 @@
 #include <modem/lte_lc.h>
 #include <net/nrf_cloud_defs.h>
 #include <net/nrf_cloud.h>
-#include <net/nrf_cloud_alerts.h>
+#include <net/nrf_cloud_alert.h>
 #if defined(CONFIG_NRF_CLOUD_PGPS)
 #include <net/nrf_cloud_pgps.h>
 #endif
@@ -23,9 +23,11 @@
 #include <nrf_modem_gnss.h>
 #endif
 #include <net/nrf_cloud_location.h>
+#include <net/nrf_cloud_log.h>
 #include "cJSON.h"
 #include "nrf_cloud_fsm.h"
 #include "nrf_cloud_agps_schema_v1.h"
+#include "nrf_cloud_log_internal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,12 +42,34 @@ enum nrf_cloud_rcv_topic {
 	NRF_CLOUD_RCV_TOPIC_UNKNOWN
 };
 
+/** Special value indicating this is an nRF Cloud binary format */
+#define NRF_CLOUD_BINARY_MAGIC 0x4346526e /* 'nRFC' in little-endian order */
+
+/** Format identifier for remainder of this binary blob */
+#define NRF_CLOUD_DICT_LOG_FMT 0x0001
+
+/** @brief Header preceding binary blobs so nRF Cloud can
+ *  process them in correct order using ts_ms and sequence fields.
+ */
+struct nrf_cloud_bin_hdr {
+	/** Special marker value indicating this binary blob is a supported type */
+	uint32_t magic;
+	/** Value indicating the service format, such as a dictionary-based log */
+	uint16_t format;
+	/** Value for alignment */
+	uint16_t pad;
+	/** The time at which the log entry was generated */
+	int64_t ts;
+	/** Monotonically increasing sequence number */
+	uint32_t sequence;
+} __packed;
+
 /** @brief Initialize the codec used encoding the data to the cloud. */
 int nrf_cloud_codec_init(struct nrf_cloud_os_mem_hooks *hooks);
 
 /** @brief Encode an alert and update the output struct with pointer
  *  to data and its length.  Caller must free the pointer when done,
- *  but only if it is not NULL; when CONFIG_NRF_CLOUD_ALERTS is disabled,
+ *  but only if it is not NULL; when CONFIG_NRF_CLOUD_ALERT is disabled,
  *  this function returns 0, and sets output->ptr = NULL and output->len = 0.
  */
 int nrf_cloud_alert_encode(const struct nrf_cloud_alert_info *alert,
@@ -68,6 +92,7 @@ int nrf_cloud_data_endpoint_decode(const struct nrf_cloud_data *input,
 				   struct nrf_cloud_data *tx_endpoint,
 				   struct nrf_cloud_data *rx_endpoint,
 				   struct nrf_cloud_data *bulk_endpoint,
+				   struct nrf_cloud_data *bin_endpoint,
 				   struct nrf_cloud_data *m_endpoint);
 
 /** @brief Encode state information. */
@@ -118,12 +143,6 @@ void nrf_cloud_fota_job_free(struct nrf_cloud_fota_job_info *const job);
  */
 int nrf_cloud_rest_fota_execution_decode(const char *const response,
 					struct nrf_cloud_fota_job_info *const job);
-
-#if defined(CONFIG_NRF_CLOUD_PGPS)
-/** @brief Parse the PGPS response (REST and MQTT) from nRF Cloud */
-int nrf_cloud_pgps_response_decode(const char *const response,
-				   struct nrf_cloud_pgps_result *const result);
-#endif
 
 /** @brief Add cellular network info to the provided cJSON object.
  * If the cell_inf parameter is NULL, the codec will obtain the current network
@@ -190,12 +209,6 @@ int nrf_cloud_rest_error_decode(const char *const buf, enum nrf_cloud_error *con
 int nrf_cloud_pvt_data_encode(const struct nrf_cloud_gnss_pvt * const pvt,
 			      cJSON * const pvt_data_obj);
 
-#if defined(CONFIG_NRF_MODEM)
-/** @brief Encode a modem PVT data frame to be sent to nRF Cloud */
-int nrf_cloud_modem_pvt_data_encode(const struct nrf_modem_gnss_pvt_data_frame	* const mdm_pvt,
-				    cJSON * const pvt_data_obj);
-#endif
-
 /** @brief Replace legacy c2d topic with wilcard topic string.
  * Return true, if the topic was modified; otherwise false.
  */
@@ -213,16 +226,32 @@ void nrf_cloud_set_app_version(const char * const app_ver);
 int nrf_cloud_agps_req_data_json_encode(const enum nrf_cloud_agps_type * const types,
 					const size_t type_count,
 					const struct lte_lc_cell * const cell_inf,
+					const bool fetch_cell_inf,
 					const bool filtered_ephem, const uint8_t mask_angle,
 					cJSON * const data_obj_out);
 
-/** @brief Encode an A-GPS request device message to be sent to nRF Cloud */
-#if defined(CONFIG_NRF_CLOUD_AGPS)
-int nrf_cloud_agps_req_json_encode(const struct nrf_modem_gnss_agps_data_frame * const request,
-				   cJSON * const agps_req_obj_out);
+#if defined(CONFIG_NRF_MODEM)
+/** @brief Encode a modem PVT data frame to be sent to nRF Cloud */
+int nrf_cloud_modem_pvt_data_encode(const struct nrf_modem_gnss_pvt_data_frame	* const mdm_pvt,
+				    cJSON * const pvt_data_obj);
 #endif
 
+#if defined(CONFIG_NRF_CLOUD_AGPS)
+/** @brief Build A-GPS type array based on request.
+ */
+int nrf_cloud_agps_type_array_get(const struct nrf_modem_gnss_agps_data_frame * const request,
+				  enum nrf_cloud_agps_type *array, const size_t array_size);
+
+/** @brief Encode an A-GPS request device message to be sent to nRF Cloud */
+int nrf_cloud_agps_req_json_encode(const struct nrf_modem_gnss_agps_data_frame * const request,
+				   cJSON * const agps_req_obj_out);
+#endif /* CONFIG_NRF_CLOUD_AGPS */
+
 #if defined(CONFIG_NRF_CLOUD_PGPS)
+/** @brief Parse the PGPS response (REST and MQTT) from nRF Cloud */
+int nrf_cloud_pgps_response_decode(const char *const response,
+				   struct nrf_cloud_pgps_result *const result);
+
 /** @brief Encode the data payload of an nRF Cloud P-GPS request into the provided object */
 int nrf_cloud_pgps_req_data_json_encode(const struct gps_pgps_request * const request,
 					cJSON * const data_obj_out);
@@ -250,6 +279,10 @@ typedef int (*gateway_state_handler_t)(void *root_obj);
  */
 void nrf_cloud_register_gateway_state_handler(gateway_state_handler_t handler);
 #endif
+
+/** @brief Encode a log output buffer for transport to the cloud */
+int nrf_cloud_log_json_encode(struct nrf_cloud_log_context *ctx, uint8_t *buf, size_t size,
+			 struct nrf_cloud_data *output);
 
 #ifdef __cplusplus
 }

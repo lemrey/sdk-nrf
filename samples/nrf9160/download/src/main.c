@@ -22,15 +22,15 @@
 static const char cert[] = {
 	#include CONFIG_SAMPLE_CERT_FILE
 };
+static int sec_tag_list[] = { SEC_TAG };
 BUILD_ASSERT(sizeof(cert) < KB(4), "Certificate too large");
 #endif
 
 static struct download_client downloader;
 static struct download_client_cfg config = {
 #if CONFIG_SAMPLE_SECURE_SOCKET
-	.sec_tag = SEC_TAG,
-#else
-	.sec_tag = -1,
+	.sec_tag_list = sec_tag_list,
+	.sec_tag_count = ARRAY_SIZE(sec_tag_list),
 #endif
 };
 
@@ -164,6 +164,10 @@ static int callback(const struct download_client_evt *event)
 			/* Stop download */
 			return -1;
 		}
+		break;
+	case DOWNLOAD_CLIENT_EVT_CLOSED:
+		printk("Socket closed\n");
+		break;
 	}
 
 	return 0;
@@ -197,7 +201,6 @@ int main(void)
 	}
 
 	printk("OK\n");
-
 	err = download_client_init(&downloader, callback);
 	if (err) {
 		printk("Failed to initialize the client, err %d", err);
@@ -209,15 +212,9 @@ int main(void)
 	mbedtls_sha256_starts(&sha256_ctx, false);
 #endif
 
-	err = download_client_connect(&downloader, URL, &config);
-	if (err) {
-		printk("Failed to connect, err %d", err);
-		return 0;
-	}
-
 	ref_time = k_uptime_get();
 
-	err = download_client_start(&downloader, URL, STARTING_OFFSET);
+	err = download_client_get(&downloader, URL, &config, URL, STARTING_OFFSET);
 	if (err) {
 		printk("Failed to start the downloader, err %d", err);
 		return 0;

@@ -1,16 +1,16 @@
 # This is the Jenkins ci variant of the .github/labler.yaml
 
 "CI-run-twister":
- - any:
-    - "!.github/**/*"
-    - "!.vscode/**/*"
-    - "!doc/**/*"
-    - "!test-manifests/**/*"
-    - "!CODEOWNERS"
-    - "!LICENSE"
-    - "!**/*.rst"
-    - "!VERSION"
-    - "!ncs_version.h.in"
+  - any:
+      - "!.github/**/*"
+      - "!.vscode/**/*"
+      - "!doc/**/*"
+      - "!test-manifests/**/*"
+      - "!CODEOWNERS"
+      - "!LICENSE"
+      - "!**/*.rst"
+      - "!VERSION"
+      - "!ncs_version.h.in"
 
 "CI-tool-test-linux":
   - "scripts/requirements*.txt"
@@ -183,14 +183,14 @@
 
 "CI-ble-test":
   - any:
-    - "subsys/bluetooth/**/*"
-    - "!subsys/bluetooth/mesh/**/*"
+      - "subsys/bluetooth/**/*"
+      - "!subsys/bluetooth/mesh/**/*"
   - any:
-    - "include/bluetooth/**/*"
-    - "!include/bluetooth/mesh/**/*"
+      - "include/bluetooth/**/*"
+      - "!include/bluetooth/mesh/**/*"
   - any:
-    - "samples/bluetooth/**/*"
-    - "!samples/bluetooth/mesh/**/*"
+      - "samples/bluetooth/**/*"
+      - "!samples/bluetooth/mesh/**/*"
   - "subsys/nrf_rpc/**/*"
   - "subsys/mpsl/**/*"
   - "drivers/mpsl/**/*"
@@ -204,22 +204,23 @@
 "CI-zigbee-test":
   - "include/zigbee/**/*"
   - "samples/zigbee/**/*"
-  - "subsys/dfu/**/*"
   - "subsys/zigbee/**/*"
   - "tests/subsys/zigbee/**/*"
   - "subsys/mpsl/**/*"
   - "subsys/ieee802154/**/*"
+  - "subsys/bootloader/**/*"
+  - "subsys/partition_manager/**/*"
+  - "subsys/dfu/**/*"
+  - "subsys/fw_info/*"
+  - "subsys/pcd/**/*"
+  - "subsys/bluetooth/controller/*"
+  - "subsys/bluetooth/services/nus.c"
   - "drivers/mpsl/**/*"
   - "dts/bindings/radio_fem/**/*"
   - "samples/nrf5340/multiprotocol_rpmsg/**/*"
   - "modules/nrfxlib/nrf_802154/**/*"
+  - "modules/mcuboot/**/*"
   - "applications/zigbee_weather_station/**/*"
-  - any:
-    - "subsys/bluetooth/**/*"
-    - "!subsys/bluetooth/mesh/**/*"
-  - any:
-    - "include/bluetooth/**/*"
-    - "!include/bluetooth/mesh/**/*"
 
 "CI-thingy91-test":
   - "ext/cjson/**/*"
@@ -316,28 +317,13 @@
 "CI-homekit-test":
   - "drivers/hw_cc310/*"
   - "drivers/mpsl/**/*"
-  - "drivers/net/*"
   - "dts/bindings/radio_fem/**/*"
-  - "include/dfu/**/*"
-  - "include/nfc/**/*"
-  - "lib/dk_buttons_and_leds/**/*"
-  - "modules/mcuboot/**/*"
   - "modules/nrfxlib/nrf_802154/**/*"
   - "samples/nrf5340/multiprotocol_rpmsg/**/*"
-  - "subsys/bootloader/**/*"
-  - "subsys/dfu/*"
+  - "subsys/bluetooth/controller/*"
   - "subsys/ieee802154/**/*"
   - "subsys/mpsl/**/*"
   - "subsys/net/openthread/*"
-  - "subsys/nfc/**/*"
-  - "subsys/nrf_rpc/**/*"
-  - "subsys/partition_manager/**/*"
-  - any:
-    - "subsys/bluetooth/**/*"
-    - "!subsys/bluetooth/mesh/**/*"
-  - any:
-    - "include/bluetooth/**/*"
-    - "!include/bluetooth/mesh/**/*"
 
 "CI-thread-test":
   - "samples/openthread/**/*"
@@ -347,6 +333,7 @@
   - "subsys/net/openthread/**/*"
   - "drivers/mpsl/**/*"
   - "drivers/hw_cc310/*"
+  - "drivers/entropy/*"
   - "modules/nrfxlib/nrf_802154/**/*"
 
 "CI-nfc-test":
@@ -361,20 +348,16 @@
 "CI-matter-test":
   - "drivers/mpsl/**/*"
   - "drivers/hw_cc310/*"
-  - "drivers/entropy/*"
   - "drivers/wifi/**/*"
   - "subsys/mpsl/**/*"
   - "subsys/ieee802154/**/*"
   - "subsys/bootloader/**/*"
   - "subsys/partition_manager/**/*"
-  - "subsys/nfc/**/*"
-  - "subsys/nrf_rpc/**/*"
   - "subsys/dfu/**/*"
   - "subsys/fw_info/*"
   - "subsys/pcd/**/*"
   - "subsys/bluetooth/controller/*"
   - "subsys/net/openthread/*"
-  - "modules/tfm/**/*"
   - "modules/nrfxlib/nrf_802154/**/*"
   - "modules/mcuboot/**/*"
   - "samples/matter/**/*"
@@ -394,11 +377,11 @@
   - "subsys/partition_manager/**/*"
   - "modules/mcuboot/**/*"
   - any:
-    - "include/bluetooth/**/*"
-    - "!include/bluetooth/mesh/**/*"
+      - "include/bluetooth/**/*"
+      - "!include/bluetooth/mesh/**/*"
   - any:
-    - "subsys/bluetooth/**/*"
-    - "!subsys/bluetooth/mesh/**/*"
+      - "subsys/bluetooth/**/*"
+      - "!subsys/bluetooth/mesh/**/*"
 
 "CI-esb-test":
   - "include/esb.h"
@@ -498,6 +481,7 @@
 "CI-wifi":
   - "drivers/wifi/**/*"
   - "samples/wifi/**/*"
+  - "modules/lib/hostap/**/*"
 
 "CI-cloud-test":
   - "include/net/nrf_cloud*"

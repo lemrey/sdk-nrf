@@ -111,7 +111,7 @@ manifest:
     - name: hostap
       repo-path: sdk-hostap
       path: modules/lib/hostap
-      revision: ec4a32a3a7037603aa87dd5b31622141ceddf32b
+      revision: c54b1efd0eb37ace8e44d6002398c348a7581648
       userdata:
         ncs:
           upstream-url: https://w1.fi/cgit/hostap/
@@ -119,7 +119,7 @@ manifest:
           compare-by-default: false
     - name: mcuboot
       repo-path: sdk-mcuboot
-      revision: 3b7c7fb9ac786bf4d06aac5a19b5e6153a802584
+      revision: v1.10.0-ncs1
       path: bootloader/mcuboot
     - name: qcbor
       url: https://github.com/laurencelundblade/QCBOR.git
@@ -128,7 +128,7 @@ manifest:
     - name: mbedtls
       path: modules/crypto/mbedtls
       repo-path: sdk-mbedtls
-      revision: 3c2bc903cb396af6033115c8186f0807ef81bdaf
+      revision: v3.3.0-ncs1
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
@@ -153,7 +153,7 @@ manifest:
       userdata:
         ncs:
           upstream-url: https://github.com/project-chip/connectedhomeip
-          upstream-sha: 4088a77f557e8571a39338fad51a1d8eb0131d79
+          upstream-sha: 8f66f4215bc0708efc8cc73bda80620e67d8955f
           compare-by-default: false
     - name: nrf-802154
       repo-path: sdk-nrf-802154
@@ -185,7 +185,7 @@ manifest:
         - homekit
     - name: find-my
       repo-path: sdk-find-my
-      revision: 219987daaac52ff0799ca29aaf7aff5f1276f045
+      revision: v2.4.0
       groups:
         - find-my
     - name: azure-sdk-for-c
@@ -209,11 +209,11 @@ manifest:
     - name: openthread
       repo-path: sdk-openthread
       path: modules/lib/openthread
-      revision: 2c8a0af24433dd802414ae1832a3f3e5948514b7
+      revision: d9abe3071c0131a4adb5d7e7451319b735e6d855
       userdata:
         ncs:
           upstream-url: https://github.com/openthread/openthread
-          upstream-sha: 55074652907295709f9f3361244a6e76f732bcba
+          upstream-sha: d9abe3071c0131a4adb5d7e7451319b735e6d855
           compare-by-default: false
 
     - name: suit-processor
@@ -231,11 +231,11 @@ manifest:
       remote: throwtheswitch
     - name: memfault-firmware-sdk
       path: modules/lib/memfault-firmware-sdk
-      revision: 0.43.1
+      revision: 0.43.3
       remote: memfault
     - name: ant
       repo-path: sdk-ant
-      revision: 373e6987cb18bacec6baab11d119333d92338589
+      revision: 01087e4e6d2a9c4dec759ad6223d39e0cfb2bfa2
       remote: ant-nrfconnect
       groups:
         - ant
