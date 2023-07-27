@@ -16,4 +16,4 @@ tests:
       type: multi_line
       ordered: true
       regex:
-        -  "Channel number * interrupt called"
+        -  "Channel number [0-9]+ interrupt called"
