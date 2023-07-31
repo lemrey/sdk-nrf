@@ -16,7 +16,6 @@ tests:
     tags: ipc
     extra_args:
       OVERLAY_CONFIG=overlay-cpuapp-sending.conf
-      remote_OVERLAY_CONFIG=overlay-cpuapp-sending.conf
   sample.ipc.ipc_service.rpmsg_cpunet_sending:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -25,7 +24,6 @@ tests:
     tags: ipc
     extra_args:
       OVERLAY_CONFIG=overlay-cpunet-sending.conf
-      remote_OVERLAY_CONFIG=overlay-cpunet-sending.conf
   sample.ipc.ipc_service.icmsg_default:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -34,9 +32,6 @@ tests:
     tags: ipc
     extra_args:
       CONF_FILE=prj_icmsg.conf
-      remote_DTC_OVERLAY_FILE=icmsg.overlay
-      DTC_OVERLAY_FILE=icmsg.overlay
-      remote_CONF_FILE=prj_icmsg.conf
   sample.ipc.ipc_service.icmsg_cpuapp_sending:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -46,10 +41,6 @@ tests:
     extra_args:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=overlay-cpuapp-sending.conf
-      remote_OVERLAY_CONFIG=overlay-cpuapp-sending.conf
-      remote_DTC_OVERLAY_FILE=icmsg.overlay
-      DTC_OVERLAY_FILE=icmsg.overlay
-      remote_CONF_FILE=prj_icmsg.conf
   sample.ipc.ipc_service.icmsg_cpunet_sending:
     build_only: true
     platform_allow: nrf5340dk_nrf5340_cpuapp
@@ -59,10 +50,6 @@ tests:
     extra_args:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=overlay-cpunet-sending.conf
-      remote_OVERLAY_CONFIG=overlay-cpunet-sending.conf
-      remote_DTC_OVERLAY_FILE=icmsg.overlay
-      DTC_OVERLAY_FILE=icmsg.overlay
-      remote_CONF_FILE=prj_icmsg.conf
 
   sample.ipc.ipc_service.nrf54_app_rad_icmsg:
     build_only: true
@@ -74,9 +61,6 @@ tests:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
-      remote_CONF_FILE=prj_icmsg.conf
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay
   sample.ipc.ipc_service.nrf54_app_rad_rpmsg:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -86,8 +70,6 @@ tests:
     extra_args:
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad.overlay
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_rad.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_rad.overlay
       CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
       remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
 
@@ -101,9 +83,6 @@ tests:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.overlay
-      remote_CONF_FILE=prj_icmsg.conf
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_ppr.overlay
 
   sample.ipc.ipc_service.nrf71_app_ppr_icmsg:
     build_only: true
@@ -115,9 +94,6 @@ tests:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=boards/nrf7140dk_nrf7140_cpuapp_ppr.conf
       DTC_OVERLAY_FILE=boards/nrf7140dk_nrf7140_cpuapp_ppr.overlay
-      remote_CONF_FILE=prj_icmsg.conf
-      remote_OVERLAY_CONFIG=boards/nrf7140dk_nrf7140_cpuapp_ppr.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf7140dk_nrf7140_cpuapp_ppr.overlay
 
   sample.ipc.ipc_service.nrf54_app_sys_icmsg:
     build_only: true
@@ -129,9 +105,6 @@ tests:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys_icmsg.overlay
-      remote_CONF_FILE=prj_icmsg.conf
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys_icmsg.overlay
   sample.ipc.ipc_service.nrf54_app_sys_rpmsg:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -141,8 +114,6 @@ tests:
     extra_args:
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys.overlay
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys.overlay
       CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=30
       remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
 
@@ -156,9 +127,6 @@ tests:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys_icmsg.overlay
-      remote_CONF_FILE=prj_icmsg.conf
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys_icmsg.overlay
   sample.ipc.ipc_service.nrf54_rad_sys_rpmsg:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpurad@soc1
@@ -168,7 +136,5 @@ tests:
     extra_args:
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys.overlay
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
-      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys.overlay
       CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
       remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
