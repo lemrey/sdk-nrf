@@ -231,6 +231,7 @@ This sample uses the following |NCS| libraries and drivers:
 
 * :ref:`dk_buttons_and_leds_readme`
 * :ref:`lte_lc_readme`
+* :ref:`nrf_security`
 
 It uses the following `sdk-nrfxlib`_ libraries:
 

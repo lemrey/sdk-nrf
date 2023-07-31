@@ -235,6 +235,6 @@ The average current consumption in an idle case can be around ~1-2 mA in the nRF
 Dependencies
 ************
 
-This sample uses the following `sdk-nrfxlib`_ library:
+This sample uses the following library:
 
 * :ref:`nrf_security`
