@@ -29,10 +29,6 @@
 	};
 };
 
-&ipc_cpurad {
-    zephyr,priority = <0 PRIO_COOP>;
-};
-
 ipc0: &ipc_cpurad { };
 
 
