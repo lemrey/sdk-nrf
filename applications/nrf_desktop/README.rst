@@ -1005,6 +1005,42 @@ See the following list of possible scenarios and best practices:
   By default, the :kconfig:option:`CONFIG_USB_HID_POLL_INTERVAL_MS` Kconfig option is set to ``1`` to request the lowest possible poll interval.
   Set parameters are not enforced, meaning that the HID host may still eventually use a value greater than the USB polling interval requested by a peripheral.
 
+USB High-Speed
+~~~~~~~~~~~~~~
+
+The nRF54H20 supports USB High-Speed.
+You can also configure your preferred USB HID poll interval using the :kconfig:option:`CONFIG_USB_HID_POLL_INTERVAL_MS` Kconfig option, however, it behaves differently for the USB High-Speed.
+In case of using USB Low-Speed or Full-Speed, the value is expressed in milliseconds.
+In case of using USB High-Speed, the value is interpreted as follows:
+
+   * The value of the Kconfig option must be from 1 to 16 according to the USB 2.0 specification.
+   * The used USB polling interval is calculated in the following way:
+
+     :math:`2^{(x-1)}` micro-frames (125 µs)
+
+     where ``x`` is the :kconfig:option:`CONFIG_USB_HID_POLL_INTERVAL_MS` Kconfig option.
+
+For example:
+
+   * If the :kconfig:option:`CONFIG_USB_HID_POLL_INTERVAL_MS` Kconfig option is set to ``1``, it means that the poll interval is set to 1 micro-frame (125 microseconds), which should result in HID report rate of around 8000 Hz.
+   * If the :kconfig:option:`CONFIG_USB_HID_POLL_INTERVAL_MS` Kconfig option is set to ``4``, it means that the poll interval is set to 8 micro-frames (1 millisecond), which should result in HID report rate of around 1000 Hz.
+
+.. note::
+   You can use nRF54H20 PDK to evaluate USBHS.
+   Use the release configuration and slightly modify the simulated motion module's configuration to ensure that non-zero motion values are reported in every HID report.
+   See an example of the build command:
+
+      .. parsed-literal::
+         :class: highlight
+
+         west build -p -b nrf54h20dk_nrf54h20_cpuapp\@soc1 -- \
+         -DCONF_FILE=prj_release.conf \
+         -DCONFIG_DESKTOP_MOTION_SIMULATED_ENABLE=y \
+         -DCONFIG_DESKTOP_MOTION_SIMULATED_EDGE_TIME=8192 \
+         -DCONFIG_DESKTOP_MOTION_SIMULATED_SCALE_FACTOR=5
+
+   See the :ref:`nrf_desktop_motion_report_rate` documentation for detailed information about generating motion data.
+
 Testing steps
 ~~~~~~~~~~~~~
 
@@ -1012,6 +1048,13 @@ After building the application, test the nRF Desktop by performing the following
 
 1. Program the device with the built firmware.
 #. Connect the device to the computer using a preferred transport (Bluetooth LE, USB, dongle).
+
+   .. important::
+      nRF54H20 limitation:
+
+      The current USBHS driver does not yet support the disconnect and reconnect feature.
+      You must keep the device connected to the computer at all times.
+
 #. Turn on the device.
    If you use the motion simulated module to generate the mouse movement, the device should automatically start to draw an octagon shape on the screen.
    Otherwise, you need to constantly keep generating motion manually, for example, by moving your mouse.
