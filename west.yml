@@ -206,8 +206,8 @@ manifest:
       groups:
         - homekit
     - name: find-my
-      repo-path: sdk-find-my
-      revision: c30e0186e6476e439ffdbf83ebb421662031cbd1
+      repo-path: sdk-find-my-next
+      revision: def810192df5b786fb549e49287364d0022175b4
       groups:
         - find-my
     - name: azure-sdk-for-c
