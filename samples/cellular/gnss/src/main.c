@@ -232,6 +232,23 @@ void lte_disconnect(void)
 }
 #endif /* CONFIG_GNSS_SAMPLE_LTE_ON_DEMAND */
 
+static const char *get_system_string(uint8_t system_id)
+{
+	switch (system_id) {
+	case NRF_MODEM_GNSS_SYSTEM_INVALID:
+		return "invalid";
+
+	case NRF_MODEM_GNSS_SYSTEM_GPS:
+		return "GPS";
+
+	case NRF_MODEM_GNSS_SYSTEM_QZSS:
+		return "QZSS";
+
+	default:
+		return "unknown";
+	}
+}
+
 static void agnss_data_get_work_fn(struct k_work *item)
 {
 	ARG_UNUSED(item);
@@ -268,12 +285,22 @@ static void agnss_data_get_work_fn(struct k_work *item)
 	}
 #endif /* CONFIG_GNSS_SAMPLE_ASSISTANCE_MINIMAL */
 
+	if (last_agnss.data_flags == 0 &&
+	    last_agnss.system[0].sv_mask_ephe == 0 &&
+	    last_agnss.system[0].sv_mask_alm == 0) {
+		LOG_INF("Ignoring assistance request because only QZSS data is requested");
+		return;
+	}
+
 	requesting_assistance = true;
 
-	LOG_INF("Assistance data needed, ephe 0x%08x, alm 0x%08x, flags 0x%02x",
-		(uint32_t)last_agnss.system[0].sv_mask_ephe,
-		(uint32_t)last_agnss.system[0].sv_mask_alm,
-		last_agnss.data_flags);
+	LOG_INF("Assistance data needed: data_flags: 0x%02x", last_agnss.data_flags);
+	for (int i = 0; i < last_agnss.system_count; i++) {
+		LOG_INF("Assistance data needed: %s ephe: 0x%llx, alm: 0x%llx",
+			get_system_string(last_agnss.system[i].system_id),
+			last_agnss.system[i].sv_mask_ephe,
+			last_agnss.system[i].sv_mask_alm);
+	}
 
 #if defined(CONFIG_GNSS_SAMPLE_LTE_ON_DEMAND)
 	lte_connect();
