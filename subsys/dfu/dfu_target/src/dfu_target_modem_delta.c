@@ -149,8 +149,12 @@ int dfu_target_modem_delta_write(const void *const buf, size_t len)
 	} else if (err > 0) {
 		LOG_ERR("Write failed, modem error %d", err);
 		switch (err) {
+		case NRF_MODEM_DELTA_DFU_INVALID_DATA:
 		case NRF_MODEM_DELTA_DFU_INVALID_UUID:
 			return -EINVAL;
+		case NRF_MODEM_DELTA_DFU_RECEIVER_OUT_OF_MEMORY:
+		case NRF_MODEM_DELTA_DFU_RECEIVER_BLOCK_TOO_LARGE:
+			return -ENOMEM;
 		case NRF_MODEM_DELTA_DFU_INVALID_FILE_OFFSET:
 		case NRF_MODEM_DELTA_DFU_AREA_NOT_BLANK:
 			delete_banked_modem_delta_fw();
