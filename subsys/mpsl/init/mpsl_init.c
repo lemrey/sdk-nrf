@@ -199,7 +199,7 @@ static void m_assert_handler(const char *const file, const uint32_t line)
 }
 #endif /* IS_ENABLED(CONFIG_MPSL_ASSERT_HANDLER) */
 
-#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) && !IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
+#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
 static uint8_t m_config_clock_source_get(void)
 {
 #ifdef CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC
@@ -212,7 +212,7 @@ static uint8_t m_config_clock_source_get(void)
 	return MPSL_CLOCK_LF_SRC_EXT_LOW_SWING;
 #elif CONFIG_CLOCK_CONTROL_NRF_K32SRC_EXT_FULL_SWING
 	return MPSL_CLOCK_LF_SRC_EXT_FULL_SWING;
-#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) || IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
+#elif IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
 	return 0;
 #else
 	#error "Clock source is not supported or not defined"
@@ -227,7 +227,7 @@ static int32_t mpsl_lib_init_internal(void)
 	mpsl_clock_lfclk_cfg_t clock_cfg;
 
 	/* TODO: Clock config should be adapted in the future to new architecture. */
-#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) && !IS_ENABLED(CONFIG_SOC_PLATFORM_NRF54L)
+#if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
 	clock_cfg.source = m_config_clock_source_get();
 	clock_cfg.accuracy_ppm = CONFIG_CLOCK_CONTROL_NRF_ACCURACY;
 	clock_cfg.skip_wait_lfclk_started =
