@@ -71,7 +71,6 @@ typedef union {
 #if defined(PSA_CRYPTO_DRIVER_ALG_HMAC_DRBG_OBERON)
 	oberon_hmac_drbg_context_t oberon_hmac_drbg_ctx;
 #endif
-
 } psa_driver_random_context_t;
 
 #endif /* PSA_CRYPTO_DRIVER_CONTEXTS_KDF_H */

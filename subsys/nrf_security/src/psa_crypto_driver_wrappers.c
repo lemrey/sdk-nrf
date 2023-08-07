@@ -90,7 +90,7 @@
 #include "oberon_srp.h"
 #endif
 
-#if defined(PSA_CRYPTO_DRIVER_CRACEN)
+#if defined(PSA_CRYPTO_DRIVER_CRACEN) || defined(PSA_CRYPTO_DRIVER_ALG_PRNG_CRACEN)
 #ifndef PSA_CRYPTO_DRIVER_PRESENT
 #define PSA_CRYPTO_DRIVER_PRESENT
 #endif
@@ -2907,6 +2907,12 @@ psa_status_t psa_driver_wrapper_init_random(psa_driver_random_context_t *context
 #endif
 #endif /* defined(PSA_CRYPTO_DRIVER_ALG_PRNG_OBERON) */
 
+#if defined(PSA_CRYPTO_DRIVER_ALG_PRNG_CRACEN)
+#if defined(PSA_CRYPTO_DRIVER_ALG_CTR_DRBG_CRACEN)
+	return cracen_init_random(NULL);
+#endif
+#endif /* defined(PSA_CRYPTO_DRIVER_ALG_PRNG_CRACEN) */
+
 	(void)context;
 	return PSA_SUCCESS;
 }
@@ -2952,6 +2958,14 @@ psa_status_t psa_driver_wrapper_get_random(psa_driver_random_context_t *context,
 #endif
 #endif /* defined(PSA_CRYPTO_DRIVER_ALG_PRNG_OBERON) */
 
+#if defined(PSA_CRYPTO_DRIVER_ALG_PRNG_CRACEN)
+#if defined(PSA_CRYPTO_DRIVER_ALG_CTR_DRBG_CRACEN)
+	return cracen_get_random(NULL, output, output_size);
+#else
+#error "Enable CONFIG_PSA_WANT_ALG_CTR_DRBG"
+#endif
+#endif /* defined(PSA_CRYPTO_DRIVER_ALG_PRNG_CRACEN) */
+
 	(void)context;
 	(void)output;
 	(void)output_size;
@@ -2974,6 +2988,12 @@ psa_status_t psa_driver_wrapper_free_random(psa_driver_random_context_t *context
 	return oberon_hmac_drbg_free(&context->oberon_hmac_drbg_ctx);
 #endif
 #endif /* defined(PSA_CRYPTO_DRIVER_ALG_PRNG_OBERON) */
+
+#if defined(PSA_CRYPTO_DRIVER_ALG_PRNG_CRACEN)
+#if defined(PSA_CRYPTO_DRIVER_ALG_CTR_DRBG_CRACEN)
+	return cracen_free_random(NULL);
+#endif
+#endif /* defined(PSA_CRYPTO_DRIVER_ALG_PRNG_CRACEN) */
 
 	(void)context;
 	return PSA_SUCCESS;
