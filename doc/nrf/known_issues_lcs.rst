@@ -71,7 +71,7 @@ HM-20886: The radio receiver sensitivity is too low when the radio PHY is set to
 NCSDK-20616: The LE Secure Connection pairing with MITM protection does not work between nRF54H20 devices
   The nRF54H20 devices generate the same public key due to pseudo-random generator being used, which causes pairing to be rejected to protect devices against an attack where the attacker responds with the same public key.
   This issue can be observed when running the :ref:`peripheral_hids_keyboard` or the :ref:`peripheral_hids_mouse` samples against the :ref:`bluetooth_central_hids` sample on the nRF54H20 PDKs.
-  
+
 -----
 
 In addition to these known issues, check the following pages:
@@ -92,3 +92,9 @@ Limitations
 * Using the ``nrfjprog -e`` command to erase the storage on the nRF54H20 PDK will brick the device.
   Use ``west flash --erase-storage`` instead.
 * If you cancel a ``west flash`` command before it finishes running, for example by pressing ctrl+C, the device might require a power cycle before it can be flashed again.
+* nRF54H20 USB device controller driver limitations:
+
+  * An automatic fallback to full speed is not supported when the controller is connected to the FS bus (current stack limitation).
+  * Isochronous transfers (transactions) are not yet supported (for example, there is no support for the USB audio).
+  * Handling of the ``connect``, ``disconnect``, ``suspend``, and ``resume`` bus events is not yet supported due to the design of the driver and the nRF54H20 hardware.
+  * Driver and controller can only be initialized and used after the application initialization level.
