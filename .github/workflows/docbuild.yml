@@ -57,6 +57,11 @@ jobs:
       - name: West init and update
         working-directory: ncs
         run: |
+          # add credentials
+          git config --global credential.helper ""
+          git config --global --add credential.helper store
+          echo "https://x-access-token:${{ secrets.NCS_GITHUB_TOKEN }}@github.com" >> ~/.git-credentials
+          # init & update
           west init -l nrf
           west update
           west zephyr-export
