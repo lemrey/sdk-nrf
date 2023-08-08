@@ -7,7 +7,6 @@
 #  platforms:
 #    - all
 
-
 - scenarios:
     - sample.tfm.psa_test_crypto
     - sample.tfm.psa_test_initial_attestation
@@ -28,171 +27,86 @@
     - all
   comment: "Temporary disable till the issue is fixed"
 
-- scenarios:
-    - sample.zigbee.shell
-    - sample.zigbee.shell.usb
-    - sample.zigbee.ncp.usb
-    - sample.zigbee.network_coordinator
-    - sample.zigbee.template
-    - sample.zigbee.ncp
-    - sample.zigbee.light_switch.with_shell
-    - sample.zigbee.light_switch.fota
-    - sample.zigbee.light_switch.current_measurement
-    - sample.zigbee.light_switch
-    - sample.zigbee.light_bulb.with_shell
-    - sample.zigbee.light_bulb
-    - zigbee.zboss_api.callback_api
-    - zigbee.zboss_api.alarm_api
-    - zigbee.osif.nvram
-    - sample.openthread.coap_server
-    - sample.openthread.coap_client
-    - sample.nrf_security.openthread.integration
-    - integration.nrf_security.openthread
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "CMake Error No board specified for domain 'CPUNET'.  This configuration is typically"
+
+# Configurations excluded to limit resources usage in CI integration builds.
+# To use with "quarantine-list" twister argument.
 
 - scenarios:
-    - sample.peripheral.radio_test.nrf5340_nrf21540
-    - sample.bluetooth.direct_test_mode.nrf5340_nrf21540
+    - sample.matter.lock.debug
+    - sample.matter.lock.release
+    - sample.matter.lock.smp_dfu
+    - sample.matter.lock.no_dfu
+    - sample.matter.lock.release.ffs
+    - sample.matter.lock.ffs
+    - sample.matter.lock.release.smp_dfu.ffs
+    - sample.matter.light_bulb.release
+    - sample.matter.light_bulb.smp_dfu
+    - sample.matter.light_bulb.ffs
+    - sample.matter.light_bulb.no_dfu
+    - sample.matter.light_switch.release
+    - sample.matter.light_switch.smp_dfu
+    - sample.matter.template.debug
+    - sample.matter.template.release
+    - sample.matter.template.no_dfu
+    - sample.matter.window_cover.release
+    - sample.matter.window_cover.smp_dfu
   platforms:
-    - nrf5340dk_nrf5340_cpunet
-  comment: "error: NRFX_SPIM_PIN_NOT_USED undeclared"
-
-- scenarios:
-    - sample.spm_shared_uart
-    - sample.spm
-  platforms:
-    - nrf5340dk_nrf5340_cpuapp
-    - nrf5340dk_nrf5340_cpuapp_ns
-    - nrf9160dk_nrf9160
-  comment: "error: NRFX_PERIPHERAL_ID_GET redefined"
-
-- scenarios:
-    - sample.nrf9160.modem_shell.ppp
-    - sample.nrf9160.modem_shell.non_offloading_ip
-    - sample.nrf9160.modem_shell.lwm2m
-    - sample.nrf9160.modem_shell.cloud_mqtt_rest
-    - sample.nrf9160.modem_shell.cloud_mqtt
-    - sample.nrf9160.modem_shell.cloud_mqtt_only
-    - sample.nrf9160.modem_shell
-    - sample.nrf9160.modem_shell.esp_wifi
-    - sample.nrf9160.modem_shell.bt
-  platforms:
-    - nrf9160dk_nrf9160_ns
-  comment: "error: NRFX_PERIPHERAL_ID_GET redefined"
-
-- scenarios:
-    - bluetooth.general.tester
-  platforms:
-    - qemu_x86
-  comment: "error: undefined reference to uart_pipe_send"
-
-- scenarios:
-    - lib.modem_trace_uart
-    - trace_backends.uart
-    - sample.nrf9160.modem_shell_modem_uart_trace
-    - applications.asset_tracker_v2.lwm2m.debug-modem_trace
-    - sample.nrf9160.modem_shell.thingy91_modem_uart_trace
-    - sample.nrf9160.modem_shell.non_offloading_ip_modem_uart_trace
-  platforms:
-    - qemu_cortex_m3
-    - nrf9160dk_nrf9160_ns
-    - nrf5340dk_nrf5340_cpuapp_ns
-    - thingy91_nrf9160_ns
-  comment: "error: nrfx_uarte_config_t has no member named pselrts"
-
-- scenarios:
-    - edge_impulse.wrapper
-    - edge_impulse.ei_wrapper
-  platforms:
-    - nrf9160dk_nrf9160_ns
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "fatal error: offsets.h: No such file or directory (CMake dependency issue?)"
-
-- scenarios:
-    - applications.nrf_desktop.zrelease_b0
-  platforms:
-    - nrf52840gmouse_nrf52840
-  comment: "error: AMLI_RAMPRI_Type has no member named 'CPU0', 'SPIS1', 'SAADC', etc."
-
-- scenarios:
-    - applications.nrf_desktop.zdebug
-    - applications.nrf_desktop.zrelease
-  platforms:
-    - nrf52810dmouse_nrf52810
-    - nrf52dmouse_nrf52832
-    - nrf52840gmouse_nrf52840
-  comment: "error: AMLI_RAMPRI_Type has no member named 'CPU0', 'SPIS1', 'SAADC', etc."
-
-- scenarios:
-    - applications.nrf_desktop.zdebugwithshell
-    - applications.nrf_desktop.zdebug_mcuboot_smp
-  platforms:
-    - nrf52840gmouse_nrf52840
-  comment: "error: too few arguments to function 'qdec_nrfx_gpio_ctrl'"
-
-- scenarios:
-    - nrfx_integration_test.build.bt.sw_split
-    - nrfx_integration_test.build.bt.softdevice
-    - nrfx_integration_test.build
-  platforms:
-    - nrf9160dk_nrf9160
-    - nrf9160dk_nrf9160_ns
     - nrf52840dk_nrf52840
-    - nrf5340dk_nrf5340_cpunet
-    - nrf5340dk_nrf5340_cpuapp
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "error: 'nrfx_egu_driver_api' defined but not used"
+  comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
-    - debug.cpu_load
+    - sample.matter.light_bulb.*
+    - sample.matter.light_switch.*
+    - sample.matter.template.*
+    - sample.matter.lock.*
   platforms:
-    - nrf9160dk_nrf9160
-    - nrf9160dk_nrf9160_ns
-    - nrf52840dk_nrf52840
-  comment: "error: 'nrfx_timer_config_t' has no member named 'frequency'"
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
-    - debug.cpu_load.shared_dppi
-  platforms:
-    - nrf9160dk_nrf9160
-    - nrf9160dk_nrf9160_ns
-  comment: "error: 'NRF_TIMER_FREQ_1MHz' undeclared"
-
-- scenarios:
-    - nrf5340_audio.sw_codec_lc3_test
-    - applications.nrf5340_audio.headset
-    - applications.nrf5340_audio.gateway
-  platforms:
-    - nrf5340_audio_dk_nrf5340_cpuapp
-    - nrf5340_audio_dk_nrf5340_cpuapp_ns
-  comment: "error: NRFX_I2S is assigned in a configuration file, but is not directly user-configurable (has no prompt)."
-
-- scenarios:
-    - sample.zigbee.ncp.usb.nrf5340dk_nrf5340_cpuapp
+    - sample.matter.lock.debug
+    - sample.matter.lock.release
+    - sample.matter.lock.smp_dfu
+    - sample.matter.lock.no_dfu
+    - sample.matter.lock.release.ffs
+    - sample.matter.lock.ffs
+    - sample.matter.lock.release.smp_dfu.ffs
+    - sample.matter.light_bulb.release
+    - sample.matter.light_bulb.smp_dfu
+    - sample.matter.light_bulb.ffs
+    - sample.matter.light_bulb.no_dfu
+    - sample.matter.light_switch.release
+    - sample.matter.light_switch.smp_dfu
+    - sample.matter.template.release
+    - sample.matter.template.no_dfu
+    - sample.matter.window_cover.release
+    - sample.matter.window_cover.smp_dfu
   platforms:
     - nrf5340dk_nrf5340_cpuapp
-    - nrf5340dk_nrf5340_cpuapp_ns
-  comment: "TO BE invastigated under NCSDK-18845"
+  comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
-    - drivers.timer.nrf_grtc_timer
+    - sample.matter.lock.debug
+    - sample.matter.lock.release
+    - sample.matter.lock.smp_dfu
+    - sample.matter.lock.no_dfu
+    - sample.matter.lock.release.ffs
+    - sample.matter.lock.ffs
+    - sample.matter.lock.release.smp_dfu.ffs
+    - sample.matter.light_bulb.*
+    - sample.matter.light_switch.release
+    - sample.matter.light_switch.smp_dfu
+    - sample.matter.light_switch.no_dfu
+    - sample.matter.template.release
   platforms:
-    - nrf54h20dk_nrf54h20_cpusec@soc1
-  comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-2917"
+    - nrf7002dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
-    - project.sdfw.suit.logging.nrf54h20.fpga
-    - suit-processor.integration.envelope_decoder.fpga
-    - suit-processor.integration.fetch_integrated_payload.fpga
-    - suit-processor.integration.fetch_integrated_payload_flash.fpga
-    - suit-processor.integration.suit_mci.fpga
-    - suit.integration.orchestrator.fpga
-    - suit-processor.integration.suit_storage.fpga
+    - applications.matter_weather_station.debug
+    - applications.matter_weather_station.release
   platforms:
-    - nrf54h20dk_nrf54h20_cpusec@soc1
+    - thingy53_nrf5340_cpuapp
   comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
@@ -200,82 +114,3 @@
   platforms:
     - nrf52dk_nrf52832
   comment: "Sensor Client sample doesn't fit to RAM"
-
-- scenarios:
-    - project.sdfw.stm_logging.local_domain_only.decoded.nrf54h20
-  platforms:
-    - nrf54h20dk_nrf54h20_cpusec@soc1
-  comment: "This can not pass on upmerge-4th, to be invastigated by the Aurora"
-
-- scenarios:
-    - sample.esb.prx
-    - sample.esb.prx.build
-    - sample.esb.prx.dynamic_irq
-    - sample.esb.prx.nrf5340_nrf21540
-    - sample.esb.ptx
-    - sample.esb.ptx.build
-    - sample.esb.ptx.dynamic_irq
-    - sample.esb.ptx.nrf5340_nrf21540
-  platforms:
-    - nrf52dk_nrf52832
-    - nrf52833dk_nrf52833
-    - nrf52840dk_nrf52840
-    - nrf52dk_nrf52810
-    - nrf5340dk_nrf5340_cpunet
-    - nrf21540dk_nrf52840
-  comment: "error: 'nrfx_timer_config_t' has no member named 'frequency'"
-
-- scenarios:
-    - sample.hw_id.ble
-  platforms:
-    - nrf51dk_nrf51422
-  comment: "nRF51 SoC not supported by the HCS's nrfx, see NCSDK-19772"
-
-- scenarios:
-    - applications.nrf5340_audio.headset
-    - applications.nrf5340_audio.gateway
-    - applications.nrf5340_audio.headset_dfu_internal
-    - applications.nrf5340_audio.gateway_dfu_internal
-    - applications.nrf5340_audio.headset_dfu_external
-    - applications.nrf5340_audio.gateway_dfu_external
-  platforms:
-    - nrf5340_audio_dk_nrf5340_cpuapp
-    - nrf5340_audio_dk_nrf5340_cpuapp_ns
-    - nrf5340dk_nrf5340_cpuapp_ns
-    - nrf7002dk_nrf5340_cpuapp_ns
-    - thingy53_nrf5340_cpuapp_ns
-  comment: "nrfx timer and i2s API changes break the application"
-
-- scenarios:
-    - sample.ant_advanced_burst
-    - sample.ant_background_scanning
-    - sample.ant_broadcast_rx
-    - sample.ant_broadcast_tx
-    - sample.bpwr_rx
-    - sample.bpwr_tx
-    - sample.bsc_rx
-    - sample.bsc_tx
-    - sample.hrm_rx
-    - sample.hrm_tx
-    - sample.ble_ant_app_hrm
-    - sample.ant_rpc
-  platforms:
-    - all
-  comment: "ANT samples fail to build; need to change main()'s signature to int main(void)"
-
-- scenarios:
-    - sample.bluetooth.mesh.light
-    - sample.bluetooth.mesh.light_ctrl.emds
-    - sample.bluetooth.mesh.light_switch
-    - sample.bluetooth.mesh.light_ctrl
-    - sample.bluetooth.mesh.sensor_server
-  platforms:
-    - thingy53_nrf5340_cpuapp
-    - thingy53_nrf5340_cpuapp_ns
-  comment: "RAM region overflow"
-
-- scenarios:
-    - drivers.i2c.api.slave_emulated
-  platforms:
-    - nrf54l15dk_nrf54l15_cpuapp@soc1
-  comment: "Compilation error in nrfx_twis.c"
