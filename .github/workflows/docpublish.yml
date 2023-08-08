@@ -20,8 +20,8 @@ jobs:
           workflow: docbuild.yml
           run_id: ${{ github.event.workflow_run.id }}
           github_token: ${{secrets.NCS_GITHUB_TOKEN}}
-          name: cache
-          path: cache
+          name: docs
+          path: docs
 
       - name: Install azcopy
         run: |
@@ -39,14 +39,19 @@ jobs:
         run: azcopy login --service-principal --application-id ${AZCOPY_SPA_APPLICATION_ID} --tenant-id ${AZCOPY_SPA_TENANT_ID}
 
       - name: Upload documentation
-        working-directory: cache
+        working-directory: docs
         run: |
+          MONITOR=docs/monitor_${{ github.event.workflow_run.id }}.txt
+          ARCHIVE="doc_build_${{ github.event.workflow_run.id }}.zip"
+
           # don't do anything if monitor.txt doesn't exist (no publish)
-          if [[ ! -f "extra/monitor.txt" ]]; then
+          if [[ ! -f ${MONITOR} ]]; then
             exit 0
           fi
 
-          unzip -q html.zip
+          # upload files
+          mkdir html
+          unzip -q $ARCHIVE -d html
 
           # download .htaccess file
           azcopy copy "https://ncsdocsa.blob.core.windows.net/ncs-doc-authorization/template.htaccess" html/.htaccess
@@ -54,7 +59,7 @@ jobs:
           sed -i "s/__DOCSET__/nrf-next/g" html/.htaccess
 
           # prepare upload
-          read -a strarr <<< $(cat extra/monitor.txt)
+          read -a strarr <<< $(cat ${MONITOR})
           category=${strarr[1]}
           name=${strarr[2]}
           if [[ "$category" == "dev" ]]; then
@@ -73,36 +78,10 @@ jobs:
             cat $GITHUB_WORKSPACE/azcopy_logs/docsync.log
           fi
 
-      - name: Upload Zoomin documentation
-        run: |
-          for file in docs/monitor*.txt; do
-            if ! grep -q main ${file}; then
-              echo "Not targeting main, skipping Zoomin upload"
-              exit 0
-            fi
-          done
-
-          # trust server
-          mkdir -p ~/.ssh
-          ssh-keyscan upload.zoominsoftware.io >> ~/.ssh/known_hosts
-
-          # prepare key
-          echo "${{ secrets.NCS_ZOOMIN_KEY }}" | base64 -d > zoomin_key
-          chmod 600 zoomin_key
-
-          # upload files
-          for file in docs/*.zip; do
-            sftp -v -i zoomin_key nordic@upload.zoominsoftware.io <<EOF
-            cd /nordic-be-dev.zoominsoftware.io/sphinx-html/incoming
-            put ${file}
-            quit
-          EOF
-          done
-
       - name: Add preview URL comment for PRs
         uses: carlescufi/action-doc-url@main
         with:
           github-token: ${{ secrets.NCS_GITHUB_TOKEN }}
           urlroot: ${{ vars.DOC_PR_URL_ROOT }}
           pr-prefix: "PR-"
-          pr-file: cache/extra/pr.txt
+          pr-file: docs/pr.txt
