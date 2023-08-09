@@ -217,7 +217,7 @@ No changes since the latest nRF Connect SDK release.
 Other samples
 -------------
 
-No changes since the latest nRF Connect SDK release.
+* Aligned the :ref:`zephyr:qdec_sensor` sample to support the nRF54H20 PDK.
 
 Devicetree configuration
 ========================
@@ -232,7 +232,7 @@ Drivers
 
 This section provides detailed lists of changes by :ref:`driver <drivers>`.
 
-No changes since the latest nRF Connect SDK release.
+* Aligned the following peripheral drivers to the nRF54H20 PDK: TWIM, QDEC, and COMP.
 
 Libraries
 =========
