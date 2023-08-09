@@ -50,7 +50,7 @@
 
 /*   - DPPIC_G1 : DPPIC130_S */
 #define DPPIC_G1_INST                NRF_DPPIC130_S
-#define DPPIC_G1_TS_CHANNEL          0 /* must be in the range [0..7] to satisfy the requirements for the dependent macros */
+#define DPPIC_G1_TS_CHANNEL          3 /* must be in the range [0..7] to satisfy the requirements for the dependent macros */
 
 /*  - PPIB_G1 : PPIB130_S */
 #define PPIB_G1_TS_CHANNEL           (DPPIC_G1_TS_CHANNEL + 8) /* hw-fixed dependency */
@@ -145,21 +145,21 @@ void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_
 /* Peripherals used for hardware tasks - located in local domain (_L_) */
 /*   - DPPIC_L : DPPIC020 (RADIOCORE.DPPIC020) */
 /*   - IPCT_L : NRF_IPCT (RADIOCORE.IPCT) */
-#define IPCT_L_HT_CHANNEL            1
+#define IPCT_L_HT_CHANNEL            2
 #if defined(NRF54H20_ENGA_XXAA)
-#define IPCT_L_SHORTS                IPCT_SHORTS_RECEIVE1_ACK1_Msk
+#define IPCT_L_SHORTS                IPCT_SHORTS_RECEIVE2_ACK2_Msk
 #else
-#define IPCT_L_SHORTS                IPCT_SHORTS_RECEIVE1_FLUSH1_Msk
+#define IPCT_L_SHORTS                IPCT_SHORTS_RECEIVE2_FLUSH2_Msk
 #endif
 #define IPCT_L_EVENT_RECEIVE         NRFX_CONCAT_2(NRF_IPCT_EVENT_RECEIVE_, IPCT_L_HT_CHANNEL)
 
 /* Peripherals used for timestamping - located in global "Main power domain" (_G1_) */
 /*   - IPCT_G1 : IPCT130_S */
-#define IPCT_G1_HT_CHANNEL           1
+#define IPCT_G1_HT_CHANNEL           2
 #define IPCT_G1_TASK_SEND            NRFX_CONCAT_2(NRF_IPCT_TASK_SEND_, IPCT_G1_HT_CHANNEL)
 
 /*   - DPPIC_G1 : DPPIC130_S */
-#define DPPIC_G1_HT_CHANNEL          1 /* must be in the range [0..7] to satisfy the requirements for the dependent macros */
+#define DPPIC_G1_HT_CHANNEL          2 /* must be in the range [0..7] to satisfy the requirements for the dependent macros */
 
 /*  - PPIB_G1 : PPIB130_S */
 #define PPIB_G1_HT_CHANNEL           (DPPIC_G1_HT_CHANNEL + 8) /* hw-fixed dependency */
