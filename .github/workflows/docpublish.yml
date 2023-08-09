@@ -41,11 +41,12 @@ jobs:
       - name: Upload documentation
         working-directory: docs
         run: |
-          MONITOR=docs/monitor_${{ github.event.workflow_run.id }}.txt
+          MONITOR=monitor_${{ github.event.workflow_run.id }}.txt
           ARCHIVE="doc_build_${{ github.event.workflow_run.id }}.zip"
 
           # don't do anything if monitor.txt doesn't exist (no publish)
           if [[ ! -f ${MONITOR} ]]; then
+            echo "No monitor file found, exiting"
             exit 0
           fi
 
