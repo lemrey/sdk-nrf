@@ -45,6 +45,7 @@ The following |NCS| samples have been developed and tested on the nRF54H20 for t
 The following |NCS| application has been developed and tested on the nRF54H20 for the initial limited sampling:
 
 * :ref:`nrf_machine_learning_app`
+* :ref:`nrf_desktop`
 
 Zephyr samples
 **************
@@ -56,3 +57,4 @@ The following Zephyr samples have been developed and tested on the nRF54H20 for 
 * :ref:`zephyr:bluetooth_central_hr`
 * :ref:`zephyr:bluetooth-hci-rpmsg-sample`
 * :ref:`zephyr:coremark_sample`
+* :ref:`zephyr:qdec_sensor`
