@@ -506,3 +506,7 @@
   - "include/nrf_rpc/*"
   - "lib/fatal_error/*"
   - "subsys/nrf_rpc/**/*"
+
+"CI-suit-dfu-test":
+  - "modules/tfm/**/*"
+  - "include/tfm/**/*"
