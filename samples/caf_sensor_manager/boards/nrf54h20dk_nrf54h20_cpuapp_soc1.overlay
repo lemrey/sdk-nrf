@@ -87,9 +87,9 @@
 
 &grtc {
 	status = "okay";
-	/* Channels 6 and 7 are owned by App but used by PPR. */
-	child-owned-channels = <6 7>;
-	nonsecure-channels = <6 7>;
+	/* Channel 6 is owned by App but used by PPR. */
+	child-owned-channels = <6>;
+	nonsecure-channels = <6>;
 };
 
 &systick {
