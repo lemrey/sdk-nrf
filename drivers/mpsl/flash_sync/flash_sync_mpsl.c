@@ -56,8 +56,13 @@ static struct mpsl_context _context;
  */
 static uint32_t get_timeslot_time_us(void)
 {
+#ifdef CONFIG_BOARD_NRF54L15DK_NRF54L15_CPUAPP
+	nrf_timer_task_trigger(NRF_TIMER10, NRF_TIMER_TASK_CAPTURE0);
+	return nrf_timer_cc_get(NRF_TIMER10, NRF_TIMER_CC_CHANNEL0);
+#else
 	nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_CAPTURE0);
 	return nrf_timer_cc_get(NRF_TIMER0, NRF_TIMER_CC_CHANNEL0);
+#endif
 }
 
 static void reschedule_next_timeslot(void)
