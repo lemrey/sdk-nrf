@@ -1,0 +1,13 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+#include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
+
+/ {
+    chosen {
+        zephyr,console = &uart136;
+        zephyr,shell-uart = &uart136;
+    };
+};
