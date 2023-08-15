@@ -59,7 +59,7 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr-next
-      revision: 64e4eb8831b6526252bd63c2a5b32edc33c3d529
+      revision: a9da47c6b1cb0a686fa2914d1fdd08b548ee58a3
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -142,9 +142,9 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 24f219f0499994ec4fb842f8616e92c4e78a3a96
+      revision: d3b0c13e7d4e5d98b05dda7f688f7c9fcabd67aa
     - name: sdk-secdom
-      revision: 5b01732abac5a4862c95581debe0f904187ddcae
+      revision: 5ca13d6ef886005709afd57693cc2f7342cbedec
       path: core_fw/secdom
     - name: nrf-regtool
       revision: 8c34850ea1aff25ec279cc247fe3464592346f00
@@ -180,7 +180,7 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: 07464fd50e1cebe69b6258f2b55719ee8e6f2041
+      revision: 7ddc92e3fd3247eda94c91a58f96816d1fc0fe78
       groups:
         - nrf-802154
     - name: dragoon
