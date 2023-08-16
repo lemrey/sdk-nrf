@@ -70,9 +70,6 @@
 
 &grtc {
 	status = "okay";
-	/* Channel 6 is owned by App but used by PPR. */
-	child-owned-channels = <6>;
-	nonsecure-channels = <6>;
 };
 
 /* Enable PPR clic so App could start PPR. */

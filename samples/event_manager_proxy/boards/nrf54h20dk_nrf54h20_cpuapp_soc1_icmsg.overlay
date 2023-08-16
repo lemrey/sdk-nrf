@@ -74,9 +74,6 @@
 
 &grtc {
 	status = "okay";
-	/* Channel 6 is owned by App but used by PPR. */
-	child-owned-channels = <6>;
-	nonsecure-channels = <6>;
 };
 
 /* Disable systick for App core, GRTC is used as tick source. */
