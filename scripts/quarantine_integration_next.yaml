@@ -42,3 +42,51 @@
   platforms:
     - nrf5340dk_nrf5340_cpuapp
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-processor.integration.fetch_integrated_payload
+    - suit-processor.integration.envelope_reference_component
+  platforms:
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-processor.integration.envelope_decoder
+  platforms:
+    - native_posix
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-platform.integration.cache_sink
+  platforms:
+    - nrf54h20dk_nrf54h20_cpuapp@soc1
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-processor.integration.suit_storage
+    - suit-platform.integration.memptr_sink
+    - suit-platform.integration.mram_sink
+    - suit-platform.integration.common.memptr_storage
+    - suit-platform.integration.memptr_streamer
+    - suit-platform.integration.cache_streamer
+    - suit-platform.integration.platform
+  platforms:
+    - native_posix
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-processor.integration.suit_mci
+  platforms:
+    - native_posix
+    - nrf54h20dk_nrf54h20_cpusec@soc1
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-platform.integration.fetch
+    - suit-platform.integration.copy
+  platforms:
+    - native_posix
+    - native_posix_64
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
