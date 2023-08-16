@@ -90,3 +90,33 @@
     - native_posix_64
     - nrf52840dk_nrf52840
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - project.sdfw.dummy_services.logging.nrf54h20.fpga
+    - project.sdfw.logging.serial.nrf54h20.emu
+    - project.sdfw.logging.serial.nrf54h20.fpga
+  platforms:
+    - nrf54h20dk_nrf54h20_cpusec
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - project.sdfw.dummy_services.logging.nrf54h20.fpga
+    - project.sdfw.hw_cracen
+    - project.sdfw.logging.nrf54h20
+    - project.sdfw.logging.nrf54h20.fpga
+    - project.sdfw.logging.serial.nrf54h20.fpga
+  platforms:
+    - nrf54h20dk_nrf54h20_cpusec@soc1
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - project.sdfw.dummy_services.logging.nrf9230.fpga
+    - project.sdfw.emu.iqif_hijack
+    - project.sdfw.hw_cracen
+    - project.sdfw.logging.nrf9230.emu
+    - project.sdfw.logging.nrf9230.fpga
+    - project.sdfw.logging.serial.nrf9230.emu
+    - project.sdfw.logging.serial.nrf9230.fpga
+  platforms:
+    - nrf9230dk_nrf9230_cpusec
+  comment: "Configurations excluded to limit resources usage in integration builds"
