@@ -12,6 +12,33 @@
 #    - all
 
 - scenarios:
-    - None
+    - applications.homekit.weather_station.hdfu.debug
   platforms:
-    - all
+    - thingy53_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.homekit.programmable_switch.hdfu.debug
+  platforms:
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.homekit.light_bulb.ble.qrc.release
+  platforms:
+    - nrf52833dk_nrf52833
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.homekit.light_bulb.multiprotocol.ftd.eui.qrc.ndfu.release
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.homekit.lock.ble.qrc.ndfu.release
+    - sample.homekit.lock.multiprotocol.mtd.eui.nfc.hdfu.release
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
