@@ -231,3 +231,10 @@
   platforms:
     - nrf52840dongle_nrf52840
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bootloader
+  platforms:
+    - nrf21540dk_nrf52840
+    - nrf52833dk_nrf52833
+  comment: "Configurations excluded to limit resources usage in integration builds"
