@@ -238,3 +238,186 @@
     - nrf21540dk_nrf52840
     - nrf52833dk_nrf52833
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.light_switch
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.light_switch.current_measurement
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.light_switch.fota
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.light_switch.multiprotocol
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.light_switch.with_shell
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.shell
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.shell.usb.nrf52840dk_nrf52840
+  platforms:
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.shell.usb.nrf21540dk_nrf52840
+  platforms:
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.ncp
+  platforms:
+    - nrf21540dk_nrf52840
+    - nrf52833dk_nrf52833
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.ncp.usb.nrf52840dk_nrf52840
+  platforms:
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.ncp.usb.nrf21540dk_nrf52840
+  platforms:
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.light_bulb
+  platforms:
+    - nrf21540dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.light_bulb.with_shell
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.network_coordinator
+  platforms:
+    - nrf21540dk_nrf52840
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.zigbee.template
+  platforms:
+    - nrf21540dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.osif.serial.basic
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.osif.serial.logger
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.osif.serial.async
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.osif.crypto
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.osif.timer.ktimer
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.osif.timer.counter
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.osif.nvram
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.zboss_api.alarm_api
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - zigbee.zboss_api.callback_api
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
