@@ -14,6 +14,7 @@
 .. _`Zephyr LED API`: https://docs.zephyrproject.org/latest/hardware/peripherals/led.html
 .. _`Zephyr gpio-leds`: https://docs.zephyrproject.org/latest/build/dts/api/bindings/led/gpio-leds.html
 .. _`Zephyr pwm-leds`: https://docs.zephyrproject.org/latest/build/dts/api/bindings/led/pwm-leds.html
+.. _`PHYTEC link board ETH`: https://docs.zephyrproject.org/latest/boards/shields/link_board_eth/doc/index.html
 .. _`Pinctrl Migration Utility Script documentation`: https://github.com/zephyrproject-rtos/zephyr/blob/main/scripts/utils/pinctrl_nrf_migrate.py
 
 .. ### Source: github.com
