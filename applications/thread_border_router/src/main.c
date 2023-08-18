@@ -8,6 +8,8 @@
  * @brief nRF Thread Border Router's main function
  */
 
+#include "border_agent.h"
+
 #include <ipv6.h>
 
 #include <openthread/border_routing.h>
@@ -44,7 +46,6 @@ static void net_ev_cb_handler(struct net_mgmt_event_callback *cb,
 
 		if (addr) {
 			context.ll_addr = addr;
-			LOG_DBG("IPv6 ll addr ready");
 			k_sem_give(&ll_addr_wait);
 		}
 	}
@@ -52,11 +53,11 @@ static void net_ev_cb_handler(struct net_mgmt_event_callback *cb,
 
 static bool join_all_routers_group(struct net_if *iface)
 {
-	k_sem_take(&ll_addr_wait, K_FOREVER);
-	net_mgmt_del_event_callback(&net_event_cb);
-
 	struct in6_addr all_routers_addr;
 	int ret;
+
+	k_sem_take(&ll_addr_wait, K_FOREVER);
+	net_mgmt_del_event_callback(&net_event_cb);
 
 	net_ipv6_addr_create_ll_allrouters_mcast(&all_routers_addr);
 
@@ -84,6 +85,11 @@ static int init_backbone_iface(void)
 	LOG_INF("Backbone link device: %s", backbone_device->name);
 	context.backbone_iface = net_if_lookup_by_dev(backbone_device);
 
+	if (!context.backbone_iface) {
+		LOG_ERR("No backbone interface");
+		return EXIT_FAILURE;
+	}
+
 	net_config_init_app(net_if_get_device(context.backbone_iface),
 			    "Initializing backbone interface");
 
@@ -105,7 +111,7 @@ static bool configure_backbone_link(struct net_if *iface)
 }
 
 static void on_thread_state_changed(otChangedFlags flags, struct openthread_context *ot_context,
-					void *user_data)
+				    void *user_data)
 {
 	ARG_UNUSED(user_data);
 
@@ -135,7 +141,7 @@ static void on_thread_state_changed(otChangedFlags flags, struct openthread_cont
 }
 
 static struct openthread_state_changed_cb ot_state_chaged_cb = { .state_changed_cb =
-								 on_thread_state_changed };
+									 on_thread_state_changed };
 
 int main(void)
 {
@@ -149,15 +155,12 @@ int main(void)
 
 	openthread_state_changed_cb_register(context.ot, &ot_state_chaged_cb);
 
-	if (!context.backbone_iface) {
-		LOG_WRN("No interface for device %p", backbone_device);
-		return EXIT_FAILURE;
-	}
-
 	k_sem_take(&run_app, K_FOREVER);
 
+	LOG_DBG("IPv6 Link-Local address ready");
+
 	if (!configure_backbone_link(context.backbone_iface)) {
-		LOG_ERR("Backbone link configuration fail.");
+		LOG_WRN("Backbone link configuration fail");
 		return EXIT_FAILURE;
 	}
 
@@ -167,5 +170,13 @@ int main(void)
 	otPlatInfraIfStateChanged(context.ot->instance, net_if_get_by_iface(context.backbone_iface),
 				  true);
 
+	border_agent_init();
+
 	return EXIT_SUCCESS;
 }
+
+/* As we cannot use NET_CONFIG_AUTO_INIT option (it would pick OpenThread as the
+ * main interface. We need to call net_config_init_app() before mdns_responder
+ * modules gets initialized.
+ */
+SYS_INIT(init_backbone_iface, APPLICATION, 1);

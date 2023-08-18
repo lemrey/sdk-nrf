@@ -16,4 +16,28 @@ menu "Zephyr Kernel"
 source "Kconfig.zephyr"
 endmenu
 
+config NRF_TBR_MDNS_PUBLISHER_RECORDS
+    int "mDNS records"
+    default 8
+    help
+      Number of mDNS records that can be allocated in runtime
+
+config NRF_TBR_NRF_TBR_MDNS_PUBLISHER_MAX_TXT_LEN
+    int "Max TXT record length"
+    default 256
+    help
+      Maximum length of TXT record
+
+config NRF_TBR_PRODUCT_NAME
+    string "Product"
+    default "tbr"
+    help
+      Defines the name of a product advertised by Thread Border Agent
+
+config NRF_TBR_VENDOR_NAME
+    string "Vendor"
+    default "nordicsemi"
+    help
+      Defines the name of a vendor advertised by Thread Border Agent
+
 endmenu

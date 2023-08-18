@@ -12,6 +12,8 @@ project(thread_border_router)
 target_include_directories(app PRIVATE ${ZEPHYR_BASE}/subsys/net/ip)
 
 target_sources(app PRIVATE
+	src/border_agent.c
 	src/main.c
+	src/mdns_publisher.c
 	src/shell.c
 )
