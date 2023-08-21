@@ -114,7 +114,7 @@ To install the toolchain, complete the following steps:
    .. parsed-literal::
       :class: highlight
 
-      curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | sh
+      curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.0-cs1-dev1 sh
 
    Depending on your connection, this might take some time.
 
