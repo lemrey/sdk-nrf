@@ -428,3 +428,85 @@
     - nrf9160dk_nrf9160_ns
     - thingy91_nrf9160_ns
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.fast_pair
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52dk_nrf52832
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.storage.factory_reset.default
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.storage.factory_reset.no_reboot
+  platforms:
+    - native_posix
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.storage.factory_reset.6keys
+    - fast_pair.storage.factory_reset.7keys
+    - fast_pair.storage.factory_reset.8keys
+    - fast_pair.storage.factory_reset.9keys
+    - fast_pair.storage.factory_reset.10keys
+  platforms:
+      - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.storage.account_key_storage.default
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf9160dk_nrf9160_ns
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.storage.account_key_storage.6keys
+    - fast_pair.storage.account_key_storage.7keys
+    - fast_pair.storage.account_key_storage.8keys
+    - fast_pair.storage.account_key_storage.9keys
+    - fast_pair.storage.account_key_storage.10keys
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.crypto.mbedtls
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.crypto.oberon
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - fast_pair.crypto.tinycrypt
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf9160dk_nrf9160_ns
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
