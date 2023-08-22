@@ -167,18 +167,6 @@
   comment: "https://projecttools.nordicsemi.no/jira/browse/NRFX-2917"
 
 - scenarios:
-    - project.sdfw.suit.logging.nrf54h20.fpga
-    - suit-processor.integration.envelope_decoder.fpga
-    - suit-processor.integration.fetch_integrated_payload.fpga
-    - suit-processor.integration.fetch_integrated_payload_flash.fpga
-    - suit-processor.integration.suit_mci.fpga
-    - suit.integration.orchestrator.fpga
-    - suit-processor.integration.suit_storage.fpga
-  platforms:
-    - nrf54h20dk_nrf54h20_cpusec@soc1
-  comment: "Configurations excluded to limit resources usage in integration builds"
-
-- scenarios:
     - sample.bluetooth.mesh.sensor_client
   platforms:
     - nrf52dk_nrf52832
