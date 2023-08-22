@@ -1,6 +1,6 @@
-# sdk-nrf-next relevant qurantine_integration part
-# It is allowed to duplicate a scenario name which is alredy recorded in
-# diffrent quarantine file.
+# sdk-nrf-next relevant quarantine_integration part
+# It is allowed to duplicate a scenario name which is already recorded in
+# different quarantine file.
 
 # The configurations resulting as a product of scenarios and platforms
 # will be skipped if quarantine is used. More details here:
