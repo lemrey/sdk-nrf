@@ -57,9 +57,15 @@
   comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
-    - suit-platform.integration.cache_sink
+    - suit-platform.integration.cache_sink.fpga
   platforms:
     - nrf54h20dk_nrf54h20_cpuapp@soc1
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-platform.integration.cache_sink
+  platforms:
+    - native_posix
   comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
@@ -70,6 +76,7 @@
     - suit-platform.integration.memptr_streamer
     - suit-platform.integration.cache_streamer
     - suit-platform.integration.platform
+    - suit-platform.integration.suit_cache
   platforms:
     - native_posix
     - nrf52840dk_nrf52840
@@ -99,6 +106,7 @@
     - suit-processor.integration.suit_mci.fpga
     - suit.integration.orchestrator.fpga
     - suit-processor.integration.suit_storage.fpga
+    - suit-platform.integration.suit_cache.fpga
   platforms:
     - nrf54h20dk_nrf54h20_cpusec@soc1
   comment: "Configurations excluded to limit resources usage in integration builds"
