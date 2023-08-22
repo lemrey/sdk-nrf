@@ -51,12 +51,6 @@ LOG_MODULE_REGISTER(nfc_platform, CONFIG_NFC_PLATFORM_LOG_LEVEL);
 
 #define DT_DRV_COMPAT nordic_nrf_clock
 
-#ifdef CONFIG_NFC_ZERO_LATENCY_IRQ
-#define NFCT_IRQ_FLAGS	IRQ_ZERO_LATENCY
-#else
-#define NFCT_IRQ_FLAGS	0
-#endif /* CONFIG_NFC_ZERO_LATENCY_IRQ */
-
 #if !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM)
 static struct onoff_manager *hf_mgr;
 static struct onoff_client cli;
@@ -121,7 +115,7 @@ nrfx_err_t nfc_platform_setup(nfc_lib_cb_resolve_t nfc_lib_cb_resolve, uint8_t *
 #endif /* !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) */
 
 	IRQ_DIRECT_CONNECT(DT_IRQN(NFCT), DT_IRQ(NFCT, priority),
-			   nfc_isr_wrapper, NFCT_IRQ_FLAGS);
+			   nfc_isr_wrapper, 0);
 
 #if NFC_PLATFORM_USE_TIMER_WORKAROUND
 	IRQ_CONNECT(NFC_TIMER_IRQn, DT_IRQ(NFCT, priority),
