@@ -1,0 +1,16 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&uart30 {
+    current-speed = <115200>;
+    status = "okay";
+};
+
+ / {
+    chosen {
+        zephyr,ot-uart = &uart30;
+    };
+};
