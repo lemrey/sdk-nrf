@@ -49,6 +49,15 @@ tests:
     tags: ci_build
     extra_args: remote_CONFIG_EMULATOR_FPGA=y
       CONFIG_EMULATOR_FPGA=y
+  sample.multicore.hello_world.nrf9230.fpga:
+    build_only: true
+    sysbuild: true
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    tags: ci_build
+    extra_args: remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
   sample.multicore.hello_world.nrf54h20.fpga.stm_logging_fsc_frontend:
     build_only: true
     sysbuild: true
