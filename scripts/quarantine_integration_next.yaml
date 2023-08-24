@@ -758,3 +758,209 @@
   platforms:
     - nrf5340dk_nrf5340_cpuapp
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.nrf_cloud
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+    - native_posix
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.nrf_cloud-pgps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.nrf_cloud-no-agps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.aws
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+    - native_posix
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.aws-pgps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.aws-pgps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.azure
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+    - native_posix
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.debug
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+    - native_posix
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.debug-memfault
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.memfault
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.low-power
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.carrier
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.lwm2m.low-power
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.lwm2m.debug
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.lwm2m.debug-modem_trace
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.lwm2m.memfault
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.memfault-low-power
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.nrf7002ek_wifi
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.nrf7002ek_wifi-debug
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.cloud.cloud_codec.json_common.aws
+  platforms:
+    - nrf9160dk_nrf9160
+    - native_posix
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - applications.asset_tracker_v2.cloud.cloud_codec.json_common.azure
+  platforms:
+    - nrf9160dk_nrf9160
+    - native_posix
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - asset_tracker_v2.nrf_cloud_codec_test
+  platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - asset_tracker_v2.debug_module_test.tester
+  platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - asset_tracker_v2.lwm2m_codec
+  platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - asset_tracker_v2.location_module_test.tester
+  platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - asset_tracker_v2.lwm2m_integration
+  platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - asset_tracker_v2.nrf_cloud_codec_mocked_cjson_test
+  platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - asset_tracker_v2.ui_module_test.tester
+  platforms:
+    - native_posix
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
