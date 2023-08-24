@@ -7,13 +7,12 @@ nRF Thread Border Router
    :local:
    :depth: 2
 
-Thread Border Router (BR) is a device that enables connectivity and integration of nodes (devices) in the Thread Network(s) with other devices and services located in external networks, such as the wider Internet or local IP networks.
-It also enhances security and offers management capabilities for your Thread network.
-Additionally, Thread BR can handle one of the following roles: Router, Leader, or REED.
-By using the Thread BR, you can extend the capabilities of your Thread devices.
+The Thread Border Router is a specific type of a network device that provides connectivity from the IEEE 802.15.4 network
+to adjacent networks on other physical layers (such as Wi-Fi or Ethernet). Border Routers provide services for devices within
+the IEEE 802.15.4 network, including routing services for off-network operations.
 
-nRF Thread BR application demonstrates Thread BR functionality developed with the use of Nordic Semiconductor’s products: nRF54H20 PDK and |NCS|.
-The application also utilizes the Ethernet interface (`PHYTEC link board ETH`_) as an external network interface.
+nRF Thread BR application is a part of |NCS| and utilizes capabilities of nRF54H20 PDK. To operate it also requires an external
+Ethernet interface (see `Hardware`_ requirements).
 
 .. figure:: /images/nrf_tbr_app_overview.svg
     :alt: Thread BR connections
@@ -26,8 +25,8 @@ Application overview
 Architecture
 ============
 
-nRF Thread BR application is based on the nRF54H20 PDK and an external Ethernet interface (for example, provided by `PHYTEC link board ETH`_ that is supported by Zephyr OS).
-The application is built using |NCS| that includes Zephyr OS and OpenThread stack.
+nRF Thread BR application runs on the nRF54H20 PDK and utilizes external Ethernet interface (for example, provided by
+`PHYTEC link board ETH`_). The application is built using |NCS| that includes Zephyr RTOS and OpenThread stack.
 
 The application is running on a single nRF54H20 SoC with no need to have additional external MCU to be involved.
 
@@ -36,7 +35,7 @@ nRF TBR architecture is presented on the following diagram:
 .. figure:: /images/nrf_tbr_app_arch.svg
     :alt: Thread BR architecture
 
-    Thread BR architecture
+    nRF Thread BR architecture
 
 Features
 ========
@@ -47,15 +46,16 @@ The current version of nRF TBR application supports the following features:
     IPv6 communication between Thread and non-Thread (external) networks.
     It currently supports Ethernet as the backbone link.
 
-* mDNS & DNS-SD
-    Zero-configuration discovery of services either offered by Thread BR or added by customers to BR.
+* mDNS
+    Multicast based discovery of services either offered by Thread BR or provided by customers.
 
 * DHCPv6 + prefix delegation
-    Network protocol for configuring IPv6 hosts with IP addresses, IP prefixes, default route, local segment MTU, and other configuration data required to operate in an IPV6 network.
-    Prefix Delegation is one of the methods available in IPv6 for sending information to a device about what networks are available for subnetting.
+    Network protocol for configuring IPv6 hosts with IP addresses, IP prefixes, default route, local segment MTU,
+    and other configuration data required to operate in an IPV6 network. Prefix Delegation is one of the methods available
+    in IPv6 for sending information to a device about what networks are available for subnetting.
 
 * Border Agent
-    This feature handles the Mesh Commissioning Protocol (MeshCoP) messages used for device commissioning.
+    Relaying MeshCoP messages between a Thread Network and an External Commissioner.
 
 Requirements
 ************
@@ -71,26 +71,37 @@ The application supports the following development kit:
 
 The application also requires the following boards:
 
+..
+  Need some more information about "Daughterboard"
+
 * `PHYTEC link board ETH`_
 * Daughterboard
 
 Network
 =======
 
-Current application release supports only IPv6 network on backbone link, hence you will need the Internet backbone connection with IPv6 support for testing purposes.
-
-Additionally, you must disable IPv6 Router Advertisement Guard on the router.
+Current version of the application supports only IPv6 connectivity between Thread and non-Thread devices over the backbone link.
+However, the application can support IPv4 networking for other purposes, e.g. mDNS and name resolution.
 
 Testing prerequisites
 =====================
 
 To perform testing, the following devices are required:
 
-* An Ethernet router with IPv6 connectivity.
-  Make sure that IPv6 Router Advertisement Guard is disabled on the router.
-* An nRF Thread BR devkit.
-* A Thread CLI device (e.g., running on nRF52840 DK).
-* A Linux host machine.
+..
+  Should we put a/an before names like "Thread", "Linux" "nRF54G20 PDK" etc. (I've removed them at the moment)
+
+* A router with IPv6 connectivity through Ethernet or a network switch.
+* nRF54H20 PDK with nRF Thread Border Router application.
+* Thread CLI device (e.g., running on nRF52840 DK).
+* Linux host machine.
+
+..
+  We need to somehow stress this more as it may break testing environment
+
+Note: nRF Thread Border router uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with
+other devices. If non-Thread network devices are connected through a router make sure that IPv6 Router Advertisement Guard feature
+is disabled. Otherwise, it can disrupt communication between the networks.
 
 User interface
 **************
@@ -98,6 +109,11 @@ User interface
 nRF TBR application supports commands listed in `OpenThread CLI Reference`_.
 OpenThread CLI is integrated into the system shell accessible over serial connection.
 To indicate a Thread command, the ``ot`` keyword needs to precede the command.
+
+Moreover, the application provides the following CLI commands preceded by the ``tbr`` keyword:
+
+..
+  TBD: the table? or just a reference how to list the commands?
 
 Configuration
 *************
@@ -107,16 +123,20 @@ Configuration
 Linux machine configuration
 ===========================
 
-To let a Thread device communicate with neighbors in Wi-Fi network to which nRF Thread BR is connected, the router performs routing configuration by sending Routing Advertisement (RA) messages.
-Linux host machine needs to be configured to accept RA messages sent by nRF Thread BR device.
+To let a Thread devices communicate with non-Thread networks, nRF TBR provides routing configuration and prefixes by sending
+Routing Advertisement (RA) messages. Linux host machine has to be configured to accept incoming RA messages.
 
-1. Enable RAs messages to be accepted - set accept_ra parameter to ``2`` by running the following command on Linux host machine command line:
+..
+  How about a note regading security? Now its only for the testing purposes
+
+1. Enable acceptance of RA messages - set accept_ra parameter to ``2`` by running the following command on Linux host terminal:
 
 .. code-block:: console
 
    sudo sysctl -w n.ipv6.conf.all.accept_ra=2
 
-#. Allow all kinds of prefix length in RAs messages to be accepted - set the accept_ra_rt_info_max_plen parameter to ``128`` by running the following command on Linux host machine's command line:
+#. Allow all kinds of prefix length in RAs messages to be accepted - set the accept_ra_rt_info_max_plen parameter to ``128`` by
+   running the following command on Linux host machine's command line:
 
 .. code-block:: console
 
@@ -125,26 +145,27 @@ Linux host machine needs to be configured to accept RA messages sent by nRF Thre
 Building and running
 ********************
 
-.. |application path| replace:: :file:`applications/nrf_tbr`
+.. |application path| replace:: :file:`applications/thread_border_router`
 
 .. include:: /includes/application_build_and_run.txt
 
-For testing purposes you must build both nRF Thread BR application and Thread CLI device.
+For testing purposes Thread CLI sample can be used alongside nRF Thread BR application.
 
 Building nRF Thread BR application
 ==================================
 
-Lorem ipsum.
+.. |sample path| replace:: :file:`applications/thread_border_router`
 
-Ethernet-based nRF TBR application
-----------------------------------
+.. include:: /includes/build_and_run.txt
 
-Lorem ipsum.
 
-Building Thread CLI device
-==========================
+Building Thread CLI device (optional)
+=====================================
 
-Lorem ipsum.
+..
+  Let's just create a link to Thread CLI Sample?
+
+Lorem ipsum
 
 Testing
 =======
@@ -166,27 +187,156 @@ The following diagram presents a test setup.
 Starting Thread network
 -----------------------
 
-Lorem ipsum.
+For any Thread device used for testing configure the required Thread network parameters with the ``ot channel``, ``ot panid``, and
+``ot networkkey`` commands. Make sure to use the same parameters for all nodes that you add to the network.
+The following example uses the default OpenThread parameters:
+
+.. code-block:: console
+
+   uart:~$ ot channel 11
+   Done
+   uart:~$ ot panid 0xabcd
+   Done
+   uart:~$ ot networkkey 00112233445566778899aabbccddeeff
+   Done
+
+Enable the Thread network with the ``ot ifconfig up`` and ``ot thread start`` commands:
+
+.. code-block:: console
+
+   uart:~$ ot ifconfig up
+   Done
+   uart:~$ ot thread start
+   Done
+
+Testing connectivity frome the Border Router
+--------------------------------------------
+
+..
+  Note on PuTTY - In Thread docs there are links to a guide how to use it, maybe we could add this too?
+
+To verify the communication between nRF Thread Border Router and non-Thread network, complete the following steps:
+
+#. Ensure that nRF54H20 development kit is programmed with nRF Thread Border Router application.
+#. Turn on the development kit
+#. Connect to the development kit with a terminal emulator, e.g. PuTTY.
+#. Bring up Thread interface (`Starting Thread network`_)
+#. Wait until the device becomes a leader of the network. In order to check the current state use ``ot state`` command.
+#. Ping Linux Host machine using the ``ot ping <ip address>`` command:
+
+  .. code-block:: console
+
+    uart:~$ ot ping fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b
+    fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b: icmp_seq=3 hlim=64 time=5ms
+    1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 5/5.0/5 ms.
+
+Testing connectivity from the End Device
+----------------------------------------
+
+To verify the communication between Thread End Device and non-Thread device, complete the following steps:
+
+..
+  Here we need a link to Thread CLI page under 'Ensure that development kit'
+
+#. Perform steps described in `Testing connectivity frome the Border Router`_ to establish the connection
+   with an external network.
+#. Ensure that End Device's development kit is programmed with Thread CLI sample.
+#. Turn on the End Device's development kit.
+#. Connect to the development kit with a terminal emulator, e.g. PuTTY.
+#. Bring up Thread interface on the End Device (`Starting Thread network`_)
+#. Wait until the device becomes a child or router. In order to check the current state use ``ot state`` command.
+#. Ping Linux Host machine using the ``ot ping <ip address>`` command:
+
+..
+  TODO: Add output from End Device
 
 DHCPv6 + Prefix Delegation
 --------------------------
 
-Lorem ipsum.
+During the nRF Thread Border Router startup it automatically communicates with DHCPv6 server in order
+to receive an address for non-Thread interface. In order to also request a prefix, (:kconfig:option:`NET_CONFIG_DHCPV6_REQUEST_PREFIX`)
+has to be enabled.
 
-Bidirectional IPv6 connectivity
--------------------------------
+In order to check information about network interface and verify that an address was received use the ``net iface`` command.
+Assigned address by DHCP server should be listed in 'IPv6 Unicast addresses' section as in the following command output:
 
-Lorem ipsum.
+  .. code-block:: console
 
-mDNS & DNS-SD
--------------
+    Interface 0x2f002480 (Ethernet) [2]
+    ===================================
+    Link addr : 68:27:19:EF:56:1D
+    MTU       : 1500
+    Flags     : AUTO_START,IPv4,IPv6
+    Ethernet capabilities supported:
+            10 Mbits
+            100 Mbits
+    IPv6 unicast addresses (max 7):
+            fe80::6a27:19ff:feef:561d autoconf preferred infinite
+            2001:db8::1 manual preferred infinite
+            fd0b:3fe0:f9b4:0:6a27:19ff:feef:561d autoconf preferred infinite
+            fd0b:3fe0:f9b4::578 DHCP preferred
+    IPv6 multicast addresses (max 7):
+            ff02::1
+            ff02::1:ffef:561d
+            ff02::1:ff00:1
+            ff02::2
+            ff02::1:ff00:578
+    IPv6 prefixes (max 6):
+            fd0b:3fe0:f9b4::/64 infinite
+            fd0b:3fe0:f9b4:4::/62
+    IPv6 hop limit           : 64
+    IPv6 base reachable time : 30000
+    IPv6 reachable time      : 34339
+    IPv6 retransmit timer    : 0
+    IPv4 unicast addresses (max 1):
+            192.168.1.154 DHCP preferred
+    IPv4 multicast addresses (max 1):
+            <none>
+    IPv4 gateway : 192.168.1.1
+    IPv4 netmask : 255.255.255.0
+    DHCPv4 lease time : 43200
+    DHCPv4 renew time : 21600
+    DHCPv4 server     : 192.168.1.1
+    DHCPv4 requested  : 192.168.1.154
+    DHCPv4 state      : bound
+    DHCPv4 attempts   : 1
 
-Lorem ipsum.
+mDNS
+----
+
+nRF Thread Border Router provides mDNS module used by OpenThread stack that also provides interface
+to publish services in runtime.
+
+In order to publish a custom TXT record, use the following command:
+``tbr mdns publish <instance> <service> <proto> <domain> "<TXT record>"``
+
+Published records can be listed with ``tbr mdns records``, every entry is printed as ``<record index>: <record>``.
+
+In order to update published record, use the following command:
+``tbr mdns update <record index>``
+
+In order to unpublish the record, use the following command:
+``tbr mdns unpublish <record index>``
 
 Border Agent
 ------------
 
-Lorem ipsum.
+nRF Thread Border Router always advertises Border Agent service. It provides the following information:
+
+#. Vendor name
+#. Product name
+#. Network name
+#. Extended PAN identifier
+#. Thread version
+#. Extended address of the device
+#. Current state
+#. Active timestamp
+#. Backbone router state
+#. Thread Domain name
+#. Thread Off-Mesh route prefxi
+
+Border Agent service can be discovered by any software supporting mDNS protocol. For example, to discover
+the service with Open-Source Avahi tool use ``avahi-browse -rt _meshcop._udp`` command.
 
 Dependencies
 ============
