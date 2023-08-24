@@ -251,4 +251,8 @@ config NRF700X_RPU_PS_IDLE_TIMEOUT_MS
 	default 10
 
 endif
+
+config NRF700X_WAIT_FOR_DEBUGGER
+	bool "Wait for debugger to attach before starting the driver"
+
 endif

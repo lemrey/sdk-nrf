@@ -88,6 +88,17 @@ static const unsigned int rx3_buf_sz = 1000;
 
 struct wifi_nrf_drv_priv_zep rpu_drv_priv_zep;
 
+
+static void test_wait_for_debugger(void) {
+#ifdef CONFIG_NRF700X_WAIT_FOR_DEBUGGER
+	volatile bool wait = true;
+
+	while (wait) {
+		/* From gdb, set wait=0 to continue */
+	}
+#endif /* CONFIG_NRF700X_WAIT_FOR_DEBUGGER */
+}
+
 const char *wifi_nrf_get_drv_version(void)
 {
 	return NRF700X_DRIVER_VERSION;
@@ -429,6 +440,8 @@ static int wifi_nrf_drv_main_zep(const struct device *dev)
 	callbk_fns.mgmt_rx_callbk_fn = wifi_nrf_wpa_supp_event_mgmt_rx_callbk_fn;
 	callbk_fns.get_conn_info_callbk_fn = wifi_nrf_supp_event_proc_get_conn_info;
 #endif /* CONFIG_WPA_SUPP */
+
+	test_wait_for_debugger();
 
 	rpu_drv_priv_zep.fmac_priv = wifi_nrf_fmac_init(&data_config,
 							rx_buf_pools,
