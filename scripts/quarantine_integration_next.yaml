@@ -622,3 +622,107 @@
     - nrf9160dk_nrf9160
     - nrf5340dk_nrf5340_cpuapp
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_lbs
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - thingy53_nrf5340_cpuapp
+    - thingy53_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_lbs_minimal
+  platforms:
+    - nrf52dk_nrf52810
+    - nrf52840dk_nrf52811
+    - nrf52833dk_nrf52820
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_lbs_no_security
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - thingy53_nrf5340_cpuapp
+    - thingy53_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_lbs_bt_ota_dfu
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_uart
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52833dk_nrf52833
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - thingy53_nrf5340_cpuapp
+    - thingy53_nrf5340_cpuapp_ns
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_uart_cdc
+  platforms:
+    - nrf52833dk_nrf52833
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_uart_minimal
+  platforms:
+    - nrf52dk_nrf52810
+    - nrf52833dk_nrf52820
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_uart_ble_rpc
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_nsms
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - thingy53_nrf5340_cpuapp
+    - thingy53_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_nsms_no_security
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - thingy53_nrf5340_cpuapp
+    - thingy53_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.direction_finding_connectionless_rx_nrf
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52833dk_nrf52820
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.direction_finding_connectionless_rx_nrf.aod
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52833dk_nrf52820
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
