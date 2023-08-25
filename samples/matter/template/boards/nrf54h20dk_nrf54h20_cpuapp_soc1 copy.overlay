@@ -41,7 +41,6 @@ ipc0: &ipc_cpurad { };
 };
 
 /delete-node/ &slot0_partition;
-/delete-node/ &cpuapp_uicr_ext;
 /delete-node/ &storage_partition;
 
 &mram0 {
@@ -54,10 +53,6 @@ ipc0: &ipc_cpurad { };
             label = "image-0";
             reg = < 0xaa000 DT_SIZE_K(998) >;
         };
-    };
-    cpuapp_uicr_ext: uicr@e1a3800 {
-        compatible = "nordic,nrf-uicr";
-        reg = <0xe1a3800 DT_SIZE_K(2)>;
     };
 };
 
