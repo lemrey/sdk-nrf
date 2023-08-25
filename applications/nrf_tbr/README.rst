@@ -121,98 +121,53 @@ Linux machine configuration
 To let Thread devices communicate with non-Thread networks, nRF TBR provides routing configuration and prefixes by sending
 Routing Advertisement (RA) messages. Linux host machine has to be configured to accept incoming RA messages.
 
-..
-  How about a note regading security? Now its only for the testing purposes
-
 #. Enable acceptance of RA messages - set accept_ra parameter to ``2`` by running the following command on Linux host terminal:
 
-  .. code-block:: console
+   .. code-block:: console
 
      sudo sysctl -w n.ipv6.conf.all.accept_ra=2
 
 #. Allow all kinds of prefix length in RAs messages to be accepted - set the accept_ra_rt_info_max_plen parameter to ``128`` by
    running the following command on Linux host machine's command line:
 
-  .. code-block:: console
+   .. code-block:: console
 
      sudo sysctl -w n.ipv6.conf.all.accept_ra_rt_info_max_plen=128
 
-Building and running
-********************
+Building and running nRF TBR application
+========================================
 
 .. |application path| replace:: :file:`applications/thread_border_router`
 
 .. include:: /includes/application_build_and_run.txt
 
-For testing purposes Thread CLI sample can be used alongside nRF Thread BR application.
-
-Building nRF Thread BR application
-==================================
-
-.. |sample path| replace:: :file:`applications/thread_border_router`
-
-.. include:: /includes/build_and_run.txt
-
+For testing purposes Thread CLI sample can be used alongside nRF TBR application.
 
 Building Thread CLI device (optional)
-=====================================
+*************************************
 
-..
-  Let's just create a link to Thread CLI Sample?
-
-Lorem ipsum
+Instuction how to build Thread CLI device can be found here: :ref:`.. _ot_cli_sample_building_and_running:`
 
 Testing
 =======
 
-After programming the nRF TBR and Thread CLI applications, perform the following steps to test the Thread Border Router functionality.
-
-|test_application|
-
-#. |connect_kit|
-#. |connect_terminal|
+This section presents ways to test Border Router functionalites
 
 The following diagram presents a test setup.
+
+..
+  NOTE: we need to change "Thread CLI Device (end device)" to "Thread End Device (optional)"
 
 .. figure:: /images/nrf_tbr_app_setup.svg
     :alt: Thread BR test setup
 
     Thread BR test setup
 
-Starting Thread network
------------------------
-
-For any Thread device used for testing configure the required Thread network parameters with the ``ot channel``, ``ot panid``, and
-``ot networkkey`` commands. Make sure to use the same parameters for all nodes that you add to the network.
-The following example uses the default OpenThread parameters:
-
-.. code-block:: console
-
-   uart:~$ ot channel 11
-   Done
-   uart:~$ ot panid 0xabcd
-   Done
-   uart:~$ ot networkkey 00112233445566778899aabbccddeeff
-   Done
-
-Enable the Thread network with the ``ot ifconfig up`` and ``ot thread start`` commands:
-
-.. code-block:: console
-
-   uart:~$ ot ifconfig up
-   Done
-   uart:~$ ot thread start
-   Done
-
-Starting Thread network (included docs)
----------------------------------------
+]]]TODO: move to subpoints
 
 .. include:: /includes/thread_configure_network.txt
 
 .. include:: /includes/thread_enable_network.txt
-
-Testing connectivity frome the Border Router
---------------------------------------------
 
 ..
   Note on PuTTY - In Thread docs there are links to a guide how to use it, maybe we could add this too?
@@ -224,7 +179,7 @@ To verify the communication between nRF Thread Border Router and non-Thread netw
 #. Connect to the development kit with a terminal emulator, e.g. PuTTY.
 #. Bring up Thread interface (`Starting Thread network`_)
 #. Wait until the device becomes a leader of the network. In order to check the current state use ``ot state`` command.
-#. Ping Linux Host machine using the ``ot ping <ip address>`` command:
+#. Ping Linux Host machine using the ``ot ping <ip address>`` command. Example command output is presented below:
 
   .. code-block:: console
 
@@ -232,7 +187,9 @@ To verify the communication between nRF Thread Border Router and non-Thread netw
     fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b: icmp_seq=3 hlim=64 time=5ms
     1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 5/5.0/5 ms.
 
-Testing connectivity from the End Device
+]]]TODO: Add ping from Linux machine
+
+Testing connectivity with the End Device
 ----------------------------------------
 
 To verify the communication between Thread End Device and non-Thread device, complete the following steps:
@@ -249,18 +206,18 @@ To verify the communication between Thread End Device and non-Thread device, com
 #. Wait until the device becomes a child or router. In order to check the current state use ``ot state`` command.
 #. Ping Linux Host machine using the ``ot ping <ip address>`` command:
 
-..
-  TODO: Add output from End Device
+]]]TODO: Add ping from Linux machine
+
+]]]TODO: Add output from End Device
 
 DHCPv6 and Prefix Delegation
 ----------------------------
 
 During the nRF Thread Border Router startup it automatically communicates with DHCPv6 server in order
-to receive an address for non-Thread interface. In order to also request a prefix, (:kconfig:option:`NET_CONFIG_DHCPV6_REQUEST_PREFIX`)
-has to be enabled.
+to receive an address for non-Thread interface. Moreover, it requests a delegated prefix for subnetting.
 
-In order to check information about network interface and verify that an address was received use the ``net iface`` command.
-Assigned address by DHCP server should be listed in 'IPv6 Unicast addresses' section as in the following command output:
+Information about network interface can be displayed and verified using the following ``net iface`` command.
+Assigned address by DHCP server should be listed in 'IPv6 Unicast addresses' section as in the example command output below:
 
 .. code-block:: console
 
@@ -309,6 +266,9 @@ mDNS
 nRF Thread Border Router provides mDNS module used by OpenThread stack that also provides interface
 to publish services in runtime.
 
+]]]TODO: Link "how to print usage"
+]]]TODO: REWORK according to GH comments
+
 In order to publish a custom TXT record, use the following command:
 ``tbr mdns publish <instance> <service> <proto> <domain> "<TXT record>"``
 
@@ -335,13 +295,15 @@ nRF Thread Border Router always advertises Border Agent service. It provides the
 * Active timestamp
 * Backbone router state
 * Thread Domain name
-* Thread Off-Mesh route prefxix
+* Thread Off-Mesh route prefix
 
 Border Agent service can be discovered by any software supporting mDNS protocol. For example, to discover
 the service with Open-Source Avahi tool use ``avahi-browse -rt _meshcop._udp`` command.
 
+]]]TODO: Add command output from Avahi
+
 Dependencies
 ============
-
+]]]TODO: Add dependency to Thread Protocol, Logging, and Kernel services
 Lorem ipsum.
 
