@@ -242,7 +242,7 @@ manifest:
       revision: aa6c9bb6582931fc0125120da076db4cd3fba28c
       path: modules/lib/suit-processor
     - name: suit-generator
-      revision: 31519224aa061726f061540ea89f060566f0b167
+      revision: d8a443a01d89ffb15817336a9ec0d77ae2f96409
       path: modules/lib/suit-generator
 
     # Other third-party repositories.
