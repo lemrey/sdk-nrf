@@ -28,6 +28,10 @@ LOG_MODULE_REGISTER(mpsl_init, CONFIG_MPSL_LOG_LEVEL);
  */
 const uint32_t z_mpsl_used_nrf_ppi_channels = MPSL_RESERVED_PPI_CHANNELS;
 const uint32_t z_mpsl_used_nrf_ppi_groups;
+#if defined(CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC)
+static void mpsl_calibration_work_handler(struct k_work *work);
+static K_WORK_DELAYABLE_DEFINE(calibration_work, mpsl_calibration_work_handler);
+#endif /* CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC */
 
 #if IS_ENABLED(CONFIG_SOC_COMPATIBLE_NRF52X)
 	#define MPSL_LOW_PRIO_IRQn SWI5_IRQn
@@ -292,6 +296,18 @@ static uint8_t m_config_clock_source_get(void)
 }
 #endif /* !IS_ENABLED(CONFIG_SOC_PLATFORM_HALTIUM) */
 
+#if defined(CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC)
+static void mpsl_calibration_work_handler(struct k_work *work)
+{
+	ARG_UNUSED(work);
+
+	mpsl_calibration_timer_handle();
+
+	k_work_schedule_for_queue(&mpsl_work_q, &calibration_work,
+				  K_MSEC(CONFIG_CLOCK_CONTROL_NRF_CALIBRATION_PERIOD));
+}
+#endif /* CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC */
+
 static int32_t mpsl_lib_init_internal(void)
 {
 	int err = 0;
@@ -392,6 +408,11 @@ static int mpsl_low_prio_init(void)
 
 	IRQ_CONNECT(MPSL_LOW_PRIO_IRQn, MPSL_LOW_PRIO,
 		    mpsl_low_prio_irq_handler, NULL, 0);
+
+#if defined(CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC)
+	k_work_schedule_for_queue(&mpsl_work_q, &calibration_work,
+				  K_MSEC(CONFIG_CLOCK_CONTROL_NRF_CALIBRATION_PERIOD));
+#endif /* CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC */
 
 	return 0;
 }
