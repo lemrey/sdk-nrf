@@ -437,6 +437,7 @@ Modem libraries
 * :ref:`nrf_modem_lib_readme`:
 
   * Added CEREG event tracking to ``lte_connectivity``.
+  * Replaced the use of :c:macro:`SO_BINDTODEVICE` socket option with :c:macro:`SO_BINDTOPDN` to bind the socket to a PDN. The new option takes an integer for the PDN ID instead of a string.
 
   * Updated:
 
