@@ -200,8 +200,8 @@ static int z_to_nrf_optname(int z_in_level, int z_in_optname,
 		case SO_SNDTIMEO:
 			*nrf_out_optname = NRF_SO_SNDTIMEO;
 			break;
-		case SO_BINDTODEVICE:
-			*nrf_out_optname = NRF_SO_BINDTODEVICE;
+		case SO_BINDTOPDN:
+			*nrf_out_optname = NRF_SO_BINDTOPDN;
 			break;
 		case SO_REUSEADDR:
 			*nrf_out_optname = NRF_SO_REUSEADDR;
@@ -452,6 +452,13 @@ static int nrf91_socket_offload_setsockopt(void *obj, int level, int optname,
 	struct nrf_timeval nrf_timeo = { 0 };
 	void *nrf_optval = (void *)optval;
 	nrf_socklen_t nrf_optlen = optlen;
+
+	if((level == SOL_SOCKET) && (optname == SO_BINDTODEVICE)) {
+		/* This is used by socket dispatcher in zephyr and is forwarded to the offloading
+		 * layer afterwards. We don't have to do anything in this case.
+		 */
+		return 0;
+	}
 
 	if (z_to_nrf_optname(level, optname, &nrf_optname) < 0) {
 		errno = ENOPROTOOPT;
