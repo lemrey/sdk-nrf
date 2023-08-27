@@ -73,13 +73,18 @@ Besides the PDK the following hardware modules are also needed for nRF TBR appli
 * `PHYTEC link board ETH`_
 * Daughterboard
 
+.. figure:: /images/nrf_tbr_app_hardware.svg
+    :alt: Hardware connection
+
+    Hardware connection
+
 Testing prerequisites
 =====================
 
 Current version of the application supports only IPv6 connectivity between Thread and non-Thread devices over the backbone link.
 
 .. note::
-  The application can support IPv4 networking for other purposes, e.g. mDNS and name resolution.
+  The application can support IPv4 networking within non-Thread network for other purposes, e.g. mDNS and name resolution.
 
 To perform testing, the following devices are required:
 
@@ -97,7 +102,7 @@ To perform testing, the following devices are required:
 .. note::
   nRF TBR uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with
   other devices. If non-Thread network nodes are connected through a router make sure that IPv6 Router Advertisement
-  Guard feature is disabled. Otherwise, it can disrupt communication between both networks.
+  Guard feature on the router is disabled. Otherwise, it can disrupt communication between both networks.
 
 User interface
 **************
@@ -118,8 +123,8 @@ Configuration
 Linux machine configuration
 ===========================
 
-To let Thread devices communicate with non-Thread networks, nRF TBR provides routing configuration and prefixes by sending
-Routing Advertisement (RA) messages. Linux host machine has to be configured to accept incoming RA messages.
+To let Thread devices communicate with non-Thread networks, nRF TBR provides routing configuration and prefixes by sending Routing Advertisement (RA) messages.
+Linux host machine has to be configured to accept incoming RA messages.
 
 #. Enable acceptance of RA messages - set accept_ra parameter to ``2`` by running the following command on Linux host terminal:
 
@@ -163,10 +168,6 @@ The following diagram presents a test setup.
 
     Thread BR test setup
 
-]]]TODO: move to subpoints
-
-.. include:: /includes/thread_configure_network.txt
-
 .. include:: /includes/thread_enable_network.txt
 
 ..
@@ -174,20 +175,37 @@ The following diagram presents a test setup.
 
 To verify the communication between nRF Thread Border Router and non-Thread network, complete the following steps:
 
+.. note::
+  In order to communicate with non-Thread networks nRF TBR generates off-mesh route (OMR) prefix that is propagated as a part of Thread Network Data. All device in the network use it generates an IPv6 addres that is later used for communication with devices from external network. To check OMR prefix use the ``ot br omrprefix`` command.
+
 #. Ensure that nRF54H20 development kit is programmed with nRF Thread Border Router application.
 #. Turn on the development kit
 #. Connect to the development kit with a terminal emulator, e.g. PuTTY.
-#. Bring up Thread interface (`Starting Thread network`_)
+#. .. include:: /includes/thread_configure_network.txt
+#. .. include:: /includes/thread_enable_network.txt
 #. Wait until the device becomes a leader of the network. In order to check the current state use ``ot state`` command.
 #. Ping Linux Host machine using the ``ot ping <ip address>`` command. Example command output is presented below:
 
-  .. code-block:: console
+   .. code-block:: console
 
-    uart:~$ ot ping fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b
-    fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b: icmp_seq=3 hlim=64 time=5ms
-    1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 5/5.0/5 ms.
+      uart:~$ ot ping fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b
+      fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b: icmp_seq=3 hlim=64 time=5ms
+      1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 5/5.0/5 ms.
 
-]]]TODO: Add ping from Linux machine
+#. Ping nRF TBR's OMR address from Linux Host using ``ping <ip address>``. Example command output is presented below:
+
+   .. code-block:: console
+
+      user@host:~$ ping fd17:4a96:9b59:1:ac19:43e0:b905:c0af -c 4
+      PING fd17:4a96:9b59:1:ac19:43e0:b905:c0af(fd17:4a96:9b59:1:ac19:43e0:b905:c0af) 56 data bytes
+      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=1 ttl=64 time=4.51 ms
+      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=2 ttl=64 time=4.50 ms
+      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=3 ttl=64 time=4.54 ms
+      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=4 ttl=64 time=4.39 ms
+      --- fd17:4a96:9b59:1:ac19:43e0:b905:c0af ping statistics ---
+      4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+      rtt min/avg/max/mdev = 4.391/4.483/4.537/0.055 ms
+
 
 Testing connectivity with the End Device
 ----------------------------------------
@@ -202,13 +220,30 @@ To verify the communication between Thread End Device and non-Thread device, com
 #. Ensure that End Device's development kit is programmed with Thread CLI sample.
 #. Turn on the End Device's development kit.
 #. Connect to the development kit with a terminal emulator, e.g. PuTTY.
-#. Bring up Thread interface on the End Device (`Starting Thread network`_)
+#. .. include:: /includes/thread_configure_network.txt
+#. .. include:: /includes/thread_enable_network.txt
 #. Wait until the device becomes a child or router. In order to check the current state use ``ot state`` command.
-#. Ping Linux Host machine using the ``ot ping <ip address>`` command:
+#. Ping Linux Host machine using the ``ot ping <ip address>`` command. Example command output is presented below:
 
-]]]TODO: Add ping from Linux machine
+   .. code-block:: console
+      uart:~$ ot ping fd0b:3fe0:f9b4:0:3477:7647:4943:842a
+      16 bytes from fd0b:3fe0:f9b4:0:3477:7647:4943:842a: icmp_seq=1 hlim=64 time=18ms
+      1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 18/18.0/18 ms.
 
-]]]TODO: Add output from End Device
+#. Ping End Device's OMR address from Linux Host using ``ping <ip address>``. Example command output is presented below (more information about OMR addres: `Testing`_):
+
+   .. code-block:: console
+
+      user@host:~$ ping -c 4 fd17:4a96:9b59:1:bca2:8690:269c:9684
+      PING fd17:4a96:9b59:1:bca2:8690:269c:9684(fd17:4a96:9b59:1:bca2:8690:269c:9684) 56 data bytes
+      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=1 ttl=64 time=36.3 ms
+      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=2 ttl=64 time=21.6 ms
+      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=3 ttl=64 time=20.2 ms
+      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=4 ttl=64 time=19.5 ms
+      --- fd17:4a96:9b59:1:bca2:8690:269c:9684 ping statistics ---
+      4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+      rtt min/avg/max/mdev = 19.472/24.395/36.261/6.893 ms
+
 
 DHCPv6 and Prefix Delegation
 ----------------------------
@@ -263,22 +298,33 @@ Assigned address by DHCP server should be listed in 'IPv6 Unicast addresses' sec
 mDNS
 ----
 
-nRF Thread Border Router provides mDNS module used by OpenThread stack that also provides interface
-to publish services in runtime.
+nRF Thread Border Router provides mDNS module used by OpenThread stack that also provides interface to publish services in runtime (more information about Command Line Interface: `User interface`_).
 
-]]]TODO: Link "how to print usage"
-]]]TODO: REWORK according to GH comments
+List of available actions:
 
-In order to publish a custom TXT record, use the following command:
+- to publish a custom TXT record, use the following command:
 ``tbr mdns publish <instance> <service> <proto> <domain> "<TXT record>"``
 
-Published records can be listed with ``tbr mdns records``, every entry is printed as ``<record index>: <record>``.
+.. code-block:: console
 
-In order to update published record, use the following command:
+   uart:~$ tbr mdns publish nrftbr-app _thread _udp _local "keyone=1 keytwo=2 keythree=3"
+   Published record. Index: 1
+
+- list published records, use the following command:
+ ``tbr mdns records``
+
+.. code-block:: console
+
+   uart:~$ tbr mdns records"
+   1. nrftbr-app._thread._udp._local
+   2. vendor-switch._thread._udp._local
+
+-  update published record, use the following command:
 ``tbr mdns update <record index>``
 
-In order to unpublish the record, use the following command:
+- unpublish the record, use the following command:
 ``tbr mdns unpublish <record index>``
+
 
 Border Agent
 ------------
@@ -297,13 +343,24 @@ nRF Thread Border Router always advertises Border Agent service. It provides the
 * Thread Domain name
 * Thread Off-Mesh route prefix
 
-Border Agent service can be discovered by any software supporting mDNS protocol. For example, to discover
-the service with Open-Source Avahi tool use ``avahi-browse -rt _meshcop._udp`` command.
+Border Agent service can be discovered by any software supporting mDNS protocol. For example, to discover the service, use open-source tool [Avahi](https://www.avahi.org/) and ``avahi-browse -rt _meshcop._udp`` command.
+.. code-block:: console
 
-]]]TODO: Add command output from Avahi
+   user@host:~$ avahi-browse -rt _meshcop._udp
+   + enx00133bb15706 IPv4 nordicsemi-tbr                                _meshcop._udp        local
+   = enx00133bb15706 IPv4 nordicsemi-tbr                                _meshcop._udp        local
+      hostname = [nordicsemi-tbr.local]
+      address = [192.168.1.154]
+      port = [52861]
+      txt = ["omr=@\253\023J\150\155Y\000\001" "at=\000\000\000\000\000\000\000\000" "sb=\000\000\000I" "xa=~P\2085m0\195\180" "tv=1.3.0" "xp=\222\173\000\190\239\000\202\254" "nn=OpenThread" "mn=tbr" "vn=nordicsemi"]
 
 Dependencies
 ============
-]]]TODO: Add dependency to Thread Protocol, Logging, and Kernel services
-Lorem ipsum.
 
+This application integrates Thread Protocol
+* :ref:`_ug_thread:`
+
+The application depends on the following Zephyr libraries:
+
+* :ref:`zephyr:logging_api`
+* :ref:`zephyr:kernel_api`
