@@ -284,7 +284,7 @@ static int enable_llpm_short_connection_interval(void)
 	}
 
 	cmd_conn_update = net_buf_add(buf, sizeof(*cmd_conn_update));
-	cmd_conn_update->connection_handle   = conn_handle;
+	cmd_conn_update->conn_handle         = conn_handle;
 	cmd_conn_update->conn_interval_us    = INTERVAL_LLPM_US;
 	cmd_conn_update->conn_latency        = 0;
 	cmd_conn_update->supervision_timeout = 300;
