@@ -180,8 +180,8 @@ Protocol support
 The following table indicates the software maturity levels of the support for each :ref:`protocol <protocols>`:
 
 .. sml-table:: top_level
-   :add-columns: [("nRF54H20", "-")]
-   :insert-values: [("Bluetooth","nRF54H20","Experimental")]
+   :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
+   :insert-values: [("Bluetooth","nRF54H20","Experimental"), ("Bluetooth","nRF54L15","Experimental")]
 
 Bluetooth features support
 **************************
@@ -200,7 +200,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: homekit
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
 
 Thread features support
 ***********************
@@ -210,7 +210,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: thread
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
 
 .. _software_maturity_protocol_matter:
 
@@ -222,7 +222,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: matter
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
 
 Zigbee feature support
 **********************
@@ -232,7 +232,7 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: zigbee
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
 
 Wi-Fi feature support
 **********************
@@ -259,7 +259,7 @@ Trusted Firmware-M support
 .. toggle::
 
   .. sml-table:: trusted_firmware_m
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
 
 PSA Crypto support
 ==================
@@ -267,7 +267,7 @@ PSA Crypto support
 .. toggle::
 
   .. sml-table:: psa_crypto
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
 
 |NSIB|
 ======
@@ -275,7 +275,7 @@ PSA Crypto support
 .. toggle::
 
   .. sml-table:: immutable_bootloader
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
 
 Hardware Unique Key
 ===================
@@ -283,4 +283,4 @@ Hardware Unique Key
 .. toggle::
 
   .. sml-table:: hw_unique_key
-     :add-columns: [("nRF54H20", "-")]
+     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]

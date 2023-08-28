@@ -1,14 +1,14 @@
 .. _ncs_release_notes_changelog_lcs:
 
-Changelog for nRF54H20 customer sampling
-########################################
+Changelog for the nRF54H20 and nRF54L15 customer sampling
+#########################################################
 
 .. contents::
    :local:
    :depth: 2
 
-This page tracks the most relevant changes that are present on the branch of the initial limited sampling for nRF54H20 of the |NCS|, as compared to the |NCS| version 2.2.99 (commit hash ``d69930b57ff79433c2fded560c6e7ecdb65b9886``).
-You can find the most relevant changes of the |NCS| version 2.2.99 :ref:`here <ncs_release_notes_changelog>`.
+This page tracks the most relevant changes that are present on the branch of the |NCS| for the initial limited sampling of the nRF54H20 and nRF54L15 SoCs , as compared to the |NCS| version 2.4.99 (commit hash ``0677b0991e4c3ea58efd14e9e33b6c29a1919113``).
+You can find the most relevant changes of the |NCS| version 2.4.99 :ref:`here <ncs_release_notes_changelog>`.
 
 .. note::
    This file is a work in progress and might not cover all relevant changes.
@@ -24,7 +24,7 @@ Known issues
 ************
 
 Known issues are only tracked for the latest official release.
-See `known issues for nRF Connect SDK v2.2.0`_ for the list of issues valid for the latest release.
+See `known issues for nRF Connect SDK v2.4.0`_ for the list of issues valid for the latest release.
 
 Changelog
 *********

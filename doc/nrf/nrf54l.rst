@@ -3,9 +3,6 @@
 Working with nRF54L Series
 ##########################
 
-.. caution::
-   Keep in mind that this page is still a work in progress and should not be referred to for any guidelines.
-
 The |NCS| provides support for developing on the nRF54L System on Chip (SoC).
 
 .. toctree::

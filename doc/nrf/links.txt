@@ -1263,6 +1263,22 @@
 
 .. _`macOS, DMG file`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nrf-command-line-tools-10.21.0-Darwin.dmg
 
+.. _`10.22.2_EC 64-bit Windows, executable`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nRF-Command-Line-Tools-10.22.2-x64.exe
+
+.. _`10.22.2_EC x86 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools_10.22.2_amd64.deb
+.. _`10.22.2_EC x86 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools-10.22.2-1.x86_64.rpm
+.. _`10.22.2_EC x86 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools-10.22.2_Linux-amd64.tar.gz
+
+.. _`10.22.2_EC ARM64 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools_10.22.2_arm64.deb
+.. _`10.22.2_EC ARM64 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools-10.22.2-1.arm64.rpm
+.. _`10.22.2_EC ARM64 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools-10.22.2_Linux-arm64.tar.gz
+
+.. _`10.22.2_EC ARMHF system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools_10.22.2_armhf.deb
+.. _`10.22.2_EC ARMHF system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools-10.22.2-1.armhf.rpm
+.. _`10.22.2_EC ARMHF system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools-10.22.2_Linux-armhf.tar.gz
+
+.. _`10.22.2_EC macOS, DMG file`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2/nrf-command-line-tools-10.22.2-Darwin.dmg
+
 
 .. _`WPA Supplicant`: https://w1.fi/wpa_supplicant/
 
@@ -1276,7 +1292,7 @@
 
 .. _`nRF Connect SDK Fundamentals`: https://academy.nordicsemi.com/courses/nrf-connect-sdk-fundamentals/
 
-.. ### Source: nRF54H repositories and documents
+.. ### Source: nRF54H links, repositories and documents
 
 .. _`UICR overlay`: https://github.com/nrfconnect/sdk-nrf-next/tree/haltium-ncs/applications/machine_learning/configuration/nrf54h20dk_nrf54h20_cpuapp%40soc1/uicr
 .. _`nRF54H20 common SoC files`: https://github.com/nrfconnect/sdk-ic-next/tree/haltium/soc
@@ -1286,3 +1302,8 @@
 .. _`Introduction to nRF54H20`: https://res.developer.nordicsemi.com/res/nrf54H20/intro/Introduction%20to%20nRF54H20%20v1_0_1.pdf
 .. _`nRF54H20 prototype difference`: https://res.developer.nordicsemi.com/res/nrf54H20/other/nRF54H20_proto_diff.pdf
 .. _`BICR register's PDF file`: https://res.developer.nordicsemi.com/res/nrf54H20/BICR/nRF54H20_BICR_0_11_0.pdf
+
+.. ### Source: nRF54L links, repositories, and documents
+
+.. _`nRF Command Line Tools 10.22.1`: https://www.nordicsemi.com/Products/Development-tools/nrf-command-line-tools/download
+.. _`nRF54L15 Objective Product Specification`: https://res.developer.nordicsemi.com/res/nRF54L15/OPS/nRF54L15_OPS_v0_5a.pdf

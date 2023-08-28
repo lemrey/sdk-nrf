@@ -33,14 +33,11 @@ On your computer, one of the following operating systems:
 
 * Microsoft Windows
 * Ubuntu Linux
+* macOS
 
 |supported OS|
 
-.. note::
-   macOS is not supported for the limited sampling release on day one.
-   Support will be added in the future.
-
-You also need to install `Git`_ or `Git for Windows`_ (on Linux or Windows, respectively).
+You also need to install `Git`_ or `Git for Windows`_ (on Linux and Mac, or Windows, respectively).
 
 .. _ug_nrf54h20_gs_test_blinky:
 
@@ -73,26 +70,27 @@ Follow the instructions in the next sections to install the required tools.
 Installing the nRF Command Line Tools
 =====================================
 
-You need the nRF Command Line Tools 10.21.0 specific to the limited sampling release of the |NCS|.
+You need the nRF Command Line Tools 10.22.2 specific to the limited sampling release of the |NCS|.
 
 To install the nRF Command Line Tools, you need to download and install the version corresponding to your system:
 
-* `64-bit Windows, executable`_
+* `10.22.2_EC 64-bit Windows, executable`_
+* `10.22.2_EC macOS, DMG file`_
 * 64-bit Linux:
 
-  * `x86 system, deb format`_
-  * `x86 system, RPM`_
-  * `x86 system, tar archive`_
+  * `10.22.2_EC x86 system, deb format`_
+  * `10.22.2_EC x86 system, RPM`_
+  * `10.22.2_EC x86 system, tar archive`_
 
-  * `ARM64 system, deb format`_
-  * `ARM64 system, RPM`_
-  * `ARM64 system, tar archive`_
+  * `10.22.2_EC ARM64 system, deb format`_
+  * `10.22.2_EC ARM64 system, RPM`_
+  * `10.22.2_EC ARM64 system, tar archive`_
 
 * 32-bit Linux:
 
-  * `ARMHF system, deb format`_
-  * `ARMHF system, RPM`_
-  * `ARMHF system, tar archive`_
+  * `10.22.2_EC ARMHF system, deb format`_
+  * `10.22.2_EC ARMHF system, RPM`_
+  * `10.22.2_EC ARMHF system, tar archive`_
 
 .. _nrf54h20_install_toolchain:
 
@@ -114,7 +112,7 @@ To install the toolchain, complete the following steps:
    .. parsed-literal::
       :class: highlight
 
-      curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.0-cs1-dev1 sh
+      curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
    Depending on your connection, this might take some time.
 
@@ -129,7 +127,7 @@ To install the toolchain, complete the following steps:
             .. parsed-literal::
                :class: highlight
 
-               c:/nordic-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/nordic-lcs/west_working_dir" --ncs-version v2.2.99-cs1
+               c:/nordic-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
 
             This opens a new terminal window with the |NCS| toolchain environment, where west and other development tools are available.
             Alternatively, you can run the following command::
@@ -152,7 +150,7 @@ To install the toolchain, complete the following steps:
             .. parsed-literal::
                :class: highlight
 
-               $HOME/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.2.99-cs1
+               $HOME/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
 
             This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
 
@@ -163,19 +161,38 @@ To install the toolchain, complete the following steps:
 
             We recommend adding the path where nrfutil is located to your environmental variables.
 
+      .. tab:: macOS
+
+            To install the required tools, complete the following steps:
+
+            .. ncs-include:: develop/getting_started/index.rst
+               :docset: zephyr
+               :dedent: 6
+               :start-after: .. _install_dependencies_macos:
+               :end-before: group-tab:: Windows
+
+            Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
+            To check the installed versions, run the following command:
+
+            .. parsed-literal::
+               :class: highlight
+
+                brew list --versions
+
+
 .. _nrf54h20_install_ncs:
 
 Installing the |NCS|
 ====================
 
-After you have installed nRF Command Line Tools 10.21.0 and the toolchain, complete the following steps to get the limited sampling version of the |NCS|:
+After you have installed nRF Command Line Tools and the toolchain, complete the following steps to get the limited sampling version of the |NCS|:
 
 1. In the terminal window opened as part of :ref:`installing the toolchain <nrf54h20_install_toolchain>`, initialize west with the revision of the nRF Connect SDK from the initial limited sampling by running the following command:
 
    .. parsed-literal::
       :class: highlight
 
-      west init -m https://github.com/nrfconnect/sdk-nrf-next --mr v2.2.99-cs1
+      west init -m https://github.com/nrfconnect/sdk-nrf-next --mr v2.4.99-cs2
 
    A window pops up to ask you to select a credential helper.
    You can use any of the options.
