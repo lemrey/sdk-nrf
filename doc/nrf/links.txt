@@ -1246,6 +1246,8 @@
 
 .. _`SIGMA`: https://link.springer.com/chapter/10.1007/978-3-540-45146-4_24
 
+.. _`Avahi`: https://www.avahi.org/
+
 .. ### Source: res.developer.nordicsemi.com
 
 .. _`64-bit Windows, executable`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.21.0/nRF-Command-Line-Tools-10.21.0-x64.exe

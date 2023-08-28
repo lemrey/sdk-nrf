@@ -47,6 +47,7 @@ The following |NCS| application has been developed and tested on the nRF54H20 fo
 
 * :ref:`nrf_machine_learning_app`
 * :ref:`nrf_desktop`
+* :ref:`nrf_tbr_app`
 
 Zephyr samples
 **************
