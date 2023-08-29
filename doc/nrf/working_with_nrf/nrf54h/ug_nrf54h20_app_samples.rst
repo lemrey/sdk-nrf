@@ -38,6 +38,7 @@ The following |NCS| samples have been developed and tested on the nRF54H20 for t
 * :ref:`matter_template_sample`
 * :ref:`matter_lock_sample`
 * :ref:`ot_cli_sample`
+* :ref:`nrf54h_suit_sample`
 
 |NCS| applications
 ******************

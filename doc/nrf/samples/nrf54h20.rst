@@ -19,6 +19,7 @@ nRF54H20 samples
    ../../../samples/bluetooth/peripheral_rscs/README
    ../../../samples/bluetooth/peripheral_lbs/README
    ../../../samples/bluetooth/direct_test_mode/README
+   ../working_with_nrf/nrf54h/suit_smp_transfer_sample
    ../../../samples/peripheral/radio_test/README
    ../../../samples/caf_sensor_manager/README
    ../../../samples/ipc/ipc_service/README
