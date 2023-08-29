@@ -125,7 +125,7 @@ To do so, follow the instructions from the :ref:`ot_cli_sample_building_and_runn
 Testing
 =======
 
-This section presents a couple ways to test the nRF TBR application functionalities.
+This section presents a few ways to test the nRF TBR application functionalities.
 
 The following diagram illustrates a test setup:
 
@@ -164,49 +164,54 @@ The address assigned by the DHCP server should be listed in `IPv6 Unicast addres
 
 .. code-block:: console
 
-   Interface 0x2f002480 (Ethernet) [2]
+   Interface 0x2f0024b0 (Ethernet) [2]
    ===================================
-   Link addr : 68:27:19:EF:56:1D
+   Link addr : 68:27:19:EF:56:01
    MTU       : 1500
    Flags     : AUTO_START,IPv4,IPv6
    Ethernet capabilities supported:
-           10 Mbits
-           100 Mbits
+         10 Mbits
+         100 Mbits
    IPv6 unicast addresses (max 7):
-           fe80::6a27:19ff:feef:561d autoconf preferred infinite
-           2001:db8::1 manual preferred infinite
-           fd0b:3fe0:f9b4:0:6a27:19ff:feef:561d autoconf preferred infinite
-           fd0b:3fe0:f9b4::578 DHCP preferred
+         fe80::6a27:19ff:feef:5601 autoconf preferred infinite
+         2001:db8::1 manual preferred infinite
+         2001:dead:beef:cafe:6a27:19ff:feef:5601 autoconf preferred infinite
+         2001:dead:beef:cafe::28c DHCP preferred
    IPv6 multicast addresses (max 7):
-           ff02::1
-           ff02::1:ffef:561d
-           ff02::1:ff00:1
-           ff02::2
-           ff02::1:ff00:578
+         ff02::1
+         ff02::1:ffef:5601
+         ff02::1:ff00:1
+         ff02::fb
+         ff02::2
+         ff02::1:ff00:28c
    IPv6 prefixes (max 6):
-           fd0b:3fe0:f9b4::/64 infinite
-           fd0b:3fe0:f9b4:4::/62
+         2001:dead:beef:cafe::/64 infinite
    IPv6 hop limit           : 64
    IPv6 base reachable time : 30000
    IPv6 reachable time      : 34339
    IPv6 retransmit timer    : 0
    IPv4 unicast addresses (max 1):
-           192.168.1.154 DHCP preferred
-   IPv4 multicast addresses (max 1):
-           <none>
-   IPv4 gateway : 192.168.1.1
+         192.168.2.126 DHCP preferred
+   IPv4 multicast addresses (max 2):
+         224.0.0.1
+         224.0.0.251
+   IPv4 gateway : 192.168.2.1
    IPv4 netmask : 255.255.255.0
    DHCPv4 lease time : 43200
    DHCPv4 renew time : 21600
-   DHCPv4 server     : 192.168.1.1
-   DHCPv4 requested  : 192.168.1.154
+   DHCPv4 server     : 192.168.2.1
+   DHCPv4 requested  : 192.168.2.126
    DHCPv4 state      : bound
    DHCPv4 attempts   : 1
+   DHCPv6 address requested : 2001:dead:beef:cafe::28c
+   DHCPv6 prefix requested  : none
+   DHCPv6 state             : bound
+   DHCPv6 attempts          : 1
 
 Testing communication with Thread Border Router
 -----------------------------------------------
 
-To verify the communication between the nRF Thread Border Router and non-Thread network, complete the following steps:
+To verify the communication between the nRF TBR and non-Thread network, complete the following steps:
 
 1. Ensure that the nRF54H20 PDK is programmed with the nRF TBR application.
 #. Turn on the PDK.
@@ -219,109 +224,135 @@ To verify the communication between the nRF Thread Border Router and non-Thread 
 #. .. include:: /includes/thread_enable_network.txt
 #. Wait until the device becomes a leader of the network.
    To check the current state, use the ``ot state`` command.
-#. Ping Linux host machine by using the ``ot ping <ip address>`` command.
+   For example:
+
+   .. code-block:: console
+
+      uart:~$ ot state
+      leader
+      Done
+
+#. Ping Linux host machine by using the ``ot ping <linux ip address>`` command.
    Following is a sample command output:
 
    .. code-block:: console
 
-      uart:~$ ot ping fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b
-      fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b: icmp_seq=3 hlim=64 time=5ms
-      1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 5/5.0/5 ms.
+      uart:~$ ot ping fdde:ad00:beef:cafe:e6d3:c0a7:5dbd:6420
+      16 bytes from fdde:ad00:beef:cafe:e6d3:c0a7:5dbd:6420: icmp_seq=1 hlim=64 time=10ms
+      1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 10/10.0/10 ms.
+      Done
 
-#. Ping nRF TBR's OMR address from the Linux host machine by using the ``ping <ip address>`` command.
+#. Get OMR IP address for nRF TBR with the ``ot ipaddr`` command.
+   Example addresses listed in command output:
+
+   .. code-block:: console
+
+      uart:~$ ot ipaddr
+      fd17:4a96:9b59:1:ac19:43e0:b905:c0af
+      fdde:ad00:beef:0:0:ff:fe00:fc00
+      fdde:ad00:beef:0:0:ff:fe00:d000
+      fdde:ad00:beef:0:5f39:9cc8:9c62:d290
+      fe80:0:0:0:7c50:d035:6d30:c3b4
+      Done
 
    .. note::
       To communicate with non-Thread networks, the nRF TBR generates an off-mesh route (OMR) prefix that is propagated as a part of the Thread Network Data.
       All devices in the network use it to generate an IPv6 address that is later used for communication with devices from an external network.
-      To check the OMR prefix, use the ``ot br omrprefix`` command.
+      To check the OMR prefix, use the ``ot br omrprefix`` command:
 
-   Following is a sample command output:
+      .. code-block:: console
+
+         uart:~$ ot br omrprefix
+         Local: fd17:4a96:9b59:1::/64
+         Favored: fd17:4a96:9b59:1::/64 prf:low
+         Done
+
+      An example OMR prefix **fd17:4a96:9b59:1::/64** is used to create nRF TBR OMR address that can be reached from Ethernet network.
+      Notice the IPv6 address **fd17:4a96:9b59:1:ac19:43e0:b905:c0af** starts with OMR prefix.
+
+#. Ping nRF TBR's OMR address from the Linux host machine by using the ``ping <nRF TBR ip address>`` command.
+   Following is a sample linux command output:
 
    .. code-block:: console
 
-      user@host:~$ ping fd17:4a96:9b59:1:ac19:43e0:b905:c0af -c 4
+      user@host:~$ ping fd17:4a96:9b59:1:ac19:43e0:b905:c0af -c 3
       PING fd17:4a96:9b59:1:ac19:43e0:b905:c0af(fd17:4a96:9b59:1:ac19:43e0:b905:c0af) 56 data bytes
-      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=1 ttl=64 time=4.51 ms
-      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=2 ttl=64 time=4.50 ms
-      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=3 ttl=64 time=4.54 ms
-      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=4 ttl=64 time=4.39 ms
+      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=1 ttl=64 time=3.97 ms
+      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=2 ttl=64 time=3.85 ms
+      64 bytes from fd17:4a96:9b59:1:ac19:43e0:b905:c0af: icmp_seq=3 ttl=64 time=3.88 ms
+
       --- fd17:4a96:9b59:1:ac19:43e0:b905:c0af ping statistics ---
-      4 packets transmitted, 4 received, 0% packet loss, time 3005ms
-      rtt min/avg/max/mdev = 4.391/4.483/4.537/0.055 ms
+      3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+      rtt min/avg/max/mdev = 3.853/3.900/3.973/0.052 ms
 
-Testing communication with End Device over nRF TBR
---------------------------------------------------
+Testing communication with Thread node over nRF TBR
+---------------------------------------------------
 
-To verify the communication between Thread End Device and non-Thread device, complete the following steps:
+After performing all steps from `Testing communication with Thread Border Router`_ you can optionally verify the communication between Thread Router or End Device and non-Thread device.
 
 ..
   Here we need a link to Thread CLI page under 'Ensure that development kit'
 
-1. Perform steps described in `Testing communication with Thread Border Router`_ to establish connection with an external network.
-#. Ensure that End Device's development kit is programmed with the :ref:`ot_cli_sample` sample.
-#. Turn on the End Device's development kit.
-#. Connect to the development kit with a terminal emulator, e.g., PuTTY.
-#. Bring up the Thread interface on the End Device.
+1. Make sure that development kit (DK) intended to work as Thread node is programmed with CLI sample (`Thread CLI device building`_).
+#. Turn on the DK.
+#. |connect_terminal_ANSI|
+
+   .. note::
+        |thread_hwfc_enabled|
+
 #. .. include:: /includes/thread_configure_network.txt
 #. .. include:: /includes/thread_enable_network.txt
-#. Wait until the device becomes either a Child or Router.
-   To check the current state, use the ``ot state`` command.
-#. Ping the Linux host machine by using the ``ot ping <ip address>`` command.
+#. Wait until the device joins to Thread network created by nRF TBR in `Testing communication with Thread Border Router`_.
+   To verify whether the device joined to Thread network, use the ``ot state`` command.
+   Device should becomes either a `child` or `router`:
+
+   .. code-block:: console
+
+      uart:~$ ot state
+      router
+      Done
+
+#. Ping the Linux host machine by using the ``ot ping <linux ip address>`` command.
    Following is a sample command output:
 
    .. code-block:: console
 
-      uart:~$ ot ping fd0b:3fe0:f9b4:0:3477:7647:4943:842a
-      16 bytes from fd0b:3fe0:f9b4:0:3477:7647:4943:842a: icmp_seq=1 hlim=64 time=18ms
+      uart:~$ ot ping fdde:ad00:beef:cafe:e6d3:c0a7:5dbd:6420
+      16 bytes from fdde:ad00:beef:cafe:e6d3:c0a7:5dbd:6420: icmp_seq=2 hlim=64 time=18ms
       1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 18/18.0/18 ms.
+      Done
 
-#. Ping End Device's OMR address from the Linux host machine by using the ``ping <ip address>`` command.
+#. Get the IP address for the device with the ``ot ipaddr`` command.
+   Example addresses listed in command output:
+
+   .. code-block:: console
+
+      uart:~$ ot ipaddr
+      fdde:ad00:beef:0:0:ff:fe00:4400
+      fd17:4a96:9b59:1:6684:f56d:c4ed:65a0
+      fdde:ad00:beef:0:35f3:129:a24f:412d
+      fe80:0:0:0:4c0b:ed8d:2b5:915b
+      Done
+
+#. Ping Thread node OMR address from the Linux host machine by using the ``ping <node ip address>`` command.
    Following is a sample command output:
 
    .. code-block:: console
 
-      user@host:~$ ping -c 4 fd17:4a96:9b59:1:bca2:8690:269c:9684
-      PING fd17:4a96:9b59:1:bca2:8690:269c:9684(fd17:4a96:9b59:1:bca2:8690:269c:9684) 56 data bytes
-      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=1 ttl=64 time=36.3 ms
-      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=2 ttl=64 time=21.6 ms
-      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=3 ttl=64 time=20.2 ms
-      64 bytes from fd17:4a96:9b59:1:bca2:8690:269c:9684: icmp_seq=4 ttl=64 time=19.5 ms
-      --- fd17:4a96:9b59:1:bca2:8690:269c:9684 ping statistics ---
-      4 packets transmitted, 4 received, 0% packet loss, time 3005ms
-      rtt min/avg/max/mdev = 19.472/24.395/36.261/6.893 ms
+      user@host:~$ ping fd17:4a96:9b59:1:6684:f56d:c4ed:65a0 -c 3
+      PING fd17:4a96:9b59:1:6684:f56d:c4ed:65a0(fd17:4a96:9b59:1:6684:f56d:c4ed:65a0) 56 data bytes
+      64 bytes from fd17:4a96:9b59:1:6684:f56d:c4ed:65a0: icmp_seq=1 ttl=64 time=25.8 ms
+      64 bytes from fd17:4a96:9b59:1:6684:f56d:c4ed:65a0: icmp_seq=2 ttl=64 time=20.4 ms
+      64 bytes from fd17:4a96:9b59:1:6684:f56d:c4ed:65a0: icmp_seq=3 ttl=64 time=18.8 ms
 
-mDNS
-----
-
-The nRF Thread Border Router application provides the mDNS module used by the OpenThread stack.
-The stack provides also an interface to publish services in runtime.
-Read more about the Command Line Interface in the `User interface`_ section.
-
-The following actions are available:
-
-* Publish a custom TXT record by using the ``tbr mdns publish <instance> <service> <proto> <domain> "<TXT record>"`` command.
-
-  .. code-block:: console
-
-     uart:~$ tbr mdns publish nrftbr-app _thread _udp _local "keyone=1 keytwo=2 keythree=3"
-     Published record. Index: 1
-
-* List all published records by using the ``tbr mdns records`` command.
-
-  .. code-block:: console
-
-     uart:~$ tbr mdns records
-     1. nrftbr-app._thread._udp._local
-     2. vendor-switch._thread._udp._local
-
-* Update a published record by using the ``tbr mdns update <record index>`` command.
-
-* Unpublish a record using the ``tbr mdns unpublish <record index>`` command.
+      --- fd17:4a96:9b59:1:6684:f56d:c4ed:65a0 ping statistics ---
+      3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+      rtt min/avg/max/mdev = 18.809/21.691/25.817/2.993 ms
 
 Border Agent
 ------------
 
-The nRF Thread Border Router always advertises the Border Agent service.
+The nRF TBR always advertises the Border Agent service.
 It provides the following information:
 
 * Vendor name
