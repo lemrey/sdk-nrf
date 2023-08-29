@@ -191,8 +191,6 @@ int nfc_platform_internal_init(nfc_lib_cb_resolve_t cb_rslv)
 #endif /* CONFIG_NFC_LOW_LATENCY_IRQ */
 
 	nfc_cb_resolve = cb_rslv;
-	buf_full = false;
-	ring_buf_reset(&nfc_cb_ring);
 
 	return 0;
 }
@@ -222,7 +220,7 @@ void nfc_platform_cb_request(const void *ctx,
 		goto end;
 	}
 
-	if (copy_data) {
+	if (copy_data && (data_len > 0)) {
 		size = ring_buf_put(&nfc_cb_ring, data, header.data_size);
 		exp_size = header.data_size;
 	} else {
