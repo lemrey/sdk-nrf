@@ -383,10 +383,11 @@ function(add_child_image_from_source)
     list(REMOVE_DUPLICATES SHARED_MULTI_IMAGE_VARIABLES)
     foreach(shared_var ${SHARED_MULTI_IMAGE_VARIABLES})
       if(DEFINED ${shared_var})
+        file(TO_CMAKE_PATH "${${shared_var}}" TMP_VAR)
         file(
           APPEND
           ${preload_file}
-          "set(${shared_var} \"${${shared_var}}\" CACHE INTERNAL \"NCS child image controlled\")\n"
+          "set(${shared_var} \"${TMP_VAR}\" CACHE INTERNAL \"NCS child image controlled\")\n"
           )
       endif()
     endforeach()
