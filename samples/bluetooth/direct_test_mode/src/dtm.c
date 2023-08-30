@@ -1169,7 +1169,11 @@ static void radio_prepare(bool rx)
 	 * between READY event and START task and
 	 * between END event and DISABLE task
 	 */
-#if DIRECTION_FINDING_SUPPORTED
+#if CONFIG_SOC_SERIES_NRF54LX
+	nrf_radio_shorts_set(NRF_RADIO,
+			     NRF_RADIO_SHORT_READY_START_MASK |
+			     NRF_RADIO_SHORT_PHYEND_DISABLE_MASK);
+#elif DIRECTION_FINDING_SUPPORTED
 	nrf_radio_shorts_set(NRF_RADIO,
 		NRF_RADIO_SHORT_READY_START_MASK |
 		(dtm_inst.cte_info.mode == DTM_CTE_MODE_OFF ?
@@ -1179,7 +1183,7 @@ static void radio_prepare(bool rx)
 	nrf_radio_shorts_set(NRF_RADIO,
 			     NRF_RADIO_SHORT_READY_START_MASK |
 			     NRF_RADIO_SHORT_END_DISABLE_MASK);
-#endif /* DIRECTION_FINDING_SUPPORTED */
+#endif /* CONFIG_SOC_SERIES_NRF54LX */
 
 
 #if CONFIG_FEM
