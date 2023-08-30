@@ -6,6 +6,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
 #include <string.h>
 
 #include <zephyr/logging/log.h>
@@ -17,6 +18,11 @@
 #else
 #define STACKSIZE	(1024)
 #endif
+
+static const struct gpio_dt_spec pin_send =
+	GPIO_DT_SPEC_GET_OR(DT_NODELABEL(ipc_send_pin), gpios, {0});
+static const struct gpio_dt_spec pin_recv =
+	GPIO_DT_SPEC_GET_OR(DT_NODELABEL(ipc_recv_pin), gpios, {0});
 
 LOG_MODULE_REGISTER(host, LOG_LEVEL_INF);
 
@@ -43,6 +49,10 @@ static void ep_recv(const void *data, size_t len, void *priv)
 	uint8_t received_val = *((uint8_t *)data);
 	static uint8_t expected_val;
 
+	if (pin_recv.port) {
+		gpio_pin_set_dt(&pin_recv, 1);
+	}
+
 	if ((received_val != expected_val) || (len != CONFIG_APP_IPC_SERVICE_MESSAGE_LEN)) {
 		printk("Unexpected message received_val: %d , expected_val: %d\n",
 			received_val,
@@ -50,6 +60,9 @@ static void ep_recv(const void *data, size_t len, void *priv)
 	}
 
 	expected_val++;
+	if (pin_recv.port) {
+		gpio_pin_set_dt(&pin_recv, 0);
+	}
 }
 
 static struct ipc_ept_cfg ep_cfg = {
@@ -88,6 +101,13 @@ int main(void)
 	int ret;
 	printk("IPC-service %s demo started\n", CONFIG_BOARD);
 
+	if (pin_send.port) {
+		gpio_pin_configure_dt(&pin_send, GPIO_OUTPUT_INACTIVE);
+	}
+	if (pin_recv.port) {
+		gpio_pin_configure_dt(&pin_recv, GPIO_OUTPUT_INACTIVE);
+	}
+
 	memset(p_payload->data, 0xA5, CONFIG_APP_IPC_SERVICE_MESSAGE_LEN - sizeof(struct payload));
 
 	p_payload->size = CONFIG_APP_IPC_SERVICE_MESSAGE_LEN;
@@ -117,7 +137,13 @@ int main(void)
 		-1, 0, K_NO_WAIT);
 
 	while (true) {
+		if (pin_send.port) {
+			gpio_pin_set_dt(&pin_send, 1);
+		}
 		ret = ipc_service_send(&ep, p_payload, CONFIG_APP_IPC_SERVICE_MESSAGE_LEN);
+		if (pin_send.port) {
+			gpio_pin_set_dt(&pin_send, 0);
+		}
 		if (ret == -ENOMEM) {
 			/* No space in the buffer. Retry. */
 			LOG_DBG("send_message(%ld) failed with ret -ENOMEM\n", p_payload->cnt);

@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * This file is used to add the pins that would go high
+ * when the ipc_service_send function is called and
+ * while the receiving callback is processing the data.
+ */
+
+/ {
+	ipc_send_pin: ipc-send-pin {
+		compatible = "nordic,gpio-pins";
+		gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	ipc_recv_pin: ipc-recv-pin {
+		compatible = "nordic,gpio-pins";
+		gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
