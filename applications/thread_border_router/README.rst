@@ -107,8 +107,9 @@ Building and running
 ********************
 
 .. |application path| replace:: :file:`applications/thread_border_router`
+.. |build command| replace:: west build -p -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/application_build_and_run.txt
+.. include:: /includes/application_build_and_run_54h.txt
 
 Thread CLI device building
 ==========================
