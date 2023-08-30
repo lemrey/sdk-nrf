@@ -6,7 +6,11 @@
 
 / {
 	chosen {
-		zephyr,console = &uart20;
-		zephyr,shell-uart = &uart20;
+		zephyr,console = &uart30;
+		zephyr,shell-uart = &uart30;
 	};
+};
+
+&uart30 {
+	status = "okay";
 };
