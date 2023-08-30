@@ -21,6 +21,6 @@ You can also run them on different hardware like a generic development kit, but 
    ../../applications/nrf_desktop/README
    ../../applications/nrf5340_audio/README
    ../../applications/machine_learning/README
-   ../../applications/nrf_tbr/README
+   ../../applications/thread_border_router/README
    ../../applications/matter_weather_station/README
    ../../applications/zigbee_weather_station/README
