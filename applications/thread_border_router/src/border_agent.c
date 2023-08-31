@@ -72,14 +72,6 @@ enum {
 	AVAILABILITY_HIGH       = 1
 };
 
-static void close_serv_socket()
-{
-	if (service_fd != INVALID_FD) {
-		close(service_fd);
-		service_fd = INVALID_FD;
-	}
-};
-
 static void handle_port_update()
 {
 	static struct sockaddr server_addr;
@@ -407,13 +399,6 @@ static void on_thread_state_changed(otChangedFlags flags, struct openthread_cont
 	if (flags & (UPDATE_MESHCOP_FLAGS)) {
 		update_meshcop_service();
 	}
-}
-
-static void unpublish_meshcop_service()
-{
-	close_serv_socket();
-	mdns_publisher_record_free(&service_rec);
-	service_rec = NULL;
 }
 
 static struct openthread_state_changed_cb ot_state_chaged_cb = {
