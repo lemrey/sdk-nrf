@@ -210,12 +210,11 @@ Testing communication with Thread Border Router
 
 To verify the communication between the nRF TBR and non-Thread network, complete the following steps:
 
-1. Ensure that the nRF54H20 PDK is programmed with the nRF TBR application.
-#. Turn on the PDK.
-#. |connect_terminal_ANSI|
+1. Connect to the PDK that runs the nRF TBR application with a terminal emulator that supports VT100/ANSI escape characters (for example, PuTTY).
+   See :ref:`putty` for the required settings.
 
    .. note::
-        |thread_hwfc_enabled|
+        |app_thread_hwfc_enabled|
 
 #. .. include:: /includes/thread_configure_network.txt
 #. .. include:: /includes/thread_enable_network.txt
@@ -264,7 +263,7 @@ To verify the communication between the nRF TBR and non-Thread network, complete
          Favored: fd17:4a96:9b59:1::/64 prf:low
          Done
 
-      In the above example, the OMR prefix **fd17:4a96:9b59:1::/64** is used to create the nRF TBR OMR address that can be reached from Ethernet network.
+      In the above example, the OMR prefix **fd17:4a96:9b59:1::/64** is used to create the nRF TBR OMR address that can be reached from the Ethernet network.
       Notice that the IPv6 address **fd17:4a96:9b59:1:ac19:43e0:b905:c0af** starts with the OMR prefix.
 
 #. Ping the nRF TBR's OMR address from the Linux host machine by using the ``ping <nRF TBR ip address>`` command.

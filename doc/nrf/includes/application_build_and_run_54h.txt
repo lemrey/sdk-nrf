@@ -18,7 +18,7 @@ Complete the following steps to program the nRF54H20 PDK:
    For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
    For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
 
-#. Connect the PDK to your computer using a USB cable.
+#. Connect the PDK to your computer using a USB-C cable.
 #. Power on the PDK.
 #. Program the application to the kit using the following command:
 
