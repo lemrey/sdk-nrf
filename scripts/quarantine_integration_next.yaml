@@ -1326,3 +1326,89 @@
     - nrf52dk_nrf52832
     - nrf21540dk_nrf52840
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.cli
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.cli_nrf52833
+  platforms:
+    - nrf52833dk_nrf52833
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.cli.thread_1_1
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.cli.usb
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf52840dk_nrf52840
+    - nrf52840dongle_nrf52840
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.cli.low_power
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf52840dk_nrf52840
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf_security.openthread.integration
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.coprocessor
+  platforms:
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.coprocessor.usb
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.coap_client
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf52840dk_nrf52840
+    - nrf52833dk_nrf52833
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.coap_client.mtd.multiprotocol_ble
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.openthread.coap_server
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
