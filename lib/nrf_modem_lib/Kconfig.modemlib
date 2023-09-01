@@ -34,6 +34,29 @@ config NRF_MODEM_LIB_NET_IF_AUTO_START
 
 menu "Memory configuration"
 
+if SOC_SERIES_NRF92X
+
+config NRF_MODEM_LIB_TRANSPORT_MBOX
+	bool
+	default y
+	select MBOX
+	select MBOX_NRFX_IDS if NRFX_BELLBOARD
+	select IPC_SERVICE
+	select IPC_SERVICE_ICMSG
+	select IPC_SERVICE_ICMSG_SHMEM_ACCESS_SYNC
+
+DT_NODE_PATH_APP_MOD := $(dt_nodelabel_path,ipc_shm_area_cpuapp_cpumod)
+
+config NRF_MODEM_LIB_SHMEM_ADDR
+	hex
+	default $(dt_node_reg_addr_hex,$(DT_NODE_PATH_APP_MOD))
+
+config NRF_MODEM_LIB_SHMEM_SIZE
+	hex
+	default $(dt_node_reg_size_hex,$(DT_NODE_PATH_APP_MOD))
+
+endif # SOC_SERIES_NRF92X
+
 config NRF_MODEM_LIB_HEAP_SIZE
 	int "Library heap size"
 	default 1024
@@ -55,6 +78,8 @@ config NRF_MODEM_LIB_SHMEM_TX_SIZE
 	int "TX region size"
 	range 1024 32768
 	# Set default to 8k plus Zephyr heap overhead (128 bytes)
+	default 8320 if SOC_SERIES_NRF91X
+	default 8320 if SOC_SERIES_NRF92X
 	default 8320
 	help
 	  Size of the shared memory region owned by the application. This area holds all outgoing
@@ -64,11 +89,15 @@ config NRF_MODEM_LIB_SHMEM_TX_SIZE
 config NRF_MODEM_LIB_SHMEM_RX_SIZE
 	int "RX region size"
 	range 2488 32768
+	default 8192 if SOC_SERIES_NRF91X
+	default 8192 if SOC_SERIES_NRF92X
 	default 8192
 	help
 	  Size of the shared memory region owned by the modem.
 	  This area holds all incoming data from the modem, plus the modem's own control structures.
 	  The size must be a multiple of four to keep the memory partitions word-aligned.
+
+if SOC_SERIES_NRF91X
 
 config NRF_MODEM_LIB_SHMEM_TRACE_SIZE_OVERRIDE
 	bool "Custom trace region size"
@@ -82,6 +111,8 @@ config NRF_MODEM_LIB_SHMEM_TRACE_SIZE
 	default 0
 	help
 	  Size of the shared memory region used to receive modem traces.
+
+endif # SOC_SERIES_NRF91X
 
 config NRF_MODEM_LIB_SENDMSG_BUF_SIZE
 	int "Size of the sendmsg intermediate buffer"

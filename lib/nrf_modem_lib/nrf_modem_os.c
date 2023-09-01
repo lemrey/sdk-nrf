@@ -10,11 +10,17 @@
 #include <nrf_modem.h>
 #include <nrf_modem_os.h>
 #include <nrf.h>
-#include <nrfx_ipc.h>
 #include <nrf_errno.h>
 #include <errno.h>
-#include <pm_config.h>
 #include <zephyr/logging/log.h>
+
+#if CONFIG_SOC_SERIES_NRF91X
+#include <pm_config.h>
+#define SHMEM_TX_HEAP_ADDR (PM_NRF_MODEM_LIB_TX_ADDRESS)
+#elif CONFIG_SOC_SERIES_NRF92X
+#define SHMEM_TX_HEAP_ADDR (CONFIG_NRF_MODEM_LIB_SHMEM_ADDR + CONFIG_NRF_MODEM_LIB_SHMEM_CTRL_SIZE)
+#endif
+#define SHMEM_TX_HEAP_SIZE CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE
 
 #define UNUSED_FLAGS 0
 #define THREAD_MONITOR_ENTRIES 10
@@ -423,8 +429,7 @@ void nrf_modem_os_init(void)
 {
 	/* Initialize heaps */
 	k_heap_init(&nrf_modem_lib_heap, library_heap_buf, sizeof(library_heap_buf));
-	k_heap_init(&nrf_modem_lib_shmem_heap, (void *)PM_NRF_MODEM_LIB_TX_ADDRESS,
-		    CONFIG_NRF_MODEM_LIB_SHMEM_TX_SIZE);
+	k_heap_init(&nrf_modem_lib_shmem_heap, (void *)SHMEM_TX_HEAP_ADDR, SHMEM_TX_HEAP_SIZE);
 }
 
 void nrf_modem_os_shutdown(void)

@@ -23,6 +23,10 @@ target_sources(app PRIVATE ${NRF_DIR}/lib/nrf_modem_lib/nrf91_sockets.c)
 add_compile_definitions(CONFIG_NRF91_SOCKET_BLOCK_LIMIT=2048)
 add_compile_definitions(CONFIG_NRF_MODEM_LIB_SENDMSG_BUF_SIZE=8)
 
+# manually add define needed in nrf_socket.h that is missing because
+# no SOC is specfied for nrf_modem when unit testing.
+add_compile_definitions(NRF_MODEM_SOC_MAX_SOCKET_COUNT=8)
+
 # generate runner for the test
 test_runner_generate(src/nrf91_sockets_test.c)
 
