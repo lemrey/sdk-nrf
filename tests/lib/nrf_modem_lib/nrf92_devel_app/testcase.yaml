@@ -1,0 +1,55 @@
+common:
+  tags: nrf_modem_lib
+  build_only: true
+tests:
+  #
+  # Default fpga build with no logging.
+  #
+  nrf_modem_lib.nrf92_devel_app.fpga:
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+
+  #
+  # Logging with STM ETR dump to UART.
+  #
+  nrf_modem_lib.nrf92_devel_app.etr_dump_uart.fpga:
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+      - CONFIG_NRF_MODEM_LOG=y
+      - CONFIG_NRF_MODEM_LIB_LOG_LEVEL_DBG=y
+      - CONFIG_LOG_STM=y
+
+  #
+  # Logging with STM TPIU to external fido logger.
+  #
+  nrf_modem_lib.nrf92_devel_app.fido.fpga:
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+      - CONFIG_NRF_MODEM_LOG=y
+      - CONFIG_NRF_MODEM_LIB_LOG_LEVEL_DBG=y
+      - CONFIG_LOG=y
+      - CONFIG_LOG_BACKEND_CORESIGHT_STM=y
+      - CONFIG_LOG_BACKEND_CORESIGHT_STM_FIDO_COMPATIBLE=y
+
+  #
+  # Logging with application standard UART.
+  #
+  nrf_modem_lib.nrf92_devel_app.uart.fpga:
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    extra_args: EXTRA_CONF_FILE=uart_logging.conf
+                DTC_OVERLAY_FILE=serial_cpuapp.overlay
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+      - CONFIG_NRF_MODEM_LOG=y
+      - CONFIG_NRF_MODEM_LIB_LOG_LEVEL_DBG=y
