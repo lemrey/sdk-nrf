@@ -16,6 +16,7 @@ The Secure Domain will use the SUIT procedure to perform a DFU of the whole syst
 Additionally, the SUIT procedure offers more options for DFU customization.
 
 This document explains why the SUIT procedure was selected, gives an overview of SUIT and its characteristics, and gives a comparison to the MCUboot DFU procedure.
+See the :ref:`nrf54h_suit_sample` if you want to try using the SUIT procedure on the nRF54H20 SoC.
 
 Why SUIT was selected as a DFU procedure
 ****************************************
@@ -190,7 +191,7 @@ These sequences are data structures that can contain directives and conditions.
 Manifest elements
 =================
 
-``SUIT_Manifest`` contains command sequences and elements that contain several scripts within its envelope structure.
+``SUIT_Manifest`` contains contains metadata elements and command sequences (a kind of "scripts") within its structure.
 These scripts contain the commands that will be executed at certain stages of the update process.
 Additionally, they provide a shortcut when a component's information, or other data, needs to be repeated throughout the manifest.
 
@@ -200,7 +201,7 @@ Additionally, they provide a shortcut when a component's information, or other d
    These sequences can be customized, but with caution.
    This is only recommended for advanced use cases.
 
-The SUIT procedure defines the following sequences and elements:
+The SUIT manifest contains the following elements:
 
 ``suit-manifest-version``
 -------------------------
@@ -211,9 +212,9 @@ If the SUIT processor receives a manifest and sees a version number it does not 
 ``suit-manifest-sequence-number``
 ---------------------------------
 
-This is the version number of the manifest.
-You can use this, for example, if you want to update the manifest version on a device and ensure downgrade prevention.
-Using this sequence tells the manifest to accept only a manifest with a higher sequence number.
+This is a SUIT-specific version number of the software that is contained in this manifest.
+It is compared against the existing sequence number to verify that the update is newer than the current software.
+The sequence number does not have to match the official version number of the software, it only needs to increase for each update.
 
 ``suit-common``
 ---------------
@@ -225,6 +226,7 @@ This element contains two subsections:
    Components are identified by ``SUIT_Component_Identifier``, which is introduced by Nordic Semiconductor's implementation of the SUIT procedure.
 
 * ``suit-shared-sequence`` - a sequence that executes before the other sequences.
+
    It supports only a few directives and conditions.
 
    For example, when performing a DFU, the SUIT processor may be instructed to run ``suit-payload-fetch``, but first ``suit-shared-sequence`` runs before each sequence to save memory space.
@@ -233,17 +235,25 @@ This element contains two subsections:
 Sequences
 ---------
 
-SUIT manifest contains the following elements:
+SUIT manifest contains the following command sequences:
 
-* ``suit-validate``
+* ``suit-payload-fetch`` - obtains the needed payloads.
 
-* ``suit-load``
+* ``suit-install`` - installs payloads.
 
-* ``suit-invoke``
+   Typical actions may include: verifying a payload stored in temporary storage, coping a staged payload from temporary storage, and unpacking a payload.
 
-* ``suit-payload-fetch``
+* ``suit-validate`` - validates that the state of the device is correct and okay for booting.
 
-* ``suit-install``
+   Typically involves image validation.
+
+* ``suit-load`` - prepares payload(s) for execution.
+
+   A typical action of this sequence is to copy an image from the permanent storage into the RAM.
+
+* ``suit-invoke`` - invokes (boots) image(s).
+
+* ``suit-dependency-resolution`` - prepares the system for the update by identifying and fetching any missing dependency manifests.
 
 Conditions
 ==========
