@@ -29,12 +29,19 @@
 #define MPSL_FEM_SPI_GPIO_PORT_NO(pin)  DT_PROP(MPSL_FEM_SPI_GPIO_PORT(pin), port)
 #define MPSL_FEM_SPI_GPIO_PIN_NO(pin)   DT_GPIO_PIN(MPSL_FEM_SPI_BUS, pin)
 
+#if DT_NODE_HAS_PROP(MPSL_FEM_SPI_BUS, cs_gpios)
+#define SPI_GPIO_NODE      MPSL_FEM_SPI_GPIO_PORT(cs_gpios)
+#define SPI_GPIOTE_PHANDLE DT_PHANDLE(SPI_GPIO_NODE, gpiote_instance)
+#define SPI_GPIOTE_IDX     DT_PROP(SPI_GPIOTE_PHANDLE, instance)
+#endif
+
 static uint32_t fem_nrf21540_spi_configure(mpsl_fem_nrf21540_gpio_spi_interface_config_t *cfg)
 {
 #if DT_NODE_HAS_PROP(MPSL_FEM_SPI_BUS, cs_gpios)
+	nrfx_gpiote_t gpiote = NRFX_GPIOTE_INSTANCE(SPI_GPIOTE_IDX);
 	uint8_t cs_gpiote_channel;
 
-	if (nrfx_gpiote_channel_alloc(&cs_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote, &cs_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif
@@ -135,30 +142,37 @@ static uint32_t fem_nrf21540_spi_configure(mpsl_fem_nrf21540_gpio_spi_interface_
 	return 0;
 }
 
+#define GPIO_NODE(pin)      DT_GPIO_CTLR(DT_NODELABEL(nrf_radio_fem), pin)
+#define GPIOTE_PHANDLE(pin) DT_PHANDLE(GPIO_NODE(pin), gpiote_instance)
+#define GPIOTE_IDX(pin)     DT_PROP(GPIOTE_PHANDLE(pin), instance)
+
 static int fem_nrf21540_gpio_spi_configure(void)
 {
 	int err;
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), tx_en_gpios)
 	uint8_t txen_gpiote_channel;
+	const nrfx_gpiote_t gpiote_tx_en = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(tx_en_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&txen_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_tx_en, &txen_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), rx_en_gpios)
 	uint8_t rxen_gpiote_channel;
+	const nrfx_gpiote_t gpiote_rx_en = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(rx_en_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&rxen_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_rx_en, &rxen_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), pdn_gpios)
 	uint8_t pdn_gpiote_channel;
+	const nrfx_gpiote_t gpiote_pdn = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(pdn_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&pdn_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_pdn, &pdn_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif

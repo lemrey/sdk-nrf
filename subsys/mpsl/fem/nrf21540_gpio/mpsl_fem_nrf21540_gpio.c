@@ -24,30 +24,37 @@
 #endif /* !defined(CONFIG_MPSL_FEM_PIN_FORWARDER) */
 
 #if !defined(CONFIG_MPSL_FEM_PIN_FORWARDER)
+#define GPIO_NODE(pin)      MPSL_FEM_GPIO_PORT(pin)
+#define GPIOTE_PHANDLE(pin) DT_PHANDLE(GPIO_NODE(pin), gpiote_instance)
+#define GPIOTE_IDX(pin)     DT_PROP(GPIOTE_PHANDLE(pin), instance)
+
 static int fem_nrf21540_gpio_configure(void)
 {
 	int err;
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), tx_en_gpios)
 	uint8_t txen_gpiote_channel;
+	nrfx_gpiote_t gpiote_a = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(tx_en_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&txen_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_a, &txen_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), rx_en_gpios)
 	uint8_t rxen_gpiote_channel;
+	nrfx_gpiote_t gpiote_b = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(rx_en_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&rxen_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_b, &rxen_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), pdn_gpios)
 	uint8_t pdn_gpiote_channel;
+	nrfx_gpiote_t gpiote_c = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(pdn_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&pdn_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_c, &pdn_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif

@@ -46,6 +46,13 @@ LOG_MODULE_REGISTER(ppi_trace, CONFIG_PPI_TRACE_LOG_LEVEL);
 #define GET_START_CH(handle) GET_CH(handle)
 #define GET_STOP_CH(handle) (((uint32_t)handle >> 8) & 0xFF)
 
+#if DT_HAS_COMPAT_STATUS_OKAY(nordic_nrf_gpiote)
+#define GPIOTE_IDX DT_PROP(DT_INST(0, nordic_nrf_gpiote), instance)
+static const nrfx_gpiote_t gpiote = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX);
+#else
+#error "No GPIOTE instance to use with PPI trace!"
+#endif
+
 /** @brief Allocate (D)PPI channel. */
 static nrfx_err_t ppi_alloc(uint8_t *ch, uint32_t evt)
 {
@@ -111,14 +118,14 @@ static int gpiote_channel_alloc(uint32_t pin)
 {
 	uint8_t channel;
 
-	if (nrfx_gpiote_channel_alloc(&channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote, &channel) != NRFX_SUCCESS) {
 		return -1;
 	}
 
-	nrf_gpiote_task_configure(NRF_GPIOTE0, channel, pin,
+	nrf_gpiote_task_configure(gpiote.p_reg, channel, pin,
 				  NRF_GPIOTE_POLARITY_TOGGLE,
 				  NRF_GPIOTE_INITIAL_VALUE_LOW);
-	nrf_gpiote_task_enable(NRF_GPIOTE0, channel);
+	nrf_gpiote_task_enable(gpiote.p_reg, channel);
 
 	return channel;
 }
@@ -144,7 +151,7 @@ void *ppi_trace_config(uint32_t pin, uint32_t evt)
 	}
 
 	task_id = offsetof(NRF_GPIOTE_Type, TASKS_OUT[gpiote_ch]);
-	task = nrf_gpiote_task_address_get(NRF_GPIOTE0, task_id);
+	task = nrf_gpiote_task_address_get(gpiote.p_reg, task_id);
 	ppi_assign(ppi_ch, evt, task);
 
 	return HANDLE_ENCODE(ppi_ch);
@@ -187,9 +194,9 @@ void *ppi_trace_pair_config(uint32_t pin, uint32_t start_evt, uint32_t stop_evt)
 	task_set_id = offsetof(NRF_GPIOTE_Type, TASKS_SET[gpiote_ch]);
 	task_clr_id = offsetof(NRF_GPIOTE_Type, TASKS_CLR[gpiote_ch]);
 
-	task = nrf_gpiote_task_address_get(NRF_GPIOTE0, task_set_id);
+	task = nrf_gpiote_task_address_get(gpiote.p_reg, task_set_id);
 	ppi_assign(start_ch, start_evt, task);
-	task = nrf_gpiote_task_address_get(NRF_GPIOTE0, task_clr_id);
+	task = nrf_gpiote_task_address_get(gpiote.p_reg, task_clr_id);
 	ppi_assign(stop_ch, stop_evt, task);
 
 	return HANDLE_ENCODE(PACK_CHANNELS(start_ch, stop_ch));
