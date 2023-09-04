@@ -59,7 +59,7 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr-next
-      revision: f41ca3ee784b3bec8e3c11d11fd4e8705823ecfb
+      revision: 67855399167ceef0844f7705b1b367918676eca4
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -142,7 +142,7 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: b82ff416fbddb44c7684f3d152a46eba442421b8
+      revision: b0fcf63f39cc08c4bd3afec81d2e0451ed7c688e
     - name: sdk-secdom
       revision: 3d9140e3b9084fe7c409b5ae409d33121f6bcc3c
       path: core_fw/secdom
@@ -153,12 +153,12 @@ manifest:
       path: modules/lib/nrfs
       revision: 32089d023fca5981dafa6f6942c709c97cfeaa56
     - name: sdk-sysctrl
-      revision: e8e99986fbb24cb676dc9496da45e74bcc6830a6
+      revision: 4bf976a0421f9e1eb9bb053efbbb1814069cce1b
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m-next
       path: modules/tee/tf-m/trusted-firmware-m
-      revision: bbe7f20320d56528a71ff2c2ad4014342a457ab5
+      revision: 7c736ca69b9da5db42c40650591ce51fe4944b01
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
