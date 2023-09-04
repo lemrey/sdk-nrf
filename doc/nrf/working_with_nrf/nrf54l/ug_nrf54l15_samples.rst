@@ -16,10 +16,25 @@ Additionally, the page lists the available Zephyr samples that are compatible wi
 
 * :ref:`peripheral_uart`
 * :ref:`peripheral_lbs`
+* :ref:`central_and_peripheral_hrs`
+* :ref:`central_uart`
+* :ref:`peripheral_hids_keyboard`
+* :ref:`peripheral_hids_mouse`
 * :ref:`direct_test_mode`
 * :ref:`record_text`
 * :ref:`writable_ndef_msg`
 * :ref:`nrf-nfc-system-off-sample`
+* :ref:`nfc_shell`
+* :ref:`record_launch_app`
+* :ref:`nfc_tnep_tag`
+* :ref:`crypto_aes_ccm`
+* :ref:`crypto_aes_cbc`
+* :ref:`crypto_hmac`
+* :ref:`crypto_ecdh`
+* :ref:`crypto_ecdsa`
+* :ref:`crypto_sha256`
+* :ref:`crypto_persistent_key`
+* :ref:`crypto_hkdf`
 
 Zephyr samples
 **************

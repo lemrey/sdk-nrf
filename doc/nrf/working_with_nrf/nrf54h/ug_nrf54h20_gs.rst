@@ -98,87 +98,134 @@ Installing the toolchain
 ========================
 
 You can install the toolchain for the limited sampling of the |NCS| by running an installation script.
-
-To be able to install the toolchain, you need to have been granted access to the necessary GitHub repositories using an authenticated account that does not have a passphrase key for credentials.
+Before installing it, however, you need to have been granted an access to the necessary GitHub repositories using an authenticated account that does not have a passphrase key for credentials.
 The access is granted as part of the onboarding process for the limited sampling release.
-In addition, you need to have Git and curl installed.
+Ensure that you additionally have Git and curl installed.
 
-To install the toolchain, complete the following steps:
+.. tabs::
 
-1. Open a terminal window.
-   On Windows, open Git Bash.
-#. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+   .. tab:: Windows
 
-   .. parsed-literal::
-      :class: highlight
+      Run the installation script:
 
-      curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
+      1. Open git bash.
+      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
 
-   Depending on your connection, this might take some time.
+         .. parsed-literal::
+            :class: highlight
 
-#. Run the command provided to you by the script:
+            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
-   .. tabs::
+         Depending on your connection, this might take some time.
+      #. Run the following command in Git Bash:
 
-      .. tab:: Windows
+         .. parsed-literal::
+            :class: highlight
 
-            Run the following command in Git Bash:
+            c:/nordic-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
 
-            .. parsed-literal::
-               :class: highlight
+         This opens a new terminal window with the |NCS| toolchain environment, where west and other development tools are available.
+         Alternatively, you can run the following command::
 
-               c:/nordic-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
+            c:/nordic-lcs/nrfutil.exe toolchain-manager env --as-script
 
-            This opens a new terminal window with the |NCS| toolchain environment, where west and other development tools are available.
-            Alternatively, you can run the following command::
+         This gives all the necessary environmental variables you need to copy-paste and execute in the same terminal window to be able to run west directly there.
 
-               c:/nordic-lcs/nrfutil.exe toolchain-manager env --as-script
+         .. caution::
+            When working with the limited sampling release, you must always use the terminal window where the west environmental variables have been called.
 
-            This gives all the necessary environmental variables you need to copy-paste and execute in the same terminal window to be able to run west directly there.
+         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\nordic-lcs` directory, and start over.
 
-            .. caution::
-               When working with the limited sampling release, you must always use the terminal window where the west environmental variables have been called.
+         We recommend adding the path where nrfutil is located to your environmental variables.
 
-            If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\nordic-lcs` directory, and start over.
 
-            We recommend adding the path where nrfutil is located to your environmental variables.
+   .. tab:: Linux
 
-      .. tab:: Linux
+      Run the installation script:
 
-            Run the following command in your terminal:
+      1. Open a terminal window.
+      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
 
-            .. parsed-literal::
-               :class: highlight
+         .. parsed-literal::
+            :class: highlight
 
-               $HOME/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
+            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
-            This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
+         Depending on your connection, this might take some time.
+      #. Run the following command in your terminal:
 
-            .. caution::
-               When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
+         .. parsed-literal::
+            :class: highlight
 
-            If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`nordic-lcs` directory, and start over.
+            $HOME/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
 
-            We recommend adding the path where nrfutil is located to your environmental variables.
+         This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
 
-      .. tab:: macOS
+         .. caution::
+            When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
 
-            To install the required tools, complete the following steps:
+         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`nordic-lcs` directory, and start over.
 
-            .. ncs-include:: develop/getting_started/index.rst
-               :docset: zephyr
-               :dedent: 6
-               :start-after: .. _install_dependencies_macos:
-               :end-before: group-tab:: Windows
+         We recommend adding the path where nrfutil is located to your environmental variables.
 
-            Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
-            To check the installed versions, run the following command:
+   .. tab:: macOS
 
-            .. parsed-literal::
-               :class: highlight
+      Run the installation script:
 
-                brew list --versions
+      1. Open a terminal window.
+      #. Install `Homebrew`_:
 
+         .. code-block:: bash
+
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      #. Use ``brew`` to install the required dependencies:
+
+         .. code-block:: bash
+
+            brew install cmake ninja gperf python3 ccache qemu dtc wget libmagic
+
+         Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
+         To check the installed versions, run the following command:
+
+         .. parsed-literal::
+            :class: highlight
+
+             brew list --versions
+
+      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+
+         .. parsed-literal::
+            :class: highlight
+
+            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
+
+         Depending on your connection, this might take some time.
+
+         .. note::
+            On macOS, the install directory is :file:`/opt/nordic/ncs`.
+            This means that creating the directory requires root access.
+            You will be prompted to grant the script admin rights for the creation of the folder on the first install.
+            The folder will be created with the necessary access rights to the user, so subsequent installs do not require root access.
+
+            Do not run the toolchain-manager installation as root (for example, using `sudo`), as this would cause the directory to only grant access to root, meaning subsequent installations will also require root access.
+            If you run the script as root, to fix permissions delete the installation folder and run the script again as a non-root user.
+
+      #. Run the following command in your terminal:
+
+         .. parsed-literal::
+            :class: highlight
+
+            /Users/*yourusername*/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "/Users/*yourusername*/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
+
+         This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
+
+         .. caution::
+            When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
+
+         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`nordic-lcs` directory, and start over.
+
+         We recommend adding the path where nrfutil is located to your environmental variables.
 
 .. _nrf54h20_install_ncs:
 
@@ -201,23 +248,68 @@ After you have installed nRF Command Line Tools and the toolchain, complete the 
 
    ``west update`` requires :ref:`west <zephyr:west>` to fetch from private repositories on GitHub.
 
-   Because the `west manifest file`_ uses ``https://`` URLs instead of ``ssh://``, you may be prompted to type your GitHub username and Personal Access Token multiple times.
-   GitHub has a comprehensive `documentation page <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github>`_ on the subject.
-   In many cases (including Windows), the Git installation includes `Git Credential Manager <https://github.com/git-ecosystem/git-credential-manager>`_, which will handle GitHub authentication and is the recommended method for handling GitHub authentication.
+   There are two ways you can authenticate when accessing private repositories on GitHub:
 
-   However, if you are already using `SSH-based authentication <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent>`_, you can reuse your SSH setup by adding the following to your :file:`~/.gitconfig` (or :file:`%userprofile%\\.gitconfig` on Windows):
+   * Using SSH authentication, where your git remotes URLs use ``ssh://``.
+   * Using HTTPS authentication, where your git remotes URLs use ``https://``.
 
-   .. parsed-literal::
-      :class: highlight
+   GitHub has a comprehensive `documentation page on authentication methods`_.
 
-         [url "ssh://git@github.com"]
-               insteadOf = https://github.com
+   However, we suggest to choose your authentication method depending on your scenario:
 
-   This will rewrite the URLs on the fly so that Git uses ``ssh://`` for all network operations with GitHub.
+   * If this is the first time you are setting up GitHub access, use HTTPS.
+   * If you already have a git credentials file, use HTTPS.
+   * If you already have an SSH key generated and uploaded to GitHub, use SSH.
+   * If you are still undecided, use HTTPS.
 
-   Another option instead is to create a :file:`~/.git-credentials` (or :file:`%userprofile%\\.git-credentials` on Windows) and add this line to it::
+   .. tabs::
 
-      https://<GitHub username>:<Personal Access Token>@github.com
+      .. tab:: HTTPS authentication
+
+          The `west manifest file`_ in the |NCS| uses ``https://`` URLs instead of ``ssh://``.
+          When using HTTPS, you may be prompted to type your GitHub username and password or multiple times.
+          This can be avoided by creating on GitHub a Personal Access Token (PAT) (needed for two-factor authentication) and using `Git Credential Manager`_ (included in the git installation) to store your credentials in git and handle GitHub authentication.
+
+          1. Create on GitHub your `Personal Access Token (PAT)`_.
+          #. Store your credentials (username and PAT) on disk using the ``store`` command from the git credential helper.
+
+             .. code-block:: shell
+
+                git config --global credential.helper store
+
+          #. Create a :file:`~/.git-credentials` (or :file:`%userprofile%\\.git-credentials` on Windows) and add this line to it::
+
+                https://<GitHub username>:<Personal Access Token>@github.com
+
+             See the `git-credential-store`_ manual page for details.
+
+          If you don't want to store any credentials on the file system, you can store them in memory temporarily using `git-credential-cache`_ instead.
+
+      .. tab:: SSH authentication
+
+          The `west manifest file`_ in the |NCS| uses ``https://`` URLs instead of ``ssh://``.
+          If you are already using `SSH-based authentication`_, you can reuse your SSH setup by adding the following to your :file:`~/.gitconfig` (or :file:`%userprofile%\\.gitconfig` on Windows):
+
+             .. parsed-literal::
+                :class: highlight
+
+                   [url "ssh://git@github.com"]
+                         insteadOf = https://github.com
+
+          This will rewrite the URLs on the fly so that Git uses ``ssh://`` for all network operations with GitHub.
+
+          You achieve the same result also using Git Credential Manager:
+
+          .. code-block:: shell
+
+                git config --global credential.helper store
+                git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+          If your SSH key has no password, fetching should just work. If it does have a
+          password, you can avoid entering it manually every time using `ssh-agent`_.
+
+          On GitHub, see `Connecting to GitHub with SSH`_ for details on configuration
+          and key creation.
 
 #. Enter the following command to clone the project repositories::
 
@@ -229,18 +321,6 @@ After you have installed nRF Command Line Tools and the toolchain, complete the 
    This allows CMake to automatically load the boilerplate code required for building |NCS| applications::
 
       west zephyr-export
-
-#. Install ``nrf-regtool`` using the following command:
-
-   .. tabs::
-
-      .. group-tab:: Windows
-
-            python -m pip install modules/lib/nrf-regtool
-
-      .. group-tab:: Linux
-
-            python3 -m pip install modules/lib/nrf-regtool
 
 Your directory structure now looks similar to this::
 
@@ -264,13 +344,6 @@ Programming the sample
 
 The :ref:`multicore_hello_world` sample is a multicore sample running on both the Application core (``cpuapp``) and the Peripheral Processor (PPR, ``cpuppr``).
 It uses the ``nrf54h20dk_nrf54h20_cpuapp@soc1`` build target.
-
-.. caution::
-   You should use west to program the nRF54H20 PDK during the limited sampling release.
-   The ``west`` command is available from the terminal window you opened in Step 3 of `nrf54h20_install_toolchain`_.
-
-   Do not use the ``nrfjprog -e`` command to program the nRF54H20 PDK, as it will brick the device.
-   Use the ``west flash --erase-storage`` command instead.
 
 To build and program the sample to the nRF54H20 PDK, complete the following steps:
 

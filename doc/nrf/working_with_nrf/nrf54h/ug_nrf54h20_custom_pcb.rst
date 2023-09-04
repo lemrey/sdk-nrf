@@ -34,15 +34,6 @@ However, if you plan to select your own power sources, consider the following li
 
 Consult the `Objective Product Specification`_ (OPS) for more information on the mechanical specification of the SoC package and the reference circuitry used in the PDK.
 
-Install the patch
-*****************
-
-To follow this guide, you need to install the :file:`0001-cmake-Generate-BICR-file.patch` patch file on top of the ``v2.2.99-cs1`` branch.
-From your shell, you can do that as follows:
-
-1. From the installation path of the limited sampling version of the nRF Connect SDK, navigate to :file:`/modules/ic-next`.
-#. Run the ``git am path/to/0001-cmake-Generate-BICR-file.patch`` command.
-
 Prepare the configuration files for your custom board in the |NCS|
 ******************************************************************
 
@@ -51,15 +42,20 @@ The nRF54H20 PDK uses multiple board files for its configuration:
 * `ARM cores configuration files`_
 * `Risc-V cores configuration files`_
 
-To use these files as a starting point for configuring your own custom board, create a copy of each folder under :file:`haltium/boards/arm/your_custom_board_name` and :file:`haltium/boards/riscv/your_custom_board_name`, respectively.
+You can use these files as a starting point for configuring your own custom board.
+The easiest way to do so, when creating a :ref:`Zephyr repository application <zephyr:zephyr-repo-app>`, is to create a copy of these folders under :file:`sdk-nrf-next/boards/arm/your_custom_board_name` (for the ARM configuration files) and :file:`sdk-nrf-next/boards/riscv/your_custom_board_name` (for the Risc-V configuration files), respectively.
 
 .. caution::
    Do not modify the configuration files related to the Secure Domain (:file:`*_cpusec` in the ARM folder) and the System Controller (:file:`*_cpusys` in the Risc-V folder).
 
 You must edit the :file:`.dts` and :file:`.overlay` files for your project to match your board configuration, similarly to any new board added to the |NCS| or Zephyr.
 
-To familiarize yourself with the devicetree language and syntax, consult the :ref:`zephyr:devicetree` documentation.
-For more information on how to configure your DTS files for the nRF54H20 SoC, see :ref:`ug_nrf54h20_configuration`.
+See the following documentation pages for more information:
+
+* The :ref:`zephyr:devicetree` documentation to familiarize yourself with the devicetree language and syntax
+* The :ref:`ug_nrf54h20_configuration` page for more information on how to configure your DTS files for the nRF54H20 SoC.
+* The :ref:`zephyr:zephyr-repo-app` page for more information on Zephyr application types.
+* The :ref:`dm_adding_code` documentation for details on the best user workflows to add your own code to the |NCS|.
 
 .. note::
    The configuration of board files is based on the `nRF54H20 common SoC files`_.

@@ -181,7 +181,7 @@ The following table indicates the software maturity levels of the support for ea
 
 .. sml-table:: top_level
    :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
-   :insert-values: [("Bluetooth","nRF54H20","Experimental"), ("Bluetooth","nRF54L15","Experimental")]
+   :insert-values: [("Bluetooth","nRF54H20","Experimental"), ("Bluetooth","nRF54L15","Experimental"), ("Matter","nRF54H20","Experimental")]
 
 Bluetooth features support
 **************************
@@ -191,6 +191,8 @@ The following table indicates the software maturity levels of the support for ea
 .. toggle::
 
   .. sml-table:: bluetooth
+     :insert-values: [("Bluetooth LE Peripheral/Central","nRF54H20","Experimental"), ("Bluetooth LE Peripheral/Central","nRF54L15","Experimental"), ("LLPM","nRF54H20","Experimental"), ("LLPM","nRF54L15","Experimental")]
+
 
 HomeKit features support
 ************************
@@ -223,6 +225,7 @@ The following table indicates the software maturity levels of the support for ea
 
   .. sml-table:: matter
      :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
+     :insert-values: [("Matter Sleepy End Device","nRF54H20","Experimental"), ("Matter commissioning over Bluetooth LE with QR code onboarding","nRF54H20","Experimental"), ("Matter commissioning over IP","nRF54H20","Experimental"), ("Matter over Thread","nRF54H20","Experimental")]
 
 Zigbee feature support
 **********************

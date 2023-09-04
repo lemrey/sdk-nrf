@@ -87,8 +87,6 @@ Limitations
 
 * This release of |NCS| is only meant to be used for sampling the features of the nRF54H20 and nRF54L15 SoCs.
   No other features have been tested for this release.
-* Using the ``nrfjprog -e`` command to erase the storage on the nRF54H20 PDK will brick the device.
-  Use ``west flash --erase-storage`` instead.
 * If you cancel a ``west flash`` command before it finishes running, for example by pressing ctrl+C, the device might require a power cycle before it can be flashed again.
 * nRF54H20 USB device controller driver limitations:
 

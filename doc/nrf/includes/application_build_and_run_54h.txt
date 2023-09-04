@@ -28,12 +28,6 @@ Complete the following steps to program the nRF54H20 PDK:
 
    This command clears the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
 
-   .. caution::
-      You should use west to program the nRF54H20 PDK during the limited sampling release.
-
-      Do not use the ``nrfjprog -e`` command to program the nRF54H20 PDK, as it will brick the device.
-      Use the ``west flash --erase-storage`` command instead.
-
    As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
    With this approach, the old data in other areas will be retained.
 

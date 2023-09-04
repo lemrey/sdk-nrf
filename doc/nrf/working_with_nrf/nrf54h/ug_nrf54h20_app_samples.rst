@@ -35,10 +35,11 @@ The following |NCS| samples have been developed and tested on the nRF54H20 for t
 * :ref:`caf_sensor_manager_sample`
 * :ref:`ipc_service_sample`
 * :ref:`event_manager_proxy_sample`
-* :ref:`matter_template_sample`
-* :ref:`matter_lock_sample`
-* :ref:`ot_cli_sample`
 * :ref:`nrf54h_suit_sample`
+* :ref:`record_text`
+* :ref:`writable_ndef_msg`
+* :ref:`nfc_shell`
+* :ref:`record_launch_app`
 
 |NCS| applications
 ******************
