@@ -361,6 +361,22 @@ static int ttff_test_force_cold_start(void)
 	return 0;
 }
 
+#if defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_NRF_CLOUD)
+static bool qzss_assistance_is_supported(void)
+{
+	char resp[32];
+
+	if (nrf_modem_at_cmd(resp, sizeof(resp), "AT+CGMM") == 0) {
+		/* nRF9160 does not support QZSS assistance, while nRF91x1 do. */
+		if (strstr(resp, "nRF9160") != NULL) {
+			return false;
+		}
+	}
+
+	return true;
+}
+#endif /* CONFIG_GNSS_SAMPLE_ASSISTANCE_NRF_CLOUD */
+
 static void ttff_test_prepare_work_fn(struct k_work *item)
 {
 	/* Make sure GNSS is stopped before next start. */
@@ -375,8 +391,6 @@ static void ttff_test_prepare_work_fn(struct k_work *item)
 #if !defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_NONE)
 	if (IS_ENABLED(CONFIG_GNSS_SAMPLE_MODE_TTFF_TEST_COLD_START)) {
 		/* All A-GNSS data is always requested before GNSS is started. */
-		last_agnss.sv_mask_ephe = 0xffffffff;
-		last_agnss.sv_mask_alm = 0xffffffff;
 		last_agnss.data_flags =
 			NRF_MODEM_GNSS_AGNSS_GPS_UTC_REQUEST |
 			NRF_MODEM_GNSS_AGNSS_KLOBUCHAR_REQUEST |
@@ -384,6 +398,16 @@ static void ttff_test_prepare_work_fn(struct k_work *item)
 			NRF_MODEM_GNSS_AGNSS_GPS_SYS_TIME_AND_SV_TOW_REQUEST |
 			NRF_MODEM_GNSS_AGNSS_POSITION_REQUEST |
 			NRF_MODEM_GNSS_AGNSS_INTEGRITY_REQUEST;
+		last_agnss.system_count = 1;
+		last_agnss.system[0].sv_mask_ephe = 0xffffffff;
+		last_agnss.system[0].sv_mask_alm = 0xffffffff;
+#if defined(CONFIG_GNSS_SAMPLE_ASSISTANCE_NRF_CLOUD)
+		if (qzss_assistance_is_supported()) {
+			last_agnss.system_count = 2;
+			last_agnss.system[1].sv_mask_ephe = 0x3ff;
+			last_agnss.system[1].sv_mask_alm = 0x3ff;
+		}
+#endif /* CONFIG_GNSS_SAMPLE_ASSISTANCE_NRF_CLOUD */
 
 		k_work_submit_to_queue(&gnss_work_q, &agnss_data_get_work);
 	} else {
