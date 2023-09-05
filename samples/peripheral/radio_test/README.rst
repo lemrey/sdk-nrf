@@ -169,6 +169,21 @@ Building and running
 .. include:: /includes/build_and_run_54h.txt
 
 .. note::
+  When compiling on Windows for the nRF54L15 PDK, use the following commands if the build fails due to the maximum path length limitation:
+
+  1. Build the sample:
+
+    .. code-block:: console
+
+        west build -p -b nrf54l15dk_nrf54l15_cpuapp@soc1 -d C:\nordic-lcs\west_working_dir\build\
+
+  #. Flash the HEX file onto the PDK:
+
+    .. code-block:: console
+
+        west flash -d C:\nordic-lcs\west_working_dir\build
+
+.. note::
    On the nRF5340 or nRF7002 development kit, the Radio Test sample requires the :ref:`nrf5340_remote_shell` sample on the application core.
    The Remote IPC shell sample is built and programmed automatically by default.
    If you want to program your custom solution for the application core, unset the :kconfig:option:`CONFIG_NCS_SAMPLE_REMOTE_SHELL_CHILD_IMAGE` Kconfig option.
