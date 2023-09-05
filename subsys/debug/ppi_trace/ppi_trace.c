@@ -115,10 +115,10 @@ static int gpiote_channel_alloc(uint32_t pin)
 		return -1;
 	}
 
-	nrf_gpiote_task_configure(NRF_GPIOTE, channel, pin,
+	nrf_gpiote_task_configure(NRF_GPIOTE0, channel, pin,
 				  NRF_GPIOTE_POLARITY_TOGGLE,
 				  NRF_GPIOTE_INITIAL_VALUE_LOW);
-	nrf_gpiote_task_enable(NRF_GPIOTE, channel);
+	nrf_gpiote_task_enable(NRF_GPIOTE0, channel);
 
 	return channel;
 }
@@ -144,7 +144,7 @@ void *ppi_trace_config(uint32_t pin, uint32_t evt)
 	}
 
 	task_id = offsetof(NRF_GPIOTE_Type, TASKS_OUT[gpiote_ch]);
-	task = nrf_gpiote_task_address_get(NRF_GPIOTE, task_id);
+	task = nrf_gpiote_task_address_get(NRF_GPIOTE0, task_id);
 	ppi_assign(ppi_ch, evt, task);
 
 	return HANDLE_ENCODE(ppi_ch);
@@ -187,9 +187,9 @@ void *ppi_trace_pair_config(uint32_t pin, uint32_t start_evt, uint32_t stop_evt)
 	task_set_id = offsetof(NRF_GPIOTE_Type, TASKS_SET[gpiote_ch]);
 	task_clr_id = offsetof(NRF_GPIOTE_Type, TASKS_CLR[gpiote_ch]);
 
-	task = nrf_gpiote_task_address_get(NRF_GPIOTE, task_set_id);
+	task = nrf_gpiote_task_address_get(NRF_GPIOTE0, task_set_id);
 	ppi_assign(start_ch, start_evt, task);
-	task = nrf_gpiote_task_address_get(NRF_GPIOTE, task_clr_id);
+	task = nrf_gpiote_task_address_get(NRF_GPIOTE0, task_clr_id);
 	ppi_assign(stop_ch, stop_evt, task);
 
 	return HANDLE_ENCODE(PACK_CHANNELS(start_ch, stop_ch));
