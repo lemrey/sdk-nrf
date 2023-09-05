@@ -295,7 +295,7 @@ static bool rdy_pin_blink(struct lpuart_data *data)
 	 * this pin high.
 	 */
 	k_busy_wait(1);
-	if (nrf_gpio_pin_read(data->rdy_pin) == 0 && !nrf_gpiote_event_check(NRF_GPIOTE, event)) {
+	if (nrf_gpio_pin_read(data->rdy_pin) == 0 && !nrf_gpiote_event_check(NRF_GPIOTE0, event)) {
 		/* Suspicious pin state (low). It might be that context was preempted
 		 * for long enough and transfer ended (in that case event will be set)
 		 * or transmitter is working abnormally or pin is just floating.
