@@ -791,7 +791,7 @@ static void get_agps_data_type_string(char *type_string, uint16_t type)
 	case NRF_MODEM_GNSS_AGNSS_LOCATION:
 		(void)strcpy(type_string, "pos");
 		break;
-	case NRF_MODEM_GNSS_AGNSS_INTEGRITY:
+	case NRF_MODEM_GNSS_AGPS_INTEGRITY:
 		(void)strcpy(type_string, "int");
 		break;
 	default:
@@ -1584,12 +1584,14 @@ int gnss_inject_agps_data(void)
 	agnss_need.system[0].system_id = NRF_MODEM_GNSS_SYSTEM_GPS;
 	agnss_need.system[0].sv_mask_ephe = 0xffffffff;
 	agnss_need.system[0].sv_mask_alm = 0xffffffff;
+#if defined(CONFIG_NRF_CLOUD_AGPS)
 	if (qzss_assistance_is_supported()) {
 		agnss_need.system_count = 2;
 		agnss_need.system[1].system_id = NRF_MODEM_GNSS_SYSTEM_QZSS;
 		agnss_need.system[1].sv_mask_ephe = 0x3ff;
 		agnss_need.system[1].sv_mask_alm = 0x3ff;
 	}
+#endif
 
 	k_work_submit_to_queue(&mosh_common_work_q, &get_agps_data_work);
 
