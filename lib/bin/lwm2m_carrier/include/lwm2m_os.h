@@ -45,7 +45,7 @@ typedef void (*lwm2m_os_thread_entry_t)(void *p1, void *p2, void *p3);
 /**
  * @brief Maximum number of semaphores that the system must support.
  */
-#define LWM2M_OS_MAX_SEM_COUNT (4 + (LWM2M_OS_MAX_WORK_QS * 2))
+#define LWM2M_OS_MAX_SEM_COUNT (2 + (LWM2M_OS_MAX_WORK_QS * 2))
 
 typedef int lwm2m_os_sem_t;
 
@@ -546,55 +546,84 @@ void lwm2m_os_lte_mode_request(int32_t prefer);
 int lwm2m_os_nrf_errno(void);
 
 /**
- * @brief Start an application firmware upgrade.
+ * @defgroup lwm2m_os_dfu_img_type LwM2M OS DFU image types.
+ * @{
+ */
+#define LWM2M_OS_DFU_IMG_TYPE_NONE        0
+#define LWM2M_OS_DFU_IMG_TYPE_APPLICATION 1
+#define LWM2M_OS_DFU_IMG_TYPE_MODEM_DELTA 2
+/** @} */
+
+/**
+ * @brief Find the image type for the buffer of bytes received.
  *
+ * @param[in] buf A buffer of bytes which are the start of a binary firmware image.
+ * @param[in] len The length of the provided buffer.
+ *
+ * @return Identifier for a supported image type or LWM2M_OS_DFU_IMG_TYPE_NONE if
+ *         image type is not recognized.
+ **/
+int lwm2m_os_dfu_img_type(const void *const buf, size_t len);
+
+/**
+ * @brief Start a firmware upgrade.
+ *
+ * @param[in] img_type      DFU target type to be initialized.
  * @param[in] max_file_size Estimate of the new firmware image to be received. May be greater than
  *                          or equal to the actual image size received by the end.
+ * @param[in] crc_validate  Flag to indicate whether to validate the incoming image fragments by
+ *                          means of IEEE CRC32.
  *
  * @retval  0       Ready to start a new firmware upgrade.
  * @return  A positive number of bytes written so far, if the previous upgrade was not completed.
  *          In this case, the upgrade will resume from this offset.
- * @retval -EBUSY   Another application firmware upgrade is already ongoing.
- * @retval -ENOMEM  Not enough memory to store the file of the given size.
+ * @retval -EBUSY   Another firmware upgrade is already ongoing.
+ * @retval -EFBIG   File size exceeds the DFU area size.
+ * @retval -ENOTSUP Firmware image not supported or unknown.
  * @retval -EIO     Internal error.
- * @retval -ENOTSUP This function is not implemented.
  */
-int lwm2m_os_app_fota_start(size_t max_file_size);
+int lwm2m_os_dfu_start(int img_type, size_t max_file_size, bool crc_validate);
 
 /**
- * @brief Receive an application firmware image fragment and validate its CRC.
+ * @brief Receive a firmware image fragment and validate its CRC if required.
  *
  * @param[in] buf    Buffer containing the fragment.
  * @param[in] len    Length of the fragment in bytes.
- * @param[in] offset Offset into the buffer, from which to start copying the fragment to flash.
- * @param[in] crc32  Expected IEEE CRC32 value. Must be checked for the whole fragment.
+ * @param[in] crc32  Expected IEEE CRC32 value to be checked for the whole fragment. Can be any
+ *                   value if no validation expected.
  *
  * @retval  0       Success.
- * @retval -EACCES  lwm2m_os_app_fota_start() was not called beforehand.
- * @retval -ENOMEM  Not enough memory to store the file.
+ * @retval -EACCES  lwm2m_os_dfu_start() was not called beforehand.
+ * @retval -ENOMEM  Not enough memory to process the fragment.
  * @retval -EINVAL  CRC error.
  * @retval -EIO     Internal error.
- * @retval -ENOTSUP Firmware image not recognized, or this function is not implemented.
  */
-int lwm2m_os_app_fota_fragment(const char *buf, uint16_t len, uint16_t offset, uint32_t crc32);
+int lwm2m_os_dfu_fragment(const char *buf, size_t len, uint32_t crc32);
 
 /**
- * @brief Finalize the current application firmware upgrade and CRC-validate the image.
+ * @brief Finalize the current firmware upgrade and CRC-validate the image if required.
  *
- * @param[in] crc32  Expected IEEE CRC32 value. Should be checked for the whole file in flash.
+ * @param[in] crc32  Expected IEEE CRC32 value to be checked for the whole file in flash. Can be any
+ *                   value if no validation expected.
  *
  * @retval  0       Success.
- * @retval -EACCES  lwm2m_os_app_fota_start() was not called beforehand.
+ * @retval -EACCES  lwm2m_os_dfu_start() was not called beforehand.
  * @retval -EINVAL  CRC error.
  * @retval -EIO     Internal error.
- * @retval -ENOTSUP This function is not implemented.
  */
-int lwm2m_os_app_fota_finish(uint32_t crc32);
+int lwm2m_os_dfu_done(uint32_t crc32);
 
 /**
- * @brief Abort the current application firmware upgrade.
+ * @brief Schedule update for uploaded image.
+ *
+ * @retval  0  If success.
  */
-void lwm2m_os_app_fota_abort(void);
+int lwm2m_os_dfu_schedule_update(void);
+
+/**
+ * @brief Reset the current DFU target.
+ */
+void lwm2m_os_dfu_reset(void);
 
 #ifdef __cplusplus
 }

@@ -60,21 +60,9 @@ extern "C" {
 /** @} */
 
 /**
- * @name LwM2M carrier library firmware update types.
- * @{
- */
-/** Receiving a modem firmware delta patch. */
-#define LWM2M_CARRIER_FOTA_START_MODEM_DELTA 0
-/** Receiving application firmware. */
-#define LWM2M_CARRIER_FOTA_START_APPLICATION 2
-/** @} */
-
-/**
  * @brief LwM2M carrier library firmware update event structure.
  */
 typedef struct {
-	/** Firmware type to be received. */
-	uint32_t type;
 	/** URI from where the firmware will be downloaded. Set to NULL if no URI will be used. */
 	const char *uri;
 } lwm2m_carrier_event_fota_start_t;
