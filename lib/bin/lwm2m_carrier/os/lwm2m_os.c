@@ -709,11 +709,15 @@ int lwm2m_os_nrf_errno(void)
 	return errno;
 }
 
-/* Application firmware upgrade abstractions */
-
-#if CONFIG_DFU_TARGET_MCUBOOT
+/* DFU target handling */
 
 #include <dfu/dfu_target.h>
+
+static bool dfu_started;
+static bool dfu_crc_validate;
+static int dfu_img_type;
+
+#if CONFIG_DFU_TARGET_MCUBOOT
 #include <dfu/dfu_target_mcuboot.h>
 #include <dfu/dfu_target_stream.h>
 #include <pm_config.h>
@@ -727,19 +731,11 @@ int lwm2m_os_nrf_errno(void)
 #define MCUBOOT_SECONDARY_MTD	DT_NODELABEL(PM_MCUBOOT_SECONDARY_DEV)
 #endif
 
-static bool dfu_started;
-static bool dfu_in_progress;
 static uint8_t dfu_stream_buf[1024] __aligned(4);
-
-static void dfu_target_cb(enum dfu_target_evt_id evt_id)
-{
-	/* This event handler is not in use by LwM2M carrier library. */
-	ARG_UNUSED(evt_id);
-}
 
 static int crc_validate_fragment(const uint8_t *buf, size_t len, uint32_t crc32)
 {
-	if (crc32 != crc32_ieee(buf, len)) {
+	if ((buf == NULL) || (crc32 != crc32_ieee(buf, len))) {
 		return -EINVAL;
 	}
 
@@ -788,25 +784,65 @@ static int crc_validate_stored_image(size_t len, uint32_t crc32)
 
 	return 0;
 }
-
-int lwm2m_os_app_fota_start(size_t max_file_size)
+#else
+static int crc_validate_fragment(const uint8_t *buf, size_t len, uint32_t crc32)
 {
-	int err, offset;
+	ARG_UNUSED(buf);
+	ARG_UNUSED(len);
+	ARG_UNUSED(crc32);
+
+	return -EINVAL;
+}
+#endif /* CONFIG_DFU_TARGET_MCUBOOT */
+
+static void dfu_target_cb(enum dfu_target_evt_id evt_id)
+{
+	/* This event handler is not in use by LwM2M carrier library. */
+	ARG_UNUSED(evt_id);
+}
+
+int lwm2m_os_dfu_img_type(const void *const buf, size_t len)
+{
+	enum dfu_target_image_type type;
+
+	type = dfu_target_img_type(buf, len);
+
+	if (type == DFU_TARGET_IMAGE_TYPE_MCUBOOT) {
+		return LWM2M_OS_DFU_IMG_TYPE_APPLICATION;
+	} else if (type == DFU_TARGET_IMAGE_TYPE_MODEM_DELTA) {
+		return LWM2M_OS_DFU_IMG_TYPE_MODEM_DELTA;
+	}
+
+	return LWM2M_OS_DFU_IMG_TYPE_NONE;
+}
+
+int lwm2m_os_dfu_start(int img_type, size_t max_file_size, bool crc_validate)
+{
+	int err;
+	size_t offset;
 
 	if (dfu_started) {
 		return -EBUSY;
 	}
 
-	err = dfu_target_mcuboot_set_buf(dfu_stream_buf, sizeof(dfu_stream_buf));
-	if (err) {
-		return -EIO;
+	/* A stream buffer is required if the target is MCUBOOT. */
+	if (img_type == LWM2M_OS_DFU_IMG_TYPE_APPLICATION) {
+#if CONFIG_DFU_TARGET_MCUBOOT
+		err = dfu_target_mcuboot_set_buf(dfu_stream_buf, sizeof(dfu_stream_buf));
+		if (err) {
+			return -EIO;
+		}
+#else
+		return -ENOTSUP;
+#endif
+	} else if (img_type != LWM2M_OS_DFU_IMG_TYPE_MODEM_DELTA) {
+		return -ENOTSUP;
 	}
 
-	err = dfu_target_init(DFU_TARGET_IMAGE_TYPE_MCUBOOT, 0, max_file_size, dfu_target_cb);
-	if (err == -EBUSY) {
-		return -EBUSY;
-	} else if ((err == -ENOMEM) || (err == -E2BIG) || (err == -EFBIG)) {
-		return -ENOMEM;
+	err = dfu_target_init(img_type, 0, max_file_size, dfu_target_cb);
+	if (err == -EFBIG) {
+		/* Insufficient flash storage for the image. */
+		return err;
 	} else if (err) {
 		return -EIO;
 	}
@@ -817,138 +853,102 @@ int lwm2m_os_app_fota_start(size_t max_file_size)
 	}
 
 	dfu_started = true;
-	if (offset > 0) {
-		dfu_in_progress = true;
-	}
+	dfu_img_type = img_type;
+	dfu_crc_validate = crc_validate;
 
 	return offset;
 }
 
-int lwm2m_os_app_fota_fragment(const char *buf, uint16_t len, uint16_t offset, uint32_t crc32)
+int lwm2m_os_dfu_fragment(const char *buf, size_t len, uint32_t crc32)
 {
 	int err;
 
-	if ((buf == NULL) || (offset > len)) {
-		/* Invalid arguments. */
+	if (!dfu_started) {
+		return -EACCES;
+	}
+
+	/* CRC-validate whole fragment if required. */
+	if (dfu_crc_validate) {
+		err = crc_validate_fragment(buf, len, crc32);
+		if (err) {
+			return err;
+		}
+	}
+
+	/* Write fragment. */
+	err = dfu_target_write(buf, len);
+	if ((err == -ENOMEM) || (err == -EINVAL)) {
+		/* Not enough memory to process the fragment, or integrity check failed. */
+		return err;
+	} else if (err) {
 		return -EIO;
 	}
 
-	if (!dfu_started) {
-		return -EACCES;
-	}
-
-	/* CRC-validate whole fragment. */
-	err = crc_validate_fragment(buf, len, crc32);
-	if (err) {
-		return err;
-	}
-
-	if (!dfu_in_progress) {
-		/* First fragment. Check image type. */
-		if (!dfu_target_mcuboot_identify(buf)) {
-			lwm2m_os_app_fota_abort();
-			return -ENOTSUP;
-		}
-
-		dfu_in_progress = true;
-	}
-
-	/* Partial write starting from offset. */
-	err = dfu_target_write(&buf[offset], len - offset);
-	if (!err) {
-		/* Success. */
-		return 0;
-	}
-
-	/* Cancel DFU and handle error. */
-	lwm2m_os_app_fota_abort();
-
-	if ((err == -ENOMEM) || (err == -E2BIG) || (err == -EFBIG)) {
-		return -ENOMEM;
-	}
-
-	return -EIO;
+	return 0;
 }
 
-int lwm2m_os_app_fota_finish(uint32_t crc32)
+int lwm2m_os_dfu_done(uint32_t crc32)
 {
-	int err = 0;
-	size_t bytes_written;
+	int err;
 
 	if (!dfu_started) {
 		return -EACCES;
 	}
 
-	/* Ensure that the whole image is flushed into flash before CRC-validating it. */
-	err = dfu_target_stream_done(true);
-	if (!err) {
-		err = dfu_target_stream_offset_get(&bytes_written);
-	}
-	if (err) {
-		err = -EIO;
-		goto abort;
-	}
+#if CONFIG_DFU_TARGET_MCUBOOT
+	if (dfu_crc_validate && (dfu_img_type == DFU_TARGET_IMAGE_TYPE_MCUBOOT)) {
+		size_t offset;
 
-	err = crc_validate_stored_image(bytes_written, crc32);
-	if (err) {
-		goto abort;
+		/* Ensure that the whole image is flushed into flash before CRC-validating it. */
+		err = dfu_target_stream_done(true);
+		if (err) {
+			return -EIO;
+		}
+
+		err = dfu_target_stream_offset_get(&offset);
+		if (err) {
+			return -EIO;
+		}
+
+		err = crc_validate_stored_image(offset, crc32);
+		if (err) {
+			return err;
+		}
 	}
+#else
+	ARG_UNUSED(crc32);
+#endif /* CONFIG_DFU_TARGET_MCUBOOT */
 
 	err = dfu_target_done(true);
-	if (!err) {
-		err = dfu_target_schedule_update(0);
-	}
 	if (err) {
-		err = -EIO;
-		goto abort;
+		return -EIO;
 	}
 
 	return 0;
-
-abort:
-	lwm2m_os_app_fota_abort();
-	return err;
 }
 
-void lwm2m_os_app_fota_abort(void)
+int lwm2m_os_dfu_schedule_update(void)
+{
+	int err;
+
+	if (!dfu_started) {
+		return -EACCES;
+	}
+
+	err = dfu_target_schedule_update(0);
+	if (err) {
+		return -EIO;
+	}
+
+	return 0;
+}
+
+void lwm2m_os_dfu_reset(void)
 {
 	if (dfu_started) {
 		dfu_target_reset();
-
-		dfu_in_progress = false;
 		dfu_started = false;
+		dfu_img_type = 0;
+		dfu_crc_validate = false;
 	}
 }
-
-#else
-
-int lwm2m_os_app_fota_start(size_t max_file_size)
-{
-	ARG_UNUSED(max_file_size);
-
-	return -ENOTSUP;
-}
-
-int lwm2m_os_app_fota_fragment(const char *buf, uint16_t len, uint16_t offset, uint32_t crc32)
-{
-	ARG_UNUSED(buf);
-	ARG_UNUSED(len);
-	ARG_UNUSED(offset);
-	ARG_UNUSED(crc32);
-
-	return -ENOTSUP;
-}
-
-int lwm2m_os_app_fota_finish(uint32_t crc32)
-{
-	ARG_UNUSED(crc32);
-
-	return -ENOTSUP;
-}
-
-void lwm2m_os_app_fota_abort(void)
-{
-	/* Do nothing. */
-}
-
-#endif /* CONFIG_DFU_TARGET_MCUBOOT */

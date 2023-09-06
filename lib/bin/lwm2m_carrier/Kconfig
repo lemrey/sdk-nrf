@@ -36,6 +36,8 @@ menuconfig LWM2M_CARRIER
 	depends on (AT_MONITOR_HEAP_SIZE >= 320)
 	# reboot functionality
 	depends on REBOOT
+	# Firmware upgrade functionality
+	depends on DFU_TARGET
 	help
 	  A library for cellular connection management.
 
