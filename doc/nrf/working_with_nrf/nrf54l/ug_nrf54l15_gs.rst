@@ -121,19 +121,19 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            c:/nordic-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
+            c:/ncs-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/ncs-lcs/work-dir" --ncs-version v2.4.99-cs2
 
          This opens a new terminal window with the |NCS| toolchain environment, where west and other development tools are available.
          Alternatively, you can run the following command::
 
-            c:/nordic-lcs/nrfutil.exe toolchain-manager env --as-script
+            c:/ncs-lcs/nrfutil.exe toolchain-manager env --as-script
 
          This gives all the necessary environmental variables you need to copy-paste and execute in the same terminal window to be able to run west directly there.
 
          .. caution::
             When working with the limited sampling release, you must always use the terminal window where the west environmental variables have been called.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\nordic-lcs` directory, and start over.
+         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\ncs-lcs` directory, and start over.
 
          We recommend adding the path where nrfutil is located to your environmental variables.
 
@@ -156,14 +156,14 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            $HOME/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
+            $HOME/ncs-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/ncs-lcs/work-dir" --ncs-version v2.4.99-cs2
 
          This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
 
          .. caution::
             When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`nordic-lcs` directory, and start over.
+         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
 
          We recommend adding the path where nrfutil is located to your environmental variables.
 
@@ -172,26 +172,6 @@ Ensure that you additionally have Git and curl installed.
       Run the installation script:
 
       1. Open a terminal window.
-      #. Install `Homebrew`_:
-
-         .. code-block:: bash
-
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-      #. Use ``brew`` to install the required dependencies:
-
-         .. code-block:: bash
-
-            brew install cmake ninja gperf python3 ccache qemu dtc wget libmagic
-
-         Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
-         To check the installed versions, run the following command:
-
-         .. parsed-literal::
-            :class: highlight
-
-             brew list --versions
-
       #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
 
          .. parsed-literal::
@@ -215,14 +195,14 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            /Users/*yourusername*/nordic-lcs/nrfutil toolchain-manager launch --shell --chdir "/Users/*yourusername*/nordic-lcs/west_working_dir" --ncs-version v2.4.99-cs2
+            /Users/*yourusername*/ncs-lcs/nrfutil toolchain-manager launch --shell --chdir "/Users/*yourusername*/ncs-lcs/work-dir" --ncs-version v2.4.99-cs2
 
          This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
 
          .. caution::
             When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`nordic-lcs` directory, and start over.
+         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
 
          We recommend adding the path where nrfutil is located to your environmental variables.
 
@@ -323,7 +303,7 @@ After you have installed nRF Command Line Tools 10.22.2 and the toolchain, you n
 
 Your directory structure now looks similar to this::
 
-    nordic-lcs/west_working_dir
+    ncs-lcs/work-dir
     |___ .west
     |___ bootloader
     |___ modules
