@@ -15,6 +15,9 @@
 
 #define DT_DRV_COMPAT nordic_nrf_sw_lpuart
 
+#define LPUART_NODE    DT_NODELABEL(lpuart)
+#define GPIO_CTLR(pin) DT_GPIO_CTLR(LPUART_NODE, pin)
+
 static uint32_t tx_req_cnt;
 static uint32_t tx_done_cnt;
 static uint32_t tx_abort_cnt;
@@ -334,7 +337,8 @@ static void pins_toggle(int32_t tx_pin)
 {
 	static nrf_gpio_pin_pull_t pull = NRF_GPIO_PIN_PULLUP;
 	static nrf_gpio_pin_pull_t tx_pull = NRF_GPIO_PIN_PULLUP;
-	nrfx_gpiote_pin_t req_pin = DT_INST_PROP(0, req_pin);
+	nrfx_gpiote_pin_t req_pin = NRF_GPIO_PIN_MAP(DT_GPIO_PIN(LPUART_NODE, req_pin_gpios),
+						     DT_PROP(GPIO_CTLR(req_pin_gpios), port));
 	bool req_pin_toggle;
 	bool tx_pin_toggle;
 
@@ -359,7 +363,8 @@ static void pins_toggle(int32_t tx_pin)
 
 static void pins_to_default(int32_t tx_pin)
 {
-	nrfx_gpiote_pin_t req_pin = DT_INST_PROP(0, req_pin);
+	nrfx_gpiote_pin_t req_pin = NRF_GPIO_PIN_MAP(DT_GPIO_PIN(LPUART_NODE, req_pin_gpios),
+						     DT_PROP(GPIO_CTLR(req_pin_gpios), port));
 
 	nrf_gpio_cfg(req_pin,
 		     NRF_GPIO_PIN_DIR_OUTPUT,
