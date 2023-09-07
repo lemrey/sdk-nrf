@@ -9,12 +9,12 @@ compatible: "nordic,nrf-sw-lpuart"
 include: uart-device.yaml
 
 properties:
-  req-pin:
-    type: int
+  req-pin-gpios:
+    type: phandle-array
     description: Request pin
     required: true
 
-  rdy-pin:
-    type: int
+  rdy-pin-gpios:
+    type: phandle-array
     description: Ready pin
     required: true
