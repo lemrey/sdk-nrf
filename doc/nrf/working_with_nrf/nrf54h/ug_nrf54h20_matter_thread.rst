@@ -168,6 +168,8 @@ Implementing support for the nRF54H20 PDK
 
 If you want to implement support for the nRF54H20 PDK in your Matter-enabled or Thread-enabled application, read the :ref:`ug_nrf54h20_configuration` guide.
 
+.. _ug_nrf54h20_matter_thread_limitations:
+
 Limitations for Matter and Thread on the nRF54H20 PDK
 *****************************************************
 

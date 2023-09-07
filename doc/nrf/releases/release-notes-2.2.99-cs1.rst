@@ -1,7 +1,7 @@
 .. _ncs_release_notes_cs1:
 
-Release notes for nRF54H20 limited customer sampling
-####################################################
+Release notes for nRF54 customer sampling v2.2.99-cs1
+#####################################################
 
 .. contents::
    :local:

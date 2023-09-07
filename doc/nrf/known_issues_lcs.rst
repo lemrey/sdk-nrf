@@ -1,3 +1,5 @@
+:orphan:
+
 .. _known_issues_lcs:
 
 Known issues and limitations for the limited sampling
@@ -72,11 +74,68 @@ NCSDK-20616: The LE Secure Connection pairing with MITM protection does not work
   The nRF54H20 devices generate the same public key due to pseudo-random generator being used, which causes pairing to be rejected to protect devices against an attack where the attacker responds with the same public key.
   This issue can be observed when running the :ref:`peripheral_hids_keyboard` or the :ref:`peripheral_hids_mouse` samples against the :ref:`bluetooth_central_hids` sample on the nRF54H20 PDKs.
 
+.. rst-class:: v2-4-99-cs2
+
+KRKNWK-17225: Matter over Thread commissioning might be unstable due to lack of true random generator support on nRF54H20
+  After each reboot or factory reset, the device will always have the same Bluetooth LE and IEEE 80215.4 addresses.
+  This might impact working within the Thread network because after the second and following connections, Thread Border Router will reject these connections until deleted from the database and commissioning to Matter will take more and more time.
+
+  **Workaround:** After each factory reset and before performing the next commissioning to Matter, connect to the device's serial port and run the following command:
+
+    .. parsed-literal::
+       :class: highlight
+
+       ot extaddr *address*
+
+  Replace the *address* argument with an 8-byte randomly generated MAC address, for example ``87fb47d5730ac0a0``.
+
+.. rst-class:: v2-4-99-cs2
+
+An issue in the initial production batch of the nRF54L15 PDKs causes **LED1** to be always lit
+  In the ``2.4.99-cs2`` release, applications and samples running on the nRF54L15 PDK use **LED2**, **LED3**, and **LED4** in place of **LED1**, **LED2**, **LED3**, respectively, while information normally indicated by **LED4** is not indicated at all.
+  This will be fixed in future batches.
+
+.. rst-class:: v2-4-99-cs2
+
+The initial production batches of the nRF54L15 PDK have **Button 3** and **Button 4** connected to a GPIO port that does not support interrupts (GPIO port 2)
+  This is an error in the initial PDK design
+
+  **Workaround:** To make **Button 3** and **Button 4** functional on the nRF54L15 PDK, enable the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option in the configuration for the sample.
+  The DK Buttons and LEDs library, with the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option enabled, polls the PDK button state periodically (50 ms by default) and reports its status according to the poll results.
+
+  Using the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option increases the overall power consumption of the system.
+  When measuring power consumption, disable this option.
+
+.. rst-class:: v2-4-99-cs2
+
+NCSDK-22925: Sampling in the Machine Learning application does not work in multicore configuration on the nRF54H20
+  No workaround for this issue at this point.
+
+.. rst-class:: v2-4-99-cs2
+
+NRFX-4563: Shell does not work when running a sample that uses the UARTE SHIM and enables :kconfig:option:`CONFIG_SHELL_BACKEND_SERIAL_INTERRUPT_DRIVEN` on the nRF54L15
+  **Workaround:** Disable :kconfig:option:`CONFIG_SHELL_BACKEND_SERIAL_INTERRUPT_DRIVEN` and use polling shell
+
+.. rst-class:: v2-4-99-cs2
+
+NRFX-3886: UARTE async API may be unstable at high throughput on the nRF54L15
+  No workaround for this issue at this point.
+
+.. rst-class:: v2-4-99-cs2
+
+NRFX-4567: UARTE API does not implement power management on the nRF54L15
+  No workaround for this issue at this point.
+
+.. rst-class:: v2-4-99-cs2
+
+NRFX-4568: DMA RX events might not arrive on the nRF54L15.
+  **Workaround:** Enable ``CONFIG_SOC_NRF_FORCE_CONSTLAT`` and force constant latency mode.
+
 -----
 
 In addition to these known issues, check the following pages:
 
-* The :ref:`known_issues` page, listing the current issues of the public |NCS| release version on which this customer sampling version for nRF54H20 is built upon.
+* The :ref:`known_issues` page, listing the current issues of the public |NCS| release version on which this customer sampling version for nRF54 is built upon.
 * The current issues listed in the `official Zephyr repository`_, since these might apply to the |NCS| fork of the Zephyr repository as well.
 
 To get help and report issues that are not related to Zephyr but to the |NCS|, go to Nordic's `DevZone`_.
@@ -87,10 +146,19 @@ Limitations
 
 * This release of |NCS| is only meant to be used for sampling the features of the nRF54H20 and nRF54L15 SoCs.
   No other features have been tested for this release.
-* If you cancel a ``west flash`` command before it finishes running, for example by pressing ctrl+C, the device might require a power cycle before it can be flashed again.
+* If you cancel a ``west flash`` command before it finishes running, for example by pressing Ctrl+C, the device might require a power cycle before it can be flashed again.
 * nRF54H20 USB device controller driver limitations:
 
   * An automatic fallback to full speed is not supported when the controller is connected to the FS bus (current stack limitation).
   * Isochronous transfers (transactions) are not yet supported (for example, there is no support for the USB audio).
   * Handling of the ``connect``, ``disconnect``, ``suspend``, and ``resume`` bus events is not yet supported due to the design of the driver and the nRF54H20 hardware.
   * Driver and controller can only be initialized and used after the application initialization level.
+
+* The Bluetooth LE Controller on the nRF54L15 PDK currently uses the test PRNG module as its source for entropy (see the :kconfig:option:`CONFIG_ENTROPY_TEST_PRNG` Kconfig option).
+* For Matter and Thread limitations, see :ref:`ug_nrf54h20_matter_thread_limitations`.
+* Cryptography limitations:
+
+  * Hardware-accelerated cryptography through CRACEN is not supported in this release.
+    All crypto functionality in this release utilizes software-enabled cryptography (except for RNG support in nRF54L15 devices).
+  * TF-M is not supported for existing and new nRF devices in this limited sampling release.
+    Use the regular nRF Connect SDK release for TF-M support in nRF5340 and nRF91 devices.

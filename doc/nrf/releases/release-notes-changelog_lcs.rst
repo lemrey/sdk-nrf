@@ -1,3 +1,5 @@
+:orphan:
+
 .. _ncs_release_notes_changelog_lcs:
 
 Changelog for the nRF54H20 and nRF54L15 customer sampling
@@ -124,34 +126,12 @@ No changes since the latest nRF Connect SDK release.
 nRF Machine Learning (Edge Impulse)
 -----------------------------------
 
-* Updated the machine learning models (:kconfig:option:`CONFIG_EDGE_IMPULSE_URI`) used by the application so that they are now hosted by Nordic Semiconductor.
+No changes since the latest nRF Connect SDK release.
 
 nRF Desktop
 -----------
 
-* Added:
-
-  * Support for the nRF54H20 PDK with the ``nrf54h20dk_nrf54h20_cpuapp@soc1`` board target.
-    The nRF Desktop application for this target is configured to act as a gaming mouse.
-    It supports both USB High-Speed and the Bluetooth LE transport.
-    See the :ref:`nrf_desktop_board_configuration_files` section of the nRF Desktop documentation for details.
-  * The :ref:`nrf_desktop_measuring_hid_report_rate` section in the nRF Desktop documentation.
-    The USB High-Speed transport on the nRF54H20 PDK is able to achieve over 7000 HID reports per second with the shortest USB polling interval.
-  * Kconfig options to enable handling of the power management events for the following nRF Desktop modules:
-
-    * :ref:`nrf_desktop_board` - The :ref:`CONFIG_DESKTOP_BOARD_PM_EVENTS <config_desktop_app_options>` Kconfig option.
-    * :ref:`nrf_desktop_motion` - The :ref:`CONFIG_DESKTOP_MOTION_PM_EVENTS <config_desktop_app_options>` Kconfig option.
-    * :ref:`nrf_desktop_ble_latency` - The :ref:`CONFIG_DESKTOP_BLE_LATENCY_PM_EVENTS <config_desktop_app_options>` Kconfig option.
-
-    All listed Kconfig options are enabled by default and depend on the :kconfig:option:`CONFIG_CAF_PM_EVENTS` Kconfig option.
-  * Kconfig option to configure a motion generated per second during a button press (:ref:`CONFIG_DESKTOP_MOTION_BUTTONS_MOTION_PER_SEC <config_desktop_app_options>`) in the :ref:`nrf_desktop_motion`.
-    To improve accuracy of the motion data generated when pressing a button, the implementation relies on the hardware clock instead of the system uptime.
-
-* Updated:
-
-  * To improve the accuracy, the generation of simulated movement data in the :ref:`nrf_desktop_motion` now uses a timestamp in microseconds based on the cycle count (either :c:func:`k_cycle_get_32` or :c:func:`k_cycle_get_64` function depending on the :kconfig:option:`CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER` Kconfig option).
-  * Aligned Kconfig option names in the :ref:`nrf_desktop_motion` implementation that generates motion from button presses.
-    The Kconfig options defining used key IDs are prefixed with ``CONFIG_MOTION_BUTTONS_`` instead of ``CONFIG_MOTION_`` to ensure consistency with configuration of other implementations of the motion module.
+No changes since the latest nRF Connect SDK release.
 
 Thingy:53 Zigbee weather station
 --------------------------------
@@ -217,7 +197,7 @@ No changes since the latest nRF Connect SDK release.
 Other samples
 -------------
 
-* Aligned the :ref:`zephyr:qdec_sensor` sample to support the nRF54H20 PDK.
+No changes since the latest nRF Connect SDK release.
 
 Devicetree configuration
 ========================
@@ -232,7 +212,7 @@ Drivers
 
 This section provides detailed lists of changes by :ref:`driver <drivers>`.
 
-* Aligned the following peripheral drivers to the nRF54H20 PDK: TWIM, QDEC, and COMP.
+No changes since the latest nRF Connect SDK release.
 
 Libraries
 =========
@@ -354,4 +334,4 @@ Documentation
 
 Added:
 
-* The :ref:`ug_nrf54h20_matter_thread` page describing Matter and Thread support in the limited customer sampling release.
+No changes since the latest nRF Connect SDK release.

@@ -151,7 +151,7 @@ def add_announcement_banner(options: dict) -> None:
     """
 
     msg = "You are looking at the nRF Connect SDK documentation for the " \
-        "initial limited sampling of the nRF54H20 and nRF54L15 SoCs."
+        "limited sampling of the nRF54H20 and nRF54L15 SoCs."
 
     options["set_default_announcement"] = True
     options["default_announcement_message"] = msg
