@@ -9,8 +9,8 @@
 	lpuart: nrf-sw-lpuart {
 		compatible = "nordic,nrf-sw-lpuart";
 		status = "okay";
-		req-pin = <24>;
-		rdy-pin = <25>;
+		req-pin-gpios = <&gpio0 24 0>;
+		rdy-pin-gpios = <&gpio0 25 0>;
 	};
 };
 
