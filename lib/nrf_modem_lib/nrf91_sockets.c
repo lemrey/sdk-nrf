@@ -26,6 +26,7 @@
 #include <zephyr/net/offloaded_netdev.h>
 #include <zephyr/net/conn_mgr_connectivity.h>
 #include <zephyr/net/net_if.h>
+#include <zephyr/sys/util_macro.h>
 
 #if defined(CONFIG_POSIX_API)
 #include <zephyr/posix/poll.h>
@@ -454,10 +455,15 @@ static int nrf91_socket_offload_setsockopt(void *obj, int level, int optname,
 	nrf_socklen_t nrf_optlen = optlen;
 
 	if((level == SOL_SOCKET) && (optname == SO_BINDTODEVICE)) {
-		/* This is used by socket dispatcher in zephyr and is forwarded to the offloading
-		 * layer afterwards. We don't have to do anything in this case.
-		 */
-		return 0;
+		if (IS_ENABLED(CONFIG_NET_SOCKETS_OFFLOAD_DISPATCHER)) {
+			/* This is used by socket dispatcher in zephyr and is forwarded to the offloading
+			* layer afterwards. We don't have to do anything in this case.
+			*/
+			return 0;
+		} else {
+			errno = EOPNOTSUPP;
+			return -1;
+		}
 	}
 
 	if (z_to_nrf_optname(level, optname, &nrf_optname) < 0) {
