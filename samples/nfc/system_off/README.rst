@@ -64,12 +64,19 @@ LED 1:
 LED 2:
    Lit when the system is on.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround|
+
 Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/nfc/system_off`
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54l.txt
 
 .. note::
    |nfc_nfct_driver_note|

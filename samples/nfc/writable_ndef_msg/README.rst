@@ -46,11 +46,18 @@ LED 4:
 Button 1:
    Press during startup to restore the default NDEF message.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround|
+
 Building and running
 ********************
 .. |sample path| replace:: :file:`samples/nfc/writable_ndef_msg`
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 .. note::
    |nfc_nfct_driver_note|

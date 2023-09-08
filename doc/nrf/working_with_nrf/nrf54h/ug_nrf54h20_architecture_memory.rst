@@ -129,7 +129,7 @@ Secure Domain
 .. image:: images/nrf54h20_memory_map_secure.svg
    :width: 300 px
 
-The Secure Domain contains 64 KB of local RAM.
+The Secure Domain contains 32 KB of local RAM.
 Any access to this memory from the Secure Domain core has minimal latency, but accesses from any other core have significant latency.
 Because of this property, the local RAM in the Secure Domain should be used mainly to store data frequently accessed by its local core, or to store timing critical parts of the code executed by it.
 
@@ -137,7 +137,7 @@ Address range
    0x21000000 - 0x21008000
 
 Size
-   64 KB
+   32 KB
 
 Access control
    The Secure-Domain local RAM is accessible by its local core.

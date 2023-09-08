@@ -43,7 +43,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/crypto/aes_cbc`
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 Testing
 =======

@@ -1,6 +1,6 @@
-.. _nrf54H20_samples:
+.. _nrf54l15_samples:
 
-nRF54H20 samples
+nRF54L15 samples
 ################
 
 .. toctree::
@@ -8,29 +8,18 @@ nRF54H20 samples
    :caption: Subpages
    :glob:
 
-   ../../../samples/multicore/hello_world/README
-   ../../../samples/bluetooth/central_and_peripheral_hr/README
    ../../../samples/bluetooth/central_hids/README
    ../../../samples/bluetooth/central_uart/README
    ../../../samples/bluetooth/peripheral_hids_keyboard/README
    ../../../samples/bluetooth/peripheral_hids_mouse/README
-   ../../../samples/bluetooth/peripheral_uart/README
-   ../../../samples/bluetooth/throughput/README
-   ../../../samples/bluetooth/peripheral_rscs/README
    ../../../samples/bluetooth/peripheral_lbs/README
-   ../../../samples/bluetooth/direct_test_mode/README
-   ../../../samples/matter/lock/README
-   ../../../samples/matter/template/README
-   ../../../samples/openthread/cli/README
-   ../../../samples/peripheral/radio_test/README
-   ../../../samples/caf_sensor_manager/README
-   ../../../samples/ipc/ipc_service/README
-   ../../../samples/event_manager_proxy/README
-   ../working_with_nrf/nrf54h/suit_smp_transfer_sample
+   ../../../samples/bluetooth/peripheral_uart/README
    ../../../samples/nfc/record_launch_app/README
    ../../../samples/nfc/record_text/README
    ../../../samples/nfc/shell/README
    ../../../samples/nfc/writable_ndef_msg/README
+   ../../../samples/nfc/system_off/README
+   ../../../samples/nfc/tnep_tag/README
    ../../../samples/crypto/aes_cbc/README
    ../../../samples/crypto/aes_ccm/README
    ../../../samples/crypto/aes_ctr/README
@@ -43,3 +32,5 @@ nRF54H20 samples
    ../../../samples/crypto/rng/README
    ../../../samples/crypto/rsa/README
    ../../../samples/crypto/sha256/README
+   ../../../samples/crypto/ecjpake/README
+   ../../../samples/crypto/persistent_key_usage/README

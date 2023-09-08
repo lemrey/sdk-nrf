@@ -77,7 +77,7 @@ This can be done by completing the following steps for all the required cores.
       .. note::
          To program the sample using the nRF54H20 :term:`Preview Development Kit (PDK)`, you must provide ICMSG backend configuration.
 
-      .. include:: /includes/build_and_run_54h.txt
+      .. include:: /includes/build_and_run_ns_54h.txt
 
    .. tab:: nRF5340 DK
 

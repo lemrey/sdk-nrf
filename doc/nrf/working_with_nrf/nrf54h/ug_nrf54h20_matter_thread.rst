@@ -182,3 +182,16 @@ Matter and Thread support has the following limitations on the nRF54H20 PDK:
   After clearing all NVM storage, the device can not reboot automatically and falls into a hard fault.
 
   As a workaround, press the reset button on the nRF54H20 PDK board after performing a factory reset.
+* Matter over Thread commissioning might be unstable due to the lack of true random generator support on nRF54H20.
+
+  After each reboot or factory reset, the device will always have the same Bluetooth LE and IEEE 80215.4 addresses.
+  This might impact working within the Thread network because after the second and following connections, Thread Border Router will reject these connections until deleted from the database and commissioning to Matter will take more and more time.
+
+  As a workaround, after each factory reset and before performing the next commissioning to Matter, connect to the device's serial port and run the following command:
+
+    .. parsed-literal::
+       :class: highlight
+
+       ot extaddr *address*
+
+  Replace the *address* argument with an 8-byte randomly generated MAC address, for example ``87fb47d5730ac0a0``.

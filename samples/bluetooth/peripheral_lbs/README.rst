@@ -37,6 +37,13 @@ User interface
 
 The user interface of the sample depends on the hardware platform you are using.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround|
+
 nRF52840 Dongle
 ===============
 
@@ -89,7 +96,7 @@ Building and running
 .. |sample path| replace:: :file:`samples/bluetooth/peripheral_lbs`
 .. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run_ns_54h.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 Minimal build
 =============

@@ -36,10 +36,22 @@ The following |NCS| samples have been developed and tested on the nRF54H20 for t
 * :ref:`ipc_service_sample`
 * :ref:`event_manager_proxy_sample`
 * :ref:`nrf54h_suit_sample`
-* :ref:`record_text`
-* :ref:`writable_ndef_msg`
-* :ref:`nfc_shell`
 * :ref:`record_launch_app`
+* :ref:`record_text`
+* :ref:`nfc_shell`
+* :ref:`writable_ndef_msg`
+* :ref:`crypto_aes_cbc`
+* :ref:`crypto_aes_ccm`
+* :ref:`crypto_aes_ctr`
+* :ref:`crypto_aes_gcm`
+* :ref:`crypto_chacha_poly`
+* :ref:`crypto_ecdh`
+* :ref:`crypto_ecdsa`
+* :ref:`crypto_hkdf`
+* :ref:`crypto_hmac`
+* :ref:`crypto_rng`
+* :ref:`crypto_rsa`
+* :ref:`crypto_sha256`
 
 |NCS| applications
 ******************

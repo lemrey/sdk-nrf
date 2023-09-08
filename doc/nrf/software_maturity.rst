@@ -77,11 +77,11 @@ See the following table for more details:
      - Incomplete verification
      - Not applicable.
 
-nRF54H20 initial limited sampling
-*********************************
+nRF54H20 and nRF54L15 initial limited sampling
+**********************************************
 
 .. caution::
-   Support for nRF54H20 features during the initial limited sampling is Experimental.
+   Support for nRF54H20 and nRF54L15 features during the initial limited sampling is Experimental.
 
 .. _api_deprecation:
 
@@ -181,7 +181,7 @@ The following table indicates the software maturity levels of the support for ea
 
 .. sml-table:: top_level
    :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
-   :insert-values: [("Bluetooth","nRF54H20","Experimental"), ("Bluetooth","nRF54L15","Experimental"), ("Matter","nRF54H20","Experimental")]
+   :insert-values: [("Bluetooth","nRF54H20","Experimental"), ("Bluetooth","nRF54L15","Experimental"), ("Matter","nRF54H20","Experimental"), ("Thread","nRF54H20","Experimental")]
 
 Bluetooth features support
 **************************
@@ -213,6 +213,7 @@ The following table indicates the software maturity levels of the support for ea
 
   .. sml-table:: thread
      :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
+     :insert-values: [("Thread - Full Thread Device (FTD)","nRF54H20","Experimental"), ("Thread - Minimal Thread Device (MTD)","nRF54H20","Experimental"), ("Thread 1.1","nRF54H20","Experimental"), ("Thread 1.2 - CSL Receiver","nRF54H20","Experimental"), ("Thread 1.2 - Core","nRF54H20","Experimental"), ("Thread 1.2 - Link Metrics","nRF54H20","Experimental"), ("Thread 1.3 - Core","nRF54H20","Experimental"), ("Thread FTD + Bluetooth LE multiprotocol","nRF54H20","Experimental"), ("Thread MTD + Bluetooth LE multiprotocol","nRF54H20","Experimental")]
 
 .. _software_maturity_protocol_matter:
 
@@ -270,7 +271,7 @@ PSA Crypto support
 .. toggle::
 
   .. sml-table:: psa_crypto
-     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
+     :add-columns: [("nRF54H20", "Experimental"), ("nRF54L15", "Experimental")]
 
 |NSIB|
 ======

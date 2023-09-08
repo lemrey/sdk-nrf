@@ -53,13 +53,19 @@ Button 3:
    This function is available only if the connected HID has boot keyboard reports.
    It always writes CAPSLOCK information to the boot report, even if Report Protocol Mode is selected.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround|
 
 Building and Running
 ********************
 .. |sample path| replace:: :file:`samples/bluetooth/central_hids`
 .. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run_ns_54h.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 
 Testing

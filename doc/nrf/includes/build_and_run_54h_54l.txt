@@ -1,0 +1,68 @@
+This sample can be found under |sample path| in the |NCS| folder structure.
+
+In the limited sampling release of the |NCS|, you need to use either the command line or |nRFVSC| to program the sample to the nRF54H20 or nRF54L15 PDKs.
+
+Building and programming using the command line
+===============================================
+
+nRF54H20 PDK
+   Complete the following steps to program the nRF54H20 PDK using the command line interface:
+
+   1. Open a terminal window in the |sample path| directory inside the |NCS| folder structure.
+   #. Build the application using the ``west`` command:
+
+      .. parsed-literal::
+         :class: highlight
+
+         west build -b nrf54h20dk_nrf54h20_cpuapp@soc1
+
+      If you want to configure your application, see :ref:`configure_application` for additional information.
+
+      After running the ``west build`` command, the build files can be found in :file:`build/zephyr`.
+      For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
+      For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
+
+   #. Connect the PDK to your computer using a USB cable.
+   #. Power on the PDK.
+   #. Program the application to the kit using the following command:
+
+      .. code-block:: console
+
+         west flash --erase-storage
+
+      This command clears the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
+
+      As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
+      With this approach, the old data in other areas will be retained.
+
+      To erase only the areas of flash memory that are required for programming the new application, use the following command:
+
+      .. code-block:: console
+
+         west flash
+
+      The ``west flash`` command automatically resets the kit and starts the application.
+
+   For more information on building and programming with the command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.
+   See :ref:`ug_nrf54h20_debugging` and :ref:`ug_nrf54h20_logging` for information about debugging and logging on the nRF54H20.
+
+nRF54L15 PDK
+   Complete the following steps to program the nRF54L15 PDK using the command line interface:
+
+      1. Connect the nRF54L15 PDK to your computer using the IMCU USB port on the PDK.
+      #. Navigate to the |sample path| folder containing the sample.
+      #. Build the sample by running the following command::
+
+            west build -b nrf54l15dk_nrf54l15_cpuapp@soc1
+
+      #. Program the sample using the standard |NCS| command.
+         If you have multiple Nordic Semiconductor devices, make sure that only the nRF54L15 PDK you want to program is connected.
+
+         .. code-block:: console
+
+            west flash
+
+Building and programming using |nRFVSC|
+=======================================
+
+To build the sample using |VSC|, follow the steps listed on the `How to build an application`_ page in the |nRFVSC| documentation.

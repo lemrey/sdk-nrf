@@ -832,11 +832,11 @@ For detailed information about building the nRF Desktop application for the nRF2
 Building and running
 ********************
 
-.. |sample path| replace:: :file:`applications/nrf_desktop`
+.. |application path| replace:: :file:`applications/nrf_desktop`
 
 The nRF Desktop application is built the same way to any other |NCS| application or sample.
 
-.. include:: /includes/build_and_run.txt
+.. include:: /includes/application_build_and_run_54h.txt
 
 .. note::
     Information about the known issues in nRF Desktop can be found in |NCS|'s :ref:`release_notes` and on the :ref:`known_issues` page.

@@ -46,7 +46,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/crypto/persistent_key_usage`
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54l.txt
 
 Testing
 =======

@@ -40,10 +40,16 @@ See the documentation for that sample for detailed instructions.
 Overview
 ********
 
-When connected, the sample forwards any data received on the RX pin of the UART 0 peripheral to the Bluetooth LE unit.
-On Nordic Semiconductor's development kits, the UART 0 peripheral is typically gated through the SEGGER chip to a USB CDC virtual serial port.
+When connected, the sample forwards any data received on the RX pin of the UART peripheral to the Bluetooth LE unit.
+On Nordic Semiconductor's development kits, the UART peripheral is typically gated through the SEGGER chip to a USB CDC virtual serial port.
 
-Any data sent from the Bluetooth LE unit is sent out of the UART 0 peripheral's TX pin.
+The default UART peripheral varies depending on development kit used:
+
+   * For development kits based on the nRF52 and nRF53 Series, UART 0 is used.
+   * For the nRF54H20 PDK, UART 136 is used.
+   * For the nRF54L15 PDK, UART 30 is used.
+
+Any data sent from the Bluetooth LE unit is sent out through the UART peripheral's TX pin.
 
 .. note::
    Thingy:53 uses the second instance of USB CDC ACM class instead of UART 0, because it has no built-in SEGGER chip that could be used to gate UART 0.
@@ -110,6 +116,13 @@ User interface
 
 The user interface of the sample depends on the hardware platform you are using.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround|
+
 Development kits
 ================
 
@@ -159,7 +172,7 @@ Building and running
 .. |sample path| replace:: :file:`samples/bluetooth/peripheral_uart`
 .. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run_ns_54h.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 .. _peripheral_uart_sample_activating_variants:
 
@@ -184,8 +197,8 @@ Testing
 
 After programming the sample to your development kit, complete the following steps to test it:
 
-1. Connect the device to the computer to access UART 0.
-   If you use a development kit, UART 0 is forwarded as a COM port (Windows) or ttyACM device (Linux) after you connect the development kit over USB.
+1. Connect the device to the computer to access UART.
+   If you use a development kit, UART is forwarded as a COM port (Windows) or ttyACM device (Linux) after you connect the development kit over USB.
    If you use Thingy:53, you must attach the debug board and connect an external USB to UART converter to it.
 #. |connect_terminal|
 #. Optionally, you can display debug messages. See :ref:`peripheral_uart_debug` for details.

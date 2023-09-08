@@ -98,7 +98,7 @@ Building and running
 
    .. group-tab:: nRF54H20 PDK
 
-      .. include:: /includes/build_and_run_54h.txt
+      .. include:: /includes/build_and_run_ns_54h.txt
 
    .. group-tab:: nRF5340 DK
 

@@ -122,7 +122,7 @@ Building and running
 
 |enable_thread_before_testing|
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54h.txt
 
 To update the OpenThread libraries provided by ``nrfxlib``, invoke ``west build -b nrf52840dk_nrf52840 -t install_openthread_libraries``.
 

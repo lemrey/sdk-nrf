@@ -106,10 +106,11 @@ Ensure that you additionally have Git and curl installed.
 
    .. tab:: Windows
 
-      Run the installation script:
+      Follow these steps:
 
-      1. Open git bash.
-      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+      1. Create on GitHub your `Personal Access Token (PAT)`_.
+      #. Open git bash.
+      #. Download and run the :file:`bootstrap-toolchain.sh` installation script file using the following command:
 
          .. parsed-literal::
             :class: highlight
@@ -117,6 +118,7 @@ Ensure that you additionally have Git and curl installed.
             curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
          Depending on your connection, this might take some time.
+         Use your GitHub username and Personal Access Token (PAT) when prompted to.
       #. Run the following command in Git Bash:
 
          .. parsed-literal::
@@ -141,10 +143,11 @@ Ensure that you additionally have Git and curl installed.
 
    .. tab:: Linux
 
-      Run the installation script:
+      Follow these steps:
 
-      1. Open a terminal window.
-      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+      1. Create on GitHub your `Personal Access Token (PAT)`_.
+      #. Open a terminal window.
+      #. Download and run the :file:`bootstrap-toolchain.sh` installation script file using the following command:
 
          .. parsed-literal::
             :class: highlight
@@ -152,6 +155,7 @@ Ensure that you additionally have Git and curl installed.
             curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
          Depending on your connection, this might take some time.
+         Use your GitHub username and Personal Access Token (PAT) when prompted to.
       #. Run the following command in your terminal:
 
          .. parsed-literal::
@@ -170,9 +174,10 @@ Ensure that you additionally have Git and curl installed.
 
    .. tab:: macOS
 
-      Run the installation script:
+      Follow these steps:
 
-      1. Open a terminal window.
+      1. Create on GitHub your `Personal Access Token (PAT)`_.
+      #. Open a terminal window.
       #. Install `Homebrew`_:
 
          .. code-block:: bash
@@ -193,7 +198,7 @@ Ensure that you additionally have Git and curl installed.
 
              brew list --versions
 
-      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+      #. Download and run the :file:`bootstrap-toolchain.sh` installation script file using the following command:
 
          .. parsed-literal::
             :class: highlight
@@ -201,6 +206,7 @@ Ensure that you additionally have Git and curl installed.
             curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
          Depending on your connection, this might take some time.
+         Use your GitHub username and Personal Access Token (PAT) when prompted to.
 
          .. note::
             On macOS, the install directory is :file:`/opt/nordic/ncs`.
@@ -270,8 +276,7 @@ After you have installed nRF Command Line Tools and the toolchain, complete the 
           When using HTTPS, you may be prompted to type your GitHub username and password or multiple times.
           This can be avoided by creating on GitHub a Personal Access Token (PAT) (needed for two-factor authentication) and using `Git Credential Manager`_ (included in the git installation) to store your credentials in git and handle GitHub authentication.
 
-          1. Create on GitHub your `Personal Access Token (PAT)`_.
-          #. Store your credentials (username and PAT) on disk using the ``store`` command from the git credential helper.
+          1. Store your GitHub credentials (your username and the PAT created before) on disk using the ``store`` command from the git credential helper.
 
              .. code-block:: shell
 
@@ -321,6 +326,10 @@ After you have installed nRF Command Line Tools and the toolchain, complete the 
    This allows CMake to automatically load the boilerplate code required for building |NCS| applications::
 
       west zephyr-export
+
+#. As an administrator (or superuser), install `nrf-regtool`_ using the following command::
+
+      pip install modules/lib/nrf-regtool
 
 Your directory structure now looks similar to this::
 
@@ -398,6 +407,23 @@ To read the logs from the :ref:`multicore_hello_world` sample programmed to the 
         Hello world from nrf54h20dk_nrf54h20_cpuppr
 
 See the :ref:`ug_nrf54h20_logging` page for more information.
+
+Install |nRFVSC|
+****************
+
+To open and compile projects in the |NCS| for the initial limited sampling of the nRF54H20, you can now install and use also the |nRFVSC|.
+
+.. _installing_vsc:
+
+|vsc_extension_description|
+For installation and migration instructions, see `How to install the extension`_.
+
+.. note::
+   After the installation of both Visual Studio Code and the |nRFVSC| extension, you have to manually point Visual Studio Code to the folder where nrfutil is installed.
+   To do so, manually set the ``nrf-connect.nrfutil.home`` option in the user settings of Visual Studio Code.
+   Usually, the location is :file:`${env:HOME}/.nrfutil` on macOS and Linux, or :file:`${env:USERPROFILE}/.nrfutil` on Windows.
+
+For other instructions related to the |nRFVSC|, see the `nRF Connect for Visual Studio Code`_ documentation site.
 
 Next steps
 **********

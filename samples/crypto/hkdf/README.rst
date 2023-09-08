@@ -39,7 +39,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/crypto/hkdf`
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 Testing
 =======

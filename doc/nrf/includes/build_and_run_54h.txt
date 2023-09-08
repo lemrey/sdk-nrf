@@ -1,43 +1,52 @@
 This sample can be found under |sample path| in the |NCS| folder structure.
 
-In the limited sampling release of the |NCS|, you need to use the command line to program the nRF54H20 PDK.
+In the limited sampling release of the |NCS|, you need to use either the command line or |nRFVSC| to program the nRF54H20 PDK.
 
-Complete the following steps to program the nRF54H20 PDK:
+.. tabs::
 
-1. Open a terminal window in the |sample path| directory inside the |NCS| folder structure.
-#. Build the application using the ``west`` command:
+   .. tab:: Command line
 
-   .. parsed-literal::
-      :class: highlight
+      Complete the following steps to program the nRF54H20 PDK using the command line interface:
 
-      |build command|
+      1. Open a terminal window in the |sample path| directory inside the |NCS| folder structure.
+      #. Build the application using the ``west`` command:
 
-   If you want to configure your application, see :ref:`configure_application` for additional information.
+         .. parsed-literal::
+            :class: highlight
 
-   After running the ``west build`` command, the build files can be found in :file:`build/zephyr`.
-   For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
-   For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
+            west build -b nrf54h20dk_nrf54h20_cpuapp@soc1
 
-#. Connect the PDK to your computer using a USB cable.
-#. Power on the PDK.
-#. Program the application to the kit using the following command:
+         If you want to configure your application, see :ref:`configure_application` for additional information.
 
-   .. code-block:: console
+         After running the ``west build`` command, the build files can be found in :file:`build/zephyr`.
+         For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
+         For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
 
-      west flash --erase-storage
+      #. Connect the PDK to your computer using a USB cable.
+      #. Power on the PDK.
+      #. Program the application to the kit using the following command:
 
-   This command clears the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
+         .. code-block:: console
 
-   As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
-   With this approach, the old data in other areas will be retained.
+            west flash --erase-storage
 
-   To erase only the areas of flash memory that are required for programming the new application, use the following command:
+         This command clears the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
 
-   .. code-block:: console
+         As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
+         With this approach, the old data in other areas will be retained.
 
-      west flash
+         To erase only the areas of flash memory that are required for programming the new application, use the following command:
 
-   The ``west flash`` command automatically resets the kit and starts the application.
+         .. code-block:: console
 
-For more information on building and programming with the command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.
+            west flash
+
+         The ``west flash`` command automatically resets the kit and starts the application.
+
+         For more information on building and programming with the command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.
+
+   .. tab:: |nRFVSC|
+
+         To build the sample using |VSC|, follow the steps listed on the `How to build an application`_ page in the |nRFVSC| documentation.
+
 See :ref:`ug_nrf54h20_debugging` and :ref:`ug_nrf54h20_logging` for information about debugging and logging on the nRF54H20.

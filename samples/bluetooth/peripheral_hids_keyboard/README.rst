@@ -80,6 +80,13 @@ Button 4:
 LED 4:
    Indicates if an NFC field is present.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround_active|
+
 Configuration
 *************
 
@@ -95,7 +102,7 @@ Building and running
 .. |sample path| replace:: :file:`samples/bluetooth/peripheral_hids_keyboard`
 .. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run_ns_54h.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 Testing
 =======

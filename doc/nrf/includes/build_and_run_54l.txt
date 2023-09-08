@@ -1,0 +1,28 @@
+This sample can be found under |sample path| in the |NCS| folder structure.
+
+In the limited sampling release of the |NCS|, you need to use either the command line or |nRFVSC| to program the nRF54L15 PDK.
+
+.. tabs::
+
+   .. tab:: Command line
+
+         Complete the following steps to program the nRF54L15 PDK using the command line interface:
+
+         1. Connect the nRF54L15 PDK to your computer using the IMCU USB port on the PDK.
+         #. Navigate to the |sample path| folder containing the sample.
+         #. Build the sample by running the following command::
+
+               west build -b nrf54l15dk_nrf54l15_cpuapp@soc1
+
+         #. Program the sample using the standard |NCS| command.
+            If you have multiple Nordic Semiconductor devices, make sure that only the nRF54L15 PDK you want to program is connected.
+
+            .. code-block:: console
+
+               west flash
+
+   .. tab:: |nRFVSC|
+
+         To build the sample using |VSC|, follow the steps listed on the `How to build an application`_ page in the |nRFVSC| documentation.
+
+See :ref:`gs_programming` for other building and programming scenarios and :ref:`gs_testing` for general information about testing and debugging in the |NCS|.

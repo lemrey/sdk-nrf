@@ -263,7 +263,7 @@ To request setting the secure PIN code statically, enable the :kconfig:option:`C
 See the following example:
 
    .. code-block:: console
-      
+
       west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf -DCONFIG_BT_FIXED_PASSKEY=y -DCONFIG_CHIP_NUS_FIXED_PASSKEY=112233
 
 User interface

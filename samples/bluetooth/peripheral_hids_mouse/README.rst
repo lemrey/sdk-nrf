@@ -56,6 +56,13 @@ Button 3:
 Button 4:
    Simulate moving the mouse pointer five pixels down.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround_active|
+
 Configuration
 *************
 
@@ -78,7 +85,7 @@ To build this sample with the :ref:`nrf_rpc_ipc_readme` library on the nRF5340 D
 .. |sample path| replace:: :file:`samples/bluetooth/peripheral_hids_mouse`
 .. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
-.. include:: /includes/build_and_run_ns_54h.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 Testing
 =======

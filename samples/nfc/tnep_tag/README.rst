@@ -45,12 +45,19 @@ LED 4:
 Button 1:
    Press to provide the application data when the application service two is selected.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround|
+
 Building and running
 ********************
 
 .. |sample path| replace:: :file:`samples/nfc/tnep_tag`
 
-.. include:: /includes/build_and_run_ns.txt
+.. include:: /includes/build_and_run_ns_54l.txt
 
 .. note::
    |nfc_nfct_driver_note|

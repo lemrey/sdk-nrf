@@ -32,6 +32,7 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/crypto/ecjpake`
 
+.. include:: /includes/build_and_run_ns_54l.txt
 
 Testing
 =======

@@ -54,9 +54,7 @@ Complete the following steps to test if the PDK works correctly:
 
 If something does not work as expected, contact Nordic Semiconductor support.
 
-.. note::
-   An issue in the initial production batch of the nRF54L15 PDKs causes **LED1** to be always on.
-   This will be fixed in future batches.
+|moonlight_led1_issue|
 
 .. _nrf54l15_gs_installing_software:
 
@@ -105,10 +103,11 @@ Ensure that you additionally have Git and curl installed.
 
    .. tab:: Windows
 
-      Run the installation script:
+      Follow these steps:
 
-      1. Open git bash.
-      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+      1. Create on GitHub your `Personal Access Token (PAT)`_.
+      #. Open git bash.
+      #. Download and run the :file:`bootstrap-toolchain.sh` installation script file using the following command:
 
          .. parsed-literal::
             :class: highlight
@@ -116,6 +115,7 @@ Ensure that you additionally have Git and curl installed.
             curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
          Depending on your connection, this might take some time.
+         Use your GitHub username and Personal Access Token (PAT) when prompted to.
       #. Run the following command in Git Bash:
 
          .. parsed-literal::
@@ -140,10 +140,11 @@ Ensure that you additionally have Git and curl installed.
 
    .. tab:: Linux
 
-      Run the installation script:
+      Follow these steps:
 
-      1. Open a terminal window.
-      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+      1. Create on GitHub your `Personal Access Token (PAT)`_.
+      #. Open a terminal window.
+      #. Download and run the :file:`bootstrap-toolchain.sh` installation script file using the following command:
 
          .. parsed-literal::
             :class: highlight
@@ -151,6 +152,7 @@ Ensure that you additionally have Git and curl installed.
             curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
          Depending on your connection, this might take some time.
+         Use your GitHub username and Personal Access Token (PAT) when prompted to.
       #. Run the following command in your terminal:
 
          .. parsed-literal::
@@ -169,10 +171,31 @@ Ensure that you additionally have Git and curl installed.
 
    .. tab:: macOS
 
-      Run the installation script:
+      Follow these steps:
 
-      1. Open a terminal window.
-      #. Download and run the :file:`bootstrap-toolchain.sh` script file using the following command:
+      1. Create on GitHub your `Personal Access Token (PAT)`_.
+      #. Open a terminal window.
+      #. Install `Homebrew`_:
+
+         .. code-block:: bash
+
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      #. Use ``brew`` to install the required dependencies:
+
+         .. code-block:: bash
+
+            brew install cmake ninja gperf python3 ccache qemu dtc wget libmagic
+
+         Ensure that these dependencies are installed with their versions as specified in the :ref:`Required tools table <req_tools_table>`.
+         To check the installed versions, run the following command:
+
+         .. parsed-literal::
+            :class: highlight
+
+             brew list --versions
+
+      #. Download and run the :file:`bootstrap-toolchain.sh` installation script file using the following command:
 
          .. parsed-literal::
             :class: highlight
@@ -180,6 +203,7 @@ Ensure that you additionally have Git and curl installed.
             curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
 
          Depending on your connection, this might take some time.
+         Use your GitHub username and Personal Access Token (PAT) when prompted to.
 
          .. note::
             On macOS, the install directory is :file:`/opt/nordic/ncs`.
@@ -249,8 +273,7 @@ After you have installed nRF Command Line Tools 10.22.2 and the toolchain, you n
           When using HTTPS, you may be prompted to type your GitHub username and password or multiple times.
           This can be avoided by creating on GitHub a Personal Access Token (PAT) (needed for two-factor authentication) and using `Git Credential Manager`_ (included in the git installation) to store your credentials in git and handle GitHub authentication.
 
-          1. Create on GitHub your `Personal Access Token (PAT)`_.
-          #. Store your credentials (username and PAT) on disk using the ``store`` command from the git credential helper.
+          1. Store your credentials (your username and the PAT created before) on disk using the ``store`` command from the git credential helper.
 
              .. code-block:: shell
 
@@ -343,7 +366,7 @@ To build and program the sample to the nRF54L15 PDK, complete the following step
 Reading the logs
 ****************
 
-With the :ref:`zephyr:hello_world_user` sample programmed, the nRF54L15 PDK outputs logs over UART.
+With the :ref:`zephyr:hello_world_user` sample programmed, the nRF54L15 PDK outputs logs over UART 30.
 
 To read the logs from the :ref:`zephyr:hello_world_user` sample programmed to the nRF54L15 PDK, complete the following steps:
 
@@ -363,13 +386,29 @@ To read the logs from the :ref:`zephyr:hello_world_user` sample programmed to th
    *** Booting Zephyr OS build 06af494ba663  ***
    Hello world! nrf54l15dk_nrf54l15_cpuapp@soc1
 
+Install |nRFVSC|
+****************
+
+To open and compile projects in the |NCS| for the initial limited sampling of the nRF54L15, you can now install and use also the |nRFVSC|.
+
+.. _installing_vsc:
+
+|vsc_extension_description|
+For installation and migration instructions, see `How to install the extension`_.
+
+.. note::
+   After the installation of both Visual Studio Code and the |nRFVSC| extension, you have to manually point Visual Studio Code to the folder where nrfutil is installed.
+   To do so, manually set the ``nrf-connect.nrfutil.home`` option in the user settings of Visual Studio Code.
+   Usually, the location is :file:`${env:HOME}/.nrfutil` on macOS and Linux, or :file:`${env:USERPROFILE}/.nrfutil` on Windows.
+
+For other instructions related to the |nRFVSC|, see the `nRF Connect for Visual Studio Code`_ documentation site.
+
 Next steps
 **********
 
 You are now all set to use the nRF54L15 PDK.
 See the following links for where to go next:
 
-* The `nRF54L15 Objective Product Specification`_ (OPS) PDF document for the nRF54L15.
 * The :ref:`ug_nrf54l15_samples` page to see the available samples for the nRF54L15 PDK for the initial limited sampling.
 * The `nRF54L15 PDK schematic and PCB`_ PDF document for the nRF54L15 PDK.
 * The :ref:`introductory documentation <getting_started>` for more information on the |NCS| and the development environment.

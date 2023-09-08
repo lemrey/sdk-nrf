@@ -137,6 +137,13 @@ User interface
      - Set total output power in dBm.
        This value includes SoC output power and front-end module gain.
 
+.. note::
+   |moonlight_led1_issue|
+
+   |moonlight_button3_4_issue|
+
+   |moonlight_button3_4_workaround|
+
 Tx output power
 ===============
 
@@ -166,7 +173,7 @@ Building and running
 .. |sample path| replace:: :file:`samples/peripheral/radio_test`
 .. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpurad\@soc1
 
-.. include:: /includes/build_and_run_54h.txt
+.. include:: /includes/build_and_run_ns_54h_54l.txt
 
 .. note::
   When compiling on Windows for the nRF54L15 PDK, use the following commands if the build fails due to the maximum path length limitation:
@@ -175,13 +182,13 @@ Building and running
 
     .. code-block:: console
 
-        west build -p -b nrf54l15dk_nrf54l15_cpuapp@soc1 -d C:\nordic-lcs\west_working_dir\build\
+        west build -p -b nrf54l15dk_nrf54l15_cpuapp@soc1 -d C:\ncs-lcs\west_dir\build\
 
   #. Flash the HEX file onto the PDK:
 
     .. code-block:: console
 
-        west flash -d C:\nordic-lcs\west_working_dir\build
+        west flash -d C:\ncs-lcs\west_dir\build
 
 .. note::
    On the nRF5340 or nRF7002 development kit, the Radio Test sample requires the :ref:`nrf5340_remote_shell` sample on the application core.
