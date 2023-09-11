@@ -132,7 +132,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: v2.4.99-cs2
+      revision: 82773983e44ebf6bd2343fd6f645628df4b79f5a
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
@@ -180,7 +180,7 @@ manifest:
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
-      revision: 07d87cd080080e8d9b67ac10e2f1b81d33d8b454
+      revision: 73571fc9ec07725ae4979911bf4e306d4b9c0a19
       groups:
         - nrf-802154
     - name: dragoon
