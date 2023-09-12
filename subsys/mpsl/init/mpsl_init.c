@@ -351,6 +351,10 @@ static int32_t mpsl_lib_init_internal(void)
 		return err;
 	}
 
+	if (IS_ENABLED(CONFIG_SOC_NRF_FORCE_CONSTLAT)) {
+		mpsl_pan_rfu();
+	}
+
 #if MPSL_TIMESLOT_SESSION_COUNT > 0
 	err = mpsl_timeslot_session_count_set((void *) timeslot_context,
 			MPSL_TIMESLOT_SESSION_COUNT);
