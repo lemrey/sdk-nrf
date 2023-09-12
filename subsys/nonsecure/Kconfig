@@ -270,10 +270,17 @@ peripheral_depends=$(dt_has_compat,$(DT_COMPAT_NORDIC_NRF_VMC))
 rsource "Kconfig.template.peripheral_secure"
 
 config NRF_GPIOTE0_SECURE
-	bool "GPIOTE configured as secure peripheral"
+	bool "GPIOTE0 configured as secure peripheral"
 	depends on HAS_HW_NRF_GPIOTE0
 	help
 	  GPIOTE0 is implemented with secure only security.
+	  This option only enables it to be used in the secure image.
+
+config NRF_GPIOTE1_SECURE
+	bool "GPIOTE1 configured as secure peripheral"
+	depends on HAS_HW_NRF_GPIOTE1
+	help
+	  GPIOTE1 is implemented with secure only security.
 	  This option only enables it to be used in the secure image.
 
 config NRF_GPIO0_PIN_MASK_SECURE

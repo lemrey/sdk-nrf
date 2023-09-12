@@ -48,8 +48,8 @@
       "name": "TFM_PERIPHERAL_SPIM3",
       "permission": "READ-WRITE"
     },
-    # MMIO region for GPIOTE0 not required.
-    # GPIOTE0 is always configured as secure peripheral
+    # MMIO region for GPIOTE1 not required.
+    # GPIOTE1 is always configured as secure peripheral
   ],
   "irqs": [
     {
@@ -63,8 +63,8 @@
       "handling": "SLIH"
     },
     {
-      "source": "TFM_GPIOTE0_IRQ",
-      "name": "TFM_GPIOTE0_IRQ",
+      "source": "TFM_GPIOTE1_IRQ",
+      "name": "TFM_GPIOTE1_IRQ",
       "handling": "FLIH"
     },
   ],
