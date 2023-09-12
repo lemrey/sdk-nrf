@@ -29,7 +29,7 @@ extern "C" {
  */
 
 /**
- * @brief Initialize the Modem library and turn on the modem.
+ * @brief Initialize the Modem library and turn on the modem. TEST - DNM
  *
  * The operation can take a few minutes when a firmware update is scheduled.
  *
