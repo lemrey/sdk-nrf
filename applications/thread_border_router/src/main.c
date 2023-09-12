@@ -9,6 +9,8 @@
  */
 
 #include "border_agent.h"
+#include "tbr.h"
+#include "platform/infra_if.h"
 
 #include <ipv6.h>
 
@@ -28,24 +30,19 @@ LOG_MODULE_REGISTER(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 #endif
 
 K_SEM_DEFINE(ll_addr_wait, 0, 1);
-K_SEM_DEFINE(run_app, 0, 1);
 
 static struct net_mgmt_event_callback net_event_cb;
-
-static struct {
-	struct net_if *backbone_iface;
-	struct in6_addr *ll_addr;
-	struct openthread_context *ot;
-} context;
+static struct tbr_context *context;
 
 static void net_ev_cb_handler(struct net_mgmt_event_callback *cb,
 			      uint32_t mgmt_event, struct net_if *iface)
 {
-	if (context.backbone_iface == iface) {
+	if (context->backbone_iface == iface) {
 		struct in6_addr *addr = net_if_ipv6_get_ll(iface, NET_ADDR_PREFERRED);
 
 		if (addr) {
-			context.ll_addr = addr;
+			LOG_DBG("IPv6 Link-Local address ready");
+			context->ll_addr = addr;
 			k_sem_give(&ll_addr_wait);
 		}
 	}
@@ -55,9 +52,6 @@ static bool join_all_routers_group(struct net_if *iface)
 {
 	struct in6_addr all_routers_addr;
 	int ret;
-
-	k_sem_take(&ll_addr_wait, K_FOREVER);
-	net_mgmt_del_event_callback(&net_event_cb);
 
 	net_ipv6_addr_create_ll_allrouters_mcast(&all_routers_addr);
 
@@ -75,7 +69,6 @@ static int init_backbone_iface(void)
 	const struct device *backbone_device;
 
 	backbone_device = DEVICE_DT_GET(DT_NODELABEL(enc424j600_link_board_eth));
-	k_sem_give(&run_app);
 
 	if (!device_is_ready(backbone_device)) {
 		LOG_ERR("Backbone device not ready.");
@@ -83,14 +76,14 @@ static int init_backbone_iface(void)
 	}
 
 	LOG_INF("Backbone link device: %s", backbone_device->name);
-	context.backbone_iface = net_if_lookup_by_dev(backbone_device);
+	context->backbone_iface = net_if_lookup_by_dev(backbone_device);
 
-	if (!context.backbone_iface) {
+	if (!context->backbone_iface) {
 		LOG_ERR("No backbone interface");
 		return EXIT_FAILURE;
 	}
 
-	net_config_init_app(net_if_get_device(context.backbone_iface),
+	net_config_init_app(net_if_get_device(context->backbone_iface),
 			    "Initializing backbone interface");
 
 	return EXIT_SUCCESS;
@@ -98,6 +91,9 @@ static int init_backbone_iface(void)
 
 static bool configure_backbone_link(struct net_if *iface)
 {
+	k_sem_take(&ll_addr_wait, K_FOREVER);
+	net_mgmt_del_event_callback(&net_event_cb);
+
 	if (!join_all_routers_group(iface)) {
 		return false;
 	}
@@ -108,6 +104,22 @@ static bool configure_backbone_link(struct net_if *iface)
 	net_ipv6_send_rs(iface);
 
 	return true;
+}
+
+static int init_application(void)
+{
+	context = tbr_get_context();
+	context->ll_addr = NULL;
+	context->ot = openthread_get_default_context();
+
+	infra_if_init();
+
+	net_mgmt_init_event_callback(&net_event_cb,
+				net_ev_cb_handler,
+				NET_EVENT_IPV6_DAD_SUCCEED);
+	net_mgmt_add_event_callback(&net_event_cb);
+
+	return init_backbone_iface();
 }
 
 static void on_thread_state_changed(otChangedFlags flags, struct openthread_context *ot_context,
@@ -123,9 +135,9 @@ static void on_thread_state_changed(otChangedFlags flags, struct openthread_cont
 			if (otBorderRoutingGetState(ot_context->instance) ==
 			    OT_BORDER_ROUTING_STATE_UNINITIALIZED) {
 				NET_DBG("Enabling border routing");
-				otBorderRoutingInit(context.ot->instance,
-						    net_if_get_by_iface(context.backbone_iface),
-						    context.ll_addr != NULL);
+				otBorderRoutingInit(context->ot->instance,
+						    net_if_get_by_iface(context->backbone_iface),
+						    context->ll_addr != NULL);
 				otBorderRoutingSetEnabled(ot_context->instance, true);
 			}
 			break;
@@ -145,29 +157,14 @@ static struct openthread_state_changed_cb ot_state_chaged_cb = { .state_changed_
 
 int main(void)
 {
-	context.ll_addr = NULL;
-	context.ot = openthread_get_default_context();
+	openthread_state_changed_cb_register(context->ot, &ot_state_chaged_cb);
 
-	net_mgmt_init_event_callback(&net_event_cb,
-				     net_ev_cb_handler,
-				     NET_EVENT_IPV6_DAD_SUCCEED);
-	net_mgmt_add_event_callback(&net_event_cb);
-
-	openthread_state_changed_cb_register(context.ot, &ot_state_chaged_cb);
-
-	k_sem_take(&run_app, K_FOREVER);
-
-	LOG_DBG("IPv6 Link-Local address ready");
-
-	if (!configure_backbone_link(context.backbone_iface)) {
+	if (!configure_backbone_link(context->backbone_iface)) {
 		LOG_WRN("Backbone link configuration fail");
 		return EXIT_FAILURE;
 	}
 
-	openthread_set_backbone_iface(openthread_get_default_context(),
-				      context.backbone_iface);
-
-	otPlatInfraIfStateChanged(context.ot->instance, net_if_get_by_iface(context.backbone_iface),
+	otPlatInfraIfStateChanged(context->ot->instance, net_if_get_by_iface(context->backbone_iface),
 				  true);
 
 	border_agent_init();
@@ -179,4 +176,4 @@ int main(void)
  * main interface. We need to call net_config_init_app() before mdns_responder
  * modules gets initialized.
  */
-SYS_INIT(init_backbone_iface, APPLICATION, 1);
+SYS_INIT(init_application, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

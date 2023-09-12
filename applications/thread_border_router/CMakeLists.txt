@@ -9,11 +9,16 @@ cmake_minimum_required(VERSION 3.20.0)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(thread_border_router)
 
-target_include_directories(app PRIVATE ${ZEPHYR_BASE}/subsys/net/ip)
+target_include_directories(app PRIVATE
+	src
+	${ZEPHYR_BASE}/subsys/net/ip
+)
 
 target_sources(app PRIVATE
 	src/border_agent.c
 	src/main.c
 	src/mdns_publisher.c
+	src/tbr.c
 	src/shell.c
+	src/platform/infra_if.c
 )
