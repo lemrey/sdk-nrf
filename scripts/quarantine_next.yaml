@@ -263,3 +263,10 @@
   platforms:
     - thingy53_nrf5340_cpuapp
   comment: "FLASH overflow"
+
+- scenarios:
+    - sample.nfc.system_off
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Build error; z_sys_poweroff does not support nRF53 which uses nrf_regulators_system_off"
