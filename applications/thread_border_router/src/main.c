@@ -10,18 +10,19 @@
 
 #include "border_agent.h"
 #include "tbr.h"
+#include "backbone/mcast_routing.h"
 #include "platform/infra_if.h"
 
 #include <ipv6.h>
 
 #include <openthread/border_routing.h>
+#include <openthread/backbone_router_ftd.h>
 #include <openthread/thread.h>
 #include <openthread/platform/infra_if.h>
 
 #include <zephyr/sys/printk.h>
 #include <zephyr/device.h>
 #include <zephyr/net/net_config.h>
-#include <zephyr/net/openthread.h>
 
 LOG_MODULE_REGISTER(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
@@ -113,6 +114,7 @@ static int init_application(void)
 	context->ot = openthread_get_default_context();
 
 	infra_if_init();
+	mcast_routing_init();
 
 	net_mgmt_init_event_callback(&net_event_cb,
 				net_ev_cb_handler,
@@ -122,33 +124,47 @@ static int init_application(void)
 	return init_backbone_iface();
 }
 
+static void routing_set_enabled(struct otInstance *instance, bool enabled) {
+	NET_DBG("%s border routing", enabled ? "Enabling" : "Disabling");
+	otBorderRoutingSetEnabled(instance, enabled);
+
+	NET_DBG("%sbackbone router", enabled ? "Enabling" : "Disabling");
+	otBackboneRouterSetEnabled(instance, enabled);
+}
+
+static void handle_role_change(struct otInstance *instance, otChangedFlags flags) {
+	switch (otThreadGetDeviceRole(instance)) {
+	case OT_DEVICE_ROLE_CHILD:
+	case OT_DEVICE_ROLE_ROUTER:
+	case OT_DEVICE_ROLE_LEADER:
+		if (otBorderRoutingGetState(instance) ==
+			OT_BORDER_ROUTING_STATE_UNINITIALIZED) {
+			otBorderRoutingInit(instance,
+						net_if_get_by_iface(context->backbone_iface),
+						context->ll_addr != NULL);
+		}
+		routing_set_enabled(instance, true);
+		break;
+
+	case OT_DEVICE_ROLE_DISABLED:
+	case OT_DEVICE_ROLE_DETACHED:
+	default:
+		routing_set_enabled(instance, false);
+		break;
+	}
+}
+
 static void on_thread_state_changed(otChangedFlags flags, struct openthread_context *ot_context,
 				    void *user_data)
 {
 	ARG_UNUSED(user_data);
 
 	if (flags & OT_CHANGED_THREAD_ROLE) {
-		switch (otThreadGetDeviceRole(ot_context->instance)) {
-		case OT_DEVICE_ROLE_CHILD:
-		case OT_DEVICE_ROLE_ROUTER:
-		case OT_DEVICE_ROLE_LEADER:
-			if (otBorderRoutingGetState(ot_context->instance) ==
-			    OT_BORDER_ROUTING_STATE_UNINITIALIZED) {
-				NET_DBG("Enabling border routing");
-				otBorderRoutingInit(context->ot->instance,
-						    net_if_get_by_iface(context->backbone_iface),
-						    context->ll_addr != NULL);
-				otBorderRoutingSetEnabled(ot_context->instance, true);
-			}
-			break;
+		handle_role_change(ot_context->instance, flags);
+	}
 
-		case OT_DEVICE_ROLE_DISABLED:
-		case OT_DEVICE_ROLE_DETACHED:
-		default:
-			NET_DBG("Disabling border routing");
-			otBorderRoutingSetEnabled(ot_context->instance, false);
-			break;
-		}
+	if (flags & OT_CHANGED_THREAD_BACKBONE_ROUTER_STATE) {
+		mcast_routing_handle_ot_state(ot_context->instance, flags);
 	}
 }
 

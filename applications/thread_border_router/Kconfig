@@ -46,4 +46,10 @@ config NRF_TBR_NAT64_PREFIX_DISCOVERY
   help
       Enable NAT64 prefix discovery for nRF TBR
 
+config NRF_TBR_MAX_UDP_DGRAM_SIZE
+  int "UDP datagrams size limit"
+  default 1280
+  help
+    Maximum size of UDP datagrams that can be sent using OpenThread's API
+
 endmenu

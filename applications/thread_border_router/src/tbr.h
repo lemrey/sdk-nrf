@@ -11,6 +11,8 @@
 #ifndef NRF_TBR_INCLUDE_TBR_H_
 #define NRF_TBR_INCLUDE_TBR_H_
 
+#include <zephyr/net/openthread.h>
+
 /**
  * @brief nRF TBR's context
  *

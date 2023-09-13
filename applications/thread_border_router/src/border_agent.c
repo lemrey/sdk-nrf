@@ -20,7 +20,7 @@
 #include <zephyr/net/openthread.h>
 #include <zephyr/sys/byteorder.h>
 
-#include "backbone_agent.h"
+#include "backbone/backbone_agent.h"
 #include "mdns_publisher.h"
 
 LOG_MODULE_DECLARE(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
