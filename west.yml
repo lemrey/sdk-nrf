@@ -59,7 +59,7 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr-next
-      revision: 459d1f0e2e13108ba8c30be0e2c2c54054a54e99
+      revision: v3.3.99-cs2
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -132,7 +132,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 5e640176b4eff93a19a48e7cd7a1818dbb211ab1
+      revision: v2.4.99-cs2
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
@@ -142,18 +142,18 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 7df5bb8d9b8adf484c25a268a3fcbfd3ebfd1b11
+      revision: v2.4.99-cs2
     - name: sdk-secdom
-      revision: 3d9140e3b9084fe7c409b5ae409d33121f6bcc3c
+      revision: v4.2.0-cs2
       path: core_fw/secdom
     - name: nrf-regtool
-      revision: d4e54dfae86de1e8c8bf652b0f76818751756d16
+      revision: v4.1.0-cs2
       path: modules/lib/nrf-regtool
     - name: nrfs
       path: modules/lib/nrfs
-      revision: 32089d023fca5981dafa6f6942c709c97cfeaa56
+      revision: v2.0.2-cs2
     - name: sdk-sysctrl
-      revision: 4bf976a0421f9e1eb9bb053efbbb1814069cce1b
+      revision: v2.0.2-cs2
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m-next
@@ -207,7 +207,7 @@ manifest:
         - homekit
     - name: find-my
       repo-path: sdk-find-my-next
-      revision: 54db0250ee44cdf87521c99fa178772cf38e7aee
+      revision: v2.4.99-cs2
       groups:
         - find-my
     - name: azure-sdk-for-c
