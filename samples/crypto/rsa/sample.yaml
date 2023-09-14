@@ -19,3 +19,4 @@ tests:
       - nrf9160dk_nrf9160_ns
       - nrf9160dk_nrf9160
       - nrf52840dk_nrf52840
+      - nrf54h20dk_nrf54h20_cpuapp@soc1

@@ -45,7 +45,6 @@ Additionally, the page lists the available Zephyr samples that are compatible wi
 * :ref:`crypto_hkdf`
 * :ref:`crypto_hmac`
 * :ref:`crypto_rng`
-* :ref:`crypto_rsa`
 * :ref:`crypto_sha256`
 * :ref:`crypto_ecjpake`
 * :ref:`crypto_persistent_key`
