@@ -43,4 +43,3 @@ General information about samples in the |NCS|
    samples/other
    samples/nrf54h20.rst
    samples/nrf54l15.rst
-   samples/nrf7140.rst
