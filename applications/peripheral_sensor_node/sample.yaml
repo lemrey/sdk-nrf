@@ -1,0 +1,11 @@
+sample:
+  name: Peripheral Sensor Node
+  description: Peripheral Sensor Node application reference design
+tests:
+  applications.peripheral_sensor_node:
+    build_only: true
+    platform_allow: nrf54l15dk_nrf54l15_cpuapp@soc1
+    integration_platforms:
+      - nrf54l15dk_nrf54l15_cpuapp@soc1
+    tags: ci_build
+    extra_args: SHIELD="peripheral_sensor_node"

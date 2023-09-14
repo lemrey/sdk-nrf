@@ -1,0 +1,18 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig APP_SENSOR_EVENTS
+	bool "Enable application sensor events"
+	help
+	  Enable support for application sensor events.
+
+if APP_SENSOR_EVENTS
+
+module = APP_SENSOR_EVENTS
+module-str = app sensor events
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # APP_SENSOR_EVENTS
