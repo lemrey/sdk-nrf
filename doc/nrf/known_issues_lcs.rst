@@ -1,5 +1,3 @@
-:orphan:
-
 .. _known_issues_lcs:
 
 Known issues and limitations for the limited sampling
@@ -131,6 +129,11 @@ NRFX-4567: UARTE API does not implement power management on the nRF54L15
 NRFX-4568: DMA RX events might not arrive on the nRF54L15.
   **Workaround:** Enable ``CONFIG_SOC_NRF_FORCE_CONSTLAT`` and force constant latency mode.
 
+.. rst-class:: v2-4-99-cs2
+
+NRFX-4460: GPIOTE can be used with only one GPIO port on nRF54L15 PDK
+  No workaround for this issue at this point.
+
 -----
 
 In addition to these known issues, check the following pages:
@@ -146,7 +149,8 @@ Limitations
 
 * This release of |NCS| is only meant to be used for sampling the features of the nRF54H20 and nRF54L15 SoCs.
   No other features have been tested for this release.
-* If you cancel a ``west flash`` command before it finishes running, for example by pressing Ctrl+C, the device might require a power cycle before it can be flashed again.
+* If you cancel a ``west flash`` command before it finishes running, for example by pressing ``Ctrl+C``, the device might require a power cycle before it can be flashed again.
+* TIMER, SPIM, and UARTE in MCU PD are not functional when the MCU is running at 128 MHz on the nRF54L15 PDK.
 * nRF54H20 USB device controller driver limitations:
 
   * An automatic fallback to full speed is not supported when the controller is connected to the FS bus (current stack limitation).

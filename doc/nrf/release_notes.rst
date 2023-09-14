@@ -10,17 +10,35 @@ This page is included only in the latest documentation, because it might contain
 
 .. note::
    A "99" at the end of the version number of this documentation indicates continuous updates on the main branch since the previous major.minor release.
-   When looking at this latest documentation, be aware of the following aspect:
+   When looking at this latest documentation, be aware of the following aspects:
 
+   * Changes between releases are tracked on the :ref:`ncs_release_notes_changelog_lcs` page, but the main branch might contain additional changes that are not listed on these pages.
    * The release note pages that are available in the latest documentation might differ slightly from the release notes that were included in the respective |NCS| release at its release date.
      Therefore, to see the official version of the release notes for a specific |NCS| release, switch to the documentation for the corresponding |NCS| version using the selector in the upper right-hand corner.
+
+nRF54 customer sampling release notes
+*************************************
 
 .. toctree::
    :maxdepth: 1
    :caption: Subpages:
 
+   releases/release-notes-changelog_lcs
    releases/release-notes-2.4.99-cs2
    releases/release-notes-2.2.99-cs1
+
+Regular nRF Connect SDK release notes
+*************************************
+
+.. note::
+   This version of the |NCS| must be used only with the nRF54H20 PDK and the nRF54L15 PDK.
+   When working with other devices, use a regular |NCS| release from the `sdk-nrf`_ repository.
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Subpages:
+
+   releases/release-notes-changelog
    releases/release-notes-2.4.0
    releases/release-notes-2.3.0
    releases/release-notes-2.2.0
