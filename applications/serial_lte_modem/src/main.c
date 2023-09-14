@@ -257,26 +257,26 @@ static void nrf_modem_on_dfu_res(int dfu_res, void *ctx)
 		break;
 	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
 	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
-		LOG_ERR("MODEM UPDATE ERROR %d. Running old firmware", dfu_res);
+		LOG_ERR("MODEM UPDATE ERROR 0x%x. Running old firmware", dfu_res);
 		fota_status = FOTA_STATUS_ERROR;
 		fota_info = dfu_res;
 		break;
 	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
 	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
-		LOG_ERR("MODEM UPDATE FATAL ERROR %d", dfu_res);
+		LOG_ERR("MODEM UPDATE FATAL ERROR 0x%x", dfu_res);
 		LOG_ERR("Please program full modem firmware with the bootloader or external tools");
 		fota_status = FOTA_STATUS_ERROR;
 		fota_info = dfu_res;
 		break;
 	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
-		LOG_ERR("MODEM UPDATE CANCELLED %d.", dfu_res);
+		LOG_ERR("MODEM UPDATE CANCELLED 0x%x.", dfu_res);
 		LOG_ERR("Please reboot once you have sufficient power for the DFU");
 		fota_stage = FOTA_STAGE_ACTIVATE;
 		fota_status = FOTA_STATUS_ERROR;
 		fota_info = dfu_res;
 		break;
 	default:
-		LOG_ERR("Unknown DFU result: %d", dfu_res);
+		LOG_ERR("Unknown DFU result: 0x%x", dfu_res);
 		fota_status = FOTA_STATUS_ERROR;
 		fota_info = dfu_res;
 	}

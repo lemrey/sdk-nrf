@@ -81,7 +81,7 @@ static void on_modem_lib_dfu(int32_t dfu_res, void *ctx)
 {
 	switch (err) {
 	case NRF_MODEM_DFU_RESULT_OK:
-		LOG_DBG("nRF Modem firmware updated");
+		LOG_DBG("Modem firmware updated");
 		break;
 	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
 	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:

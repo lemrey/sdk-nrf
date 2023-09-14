@@ -641,7 +641,7 @@ ZTEST(lwm2m_client_utils_firmware, test_firmware_update)
 	printf("State %d\r\n", state);
 	zassert_equal(state, STATE_DOWNLOADED, "wrong result value");
 
-	lwm2m_firmware_emulate_modem_lib_init(-NRF_EAGAIN);
+	lwm2m_firmware_emulate_modem_lib_init(-NRF_EIO);
 	do_firmware_update(modem_instance);
 	result = get_modem_result();
 	state = get_app_state();
