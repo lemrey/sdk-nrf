@@ -21,7 +21,7 @@ Overview
 ********
 
 The proxy sample copies the functionality from :ref:`app_event_manager_sample` sample, but splits it between the two cores.
-The remote core runs the simulated sensor module, while the host core takes care of configuration and calculates statistics.
+The remote core runs the simulated sensor module and the controller module, while the host core takes care of configuration and calculates statistics.
 
 The sample uses modules from :ref:`app_event_manager_sample` sample, which communicate using events:
 
