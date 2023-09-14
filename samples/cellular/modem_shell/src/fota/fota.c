@@ -20,7 +20,7 @@ static void on_modem_lib_dfu(uint32_t dfu_res, void *ctx)
 {
 	switch (dfu_res) {
 	case NRF_MODEM_DFU_RESULT_OK:
-		LOG_DBG("nRF Modem firmware updated");
+		LOG_DBG("Modem firmware updated");
 		mosh_error("FOTA: Modem firmware update successful!");
 		break;
 	case NRF_MODEM_DFU_RESULT_UUID_ERROR:

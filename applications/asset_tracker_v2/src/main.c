@@ -183,19 +183,19 @@ static void on_modem_lib_dfu(int dfu_res, void *ctx)
 		/* Fallthrough */
 	case NRF_MODEM_DFU_RESULT_UUID_ERROR:
 	case NRF_MODEM_DFU_RESULT_AUTH_ERROR:
-		LOG_ERR("MODEM UPDATE ERROR %d. Running old firmware", dfu_res);
+		LOG_ERR("MODEM UPDATE ERROR 0x%x. Running old firmware", dfu_res);
 		break;
 	case NRF_MODEM_DFU_RESULT_HARDWARE_ERROR:
 	case NRF_MODEM_DFU_RESULT_INTERNAL_ERROR:
-		LOG_ERR("MODEM UPDATE FATAL ERROR %d. Modem failure", dfu_res);
+		LOG_ERR("MODEM UPDATE FATAL ERROR 0x%x. Modem failure", dfu_res);
 		break;
 	case NRF_MODEM_DFU_RESULT_VOLTAGE_LOW:
-		LOG_ERR("MODEM UPDATE CANCELLED %d.", dfu_res);
+		LOG_ERR("MODEM UPDATE CANCELLED 0x%x.", dfu_res);
 		LOG_ERR("Please reboot once you have sufficient power for the DFU");
 		break;
 	default:
 		/* Unknown DFU result code */
-		LOG_ERR("nRF modem DFU failed, error: %d", dfu_res);
+		LOG_ERR("nRF modem DFU failed, error: 0x%x", dfu_res);
 		break;
 	}
 }
@@ -207,17 +207,15 @@ NRF_MODEM_LIB_ON_DFU_RES(main_dfu_hook, on_modem_lib_dfu, NULL);
  */
 static void modem_init(void)
 {
-	int ret = nrf_modem_lib_init();
+	int ret;
 
-	/* Handle return values */
-	switch (ret) {
-	case 0:
+	ret = nrf_modem_lib_init();
+	if (ret == 0) {
 		LOG_DBG("nRF Modem Library initialized successfully");
 		return;
-	default:
-		LOG_ERR("nRF modem lib initialization failed, error: %d", ret);
-		break;
 	}
+
+	LOG_ERR("nRF modem lib initialization failed, error: %d", ret);
 
 #if defined(CONFIG_NRF_CLOUD_FOTA)
 	/* Ignore return value, rebooting below */

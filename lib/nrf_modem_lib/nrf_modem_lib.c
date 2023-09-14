@@ -114,7 +114,7 @@ static void log_fw_version_uuid(void)
 
 static void nrf_modem_lib_dfu_handler(uint32_t dfu_res)
 {
-	LOG_DBG("Modem library dfu res %d", dfu_res);
+	LOG_DBG("Modem library update result %d", dfu_res);
 	STRUCT_SECTION_FOREACH(nrf_modem_lib_dfu_cb, e) {
 		LOG_DBG("Modem dfu callback: %p", e->callback);
 		e->callback(dfu_res, e->context);

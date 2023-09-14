@@ -223,7 +223,7 @@ static void on_modem_lib_dfu(int32_t dfu_res, void *ctx)
 		dfu_result = RESULT_SUCCESS;
 		break;
 	default:
-		LOG_INF("MODEM UPDATE fail %d", ret);
+		LOG_INF("MODEM UPDATE fail 0x%x", ret);
 		dfu_result = RESULT_UPDATE_FAILED;
 		break;
 	}
