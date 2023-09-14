@@ -346,7 +346,6 @@ static CURLcode bindlocal(struct connectdata *conn,
         len = strlen(dev);
         memcpy(ifr.ifr_name, dev, len);
         opt_retvalue = setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, len);
-      }
 
       printf("bindlocal: dev if \"%s\", opt_retvalue : %d\n", ((pdn_id != NULL) ? pdn_id : dev), opt_retvalue);
       if(opt_retvalue == 0) {
