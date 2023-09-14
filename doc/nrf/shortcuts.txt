@@ -200,18 +200,18 @@
 
 .. |no_changes_yet_note| replace:: No changes since the latest |NCS| release.
 
-.. |moonlight_led1_issue| replace:: An issue in the initial production batch of the nRF54L15 PDKs causes **LED1** to be always on.
+.. |moonlight_led1_issue| replace:: An issue in the initial production batch of the nRF54L15 PDKs causes **LED1** to be always lit.
    In the ``2.4.99-cs2`` release, applications and samples running on the nRF54L15 PDK use **LED2**, **LED3**, and **LED4** in place of **LED1**, **LED2**, **LED3**, respectively, while information normally indicated by **LED4** is not indicated at all.
    This will be fixed in future batches.
 
-.. |moonlight_button3_4_issue| replace:: **Button 3** and **Button 4** on the nRF54L15 PDK cannot indicate their state changes asynchronously due to the current HW connections.
+.. |moonlight_button3_4_issue| replace:: The initial production batches of the nRF54L15 PDK have **Button 3** and **Button 4** connected to a GPIO port that does not support interrupts (GPIO port 2).
 
-.. |moonlight_button3_4_workaround| replace:: To make **Button 3** and **Button 4** functional on the nRF54L15 PDK, enable the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` configuration in the configuration for the sample.
-   The DK Buttons and LEDs library, with the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` configuration enabled, polls the PDK button state periodically (50 ms by default) and report its status according to the poll results.
+.. |moonlight_button3_4_workaround| replace:: To make **Button 3** and **Button 4** functional on the nRF54L15 PDK, enable the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option in the configuration for the sample.
+   The DK Buttons and LEDs library, with the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option enabled, polls the PDK button state periodically (50 ms by default) and reports its status according to the poll results.
    Using the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option increases the overall power consumption of the system.
-   To measure power consumption, disable this option.
+   When measuring power consumption, disable this option.
 
-.. |moonlight_button3_4_workaround_active| replace:: In this sample, the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` configuration was enabled to make **Button 3** and **Button 4** functional on the nRF54L15 PDK.
-   The DK Buttons and LEDs library, with the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` configuration enabled, polls the PDK button state periodically (50 ms by default) and report its status according to the poll results.
+.. |moonlight_button3_4_workaround_active| replace:: In this sample, the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option is enabled to make **Button 3** and **Button 4** functional on the nRF54L15 PDK.
+   The DK Buttons and LEDs library, with the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option enabled, polls the PDK button state periodically (50 ms by default) and reports its status according to the poll results.
    Using the :kconfig:option:`CONFIG_DK_LIBRARY_BUTTON_NO_ISR` Kconfig option increases the overall power consumption of the system.
-   To measure power consumption, disable this option.
+   When measuring power consumption, disable this option.

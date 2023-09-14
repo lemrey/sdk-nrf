@@ -62,6 +62,22 @@ nRF54L15 PDK
 
             west flash
 
+         .. note::
+            When programming the device, you might get an error similar to the following message::
+
+                ERROR: The operation attempted is unavailable due to readback protection in
+                ERROR: your device. Please use --recover to unlock the device.
+
+            This error occurs when readback protection is enabled.
+            To disable the readback protection, you must *recover* your device.
+
+            Enter the following command to recover the core::
+
+                west flash --recover
+
+            The ``--recover`` command erases the flash memory and then writes a small binary into the recovered flash memory.
+            This binary prevents the readback protection from enabling itself again after a pin reset or power cycle.
+
 Building and programming using |nRFVSC|
 =======================================
 

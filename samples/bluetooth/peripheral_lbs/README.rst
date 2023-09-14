@@ -38,11 +38,11 @@ User interface
 The user interface of the sample depends on the hardware platform you are using.
 
 .. note::
-   |moonlight_led1_issue|
+   * |moonlight_led1_issue|
 
-   |moonlight_button3_4_issue|
+   * |moonlight_button3_4_issue|
 
-   |moonlight_button3_4_workaround|
+     |moonlight_button3_4_workaround|
 
 nRF52840 Dongle
 ===============

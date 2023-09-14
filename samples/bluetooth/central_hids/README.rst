@@ -54,11 +54,11 @@ Button 3:
    It always writes CAPSLOCK information to the boot report, even if Report Protocol Mode is selected.
 
 .. note::
-   |moonlight_led1_issue|
+   * |moonlight_led1_issue|
 
-   |moonlight_button3_4_issue|
+   * |moonlight_button3_4_issue|
 
-   |moonlight_button3_4_workaround|
+     |moonlight_button3_4_workaround|
 
 Building and Running
 ********************

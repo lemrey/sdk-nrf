@@ -14,6 +14,8 @@ nRF54L15 samples
    ../../../samples/bluetooth/peripheral_hids_mouse/README
    ../../../samples/bluetooth/peripheral_lbs/README
    ../../../samples/bluetooth/peripheral_uart/README
+   ../../../samples/bluetooth/direct_test_mode/README
+   ../../../samples/peripheral/radio_test/README
    ../../../samples/nfc/record_launch_app/README
    ../../../samples/nfc/record_text/README
    ../../../samples/nfc/shell/README

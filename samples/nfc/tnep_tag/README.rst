@@ -46,11 +46,11 @@ Button 1:
    Press to provide the application data when the application service two is selected.
 
 .. note::
-   |moonlight_led1_issue|
+   * |moonlight_led1_issue|
 
-   |moonlight_button3_4_issue|
+   * |moonlight_button3_4_issue|
 
-   |moonlight_button3_4_workaround|
+     |moonlight_button3_4_workaround|
 
 Building and running
 ********************

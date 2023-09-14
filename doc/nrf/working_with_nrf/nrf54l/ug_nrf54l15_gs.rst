@@ -54,7 +54,8 @@ Complete the following steps to test if the PDK works correctly:
 
 If something does not work as expected, contact Nordic Semiconductor support.
 
-|moonlight_led1_issue|
+.. note::
+   |moonlight_led1_issue|
 
 .. _nrf54l15_gs_installing_software:
 
@@ -360,6 +361,23 @@ To build and program the sample to the nRF54L15 PDK, complete the following step
    .. code-block:: console
 
       west flash
+
+   .. note::
+
+      When programming the device, you might get an error similar to the following message::
+
+         ERROR: The operation attempted is unavailable due to readback protection in
+         ERROR: your device. Please use --recover to unlock the device.
+
+      This error occurs when readback protection is enabled.
+      To disable the readback protection, you must *recover* your device.
+
+      Enter the following command to recover the core::
+
+         west flash --recover
+
+      The ``--recover`` command erases the flash memory and then writes a small binary into the recovered flash memory.
+      This binary prevents the readback protection from enabling itself again after a pin reset or power cycle.
 
 .. _nrf54l15_sample_reading_logs:
 

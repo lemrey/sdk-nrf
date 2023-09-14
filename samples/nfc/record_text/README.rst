@@ -36,11 +36,11 @@ LED 1:
    Indicates if an NFC field is present.
 
 .. note::
-   |moonlight_led1_issue|
+   * |moonlight_led1_issue|
 
-   |moonlight_button3_4_issue|
+   * |moonlight_button3_4_issue|
 
-   |moonlight_button3_4_workaround|
+     |moonlight_button3_4_workaround|
 
 Building and running
 ********************
