@@ -24,11 +24,17 @@ The sample also requires another development kit running a compatible applicatio
 Overview
 ********
 
-When connected, the sample forwards any data received on the RX pin of the UART 1 peripheral to the Bluetooth LE unit.
-On Nordic Semiconductor's development kits, the UART 1 peripheral is typically gated through the SEGGER chip to a USB CDC virtual serial port.
+When connected, the sample forwards any data received on the RX pin of the UART peripheral to the Bluetooth LE unit.
+On Nordic Semiconductor's development kits, the UART peripheral is typically gated through the SEGGER chip to a USB CDC virtual serial port.
 
-Any data sent from the Bluetooth LE unit is sent out of the UART 1 peripheral's TX pin.
+Any data received by the Bluetooth LE unit is sent out of the UART peripheral's TX pin.
 
+The virtual serial port varies depending on Development Kit used:
+
+   * On nRF52 DKs, virtual serial port 0 is used.
+   * On the nRF5340 DK, virtual serial port 1 is used.
+   * On the nRF54H20 PDK, virtual serial port 0 is used.
+   * On the nRF54L15 PDK, virtual serial port 0 is used.
 
 .. _central_uart_debug:
 

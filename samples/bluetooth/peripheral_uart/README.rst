@@ -22,7 +22,7 @@ The sample supports the following development kits:
 .. note::
    * The boards ``nrf52dk_nrf52810``, ``nrf52840dk_nrf52811``, and ``nrf52833dk_nrf52820`` only support the `Minimal sample variant`_.
    * When used with :ref:`zephyr:thingy53_nrf5340`, the sample supports the MCUboot bootloader with serial recovery and SMP DFU over Bluetooth.
-     Thingy:53 has no built-in SEGGER chip, so the UART 0 peripheral is not gated to a USB CDC virtual serial port.
+     Thingy:53 has no built-in SEGGER chip, so a USB CDC ACM instance is used instead of UART peripheral.
    * When used with :ref:`zephyr:nrf5340dk_nrf5340`, the sample might support the MCUboot bootloader with serial recovery of the networking core image.
 
 The sample also requires a smartphone or tablet running a compatible application.
@@ -34,7 +34,7 @@ See the documentation for that sample for detailed instructions.
 .. note::
    |thingy53_sample_note|
 
-   The sample also enables an additional USB CDC ACM port that is used instead of UART 0.
+   The sample also enables an additional USB CDC ACM port that is used instead of UART.
    Because of that, it uses a separate USB Vendor and Product ID.
 
 Overview
@@ -43,16 +43,18 @@ Overview
 When connected, the sample forwards any data received on the RX pin of the UART peripheral to the Bluetooth LE unit.
 On Nordic Semiconductor's development kits, the UART peripheral is typically gated through the SEGGER chip to a USB CDC virtual serial port.
 
-The default UART peripheral varies depending on development kit used:
+The virtual serial port varies depending on Development Kit used:
 
-   * For development kits based on the nRF52 and nRF53 Series, UART 0 is used.
-   * For the nRF54H20 PDK, UART 136 is used.
-   * For the nRF54L15 PDK, UART 30 is used.
+   * On nRF52 Series DKs, virtual serial port 0 is used.
+   * On the nRF5340 DK, virtual serial port 1 is used.
+   * On Thingy:53, USB CDC ACM port 1 is used.
+   * On the nRF54H20 PDK, virtual serial port 0 is used.
+   * On the nRF54L15 PDK, virtual serial port 0 is used.
 
-Any data sent from the Bluetooth LE unit is sent out through the UART peripheral's TX pin.
+Any data sent received by the Bluetooth LE unit is sent out through the UART peripheral's TX pin.
 
 .. note::
-   Thingy:53 uses the second instance of USB CDC ACM class instead of UART 0, because it has no built-in SEGGER chip that could be used to gate UART 0.
+   Thingy:53 uses the second instance of USB CDC ACM class instead of UART, because it has no built-in SEGGER chip that could be used to gate UART peripheral.
 
 .. _peripheral_uart_debug:
 
@@ -199,7 +201,6 @@ After programming the sample to your development kit, complete the following ste
 
 1. Connect the device to the computer to access UART.
    If you use a development kit, UART is forwarded as a COM port (Windows) or ttyACM device (Linux) after you connect the development kit over USB.
-   If you use Thingy:53, you must attach the debug board and connect an external USB to UART converter to it.
 #. |connect_terminal|
 #. Optionally, you can display debug messages. See :ref:`peripheral_uart_debug` for details.
 #. Reset the kit.
