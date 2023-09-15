@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
+#include "shared/nrf92_ipc_shm_ram2.dtsi"
+
+/{
+	chosen {
+		zephyr,console = &uart136;
+		zephyr,sram = &cpuapp_ram0;
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-openamp-static-vrings";
+		memory-region = <&ipc_shm_ram>;
+		mboxes = < &bellboard_cpumod 0xd >,
+			 < &bellboard_cpuapp 0x19 >;
+		mbox-names = "tx", "rx";
+		role = "host";
+		status = "okay";
+	};
+};
+
+&bellboard_cpumod {
+	status = "okay";
+};
+
+/* ram3x_cpuapp buffer is used by App core UART driver. */
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuapp>;
+};

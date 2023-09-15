@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
+
+/ {
+	chosen {
+		zephyr,console = &uart135;
+	};
+};
+
+&ipc_cpuapp {
+	compatible = "zephyr,ipc-icmsg";
+	tx-region = <&ipc_shm_cpurad_cpuapp>;
+	rx-region = <&ipc_shm_cpuapp_cpurad>;
+	status = "okay";
+	/delete-property/ memory-region;
+	/delete-property/ role;
+};
+
+ipc0: &ipc_cpuapp { };
+
+&ram3x_cpurad {
+	status = "okay";
+};
+
+&uart136 {
+	status = "disabled";
+};
+
+&uart135 {
+	status = "okay";
+	memory-regions = <&ram3x_cpurad>;
+};

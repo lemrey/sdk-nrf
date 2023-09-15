@@ -185,3 +185,111 @@ tests:
       DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_ppr.overlay
       remote_CONFIG_EMULATOR_FPGA=y
       CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_app_rad_icmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpuapp_rad.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_rad_icmsg.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_app_sys_icmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpuapp_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_sys_icmsg.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_rad_sys_icmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpurad
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpurad
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpurad_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpurad_sys_icmsg.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_app_mod_icmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    tags: ipc
+    extra_args:
+      CONF_FILE=prj_icmsg.conf
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpuapp_mod.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_mod_icmsg.overlay
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_app_rad_rpmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    tags: ipc
+    extra_args:
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpuapp_rad.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_rad.overlay
+      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_app_sys_rpmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    tags: ipc
+    extra_args:
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpuapp_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_sys.overlay
+      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=30
+      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_rad_sys_rpmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpurad
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpurad
+    tags: ipc
+    extra_args:
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpurad_sys.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpurad_sys.overlay
+      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
+
+  sample.ipc.ipc_service.nrf92_app_mod_rpmsg:
+    build_only: true
+    platform_allow: nrf9230dk_nrf9230_cpuapp
+    integration_platforms:
+      - nrf9230dk_nrf9230_cpuapp
+    tags: ipc
+    extra_args:
+      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpuapp_mod.conf
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_mod.overlay
+      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
+      remote_CONFIG_EMULATOR_FPGA=y
+      CONFIG_EMULATOR_FPGA=y
