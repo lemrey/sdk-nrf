@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2022 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+&ram20 {
+	ipc_shm_ram: memory@1000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		zephyr,memory-region = "IPC_SHM_RAM";
+		reg = <0x1000 DT_SIZE_K(4)>;
+		ranges = <0x0 0x1000 DT_SIZE_K(4)>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		ipc_shm_local: memory@0 {
+			compatible = "zephyr,memory-region", "mmio-sram";
+			reg = <0x0 DT_SIZE_K(2)>;
+			zephyr,memory-region = "IPC_SHM_LOCAL";
+		};
+
+		ipc_shm_remote: memory@800 {
+			compatible = "zephyr,memory-region", "mmio-sram";
+			reg = <0x800 DT_SIZE_K(2)>;
+			zephyr,memory-region = "IPC_SHM_REMOTE";
+		};
+	};
+};
