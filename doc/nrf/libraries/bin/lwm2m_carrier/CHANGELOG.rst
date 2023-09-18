@@ -37,6 +37,10 @@ See :ref:`lwm2m_lib_size` for an explanation of the library size in different sc
 Changes
 =======
 
+* Added the Event Log object.
+
+  * The object is enabled for the SoftBank subscriber ID :kconfig:option:`CONFIG_LWM2M_CARRIER_SOFTBANK`, or if the LwM2M carrier library is operating in generic mode :kconfig:option:`CONFIG_LWM2M_CARRIER_GENERIC`.
+
 liblwm2m_carrier 3.2.0
 **********************
 

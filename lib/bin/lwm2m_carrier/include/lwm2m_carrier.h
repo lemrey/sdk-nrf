@@ -745,6 +745,21 @@ int lwm2m_carrier_velocity_set(int heading, float speed_h, float speed_v, float 
 int lwm2m_carrier_app_data_send(const uint8_t *buffer, size_t buffer_len);
 
 /**
+ * @brief Send log data using the Event Log object.
+ *
+ * @note The Event Log object will not be initialized for every carrier.
+ *
+ * @param[in]  buffer     Buffer containing the log data to be set.
+ * @param[in]  buffer_len Number of bytes in the buffer.
+ *
+ * @retval  0      If the resource has been set successfully.
+ * @retval -ENOENT If the object is not yet initialized.
+ * @retval -EINVAL If the buffer is NULL.
+ * @retval -ENOMEM If there is not enough memory to copy the buffer contents to the resource model.
+ */
+int lwm2m_carrier_log_data_set(const uint8_t *buffer, size_t buffer_len);
+
+/**
  *
  * @brief Initialize the LwM2M carrier library with custom configuration.
  *
