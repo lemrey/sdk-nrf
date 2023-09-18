@@ -701,6 +701,38 @@ static int cmd_device_memory_free_write(const struct shell *shell, size_t argc, 
 	return 0;
 }
 
+static int cmd_log_data_send(const struct shell *shell, size_t argc, char **argv)
+{
+	if (argc != 2) {
+		shell_print(shell, "%s <data>", argv[0]);
+		return 0;
+	}
+
+	int err;
+	size_t len = strlen(argv[1]);
+
+	err = lwm2m_carrier_log_data_set(argv[1], len);
+
+	switch (err) {
+	case 0:
+		shell_print(shell, "Sent log data");
+		break;
+	case -ENOENT:
+		shell_print(shell, "Event Log not initialized");
+		break;
+	case -EINVAL:
+		shell_print(shell, "Invalid argument");
+		break;
+	case -ENOMEM:
+		shell_print(shell, "Not enough memory");
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 static int cmd_app_data_send(const struct shell *shell, size_t argc, char **argv)
 {
 	if (argc != 2) {
@@ -1428,6 +1460,11 @@ static int cmd_settings_print(const struct shell *shell, size_t argc, char **arg
 	return 0;
 }
 
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_event_log,
+		SHELL_CMD(send, NULL, "Send log data using the event log object",
+			  cmd_log_data_send),
+		SHELL_SUBCMD_SET_END);
+
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_app_data,
 		SHELL_CMD(send, NULL, "Send hex data using the app data container object",
 			  cmd_app_data_send),
@@ -1488,6 +1525,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_api,
 			  NULL),
 		SHELL_CMD(device, &sub_carrier_api_device, "Update or retrieve device information",
 			  NULL),
+		SHELL_CMD(event_log, &sub_carrier_event_log, "Event log object operations", NULL),
 		SHELL_CMD(location, &sub_carrier_location, "Location object operations",
 			  NULL),
 		SHELL_CMD(portfolio, &sub_carrier_portfolio, "Portfolio object operations",

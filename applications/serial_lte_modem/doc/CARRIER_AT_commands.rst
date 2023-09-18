@@ -84,6 +84,7 @@ The ``<cmd>`` command is a string, and can be used as follows:
 * ``AT#XCARRIER="error","add|remove",<error>``
 * ``AT#XCARRIER="link_down"``
 * ``AT#XCARRIER="link_up"``
+* ``AT#XCARRIER="log_data",<data>``
 * ``AT#XCARRIER="memory_free","read|write"[,<memory>]``
 * ``AT#XCARRIER="memory_total",<memory>``
 * ``AT#XCARRIER="portfolio","create|read|write",<instance_id>[,<identity_type>[,<identity>]]``
