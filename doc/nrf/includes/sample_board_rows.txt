@@ -193,6 +193,10 @@
 
 | nRF9230 PDK | | ``nrf9230dk_nrf9230_cpuapp`` | ``nrf9230dk_nrf9230_cpuapp`` |
 
+.. nrf9230dk_nrf9230_cpurad
+
+| nRF9230 PDK | | ``nrf9230dk_nrf9230_cpurad`` | ``nrf9230dk_nrf9230_cpurad`` |
+
 .. nrf54l15dk_nrf54l15_cpuapp@soc1
 
 | :ref:`nRF54L15 PDK <ug_nrf54l15_gs>` | | ``nrf54l15dk_nrf54l15_cpuapp`` | ``nrf54l15dk_nrf54l15_cpuapp@soc1`` |
