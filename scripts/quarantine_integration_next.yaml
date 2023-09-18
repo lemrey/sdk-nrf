@@ -1412,3 +1412,302 @@
     - nrf5340dk_nrf5340_cpuapp
     - nrf5340dk_nrf5340_cpuapp_ns
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell_debug
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.fota
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.carrier
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.lwm2m_bootstrap
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.lwm2m_pgps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.pgps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.location_service_ext
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.rtt
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.thingy91
+  platforms:
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.memfault_modem_trace
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.memfault_modem_trace_ram
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.location_gnss_wifi_no_cellular
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.location_wifi_cellular_no_gnss
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.location_wifi_no_cellular_no_gnss
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.location_gnss_no_wifi_no_cellular
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_shell.location_cellular_no_wifi_no_gnss
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.location
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.location.esp_wifi
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.location.pgps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.http_update.application_update
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.http_update.application_update.lwm2m_carrier
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.slm_shell
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.udp
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - samples.nrf9160.nidd
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.download.tfm
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.download_client
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.aws_iot
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.nrf_cloud_mqtt_multi_service
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.azure_iot_hub
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.azure_iot_hub.dps
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_trace_backend
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.at_monitor
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.pdn
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_trace_flash
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.https_client
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.sms
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.nrf_provisioning
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.lwm2m_carrier
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.nrf_cloud_rest_device_message
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.coap_client
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.ciphersuites
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.at_client
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.gnss
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.fmfu_smp_svr
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.modem_callbacks
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.azure_fota
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.nrf_cloud_rest_cell_pos
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.lte_ble_gateway
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf9160.nrf_cloud_rest_fota
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
