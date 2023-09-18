@@ -142,7 +142,7 @@ manifest:
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 152d31cf536ea5d6a31b4e48b0c82ec90d395f87
+      revision: 26d0e67a149f51f3aca97808cb2df87a6f98bdb7
     - name: sdk-secdom
       revision: cff347b3a41989f435ff6e476546a3d68717af19
       path: core_fw/secdom
@@ -239,7 +239,7 @@ manifest:
           compare-by-default: false
 
     - name: suit-processor
-      revision: 8b1fc785e19131f55031eb5a3fcd59cc84cee49f
+      revision: a3584f45d145d6854394e7a4a471122f7f538a13
       path: modules/lib/suit-processor
     - name: suit-generator
       revision: b75bfe1ebd445f720b4f975dfa93a24984cfb390
