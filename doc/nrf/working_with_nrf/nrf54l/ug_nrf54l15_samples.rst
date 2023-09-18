@@ -52,6 +52,6 @@ Additionally, the page lists the available Zephyr samples that are compatible wi
 Zephyr samples
 **************
 
-* :ref:`zephyr:blink-led-sample`
+* :ref:`zephyr:blinky-sample`
 * :ref:`zephyr:hello_world`
 * :ref:`zephyr:settings_subsys_sample`
