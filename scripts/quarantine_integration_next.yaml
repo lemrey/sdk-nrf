@@ -1775,3 +1775,95 @@
     - nrf9160dk_nrf9160
     - nrf9160dk_nrf52840
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.net.mqtt
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.net.mqtt.nrf9160.tls
+  platforms:
+    - nrf9160dk_nrf9160_ns
+    - thingy91_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.net.mqtt.native_posix.tls
+  platforms:
+    - native_posix
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.aws_fota.aws_fota_json
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf9160dk_nrf9160
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.azure_iot_hub_dps
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.azure_iot_hub.iot_hub
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.azure_iot_hub.iot_hub
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.nrf_cloud.cloud
+  platforms:
+    - qemu_cortex_m3
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.download_client
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.download_client
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.mqtt_helper
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.fota_download
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.aws_jobs
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - net.lib.aws_jobs
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
