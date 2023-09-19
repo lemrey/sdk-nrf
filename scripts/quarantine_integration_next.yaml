@@ -1711,3 +1711,67 @@
   platforms:
     - nrf9160dk_nrf9160_ns
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.peripheral.lpuart
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.peripheral.lpuart_nrf52840_debug
+  platforms:
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.peripheral.lpuart_nrf9160dk_debug
+  platforms:
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.peripheral.lpuart_int_driven
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf21540dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - lpuart.loopback_busy_sim_no_hfxo
+  platforms:
+    - nrf9160dk_nrf9160
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - lpuart.loopback
+  platforms:
+    - nrf9160dk_nrf9160
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - lpuart.loopback_no_hfxo
+  platforms:
+    - nrf9160dk_nrf9160
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - lpuart.two_chip_test
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf9160dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - lpuart.two_chip_test_debug
+  platforms:
+    - nrf9160dk_nrf9160
+    - nrf9160dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
