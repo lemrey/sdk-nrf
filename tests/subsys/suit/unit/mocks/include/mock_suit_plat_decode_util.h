@@ -17,6 +17,7 @@ FAKE_VALUE_FUNC(bool, suit_plat_decode_component_id, struct zcbor_string *, uint
 		size_t *);
 FAKE_VALUE_FUNC(bool, suit_plat_decode_address_size, struct zcbor_string *, intptr_t *, size_t *);
 FAKE_VALUE_FUNC(bool, suit_plat_decode_component_number, struct zcbor_string *, uint32_t *);
+FAKE_VALUE_FUNC(bool, suit_plat_decode_key_id, struct zcbor_string *, uint32_t *);
 
 #ifdef CONFIG_SUIT_PLATFORM
 FAKE_VALUE_FUNC(bool, suit_plat_decode_component_type, struct zcbor_string *,
@@ -36,6 +37,7 @@ static inline void mock_suit_plat_decode_util_reset(void)
 #endif /* CONFIG_SUIT_PLATFORM */
 	RESET_FAKE(suit_plat_decode_address_size);
 	RESET_FAKE(suit_plat_decode_component_number);
+	RESET_FAKE(suit_plat_decode_key_id);
 
 #ifdef CONFIG_SUIT_MCI
 	RESET_FAKE(suit_plat_decode_manifest_class_id);

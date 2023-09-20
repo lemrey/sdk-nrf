@@ -51,8 +51,16 @@ config MBEDTLS_USER_CONFIG_FILE
 endif
 
 config SUIT_DIGEST
-  bool "Enable digest calculation"
-  depends on SUIT_STREAM_SINK_DIGEST
+	bool "Enable digest calculation"
+	depends on SUIT_STREAM_SINK_DIGEST
+
+config SUIT_AUTHENTICATE
+	bool "Enable message/data authentication"
+	depends on SUIT_CRYPTO
+	select PSA_WANT_ALG_SHA_256 if SOC_FAMILY_NRF
+	select PSA_WANT_ALG_SHA_512 if SOC_FAMILY_NRF
+	select PSA_WANT_ALG_ECDSA if SOC_FAMILY_NRF
+	select PSA_WANT_ECC_TWISTED_EDWARDS_255 if SOC_FAMILY_NRF
 
 rsource "sink_selector/Kconfig"
 endif # SUIT_PLATFORM

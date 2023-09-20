@@ -19,7 +19,6 @@ config MOCK_SUIT_MCI_UTILS
 	default y
 	help
 	  If not enabled, the module implementation will be included.
-
 endif # MOCK_SUIT_MCI
 
 config MOCK_SUIT_STORAGE
@@ -43,3 +42,6 @@ config MOCK_SUIT_PROCESSOR
 config MOCK_SUIT_LOG
 	bool "Include minimal logging support in SUIT components"
 	default y if LOG
+
+config MOCK_SUIT_CRYPTO
+	bool "Mock PSA crypto API"

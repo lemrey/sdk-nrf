@@ -114,6 +114,18 @@ bool suit_plat_decode_component_number(struct zcbor_string *component_id, uint32
 	return res;
 }
 
+bool suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *integer_key_id)
+{
+	if ((key_id == NULL) || (key_id->value == NULL) || (key_id->len == 0) ||
+	    (integer_key_id == NULL)) {
+		return false;
+	}
+
+	ZCBOR_STATE_D(state, 2, key_id->value, key_id->len, 1);
+
+	return zcbor_uint32_decode(state, integer_key_id);
+}
+
 #ifdef CONFIG_SUIT_MCI
 bool suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
 					suit_manifest_class_id_t **class_id)

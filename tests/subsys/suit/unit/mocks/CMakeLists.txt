@@ -58,3 +58,8 @@ if (CONFIG_MOCK_SUIT_LOG)
     $ENV{ZEPHYR_BASE}/subsys/logging/log_minimal.c
   )
 endif()
+
+if (CONFIG_MOCK_SUIT_CRYPTO)
+  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_CRYPTO)
+  target_include_directories(testbinary PRIVATE $ENV{ZEPHYR_BASE}/../modules/crypto/mbedtls//include)
+endif()

@@ -66,6 +66,16 @@ bool suit_plat_decode_address_size(struct zcbor_string *component_id, intptr_t *
  */
 bool suit_plat_decode_component_number(struct zcbor_string *component_id, uint32_t *number);
 
+/**
+ * @brief Decode uint32_t key_id from zcbor_string
+ *
+ * @param key_id Input zcbor_string key ID
+ * @param integer_key_id Output key ID in uint32
+ * @return true Operation succeeded
+ * @return false Operation failed
+ */
+bool suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *integer_key_id);
+
 #ifdef CONFIG_SUIT_MCI
 /**
  * @brief Decode manifest class ID from component_id

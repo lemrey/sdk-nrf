@@ -26,6 +26,10 @@
 #include <mock_suit_plat_decode_util.h>
 #endif /* CONFIG_MOCK_SUIT_PLAT_DECODE_UTIL */
 
+#ifdef CONFIG_MOCK_SUIT_CRYPTO
+#include <mock_suit_crypto.h>
+#endif
+
 static inline void mocks_reset(void)
 {
 #ifdef CONFIG_MOCK_SUIT_PROCESSOR
@@ -43,6 +47,10 @@ static inline void mocks_reset(void)
 #ifdef CONFIG_MOCK_SUIT_PLAT_DECODE_UTIL
 	mock_suit_plat_decode_util_reset();
 #endif /* CONFIG_MOCK_SUIT_PLAT_DECODE_UTIL */
+
+#ifdef CONFIG_MOCK_SUIT_CRYPTO
+	mock_suit_crypto_reset();
+#endif
 }
 
 #endif /* MOCK_H__ */
