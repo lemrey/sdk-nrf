@@ -34,6 +34,12 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dp
  */
 void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_channel);
 
+/**@brief Cleans up static DPPI connections for capturing a timestamp.
+ *
+ * @param[in] cc_channel The GRTC capture channel that will capture the timestmap.
+ */
+void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_clear(uint32_t cc_channel);
+
 /**@brief Sets up DPPI connections for triggering a hardware task using a GRTC event.
  *
  * @param[in] dppi_ch    DPPI channel to which GRTC compare channel shall publish its event.

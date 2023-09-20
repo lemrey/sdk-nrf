@@ -11,6 +11,7 @@
 #include <zephyr/drivers/timer/nrf_grtc_timer.h>
 
 #include <haly/nrfy_dppi.h>
+#include <haly/nrfy_grtc.h>
 
 #include "nrf_802154_sl_config.h"
 #include "nrf_802154_sl_atomics.h"
@@ -26,6 +27,10 @@
 #else
 #define HALTIUM_FPGA_CLOCKS_DOWNSCALING_BITSHIFT 0
 #endif
+
+#define COUNTER_SPAN (GRTC_SYSCOUNTERL_VALUE_Msk | ((uint64_t)GRTC_SYSCOUNTERH_VALUE_Msk << 32))
+
+#define MPSL_SHARED_GRTC_CHANNEL_TIMESTAMP 9
 
 typedef uint8_t lptimer_state_t;
 #define LPTIMER_STATE_DISABLED  0u
@@ -89,7 +94,7 @@ void nrf_802154_platform_sl_lp_timer_init(void)
     m_callbacks_cc_channel = z_nrf_grtc_timer_chan_alloc();
     assert(m_callbacks_cc_channel >= 0);
 
-    m_timestamps_cc_channel = z_nrf_grtc_timer_chan_alloc();
+    m_timestamps_cc_channel = MPSL_SHARED_GRTC_CHANNEL_TIMESTAMP;
     assert(m_timestamps_cc_channel >= 0);
 
     m_hw_tasks_cc_channel = z_nrf_grtc_timer_chan_alloc();
@@ -98,7 +103,7 @@ void nrf_802154_platform_sl_lp_timer_init(void)
     nrf_802154_platform_sl_lptimer_static_event_for_hw_tasks_set(m_hw_tasks_cc_channel);
     nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_clear();
 
-    /* Due to `m_lptimer_state == LPTIMER_STATE_DISABLED`, for consistency with 
+    /* Due to `m_lptimer_state == LPTIMER_STATE_DISABLED`, for consistency with
      * `nrf_802154_platform_sl_lptimer_disable`, the critical section is now entered.
      */
     nrf_802154_platform_sl_lptimer_critical_section_enter();
@@ -109,7 +114,6 @@ void nrf_802154_platform_sl_lp_timer_deinit(void)
     (void)z_nrf_grtc_timer_compare_int_lock(m_callbacks_cc_channel);
 
     z_nrf_grtc_timer_chan_free(m_callbacks_cc_channel);
-    z_nrf_grtc_timer_chan_free(m_timestamps_cc_channel);
     z_nrf_grtc_timer_chan_free(m_hw_tasks_cc_channel);
 }
 
@@ -154,22 +158,23 @@ void nrf_802154_platform_sl_lptimer_disable(void)
 
 void nrf_802154_timer_coord_init(void)
 {
-    nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(m_timestamps_cc_channel);
-
+    // Intentionally empty
 }
 
 void nrf_802154_timer_coord_uninit(void)
 {
-    // Not implemented
+    // Intentionally empty
 }
 
 void nrf_802154_timer_coord_start(void)
 {
+    nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(m_timestamps_cc_channel);
     nrf_dppi_channels_enable(NRF_802154_SL_DPPIC_INSTANCE, (1UL << PPI_TIMESTAMP));
 }
 
 void nrf_802154_timer_coord_stop(void)
 {
+    nrf_802154_platform_sl_lptimer_static_event_for_timestamps_clear(m_timestamps_cc_channel);
     nrf_dppi_channels_disable(NRF_802154_SL_DPPIC_INSTANCE, (1UL << PPI_TIMESTAMP));
 }
 
@@ -183,17 +188,36 @@ void nrf_802154_timer_coord_timestamp_prepare(const nrf_802154_sl_event_handle_t
         ppi_channel = PPI_TIMESTAMP;
     }
 
-    z_nrf_grtc_timer_capture_prepare(m_timestamps_cc_channel);
+    nrfy_grtc_sys_counter_cc_set(NRF_GRTC, m_timestamps_cc_channel, COUNTER_SPAN);
+    nrfy_grtc_sys_counter_compare_event_int_clear_enable(NRF_GRTC,
+                                                         m_timestamps_cc_channel,
+                                                         false);
 
     nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(ppi_channel,
                                                                     m_timestamps_cc_channel);
+}
+
+static int grtc_cc_capture_read(int32_t chan, uint64_t *captured_time)
+{
+    uint64_t capt_time;
+
+    if (nrf_grtc_sys_counter_cc_enable_check(NRF_GRTC, chan))
+    {
+        return -EBUSY;
+    }
+
+    capt_time = nrfy_grtc_sys_counter_cc_get(NRF_GRTC, chan);
+
+    *captured_time = capt_time;
+
+    return 0;
 }
 
 bool nrf_802154_timer_coord_timestamp_get(uint64_t * p_timestamp)
 {
     uint64_t cc_value;
 
-    if (z_nrf_grtc_timer_capture_read(m_timestamps_cc_channel, &cc_value) != 0)
+    if (grtc_cc_capture_read(m_timestamps_cc_channel, &cc_value) != 0)
     {
         return false;
     }

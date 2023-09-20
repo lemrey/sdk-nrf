@@ -8,6 +8,7 @@
 	owned-channels = <0 1 2 3>;
 	sink-channels = <0 1 2>;
 	source-channels = <3>;
+	nonsecure-channels = <0 1 2 3>;
 	status = "okay";
 };
 
@@ -16,6 +17,7 @@
 	owned-channel-groups = <0 1>;
 	source-channels = <0 1 2>;
 	sink-channels = <3>;
+	nonsecure-channels = <0 1 2 3>;
 	status = "okay";
 };
 

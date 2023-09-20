@@ -9,6 +9,7 @@
 #include <zephyr/drivers/timer/nrf_grtc_timer.h>
 
 #include <haly/nrfy_dppi.h>
+#include <haly/nrfy_grtc.h>
 #include <hal/nrf_ipct.h>
 
 #include "nrf_802154_platform_sl_lptimer_grtc_events.h"
@@ -62,9 +63,6 @@
 /*   - DPPIC_G2 : DPPIC132_S */
 #define DPPIC_G2_INST                NRF_DPPIC132_S
 #define DPPIC_G2_TS_CHANNEL          (PPIB_G2_TS_CHANNEL + 0) /* hw-fixed dependency */
-#define DPPIC_G2_CHG_NUM             0
-#define DPPIC_G2_CH_GROUP            NRFX_CONCAT_2(NRF_DPPI_CHANNEL_GROUP, DPPIC_G2_CHG_NUM)
-#define DPPIC_G2_TASK_DISABLE        NRFX_CONCAT_3(NRF_DPPI_TASK_CHG, DPPIC_G2_CHG_NUM, _DIS)
 
 #if (PPIB_G1_TS_CHANNEL < 8) || (PPIB_G1_TS_CHANNEL > 15)
 #error PPIB_G1_TS_CHANNEL is required to be in the [8..15] range
@@ -82,8 +80,12 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dp
 
     // {b} Connect: DPPIC_020[dppi_ch] to IPCT_radio
     nrf_ipct_subscribe_set(NRF_IPCT, IPCT_L_TASK_SEND, dppi_ch);
+}
 
-    nrfy_dppi_channels_enable(DPPIC_G2_INST, 1UL << DPPIC_G2_TS_CHANNEL);
+void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_clear(uint32_t cc_channel)
+{
+    nrf_grtc_task_t capture_task = nrfy_grtc_sys_counter_capture_task_get(cc_channel);
+    NRF_DPPI_ENDPOINT_CLEAR(nrfy_grtc_task_address_get(NRF_GRTC, capture_task));
 }
 
 void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_channel)
@@ -113,18 +115,12 @@ void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_
     // configuring of the UICR->DPPI.GLOBAL[].CH.LINK.SINK registers.
 
     // {h} Connect: DPPIC_132 to GRTC.CC
-    NRF_DPPI_ENDPOINT_SETUP(z_nrf_grtc_timer_capture_task_address_get(cc_channel),
+    nrf_grtc_task_t capture_task = nrfy_grtc_sys_counter_capture_task_get(cc_channel);
+    NRF_DPPI_ENDPOINT_SETUP(nrfy_grtc_task_address_get(NRF_GRTC, capture_task),
                             DPPIC_G2_TS_CHANNEL);
 
     // Enable: DPPIC_132
     nrfy_dppi_channels_enable(DPPIC_G2_INST, 1UL << DPPIC_G2_TS_CHANNEL);
-
-    nrfy_dppi_channels_include_in_group(DPPIC_G2_INST,
-                                        1UL << DPPIC_G2_TS_CHANNEL,
-                                        DPPIC_G2_CH_GROUP);
-
-    // Configure automatic DPPI disconnection, triggered by its own conducted signal
-    nrfy_dppi_subscribe_set(DPPIC_G2_INST, DPPIC_G2_TASK_DISABLE, DPPIC_G2_TS_CHANNEL);
 }
 
 /* To trigger RADIO.TASKS_{?} with GRTC.EVENT_COMPARE[#cc] the following connection chain must be

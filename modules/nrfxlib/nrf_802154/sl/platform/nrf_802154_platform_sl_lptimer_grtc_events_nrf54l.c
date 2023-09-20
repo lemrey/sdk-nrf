@@ -9,6 +9,7 @@
 #include <zephyr/drivers/timer/nrf_grtc_timer.h>
 
 #include <haly/nrfy_dppi.h>
+#include <haly/nrfy_grtc.h>
 #include <hal/nrf_ppib.h>
 
 #include "nrf_802154_platform_sl_lptimer_grtc_events.h"
@@ -57,15 +58,21 @@ void nrf_802154_platform_sl_lptimer_dynamic_event_for_timestamps_set(uint32_t dp
     nrf_ppib_publish_set(PPIB_P_INST, nrf_ppib_receive_event_get(dppi_ch), dppi_ch);
 
     // {e} Connect: DPPIC_20[dppi_ch] to GRTC.CC[cc_channel]
-    NRF_DPPI_ENDPOINT_SETUP(z_nrf_grtc_timer_capture_task_address_get(cc_channel),
-                              dppi_ch);
+    nrf_grtc_task_t capture_task = nrfy_grtc_sys_counter_capture_task_get(cc_channel);
+    NRF_DPPI_ENDPOINT_SETUP(nrfy_grtc_task_address_get(NRF_GRTC, capture_task), dppi_ch);
 
     nrfy_dppi_channels_enable(DPPIC_P_INST, 1UL << dppi_ch);
 }
 
+void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_clear(uint32_t cc_channel)
+{
+    nrf_grtc_task_t capture_task = nrfy_grtc_sys_counter_capture_task_get(cc_channel);
+    NRF_DPPI_ENDPOINT_CLEAR(nrfy_grtc_task_address_get(NRF_GRTC, capture_task));
+}
+
 void nrf_802154_platform_sl_lptimer_static_event_for_timestamps_set(uint32_t cc_channel)
 {
-
+    /* Intentionally empty */
 }
 
 void nrf_802154_platform_sl_lptimer_dynamic_event_for_hw_tasks_set(uint32_t dppi_ch,
