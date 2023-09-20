@@ -1867,3 +1867,31 @@
   platforms:
     - qemu_cortex_m3
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.gazell.gzll_ack_payload.device.build
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.gazell.gzll_ack_payload.host.build
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.gazell.gzp_dynamic_pairing.device.build
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.gazell.gzp_dynamic_pairing.host.build
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
