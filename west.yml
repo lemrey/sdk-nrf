@@ -153,7 +153,7 @@ manifest:
       path: modules/lib/nrfs
       revision: b976ffb0bb29856d3d5273c1fb7eee80e7745aba
     - name: sdk-sysctrl
-      revision: afb5cf2c21ff7a10e034066bb342cd07c772730f
+      revision: 56e8c229dde4e946ada636cdbbd4126e5c845c6b
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m-next
