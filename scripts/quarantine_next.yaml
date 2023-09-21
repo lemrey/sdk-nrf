@@ -260,6 +260,7 @@
 - scenarios:
     - applications.zigbee_weather_station.*
     - applications.matter_weather_station.*
+    - applications.homekit.weather_station.hdfu.debug
   platforms:
     - thingy53_nrf5340_cpuapp
   comment: "FLASH overflow"
@@ -270,3 +271,16 @@
     - nrf5340dk_nrf5340_cpuapp
     - nrf5340dk_nrf5340_cpuapp_ns
   comment: "Build error; z_sys_poweroff does not support nRF53 which uses nrf_regulators_system_off"
+
+- scenarios:
+    - applications.nrf_desktop.zdebug_mcuboot_qspi
+  platforms:
+    - nrf52840dk_nrf52840
+  comment: "https://nordicsemi.atlassian.net/browse/NCSDK-23674"
+
+- scenarios:
+    - applications.nrf_desktop.zrelease
+  platforms:
+    - nrf52820dongle_nrf52820
+    - nrf52833dk_nrf52820
+  comment: "https://nordicsemi.atlassian.net/browse/NCSDK-23674"
