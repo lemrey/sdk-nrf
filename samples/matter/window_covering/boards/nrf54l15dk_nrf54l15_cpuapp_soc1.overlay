@@ -4,8 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/ {
+    chosen {
+		zephyr,console = &uart30;
+		zephyr,shell-uart = &uart30;
+    };
+};
+
 /* Matter needs at least 700 kB Flash size, instead of default 344 kB */
 &slot0_partition {
     label = "image-0";
     reg = <0 0xefe00>;
+};
+
+&uart30 {
+    status = "okay";
 };
