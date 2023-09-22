@@ -16,4 +16,3 @@ zephyr_library_sources(src/generic_ids.c)
 zephyr_library_sources(src/utils.c)
 
 zephyr_library_link_libraries(suit_mci)
-

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2023 Nordic Semiconductor ASA
  *
