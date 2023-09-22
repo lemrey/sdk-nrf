@@ -24,22 +24,28 @@
 #endif /* !defined(CONFIG_MPSL_FEM_PIN_FORWARDER) */
 
 #if !defined(CONFIG_MPSL_FEM_PIN_FORWARDER)
+#define GPIO_NODE(pin)      DT_GPIO_CTLR(DT_NODELABEL(nrf_radio_fem), pin)
+#define GPIOTE_PHANDLE(pin) DT_PHANDLE(GPIO_NODE(pin), gpiote_instance)
+#define GPIOTE_IDX(pin)     DT_PROP(GPIOTE_PHANDLE(pin), instance)
+
 static int fem_simple_gpio_configure(void)
 {
 	int err;
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), ctx_gpios)
 	uint8_t ctx_gpiote_channel;
+	const nrfx_gpiote_t gpiote_ctx = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(ctx_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&ctx_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_ctx, &ctx_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif
 
 #if DT_NODE_HAS_PROP(DT_NODELABEL(nrf_radio_fem), crx_gpios)
 	uint8_t crx_gpiote_channel;
+	const nrfx_gpiote_t gpiote_crx = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX(crx_gpios));
 
-	if (nrfx_gpiote_channel_alloc(&crx_gpiote_channel) != NRFX_SUCCESS) {
+	if (nrfx_gpiote_channel_alloc(&gpiote_crx, &crx_gpiote_channel) != NRFX_SUCCESS) {
 		return -ENOMEM;
 	}
 #endif
