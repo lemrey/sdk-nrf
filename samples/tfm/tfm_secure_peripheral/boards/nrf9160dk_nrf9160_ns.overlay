@@ -3,6 +3,19 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+/ {
+	soc {
+		/* Secure GPIOTE instance to be used with TFM */
+		gpiote0: gpiote@5000d000 {
+			compatible = "nordic,nrf-gpiote";
+			reg = <0x5000d000 0x1000>;
+			interrupts = <13 5>;
+			status = "okay";
+			instance = <0>;
+		};
+	};
+};
+
 &pinctrl {
 	spi3_default: spi3_default {
 		group1 {

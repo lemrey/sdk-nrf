@@ -24,9 +24,15 @@
 #include <zephyr/devicetree.h>
 
 #define BUTTON_PIN     DT_GPIO_PIN(DT_NODELABEL(button0), gpios)
-#define BUTTON_PORT    DT_GPIO_CTLR(DT_NODELABEL(button0), gpios)
-#define GPIOTE_PHANDLE DT_PHANDLE(BUTTON_PORT, gpiote_instance)
-#define GPIOTE_IDX     DT_PROP(GPIOTE_PHANDLE, instance)
+
+#if defined(CONFIG_NRF_GPIOTE0_SECURE)
+#define GPIOTE_IDX  0
+#else
+#error "Please define secure GPIOTE instance index"
+#endif
+
+#define GPIOTE_INST           NRFX_CONCAT_2(NRF_GPIOTE, GPIOTE_IDX)
+#define TFM_GPIOTE_IRQ_SIGNAL NRFX_CONCAT_3(TFM_GPIOTE, GPIOTE_IDX, _IRQ_SIGNAL)
 
 #if defined(CONFIG_BOARD_NRF5340DK_NRF5340_CPUAPP_NS)
 #define SCK_PIN         47 /* P1.15 */
@@ -41,8 +47,6 @@ static uint32_t m_button_count;
 static uint32_t m_timer_count;
 static uint32_t m_trigger_count;
 #define M_GPIOTE_CHANNEL 0
-
-const static nrfx_gpiote_t gpiote = NRFX_GPIOTE_INSTANCE(GPIOTE_IDX);
 
 static void timer_init(NRF_TIMER_Type *timer, uint32_t ticks)
 {
@@ -94,23 +98,15 @@ psa_flih_result_t tfm_timer1_irq_flih(void)
 static void gpio_init(uint32_t pin)
 {
 	nrf_gpio_cfg_input(pin, NRF_GPIO_PIN_PULLUP);
-	nrf_gpiote_event_configure(gpiote.p_reg, M_GPIOTE_CHANNEL, pin,
+	nrf_gpiote_event_configure(GPIOTE_INST, M_GPIOTE_CHANNEL, pin,
 				   GPIOTE_CONFIG_POLARITY_HiToLo);
-	nrf_gpiote_event_enable(gpiote.p_reg, M_GPIOTE_CHANNEL);
-	nrf_gpiote_int_enable(gpiote.p_reg, NRFX_BIT(M_GPIOTE_CHANNEL));
+	nrf_gpiote_event_enable(GPIOTE_INST, M_GPIOTE_CHANNEL);
+	nrf_gpiote_int_enable(GPIOTE_INST, NRFX_BIT(M_GPIOTE_CHANNEL));
 }
 
-psa_flih_result_t tfm_gpiote0_irq_flih(void)
+psa_flih_result_t NRFX_CONCAT_3(tfm_gpiote, GPIOTE_IDX, _irq_flih)(void)
 {
-	nrf_gpiote_event_clear(gpiote.p_reg, nrf_gpiote_in_event_get(M_GPIOTE_CHANNEL));
-
-	nrf_egu_task_trigger(NRF_EGU0_NS, NRF_EGU_TASK_TRIGGER0);
-	return PSA_FLIH_SIGNAL;
-}
-
-psa_flih_result_t tfm_gpiote1_irq_flih(void)
-{
-	nrf_gpiote_event_clear(gpiote.p_reg, nrf_gpiote_in_event_get(M_GPIOTE_CHANNEL));
+	nrf_gpiote_event_clear(GPIOTE_INST, nrf_gpiote_in_event_get(M_GPIOTE_CHANNEL));
 
 	nrf_egu_task_trigger(NRF_EGU0_NS, NRF_EGU_TASK_TRIGGER0);
 	return PSA_FLIH_SIGNAL;
@@ -193,12 +189,12 @@ static void spp_signals_process(psa_signal_t signals)
 
 		psa_reset_signal(TFM_TIMER1_IRQ_SIGNAL);
 	}
-	if (signals & TFM_GPIOTE1_IRQ_SIGNAL) {
+	if (signals & TFM_GPIOTE_IRQ_SIGNAL) {
 		m_button_count++;
 
-		LOG_INFFMT("IRQ: GPIOTE1 count: %d\r\n", m_button_count);
+		LOG_INFFMT("IRQ: GPIOTE%d count: %d\r\n", GPIOTE_IDX, m_button_count);
 
-		psa_reset_signal(TFM_GPIOTE1_IRQ_SIGNAL);
+		psa_reset_signal(TFM_GPIOTE_IRQ_SIGNAL);
 	}
 }
 
@@ -235,7 +231,7 @@ static void spp_init(void)
 
 	gpio_init(BUTTON_PIN);
 
-	psa_irq_enable(TFM_GPIOTE1_IRQ_SIGNAL);
+	psa_irq_enable(TFM_GPIOTE_IRQ_SIGNAL);
 
 	spim_init(SCK_PIN, MOSI_PIN);
 }
@@ -253,7 +249,7 @@ psa_status_t tfm_spp_main(void)
 		} else if (signals & TFM_SPP_PROCESS_SIGNAL) {
 			spp_signal_handle(signals);
 		} else if (signals & (TFM_TIMER1_IRQ_SIGNAL |
-				      TFM_GPIOTE1_IRQ_SIGNAL)) {
+				      TFM_GPIOTE_IRQ_SIGNAL)) {
 			/* Partition schedule was run while signals was set. */
 			spp_signals_process(signals);
 		} else {

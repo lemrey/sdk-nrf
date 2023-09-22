@@ -51,7 +51,7 @@ To start using a peripheral as a secure peripheral, it must first be enabled for
 
 	CONFIG_NRF_TIMER1_SECURE=y
         CONFIG_NRF_SPIM3_SECURE=y
-        CONFIG_NRF_GPIOTE1_SECURE=y
+        CONFIG_NRF_GPIOTE0_SECURE=y
 
 To use GPIO pins or DPPI channels with secure peripherals, assign them as secure pins or channels.
 This is done with a bitmask, for example to assign GPIO pin 23 as secure:
