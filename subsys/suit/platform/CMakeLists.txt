@@ -1,0 +1,36 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+# SUIT Platform API
+zephyr_interface_library_named(suit_platform_interface)
+target_include_directories(suit_platform_interface INTERFACE include)
+
+# SUIT Platform implementation
+zephyr_library()
+
+zephyr_library_sources(src/suit_plat_commands.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_DEVCONFIG src/suit_plat_devconfig.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_DIGEST src/suit_plat_digest.c)
+
+zephyr_library_link_libraries(suit)
+zephyr_library_link_libraries(suit_utils)
+zephyr_library_link_libraries(suit_platform_interface)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_DEVCONFIG suit_storage_interface)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_DEVCONFIG suit_mci)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_DIGEST suit_stream_sinks_interface)
+
+if(CONFIG_SUIT_LEGACY_PLATFORM)
+	# SUIT legacy platform implementation
+	add_subdirectory(legacy)
+else()
+	# SUIT Platform implementation for SDFW
+	add_subdirectory(sdfw)
+endif()
+
+add_subdirectory_ifdef(CONFIG_SUIT_SINK_SELECTOR sink_selector)
+
+# SUIT common library definition (backward compatibility)
+zephyr_interface_library_named(suit_common)

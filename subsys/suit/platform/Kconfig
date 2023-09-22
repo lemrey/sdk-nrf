@@ -1,0 +1,58 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig SUIT_PLATFORM
+        bool "Enable SUIT component implementations"
+	depends on SUIT_PROCESSOR
+	depends on SUIT_UTILS
+	depends on SUIT_MEMPTR_STORAGE
+
+if SUIT_PLATFORM
+
+config SUIT_LEGACY_PLATFORM
+	bool "Use legacy implementation of SUIT platform"
+	default y
+
+if SUIT_LEGACY_PLATFORM
+rsource "legacy/Kconfig"
+endif # SUIT_LEGACY_PLATFORM
+
+config SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
+	bool "Accept envelopes wth unsigned manifests"
+	default y if !ZTEST && !SUIT_ENVELOPE_SIGN
+	select EXPERIMENTAL
+	help
+	  This option should not be enabled in the final product and is meant
+	  for development purposes only.
+	  Use SUIT_ENVELOPE_SIGN_SCRIPT to configure signing method.
+
+config SUIT_CRYPTO
+	bool "Enable crypto backend, suitable for SUIT components"
+	imply MBEDTLS if !SOC_FAMILY_NRF
+	imply NRF_SECURITY if SOC_FAMILY_NRF
+	imply MBEDTLS_ENABLE_HEAP if SOC_FAMILY_NRF
+
+config SUIT_DEVCONFIG
+	bool "Enable manifest authorization and installation"
+	depends on SUIT_STORAGE
+	depends on SUIT_MCI
+
+if MBEDTLS
+config SUIT_DEFAULT_MBEDTLS_CONFIG
+	bool "Use default mbedTLS configuration file"
+	default y
+	select MBEDTLS_USER_CONFIG_ENABLE
+
+config MBEDTLS_USER_CONFIG_FILE
+	default "user-tls-conf.h" if SUIT_DEFAULT_MBEDTLS_CONFIG
+endif
+
+config SUIT_DIGEST
+  bool "Enable digest calculation"
+  depends on SUIT_STREAM_SINK_DIGEST
+
+rsource "sink_selector/Kconfig"
+endif # SUIT_PLATFORM

@@ -1,0 +1,14 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config APP_VERSION
+        int "Application version"
+	default 1
+
+config SUIT_ENVELOPE_SEQUENCE_NUM
+        default APP_VERSION
+
+source "Kconfig.zephyr"

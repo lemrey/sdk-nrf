@@ -1,0 +1,8 @@
+tests:
+  suit-platform.integration.invoke:
+    platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1 native_posix native_posix_64
+    tags: suit-processor suit_platform 
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpusec@soc1
+      - native_posix
+      - native_posix_64

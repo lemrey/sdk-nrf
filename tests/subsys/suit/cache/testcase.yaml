@@ -1,0 +1,13 @@
+tests:
+  suit-platform.integration.suit_cache:
+    platform_allow: nrf52840dk_nrf52840 native_posix native_posix_64
+    tags: suit suit_cache
+    integration_platforms:
+      - nrf52840dk_nrf52840
+      - native_posix
+
+  suit-platform.integration.suit_cache.fpga:
+    extra_args: CONFIG_EMULATOR_FPGA=y
+    platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1
+    tags: suit suit_cache fpga
+    timeout: 240

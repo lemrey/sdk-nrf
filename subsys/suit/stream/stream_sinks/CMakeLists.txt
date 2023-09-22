@@ -1,0 +1,29 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+zephyr_interface_library_named(suit_stream_sinks_interface)
+target_include_directories(suit_stream_sinks_interface INTERFACE include)
+if(CONFIG_SUIT_STREAM_SINK_MEMPTR)
+target_link_libraries(suit_stream_sinks_interface INTERFACE suit_memptr_storage_interface)
+endif() # CONFIG_SUIT_STREAM_SINK_MEMPTR
+
+zephyr_library()
+
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_CACHE src/cache_sink.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_RAM src/ram_sink.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_MRAM src/mram_sink.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_MEMPTR src/memptr_sink.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_SDFW src/sdfw_sink.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_DIGEST src/digest_sink.c)
+
+zephyr_library_link_libraries(suit_utils)
+zephyr_library_link_libraries(suit_stream_sinks_interface)
+
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_SINK_SELECTOR suit_sink_selector_interface)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM_SINK_CACHE suit_cache_interface)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM_SINK_MRAM suit_utils)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM_SINK_MEMPTR suit_utils)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM_SINK_SDFW suit_utils)

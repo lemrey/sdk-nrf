@@ -510,3 +510,6 @@
 "CI-suit-dfu-test":
   - "modules/tfm/**/*"
   - "include/tfm/**/*"
+  - "subsys/suit/**/*"
+  - "samples/suit/**/*"
+  - "tests/subsys/suit/**/*"

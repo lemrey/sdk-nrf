@@ -1,0 +1,54 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+sample:
+  name: SUIT update through SMP sample
+  description: Sample application that updates firmware using SUIT and SMP protocol
+tests:
+  subsys.suit.smp_transfer.nrf54h20.fpga.v1:
+    extra_args: DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuapp_fpga.overlay"
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+      - CONFIG_APP_VERSION=1
+      - CONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATE="envelope.yaml.jinja2"
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    build_only: true
+    tags: suit fpga
+
+  subsys.suit.smp_transfer.nrf54h20.fpga.v2:
+    extra_args: DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuapp_fpga.overlay"
+    extra_configs:
+      - CONFIG_EMULATOR_FPGA=y
+      - CONFIG_APP_VERSION=2
+      - CONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATE="envelope.yaml.jinja2"
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    build_only: true
+    tags: suit fpga
+
+  subsys.suit.smp_transfer.v1:
+    extra_configs:
+      - CONFIG_APP_VERSION=1
+      - CONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATE="envelope.yaml.jinja2"
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    build_only: true
+    tags: suit
+
+  subsys.suit.smp_transfer.bt.v1:
+    extra_args: OVERLAY_CONFIG="overlay-bt.conf"
+    extra_configs:
+      - CONFIG_APP_VERSION=1
+      - CONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATE="envelope.yaml.jinja2"
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    build_only: true
+    tags: suit bluetooth
+
+  subsys.suit.smp_transfer.v2:
+    extra_configs:
+      - CONFIG_APP_VERSION=2
+      - CONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATE="envelope.yaml.jinja2"
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    build_only: true
+    tags: suit

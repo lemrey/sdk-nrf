@@ -1,0 +1,136 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+#include <suit.h>
+#include <suit_platform.h>
+#include <suit_plat_decode_util.h>
+#include <suit_storage.h>
+#include <suit_mci.h>
+#include <zephyr/logging/log.h>
+
+LOG_MODULE_REGISTER(plat_devconfig, CONFIG_SUIT_LOG_LEVEL);
+
+int suit_plat_sequence_completed(enum suit_command_sequence seq_name,
+				 struct zcbor_string *manifest_component_id,
+				 const uint8_t *envelope_str, size_t envelope_len)
+{
+	suit_manifest_class_id_t *class_id;
+	int err = SUIT_SUCCESS;
+
+	if ((manifest_component_id == NULL) || (manifest_component_id->value == NULL)) {
+		LOG_ERR("Manifest class ID not specified");
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+		LOG_ERR("Unable to decode manifest class ID");
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	err = mci_validate_manifest_class_id(class_id);
+	if (err != SUIT_SUCCESS) {
+		LOG_ERR("Failed to validate manifest class ID (ret: %d)", err);
+		return err;
+	}
+
+	if (seq_name == SUIT_SEQ_INSTALL) {
+		err = suit_storage_install_envelope(class_id, (uint8_t *)envelope_str,
+						    envelope_len);
+		if (err != SUIT_SUCCESS) {
+			LOG_ERR("Failed to save envelope (ret: %d)", err);
+		} else {
+			LOG_DBG("Envelope saved");
+		}
+	}
+
+	return err;
+}
+
+int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
+				     struct zcbor_string *manifest_component_id,
+				     unsigned int seq_num)
+{
+	uint8_t *envelope_addr;
+	size_t envelope_size;
+	uint32_t current_seq_num;
+	suit_manifest_class_id_t *class_id;
+	downgrade_prevention_policy_t policy;
+	int ret = -MCI_EMANIFESTCLASSID;
+
+	if ((manifest_component_id == NULL) || (manifest_component_id->value == NULL)) {
+		LOG_ERR("Manifest class ID not specified");
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+		LOG_ERR("Unable to decode manifest class ID");
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	ret = mci_validate_manifest_class_id(class_id);
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("Unsupported manifest class ID (ret: %d)", ret);
+		return SUIT_ERR_AUTHENTICATION;
+	}
+
+	ret = suit_storage_installed_envelope_get(class_id, &envelope_addr, &envelope_size);
+	if (ret != SUIT_SUCCESS) {
+		if ((seq_name == SUIT_SEQ_VALIDATE) || (seq_name == SUIT_SEQ_LOAD) ||
+		    (seq_name == SUIT_SEQ_INVOKE)) {
+			/* It is not allowed to boot from update candidate. */
+			LOG_ERR("Unable to get installed envelope (ret: %d)", ret);
+			return SUIT_ERR_AUTHENTICATION;
+		}
+
+		LOG_DBG("Envelope with given class ID not installed. Continue update.");
+		return SUIT_SUCCESS;
+	}
+
+	ret = suit_processor_get_manifest_metadata(envelope_addr, envelope_size, false, NULL, NULL,
+						   &current_seq_num);
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("Unable to read manifest metadata (ret: %d)", ret);
+		return SUIT_ERR_AUTHENTICATION;
+	}
+
+	if ((seq_name == SUIT_SEQ_VALIDATE) || (seq_name == SUIT_SEQ_LOAD) ||
+	    (seq_name == SUIT_SEQ_INVOKE)) {
+		if (current_seq_num == seq_num) {
+			/* Allow to use installed manifest during boot procedure. */
+			LOG_DBG("Manifest sequence number %d authorized to boot", seq_num);
+			return SUIT_SUCCESS;
+		} else {
+			/* It is not allowed to boot from update candidate. */
+			LOG_ERR("Manifest sequence number %d unauthorized to boot (current: %d)",
+				seq_num, current_seq_num);
+			return SUIT_ERR_AUTHENTICATION;
+		}
+	}
+
+	ret = mci_get_downgrade_prevention_policy(class_id, &policy);
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("Unable to get downgrade prevention policy (ret: %d)", ret);
+		return SUIT_ERR_AUTHENTICATION;
+	}
+
+	if (policy == DOWNGRADE_PREVENTION_DISABLED) {
+		LOG_DBG("Manifest sequence number %d for sequence %d authorized (current: %d, "
+			"policy: %d)",
+			seq_num, seq_name, current_seq_num, policy);
+		return SUIT_SUCCESS;
+	} else if (policy != DOWNGRADE_PREVENTION_ENABLED) {
+		LOG_ERR("Unsupported downgrade prevention policy value: %d", policy);
+		return SUIT_ERR_AUTHENTICATION;
+	} else if (current_seq_num <= seq_num) {
+		return SUIT_SUCCESS;
+	}
+
+	LOG_ERR("Manifest sequence number %d for sequence %d unauthorized (current: %d, policy: "
+		"%d)",
+		seq_num, seq_name, current_seq_num, policy);
+
+	return SUIT_ERR_AUTHENTICATION;
+}

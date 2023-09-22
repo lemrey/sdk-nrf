@@ -1,0 +1,62 @@
+#
+# Copyright (c) 2020 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig SUIT
+	bool "Enable SUIT modules"
+
+if SUIT
+
+choice SUIT_ENABLE_DEFAULTS
+	prompt "Enable default SUIT modules"
+	default SUIT_ENABLE_DEFAULTS_NONE if ZTEST
+	default SUIT_ENABLE_DEFAULTS_SDFW if IS_SECURE_DOMAIN_FW
+	default SUIT_ENABLE_DEFAULTS_APP if !IS_SECURE_DOMAIN_FW
+
+config SUIT_ENABLE_DEFAULTS_SDFW
+	bool "SDFW"
+	imply SUIT_CRYPTO
+	imply SUIT_DEVCONFIG if !SUIT_LEGACY_PLATFORM
+	imply SUIT_MCI
+	imply SUIT_ORCHESTRATOR
+	imply SUIT_PLATFORM
+	imply SUIT_STREAM
+	imply SUIT_STREAM_SINK_MEMPTR
+	imply SUIT_STREAM_SINK_MRAM
+	imply SUIT_STREAM_SINK_RAM
+	imply SUIT_STREAM_SOURCE_CACHE
+	imply SUIT_STREAM_SOURCE_MEMPTR
+	imply SUIT_MEMPTR_STORAGE
+	imply SUIT_UTILS
+	imply SUIT_CACHE
+	imply SUIT_STORAGE
+	imply SUIT_SINK_SELECTOR
+	imply SUIT_DIGEST
+
+config SUIT_ENABLE_DEFAULTS_APP
+	bool "Application"
+	imply SUIT_UTILS
+	imply SSF_SUIT_SERVICE_ENABLED
+
+config SUIT_ENABLE_DEFAULTS_NONE
+	bool "None"
+
+endchoice # SUIT_ENABLE_DEFAULTS
+
+rsource "cache/Kconfig"
+rsource "mci/Kconfig"
+rsource "storage/Kconfig"
+rsource "orchestrator/Kconfig"
+rsource "memptr_storage/Kconfig"
+rsource "platform/Kconfig"
+rsource "stream/Kconfig"
+rsource "utils/Kconfig"
+
+# Configure SUIT_LOG_LEVEL
+module = SUIT
+module-str = Software Updates for Internet of Things
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+endif # SUIT

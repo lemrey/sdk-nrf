@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/ {
+	chosen {
+		zephyr,console = &uart137;
+	};
+};
+
+&ram3x_cpusec {
+	status = "okay";
+};
+
+&uart137 {
+	status = "okay";
+	memory-regions = <&ram3x_cpusec>;
+};

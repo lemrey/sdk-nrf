@@ -1,0 +1,29 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig SUIT_MCI
+	bool "Enable SUIT Manifest Configuration Information module"
+
+if SUIT_MCI
+
+choice SUIT_MCI_IMPL
+	prompt "MCI implementation"
+
+config SUIT_MCI_IMPL_NRF54H20_SDFW
+	bool "nRF54H20: Secure domain"
+	depends on SOC_NRF54H20_CPUSEC
+
+config SUIT_MCI_IMPL_POSIX
+	bool "POSIX application"
+	depends on SOC_POSIX
+
+config SUIT_MCI_IMPL_NRF52840
+	bool "nRF52840 application"
+	depends on SOC_NRF52840
+
+endchoice #MCI implementation
+
+endif # SUIT_MCI

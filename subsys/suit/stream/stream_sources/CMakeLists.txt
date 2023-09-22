@@ -1,0 +1,17 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+zephyr_interface_library_named(suit_stream_sources_interface)
+target_include_directories(suit_stream_sources_interface INTERFACE include)
+
+zephyr_library()
+
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SOURCE_CACHE src/cache_streamer.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SOURCE_MEMPTR src/memptr_streamer.c)
+
+zephyr_library_link_libraries(suit_stream_sinks_interface)
+zephyr_library_link_libraries(suit_stream_sources_interface)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM_SOURCE_CACHE suit_cache_interface)

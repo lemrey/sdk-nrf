@@ -1,0 +1,37 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig SUIT_CACHE
+	bool "Enable SUIT cache support library"
+	depends on ZCBOR
+
+if SUIT_CACHE
+
+config SUIT_CACHE_MAX_CACHES
+	int "The maximum number of caches that will be handled"
+	range 1 16
+	help
+	  The maximum number of user-defined caches is limited to 15.
+	  User defined cache partitions names start at index 1 as suit_cache_0 is predefined.
+	  The default value is 8, and the minimum is 1.
+	default 8
+
+config APP_LINK_WITH_SUIT_CACHE_INTERFACE
+	bool
+	default y
+
+config SUIT_CACHE_RW
+	bool "Enable write mode for SUIT cache"
+	depends on FLASH
+	depends on SUIT_UTILS
+
+config SUIT_MAX_URI_LENGTH
+	int "The maximum number of charachters in uri used in fetch operations"
+	range 1 512
+	default 64
+	depends on SUIT_CACHE_RW
+
+endif # SUIT_CACHE
