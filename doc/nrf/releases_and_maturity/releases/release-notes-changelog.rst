@@ -212,6 +212,8 @@ Serial LTE modem
   * Full modem FOTA support to the ``#XFOTA`` AT command.
   * An ``auto_connect`` operation in the ``#XCARRIER`` carrier command.
     The operation controls automatic registration of UE to LTE network.
+  * A ``log_data`` operation in the ``#XCARRIER`` carrier command.
+    The operation sends log data using the Event Log object to be read by the LwM2M server.
   * ``#XNRFCLOUDPOS`` AT command to send location requests to nRF Cloud using cellular or Wi-Fi positioning, or both.
 
 * Updated:
