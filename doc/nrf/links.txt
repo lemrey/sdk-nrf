@@ -22,7 +22,6 @@
 .. _`GitHub`: https://github.com/
 .. _`GitHub fork`: https://docs.github.com/en/github/getting-started-with-github/quickstart/fork-a-repo
 .. _`GitHub duplicate`: https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-on-github/duplicating-a-repository
-.. _`SUIT DFU: Update over Bluetooth® Low Energy`: https://github.com/nrfconnect/sdk-ic-next/tree/main/samples/subsys/suit/smp_transfer
 
 .. _`sdk-zephyr`: https://github.com/nrfconnect/sdk-zephyr
 .. _`official Zephyr repository`:

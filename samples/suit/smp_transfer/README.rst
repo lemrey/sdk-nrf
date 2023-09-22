@@ -1,3 +1,5 @@
+.. _nrf54h_suit_sample:
+
 SUIT DFU: Update over Bluetooth® Low Energy
 ###########################################
 
@@ -67,7 +69,7 @@ This is done by modifying the values for the desired location and size of the pa
 
 * To modify the Application core’s partition size,  modify the values for ``slot0_partition`` defined in :file:`modules/ic-next/dts/arm/nordic_nrf_next/nrf54h20_cpuapp.dtsi`.
 
-* To modify the DFU partition, modify the values for ``dfu_partition`` defined in :file:`modules/ic-next/samples/subsys/suit/smp_transfer/boards/nrf54h20dk_nrf54h20_cpuapp.overlay`.
+* To modify the DFU partition, modify the values for ``dfu_partition`` defined in :file:`nrf/samples/suit/smp_transfer/boards/nrf54h20dk_nrf54h20_cpuapp.overlay`.
 
     * ``dfu_partition`` is where the update candidate is stored before the update process begins.
 
@@ -87,7 +89,7 @@ To build and program the sample to the nRF54H20 PDK, complete the following step
 
 #. Power on the PDK.
 
-#. Open a terminal window in :file:`modules/ic-next/samples/subsys/suit/smp_transfer`.
+#. Open a terminal window in :file:`nrf/samples/suit/smp_transfer`.
 
 #. Build the application using the following ``west`` command, with the following Kconfig options set:
 

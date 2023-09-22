@@ -26,7 +26,7 @@ nRF54H20 samples
    ../../../samples/caf_sensor_manager/README
    ../../../samples/ipc/ipc_service/README
    ../../../samples/event_manager_proxy/README
-   ../working_with_nrf/nrf54h/suit_smp_transfer_sample
+   ../../../samples/suit/smp_transfer/README
    ../../../samples/nfc/record_launch_app/README
    ../../../samples/nfc/record_text/README
    ../../../samples/nfc/shell/README
