@@ -40,4 +40,10 @@ config NRF_TBR_VENDOR_NAME
     help
       Defines the name of a vendor advertised by Thread Border Agent
 
+config NRF_TBR_NAT64_PREFIX_DISCOVERY
+	bool "Enable NAT64 prefix discovery"
+	depends on OPENTHREAD_BORDER_ROUTER && OPENTHREAD_NAT64_BORDER_ROUTING
+  help
+      Enable NAT64 prefix discovery for nRF TBR
+
 endmenu

@@ -59,6 +59,133 @@ static struct net_icmpv6_handler icpmv6_rs_handler = {
 
 static struct otIp6Prefix prev_onlink_prefix;
 
+#if defined(CONFIG_NRF_TBR_NAT64_PREFIX_DISCOVERY)
+
+struct nat64_data_s {
+	struct addrinfo *res;
+	uint32_t infraIfIndex;
+};
+
+/**
+ * RFC7050 "Discovery of the IPv6 Prefix Used for IPv6 Address Synthesis"
+ *
+ * The zone "ipv4only.arpa." is delegated from the ARPA zone to
+ * appropriate name servers chosen by the IANA.  An apex A RRSet has
+ * been inserted in the "ipv4only.arpa." zone as follows:
+ * IPV4ONLY.ARPA.  IN A 192.0.0.170
+ * IPV4ONLY.ARPA.  IN A 192.0.0.171
+ *
+ */
+static const char ipv4_known_host[] = "ipv4only.arpa";
+static const otIp4Address ipv4_known_host_add1 = { { { 192, 0, 0, 170 } } };
+static const otIp4Address ipv4_known_host_add2 = { { { 192, 0, 0, 171 } } };
+/* The prefix length must be 32, 40, 48, 56, 64 or 96 */
+static const uint8_t prefix_length[] = { 32, 40, 48, 56, 64, 96 };
+static struct nat64_data_s nat64_item;
+
+static void discover_nat64_prefix_done(struct k_work *item);
+static K_WORK_DEFINE(nat64_discover_prefix_work, discover_nat64_prefix_done);
+
+static void discover_nat64_prefix_done(struct k_work *item)
+{
+	otIp6Prefix prefix;
+
+	memset(&prefix, 0, sizeof(prefix));
+
+	for (struct addrinfo *rp = nat64_item.res; (rp != NULL) && prefix.mLength == 0;
+	     rp = rp->ai_next) {
+		struct sockaddr_in6 *ip6_soc_addr = (struct sockaddr_in6 *)rp->ai_addr;
+		otIp6Address ip6_addr;
+
+		if (rp->ai_family != AF_INET6) {
+			continue;
+		}
+
+		memcpy(&ip6_addr.mFields.m8, &ip6_soc_addr->sin6_addr.s6_addr, OT_IP6_ADDRESS_SIZE);
+
+		for (int it = 0; it < ARRAY_SIZE(prefix_length); it++) {
+			otIp4Address ip4_addr;
+
+			otIp4ExtractFromIp6Address(prefix_length[it], &ip6_addr, &ip4_addr);
+
+			if (otIp4IsAddressEqual(&ip4_addr, &ipv4_known_host_add1) ||
+			    otIp4IsAddressEqual(&ip4_addr, &ipv4_known_host_add2)) {
+				bool found_duplicate = false;
+
+				/* rfc7050: "The node MUST check on octet boundaries to ensure a
+				 * 32-bit well-known IPv4 address value is present only once in an
+				 * IPv6 address. In case another instance of the value is found
+				 *  inside the IPv6 address, the node SHALL repeat the search with
+				 *  the other well-known IPv4 address."
+				 */
+				for (int dup_it = 0; dup_it < ARRAY_SIZE(prefix_length); dup_it++) {
+					otIp4Address ip4_addr_dup;
+
+					if (prefix_length[dup_it] == prefix_length[it]) {
+						continue;
+					}
+
+					otIp4ExtractFromIp6Address(prefix_length[dup_it],
+								   &ip6_addr,
+								   &ip4_addr_dup);
+					if (otIp4IsAddressEqual(&ip4_addr_dup, &ip4_addr)) {
+						found_duplicate = true;
+						break;
+					}
+				}
+
+				if (!found_duplicate) {
+					otIp6GetPrefix(&ip6_addr, prefix_length[it], &prefix);
+					break;
+				}
+			}
+
+			if (prefix.mLength != 0) {
+				break;
+			}
+		}
+	}
+
+	otPlatInfraIfDiscoverNat64PrefixDone(
+		openthread_get_default_instance(), nat64_item.infraIfIndex, &prefix);
+	freeaddrinfo(nat64_item.res);
+}
+
+otError otPlatInfraIfDiscoverNat64Prefix(uint32_t aInfraIfIndex)
+{
+	struct addrinfo hints;
+
+	memset(&hints, 0x00, sizeof(hints));
+	hints.ai_family = AF_INET6;
+	hints.ai_socktype = SOCK_STREAM;
+
+	nat64_item.infraIfIndex = aInfraIfIndex;
+
+	int ret = getaddrinfo(ipv4_known_host, NULL, &hints, &nat64_item.res);
+
+	k_work_submit(&nat64_discover_prefix_work);
+
+	if (ret) {
+		LOG_WRN("getaddrinfo failed %s\n", gai_strerror(ret));
+		return OT_ERROR_FAILED;
+	}
+
+	NET_DBG("getaddrinfo request for %s\n", ipv4_known_host);
+
+	return OT_ERROR_NONE;
+}
+
+#else /* CONFIG_NRF_TBR_NAT64_PREFIX_DISCOVERY */
+
+otError otPlatInfraIfDiscoverNat64Prefix(uint32_t aInfraIfIndex)
+{
+	ARG_UNUSED(aInfraIfIndex);
+	/* API documentation allows to use only two return values, so for unsupported function... */
+	return OT_ERROR_FAILED;
+}
+
+#endif /* CONFIG_NRF_TBR_NAT64_PREFIX_DISCOVERY */
+
 static enum net_verdict handle_icmpv6_nd(struct net_pkt *pkt, struct net_ipv6_hdr *ip_hdr,
 					 struct net_icmp_hdr *icmp_hdr)
 {
@@ -211,7 +338,7 @@ otError otPlatInfraIfSendIcmp6Nd(uint32_t aInfraIfIndex, const otIp6Address *aDe
 	}
 
 	if (net_pkt_write(pkt, aBuffer, aBufferLength) || net_pkt_write(pkt, &ll_addr_opt,
-							  sizeof(ll_addr_opt))) {
+									sizeof(ll_addr_opt))) {
 		goto fail;
 	}
 
