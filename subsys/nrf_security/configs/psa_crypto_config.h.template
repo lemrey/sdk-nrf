@@ -242,6 +242,8 @@
 #define PSA_CRYPTO_DRIVER_ECC_SECP_R1_224_CRACEN                1
 #define PSA_CRYPTO_DRIVER_ECC_SECP_R1_256_CRACEN                1
 
+#define CONFIG_PSA_ACCEL_KEY_PAIR_R521                          1
+
 #define MBEDTLS_PSA_CRYPTO_BUILTIN_KEYS                         1
 #endif
 
