@@ -2322,3 +2322,32 @@
   platforms:
     - nrf52840dk_nrf52840
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - samples.compile
+  platforms:
+    - nrf52dk_nrf52832
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - unity.nrf_fuel_gauge_no_fpu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52dk_nrf52832
+    - nrf52dk_nrf52810
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - unity.nrf_fuel_gauge_fpu
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf52840dk_nrf52840
+    - nrf52dk_nrf52832
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - unity.nrf_fuel_gauge_qemu
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
