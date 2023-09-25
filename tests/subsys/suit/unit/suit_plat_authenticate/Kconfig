@@ -7,4 +7,7 @@
 # Include and define MOCK_* Kconfigs
 rsource "../mocks/Kconfig"
 
+config SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
+	bool "Accept envelopes wth unsigned manifests"
+
 source "Kconfig.zephyr"

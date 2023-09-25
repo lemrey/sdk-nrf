@@ -73,3 +73,40 @@ int suit_plat_authenticate_manifest(struct zcbor_string *manifest_component_id,
 
 	return SUIT_ERR_AUTHENTICATION;
 }
+
+int suit_plat_authorize_unsigned_manifest(struct zcbor_string *manifest_component_id)
+{
+#ifdef CONFIG_SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
+	suit_manifest_class_id_t *class_id;
+
+	if ((manifest_component_id == NULL) ||
+		(manifest_component_id->value == NULL) ||
+		(manifest_component_id->len == 0)) {
+		return SUIT_ERR_DECODING;
+	}
+
+	/* Check if component ID is a manifest class */
+	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+		LOG_ERR("Component ID is not a manifest class");
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	/* Validate manifest class ID against supported manifests */
+	int ret = mci_validate_manifest_class_id(class_id);
+	if (ret != 0) {
+		LOG_ERR("Manifest class ID validation failed: %i", ret);
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	/* Check if unsigned manifest is allowed - pass key_id == 0*/
+	ret = mci_validate_signing_key_id(class_id, 0);
+
+	if (ret == 0) {
+		return SUIT_SUCCESS;
+	}
+
+	return SUIT_ERR_AUTHENTICATION;
+#else  /* CONFIG_SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS */
+ 	return SUIT_ERR_AUTHENTICATION;
+#endif /* CONFIG_SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS */
+}

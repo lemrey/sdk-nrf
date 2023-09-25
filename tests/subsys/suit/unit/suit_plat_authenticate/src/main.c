@@ -8,6 +8,7 @@
 #include <suit_platform.h>
 #include <mocks.h>
 
+
 static suit_manifest_class_id_t sample_class_id = {{0xca, 0xd8, 0x52, 0x3a, 0xf8, 0x29, 0x5a, 0x9a,
 						    0xba, 0x85, 0x2e, 0xa0, 0xb2, 0xf5, 0x77,
 						    0xc9}};
@@ -149,6 +150,8 @@ static int psa_verify_message_invalid_fake_func(mbedtls_svc_key_id_t key, psa_al
 
 	return PSA_ERROR_CORRUPTION_DETECTED;
 }
+
+/****** suit_plat_authenticate_manifest ******/
 
 ZTEST(suit_platform_crypto_psa_authenticate_tests, test_null_args)
 {
@@ -443,7 +446,7 @@ ZTEST(suit_platform_crypto_psa_authenticate_tests, test_invalid_psa_verify_messa
 		&valid_data);		      // struct zcbor_string *data
 
 	/* Manifest authentication fails */
-	zassert_not_equal(PSA_SUCCESS, ret, "Verification should have failed");
+	zassert_not_equal(SUIT_SUCCESS, ret, "Verification should have failed");
 
 	/* Check expected call counts for fake functions */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
@@ -478,7 +481,7 @@ ZTEST(suit_platform_crypto_psa_authenticate_tests, test_OK)
 		&valid_data);		      // struct zcbor_string *data
 
 	/* Manifest authentication fails */
-	zassert_equal(PSA_SUCCESS, ret, "Verification should have succeeded");
+	zassert_equal(SUIT_SUCCESS, ret, "Verification should have succeeded");
 
 	/* Check expected call counts for fake functions */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
@@ -491,4 +494,107 @@ ZTEST(suit_platform_crypto_psa_authenticate_tests, test_OK)
 		      "Incorrect number of mci_validate_signing_key_id() calls");
 	zassert_equal(psa_verify_message_fake.call_count, 1,
 		      "Incorrect number of psa_verify_message() calls");
+}
+
+/****** suit_plat_authorize_unsigned_manifest ******/
+static int mci_validate_signing_key_id_0_correct_fake_func(const suit_manifest_class_id_t *class_id,
+							 uint32_t key_id)
+{
+	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
+	zassert_equal(key_id, 0, "Invalid key ID value");
+
+	return 0;
+}
+
+static int mci_validate_signing_key_id_0_invalid_fake_func(const suit_manifest_class_id_t *class_id,
+							 uint32_t key_id)
+{
+	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
+	zassert_equal(key_id, 0, "Invalid key ID value");
+
+	return -MCI_EMANIFESTCLASSID;
+}
+
+ZTEST(suit_platform_crypto_psa_authenticate_tests, test_unsigned_manifest_invalid_decode_class_id)
+{
+	/* GIVEN the manifest component ID contains an invalid manifest class ID. */
+	suit_plat_decode_manifest_class_id_fake.custom_fake = suit_plat_decode_manifest_class_id_invalid_fake_func;
+	mci_validate_manifest_class_id_fake.custom_fake = mci_validate_manifest_class_id_invalid_fake_func;
+	mci_validate_signing_key_id_fake.custom_fake = mci_validate_signing_key_id_0_invalid_fake_func;
+
+	int ret = suit_plat_authorize_unsigned_manifest(&valid_manifest_component_id);
+
+	/* Unsigned manifest authentication fails */
+	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Verification should have failed");
+
+	/* Check expected call counts for fake functions */
+	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
+	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
+		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(mci_validate_signing_key_id_fake.call_count, 0,
+		      "Incorrect number of mci_validate_signing_key_id() calls");
+}
+
+ZTEST(suit_platform_crypto_psa_authenticate_tests, test_unsigned_manifest_invalid_validate_class_id)
+{
+	/* GIVEN the manifest component ID contains an invalid manifest class ID. */
+	suit_plat_decode_manifest_class_id_fake.custom_fake = suit_plat_decode_manifest_class_id_correct_fake_func;
+	mci_validate_manifest_class_id_fake.custom_fake = mci_validate_manifest_class_id_invalid_fake_func;
+	mci_validate_signing_key_id_fake.custom_fake = mci_validate_signing_key_id_0_invalid_fake_func;
+
+	int ret = suit_plat_authorize_unsigned_manifest(&valid_manifest_component_id);
+
+	/* Unsigned manifest authentication fails */
+	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Verification should have failed");
+
+	/* Check expected call counts for fake functions */
+	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
+	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(mci_validate_signing_key_id_fake.call_count, 0,
+		      "Incorrect number of mci_validate_signing_key_id() calls");
+}
+
+ZTEST(suit_platform_crypto_psa_authenticate_tests, test_unsigned_manifest_invalid_validate_key_id)
+{
+	/* GIVEN the manifest component ID contains an invalid manifest class ID. */
+	suit_plat_decode_manifest_class_id_fake.custom_fake = suit_plat_decode_manifest_class_id_correct_fake_func;
+	mci_validate_manifest_class_id_fake.custom_fake = mci_validate_manifest_class_id_correct_fake_func;
+	mci_validate_signing_key_id_fake.custom_fake = mci_validate_signing_key_id_0_invalid_fake_func;
+
+	int ret = suit_plat_authorize_unsigned_manifest(&valid_manifest_component_id);
+
+	/* Unsigned manifest authentication fails */
+	zassert_equal(SUIT_ERR_AUTHENTICATION, ret, "Verification should have failed");
+
+	/* Check expected call counts for fake functions */
+	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
+	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(mci_validate_signing_key_id_fake.call_count, 1,
+		      "Incorrect number of mci_validate_signing_key_id() calls");
+}
+
+ZTEST(suit_platform_crypto_psa_authenticate_tests, test_unsigned_manifest_OK)
+{
+	/* GIVEN the manifest component ID contains an invalid manifest class ID. */
+	suit_plat_decode_manifest_class_id_fake.custom_fake = suit_plat_decode_manifest_class_id_correct_fake_func;
+	mci_validate_manifest_class_id_fake.custom_fake = mci_validate_manifest_class_id_correct_fake_func;
+	mci_validate_signing_key_id_fake.custom_fake = mci_validate_signing_key_id_0_correct_fake_func;
+
+	int ret = suit_plat_authorize_unsigned_manifest(&valid_manifest_component_id);
+
+	/* Unsigned manifest authentication fails */
+	zassert_equal(SUIT_SUCCESS, ret, "Verification should have succeeded");
+
+	/* Check expected call counts for fake functions */
+	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
+	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(mci_validate_signing_key_id_fake.call_count, 1,
+		      "Incorrect number of mci_validate_signing_key_id() calls");
 }
