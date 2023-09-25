@@ -2485,6 +2485,16 @@ psa_status_t psa_driver_wrapper_pake_setup(
 		return status;
 	}
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	if (cipher_suite->algorithm == PSA_ALG_SRP_6) {
+		status = cracen_srp_setup(
+			&operation->ctx.cracen_srp_ctx, cipher_suite);
+		if (status == PSA_SUCCESS) {
+			operation->id = CRACEN_SRP_DRIVER_ID;
+		}
+		return status;
+	}
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	if (cipher_suite->algorithm == PSA_ALG_SRP_6) {
 		status = oberon_srp_setup(
@@ -2526,6 +2536,12 @@ psa_status_t psa_driver_wrapper_pake_set_password_key(
 			&operation->ctx.oberon_spake2p_ctx,
 			attributes, password, password_length);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return cracen_srp_set_password_key(
+			&operation->ctx.cracen_srp_ctx,
+			attributes, password, password_length);
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return oberon_srp_set_password_key(
@@ -2564,6 +2580,12 @@ psa_status_t psa_driver_wrapper_pake_set_user(
 			&operation->ctx.oberon_spake2p_ctx,
 			user_id, user_id_len);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return cracen_srp_set_user(
+			&operation->ctx.cracen_srp_ctx,
+			user_id, user_id_len);
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return oberon_srp_set_user(
@@ -2601,6 +2623,10 @@ psa_status_t psa_driver_wrapper_pake_set_peer(
 			&operation->ctx.oberon_spake2p_ctx,
 			peer_id, peer_id_len);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return PSA_ERROR_NOT_SUPPORTED;
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return PSA_ERROR_NOT_SUPPORTED;
@@ -2636,6 +2662,12 @@ psa_status_t psa_driver_wrapper_pake_set_role(
 			&operation->ctx.oberon_spake2p_ctx,
 			role);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return cracen_srp_set_role(
+			&operation->ctx.cracen_srp_ctx,
+			role);
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return oberon_srp_set_role(
@@ -2676,6 +2708,13 @@ psa_status_t psa_driver_wrapper_pake_output(
 			step,
 			output, output_size, output_length);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return cracen_srp_output(
+			&operation->ctx.cracen_srp_ctx,
+			step,
+			output, output_size, output_length);
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return oberon_srp_output(
@@ -2720,6 +2759,13 @@ psa_status_t psa_driver_wrapper_pake_input(
 			step,
 			input, input_length);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return cracen_srp_input(
+			&operation->ctx.cracen_srp_ctx,
+			step,
+			input, input_length);
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return oberon_srp_input(
@@ -2759,6 +2805,12 @@ psa_status_t psa_driver_wrapper_pake_get_implicit_key(
 			&operation->ctx.oberon_spake2p_ctx,
 			output, output_size, output_length);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return cracen_srp_get_implicit_key(
+			&operation->ctx.cracen_srp_ctx,
+			output, output_size, output_length);
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return oberon_srp_get_implicit_key(
@@ -2790,6 +2842,10 @@ psa_status_t psa_driver_wrapper_pake_abort(
 	case OBERON_SPAKE_DRIVER_ID:
 		return oberon_spake2p_abort(&operation->ctx.oberon_spake2p_ctx);
 #endif /* PSA_NEED_OBERON_SPAKE2P_DRIVER */
+#ifdef PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN
+	case CRACEN_SRP_DRIVER_ID:
+		return cracen_srp_abort(&operation->ctx.cracen_srp_ctx);
+#endif /* PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN */
 #ifdef PSA_NEED_OBERON_SRP_DRIVER
 	case OBERON_SRP_DRIVER_ID:
 		return oberon_srp_abort(&operation->ctx.oberon_srp_ctx);

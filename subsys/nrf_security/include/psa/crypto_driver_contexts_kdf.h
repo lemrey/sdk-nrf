@@ -9,7 +9,7 @@
 
 #include "psa/crypto_driver_common.h"
 
-#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN) || defined(PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN)
 #include "cracen_psa_primitives.h"
 #endif
 
@@ -56,6 +56,9 @@ typedef union {
 
 typedef union {
 	unsigned int dummy; /* Make sure this union is always non-empty */
+#if defined(PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN)
+	cracen_srp_operation_t cracen_srp_ctx;
+#endif
 #if defined(PSA_NEED_OBERON_JPAKE_DRIVER)
 	oberon_jpake_operation_t oberon_jpake_ctx;
 #endif
