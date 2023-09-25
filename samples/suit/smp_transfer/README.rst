@@ -22,10 +22,10 @@ The sample supports the following development kit:
 
 You also need the nRF Connect Device Manager app:
 
-* `nRF Connect Device Manager for Android <https://play.google.com/store/apps/details?id=no.nordicsemi.android.nrfconnectdevicemanager>`__
+* `nRF Device Manager mobile app for Android`_
   (The minimum required version is v1.9.)
 
-* `nRF Connect Device Manager for iOS <https://apps.apple.com/us/app/nrf-connect-device-manager/id1519423539>`__
+* `nRF Device Manager mobile app for iOS`_
   (The minimum required version is v1.5.)
 
 Overview
@@ -35,7 +35,7 @@ The sample uses Bluetooth® Low Energy and the nRF Connect Device Manager app to
 The sample demonstrates how to perform a DFU of the Application and Radio firmware.
 
 SUIT is the only DFU procedure supported for the nRF54H20 SoCs.
-To read more about the SUIT procedure, see `Device Firmware Update using SUIT <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/working_with_nrf/nrf54h/ug_suit_dfu_procedure.html>`__.
+To read more about the SUIT procedure, see :ref:`ug_suit_dfu_procedure`.
 
 |NCS|-specific SUIT limitations
 ===============================
@@ -53,13 +53,13 @@ LED 1:
 Configuration
 *************
 
-See `Configuring your application <https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/config_and_build/modifying.html#configure-application>`_ for information about how to permanently or temporarily change the configuration.
+|config|
 
 Configuration options
 =====================
 
-Check and configure the Kconfig option ``CONFIG_APP_VERSION``.
-This changes the number of blinks on **LED 1** and sets the `sequence number <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/working_with_nrf/nrf54h/ug_suit_dfu_procedure.html#suit-manifest-sequence-number>`__ of the SUIT `envelope <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/working_with_nrf/nrf54h/ug_suit_dfu_procedure.html#envelope>`__’s manifest.
+Check and configure the :kconfig:option:`CONFIG_APP_VERSION` Kconfig option.
+This changes the number of blinks on **LED 1** and sets the :ref:`sequence number <ug_suit_dfu_suit_manifest_elements>` of the SUIT :ref:`envelope <ug_suit_dfu_suit_concepts>`’s manifest.
 
 Modify partition sizes
 ======================
@@ -69,7 +69,7 @@ This is done by modifying the values for the desired location and size of the pa
 
 * To modify the Application core’s partition size,  modify the values for ``slot0_partition`` defined in :file:`modules/ic-next/dts/arm/nordic_nrf_next/nrf54h20_cpuapp.dtsi`.
 
-* To modify the DFU partition, modify the values for ``dfu_partition`` defined in :file:`nrf/samples/suit/smp_transfer/boards/nrf54h20dk_nrf54h20_cpuapp.overlay`.
+* To modify the DFU partition, modify the values for ``dfu_partition`` defined in :file:`samples/suit/smp_transfer/boards/nrf54h20dk_nrf54h20_cpuapp.overlay`.
 
     * ``dfu_partition`` is where the update candidate is stored before the update process begins.
 
@@ -77,19 +77,22 @@ Template manifest file
 ======================
 
 A manifest file is required to create a SUIT envelope to carry out the DFU.
-See the `Manifest <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/working_with_nrf/nrf54h/ug_suit_dfu_procedure.html#manifest>`__ section of the SUIT documentation to read more about SUIT manifest files.
+See the :ref:`Manifest <ug_suit_dfu_suit_concepts>` section of the SUIT documentation to read more about SUIT manifest files.
 The template file is automatically created after the sample is built for the first time.
 
 Building and running
 ********************
 
+.. |sample path| replace:: :file:`samples/suit/smp_transfer`
+
+This sample can be found under |sample path| in the |NCS| folder structure.
+
+Building and programming using the command line
+===============================================
+
 To build and program the sample to the nRF54H20 PDK, complete the following steps:
 
-1. Connect the PDK to your computer using a USB cable.
-
-#. Power on the PDK.
-
-#. Open a terminal window in :file:`nrf/samples/suit/smp_transfer`.
+1. Open a terminal window in |sample path|.
 
 #. Build the application using the following ``west`` command, with the following Kconfig options set:
 
@@ -98,39 +101,39 @@ To build and program the sample to the nRF54H20 PDK, complete the following step
         west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=1
 
 
-    Note
+    .. note::
 
-     If you are compiling in Windows and the build is unsuccessful due to the maximum path length limitation, use the following command:
+        If you are compiling in Windows and the build is unsuccessful due to the maximum path length limitation, use the following command:
 
         .. code-block:: console
 
             west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:\nordic-lcs\west_working_dir\build\ -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=1
 
+    If you want to further configure your application, see :ref:`configure_application` for additional information.
+
     After running the ``west build`` command, the output build files can be found in the :file:`build/zephyr` directory.
     One of the build artifacts is the SUIT envelope :file:`envelope.suit` file with both firmware binaries embedded as integrated payloads.
 
-    If you want to further configure your application, see `Configuring your application <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/getting_started/modifying.html#configure-application>`__ for additional information.
+    For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
+    For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
 
-    For more information about files generated as output of the build process, see `Output build files <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/app_dev/build_and_config_system/index.html#app-build-output-files>`__.
-    For more information on the contents of the build directory, see `Build Directory Contents <https://res.developer.nordicsemi.com/ncs/doc/latest/zephyr/develop/application/index.html#build-directory-contents>`__ in the Zephyr documentation.
+#. Connect the PDK to your computer using a USB cable.
 
-#.  Run the following command to flash the HEX files onto the PDK:
+#. Power on the PDK.
+
+#. Program the application to the kit using the following command:
 
     .. code-block:: console
 
         west flash
 
+    .. note::
 
-    Note
+        If you are compiling in Windows and the build is unsuccessful due to the maximum path length limitation, use the following command:
 
-    If you are compiling in Windows and the build is unsuccessful due to the maximum path length limitation, use the following command:
+        .. code-block:: console
 
-    .. code-block:: console
-
-        west flash -d C:\nordic-lcs\west_working_dir\build\
-
-For more information on building and programming with the command line, see the Zephyr documentation on `Building, Flashing and Debugging <https://res.developer.nordicsemi.com/ncs/doc/latest/zephyr/develop/west/build-flash-debug.html#west-build-flash-debug>`__.
-See `nRF54H20 debugging <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/working_with_nrf/nrf54h/ug_nrf54h20_debugging.html#ug-nrf54h20-debugging>`__ and `nRF54H20 logging <https://res.developer.nordicsemi.com/ncs/doc/latest/nrf/working_with_nrf/nrf54h/ug_nrf54h20_logging.html#ug-nrf54h20-logging>`__ for information about debugging and logging on the nRF54H20.
+            west flash -d C:\nordic-lcs\west_working_dir\build\
 
 Testing
 =======
@@ -147,13 +150,13 @@ Build the sample application with an updated version number:
     west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=2
 
 
-Note
+.. note::
 
-If you are compiling in Windows and the build is unsuccessful due to the maximum path length limitation, use the following command:
+    If you are compiling in Windows and the build is unsuccessful due to the maximum path length limitation, use the following command:
 
-.. code-block:: console
+    .. code-block:: console
 
-    west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:\nordic-lcs\west_working_dir\build\ -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=2
+        west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:\nordic-lcs\west_working_dir\build\ -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=2
 
 Another :file:`envelope.suit` file is created after running this command, that contains the updated firmware.
 

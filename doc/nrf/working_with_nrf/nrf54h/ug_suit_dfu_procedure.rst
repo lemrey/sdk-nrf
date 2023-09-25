@@ -93,6 +93,8 @@ Along with this, you can compose a final image with your own application image t
 .. figure:: images/nrf54h20_suit_example_update_workflow.png
    :alt: Example of the anticipated workflow for an Application Domain update using SUIT
 
+.. _ug_suit_dfu_suit_concepts:
+
 SUIT-specific concepts
 **********************
 
@@ -126,7 +128,7 @@ A test that passes or fails for a specific property of the recipient device or i
 For example, to ensure that the digest of the code or data in a specific component is equal to the expected value.
 
 Envelope
---------
+========
 
 An outer container for the manifest that may also contain code or data payloads.
 Code or data payloads are optional in the envelope because the manifest can be created so that payload fetching is encoded within the command sequences.
@@ -135,7 +137,7 @@ The SUIT envelope includes: an authentication wrapper, the manifest, severable e
 Below is a description of the contents of the SUIT envelope structure that have not yet been described.
 
 Authentication wrapper
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 Every SUIT envelope contains an authentication wrapper.
 The wrapper contains cryptographic information that protects the manifest, and includes one or more authentication blocks.
@@ -145,8 +147,10 @@ The authentication wrapper is important because it checks the authenticity of th
 .. figure:: images/nrf54h20_suit_envelope_structure.png
    :alt: SUIT envelope structure
 
+   SUIT envelope structure
+
 Manifest
-^^^^^^^^
+--------
 
 A bundle of metadata describing one or more pieces of code or data payloads.
 This includes instructions on how to obtain those payloads, as well as how to install, verify, and invoke them.
@@ -160,7 +164,7 @@ Each manifest, either the root or dependency manifest, is encased in its own env
    The manifest is represented in a file, as either a YAML or JSON file based on Nordic Semiconductor's implementation, that can be edited to control aspects of the DFU.
 
 Severable elements
-^^^^^^^^^^^^^^^^^^
+------------------
 
 Severable elements are elements that belong to the manifest but are held outside of the manifest.
 They can later be deleted when they are no longer needed to save storage space.
@@ -168,14 +172,14 @@ To maintain integrity, a digest of the severable element is kept inside the mani
 These are optional for SUIT envelopes.
 
 Integrated payloads
-^^^^^^^^^^^^^^^^^^^
+-------------------
 
 Integrated payloads are payloads that are integrated within the envelope of the manifest.
 This allows for a one-step update, where everything needed for the update is in one image (the envelope).
 These are optional for SUIT envelopes.
 
 Integrated dependencies
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 Integrated dependencies contain the manifests needed for any required dependencies and are encased in their own SUIT envelope structure.
 These are optional for SUIT envelopes and only necessary if there are dependencies needed for the DFU.
@@ -187,6 +191,8 @@ How ``SUIT_Manifest`` works
 
 The ``SUIT_Manifest``, found within root and local manifests, contains several sequences.
 These sequences are data structures that can contain directives and conditions.
+
+.. _ug_suit_dfu_suit_manifest_elements:
 
 Manifest elements
 =================
@@ -232,6 +238,8 @@ This element contains two subsections:
    For example, when performing a DFU, the SUIT processor may be instructed to run ``suit-payload-fetch``, but first ``suit-shared-sequence`` runs before each sequence to save memory space.
    This is done by declaring items, such as the vendor ID, in ``suit-shared-sequence`` once rather than declaring them separately for each update or invocation procedure.
 
+.. _ug_suit_dfu_suit_concepts_sequences:
+
 Sequences
 ---------
 
@@ -254,6 +262,8 @@ SUIT manifest contains the following command sequences:
 * ``suit-invoke`` - invokes (boots) image(s).
 
 * ``suit-dependency-resolution`` - prepares the system for the update by identifying and fetching any missing dependency manifests.
+
+.. _ug_suit_dfu_suit_conditions:
 
 Conditions
 ==========
@@ -301,6 +311,7 @@ For more information about CDDL's syntax, see the IETF's `RFC 8610 <https://data
       * $$SUIT_Manifest_Extensions,
    }
 
+.. _ug_suit_dfu_suit_procedure:
 
 SUIT procedure
 **************
@@ -323,6 +334,8 @@ This means that an update package or invocation process can be distributed in on
 .. figure:: images/nrf54h20_suit_example_update_package.png
    :alt: Example of an update package
 
+   Example of an update package
+
 SUIT workflows
 ==============
 
@@ -333,10 +346,14 @@ The update procedure contains the following steps:
 .. figure:: images/nrf54h20_suit_update_workflow.png
    :alt: Update procedure workflow
 
+   Update procedure workflow
+
 The invocation procedure contains the following steps:
 
 .. figure:: images/nrf54h20_suit_invocation_workflow.png
    :alt: Invocation procedure workflow
+
+   Invocation procedure workflow
 
 To follow these workflows, there are six main sequences in the SUIT procedure that belong to either the update or the invocation procedure.
 
@@ -398,6 +415,8 @@ See the diagram and comparison table below for further comparison.
 
 .. figure:: images/nrf54h20_suit_mcuboot_comparison.png
    :alt: MCUboot and SUIT architecture comparison
+
+   MCUboot and SUIT architecture comparison
 
 +----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+
 | Action               |  MCUboot characteristics                                                                                                                              | SUIT characteristics                                                                                                                      |
