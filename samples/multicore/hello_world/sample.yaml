@@ -32,8 +32,8 @@ tests:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
     extra_args:
-      DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuapp_soc1_stm_logging.overlay"
-      remote_DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuppr_soc1_stm_logging.overlay"
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_soc1_stm_logging.overlay
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuppr_soc1_stm_logging.overlay
       remote_CONFIG_LOG_STM=y remote_CONFIG_UART_CONSOLE=n remote_CONFIG_CONSOLE=n
       CONFIG_LOG_STM=y
       CONFIG_SECDOM_STM_LOGGING_SUPPORT=y
@@ -48,8 +48,8 @@ tests:
       - nrf9230dk_nrf9230_cpuapp
     tags: ci_build
     extra_args:
-      DTC_OVERLAY_FILE="boards/nrf9230dk_nrf9230_cpuapp_stm_logging.overlay"
-      remote_DTC_OVERLAY_FILE="boards/nrf9230dk_nrf9230_cpuppr_stm_logging.overlay"
+      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_stm_logging.overlay
+      remote_DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuppr_stm_logging.overlay
       remote_CONFIG_LOG_STM=y remote_CONFIG_UART_CONSOLE=n remote_CONFIG_CONSOLE=n
       CONFIG_LOG_STM=y
       CONFIG_SECDOM_STM_LOGGING_SUPPORT=y
@@ -84,8 +84,8 @@ tests:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
     extra_args:
-      DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuapp_soc1_stm_logging.overlay"
-      remote_DTC_OVERLAY_FILE="boards/nrf54h20dk_nrf54h20_cpuppr_soc1_stm_logging.overlay"
+      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_soc1_stm_logging.overlay
+      remote_DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuppr_soc1_stm_logging.overlay
       remote_CONFIG_LOG_STM=y remote_CONFIG_UART_CONSOLE=n remote_CONFIG_CONSOLE=n remote_CONFIG_EMULATOR_FPGA=y
       CONFIG_LOG_STM=y
       CONFIG_EMULATOR_FPGA=y
