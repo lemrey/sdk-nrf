@@ -6,8 +6,13 @@
 
 #include "dfu_over_smp.h"
 
-#if !defined(CONFIG_MCUMGR_TRANSPORT_BT) || !defined(CONFIG_MCUMGR_GRP_IMG) || !defined(CONFIG_MCUMGR_GRP_OS)
+#if !defined(CONFIG_MCUMGR_TRANSPORT_BT) ||                                                                            \
+	(!defined(CONFIG_SUIT) && (!defined(CONFIG_MCUMGR_GRP_IMG) || !defined(CONFIG_MCUMGR_GRP_OS)))
 #error "DFUOverSMP requires MCUMGR module configs enabled"
+#endif
+
+#ifdef CONFIG_SUIT
+#include <suitfu_mgmt.h>
 #endif
 
 #include "ota_util.h"
@@ -31,6 +36,7 @@ constexpr uint8_t kAdvertisingFlags = BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR;
 
 namespace
 {
+#ifndef CONFIG_SUIT
 int32_t UploadConfirmHandler(uint32_t event, int32_t rc, bool *abort_more, void *data, size_t data_size)
 {
 	const img_mgmt_upload_check &imgData = *static_cast<img_mgmt_upload_check *>(data);
@@ -63,6 +69,7 @@ mgmt_callback sCommandCallback = {
 	.callback = CommandHandler,
 	.event_id = (MGMT_EVT_OP_CMD_RECV | MGMT_EVT_OP_CMD_DONE),
 };
+#endif
 
 } /* namespace */
 
@@ -89,12 +96,17 @@ void DFUOverSMP::Init()
 		}
 	};
 
+#ifdef CONFIG_SUIT
+	img_mgmt_register_group();
+#else
 	mgmt_callback_register(&sUploadCallback);
 	mgmt_callback_register(&sCommandCallback);
+#endif
 }
 
 void DFUOverSMP::ConfirmNewImage()
 {
+#ifndef CONFIG_SUIT
 	/* Check if the image is run in the REVERT mode and eventually */
 	/* confirm it to prevent reverting on the next boot. */
 	VerifyOrReturn(mcuboot_swap_type() == BOOT_SWAP_TYPE_REVERT);
@@ -104,6 +116,7 @@ void DFUOverSMP::ConfirmNewImage()
 	} else {
 		ChipLogProgress(SoftwareUpdate, "New firmware image confirmed");
 	}
+#endif
 }
 
 void DFUOverSMP::StartServer()

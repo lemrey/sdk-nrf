@@ -20,8 +20,12 @@ endif()
 
 if(CONFIG_FILE_NAME STREQUAL "prj_thread_wifi_switched.conf")
     set(PM_STATIC_YML_FILE ${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}/pm_static_thread_wifi_switched.yml)
-elseif(NOT (CONF_FILE STREQUAL "prj_no_dfu.conf"))
+elseif(NOT (CONF_FILE STREQUAL "prj_no_dfu.conf") AND NOT CONFIG_SUIT)
     set(PM_STATIC_YML_FILE ${CMAKE_CURRENT_SOURCE_DIR}/configuration/${BOARD}/pm_static_dfu.yml)
+endif()
+
+if(${BOARD} STREQUAL "nrf54h20dk_nrf54h20_cpuapp@soc1" AND CONF_FILE STREQUAL "prj_no_dfu.conf")
+    set(EXTRA_DTC_OVERLAY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/boards/nrf54h20dk_nrf54h20_cpuapp_soc1_no_dfu.overlay)
 endif()
 
 find_package(Zephyr HINTS $ENV{ZEPHYR_BASE})

@@ -105,6 +105,13 @@ config FPU
 	
 endif
 
+if SUIT
+
+config SUIT_ENVELOPE_SEQUENCE_NUM
+    default 1
+
+endif
+
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.features"
 source "${ZEPHYR_BASE}/../modules/lib/matter/config/nrfconnect/chip-module/Kconfig.defaults"
 source "Kconfig.zephyr"

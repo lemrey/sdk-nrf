@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Nordic Semiconductor ASA
+ * Copyright (c) 2023 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -8,14 +8,6 @@
 #include <arm/nordic_nrf_next/overlays/entropy_cpuapp.overlay>
 #include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
 #include "nrf54h20_common.dtsi"
-
-/*
- * Chosen dts configs description:
- * - Console and shell-uart connected to the uart-bellboard to get output on server.
- * - SRAM partition placed in ram0x due to its big size and speed.
- * - - Current flash layout does not allow the application domain to use both mram10 and mram11 in one continuous block. mram11 is selected due to its available size.
- * - flash_controller2 is defined to allow using RAM as a FLASH simulator - it is required to store Zephyr's settings in RAM.
- */
 
 / {
     chosen {
@@ -26,40 +18,66 @@
     aliases {
         factory-data = &factory_data;
         factory-data-memory-region = &mram1;
-	};
-};
-
-ipc0: &ipc_cpurad { };
-
-
-/delete-node/ &slot0_partition;
-/delete-node/ &storage_partition;
-
-&mram0 {
-    reg = <0xe0aa000 DT_SIZE_K(1000)>;
-    partitions {
-        compatible = "fixed-partitions";
-        #address-cells = < 0x1 >;
-        #size-cells = < 0x1 >;
-        slot0_partition: partition@aa000 {
-            label = "image-0";
-            reg = < 0xaa000 DT_SIZE_K(998) >;
-        };
     };
 };
 
-&mram1 {
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = < 0x1 >;
-		#size-cells = < 0x1 >;
-        storage_partition: partition@1f4000 {
-            label = "storage";
-            reg = < 0x1f4000 0x5000 >;
+/* Enable communication between the Application and Secure Domains */
+&ipc_to_cpusec {
+    status = "okay";
+};
+
+ipc0: &ipc_cpurad {};
+
+/delete-node/ &mram0;
+/delete-node/ &mram1;
+
+&mram_controller {
+    mram0: mram@e086000 {
+        compatible = "nordic,allocatable-mram", "soc-nv-flash";
+        reg = <0xe086000 DT_SIZE_K(699)>;
+        #address-cells = <0x1>;
+        #size-cells = <0x1>;
+        erase-block-size = <128>;
+        write-block-size = <0x10>;
+        owner-id = <0x2>;
+        perm-read;
+        perm-execute;
+        perm-secure;
+        partitions {
+            compatible = "fixed-partitions";
+            #address-cells = <0x1>;
+            #size-cells = <0x1>;
+            slot0_partition: partition@86000 {
+                label = "image-0";
+                reg = <0x86000 DT_SIZE_K(699)>;
+            };
         };
-        factory_data: partition@1f9000 {
-            label = "factory-data";
-            reg = < 0x1f9000 DT_SIZE_K(4) >;
+    };
+
+    mram1: mram@e13b000 {
+        compatible = "nordic,allocatable-mram", "soc-nv-flash";
+        reg = <0xe13b000 DT_SIZE_K(719)>;
+        erase-block-size = <128>;
+        write-block-size = <0x10>;
+        perm-read;
+        perm-write;
+        partitions {
+            compatible = "fixed-partitions";
+            #address-cells = <0x1>;
+            #size-cells = <0x1>;
+            dfu_partition: partition@13b000 {
+                label = "dfu_partition";
+                /* 699 kB for the Application and 1 kB for SUIT manifest */
+                reg = <0x13b000 DT_SIZE_K(700)>;
+            };
+            storage_partition: partition@1ea000 {
+                label = "storage";
+                reg = <0x1ea000 DT_SIZE_K(16)>;
+            };
+            factory_data: partition@1ee000 {
+                label = "factory_data";
+                reg = <0x1ee000 DT_SIZE_K(3)>;
+            };
         };
     };
 };

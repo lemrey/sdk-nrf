@@ -9,19 +9,10 @@
 #include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
 #include "nrf54h20_common.dtsi"
 
-/ {
-    chosen {
-        zephyr,console = &uart136;
-        zephyr,shell-uart = &uart136;
-    };
-
-    aliases {
-        factory-data = &factory_data;
-        factory-data-memory-region = &mram1;
-    };
+/* Disable communication between the Application and Secure Domains */
+&ipc_to_cpusec {
+    status = "disabled";
 };
-
-ipc0: &ipc_cpurad {};
 
 /delete-node/ &mram0;
 /delete-node/ &mram1;
@@ -70,4 +61,4 @@ ipc0: &ipc_cpurad {};
             };
         };
     };
-};   
+};
