@@ -82,4 +82,41 @@ config SUIT_STREAM_SOURCE_CACHE
 config SUIT_STREAM_SOURCE_MEMPTR
   bool "Enable memory pointer storage source"
 
+config SUIT_STREAM_FETCH_SOURCE_MGR
+        bool "Fetch source manager"
+
+config SUIT_STREAM_FETCH_MAX_SOURCES
+	int "The maximum number of fetch sources to be able to be registered by fetch source manager"
+	default 3
+	depends on SUIT_STREAM_FETCH_SOURCE_MGR
+
+menuconfig SUIT_STREAM_SOURCE_IPC
+        bool "Enable feeding images from external sources to SDFW"
+
+if SUIT_STREAM_SOURCE_IPC
+
+config SUIT_STREAM_IPC_REQUESTOR
+        bool "Part of functionality executed in SDFW"
+
+config SUIT_STREAM_IPC_REQUESTOR_MAX_CHUNKS
+	int "The maximum number of image chunks simultaneously enqueable by requestor"
+	default 3
+	depends on SUIT_STREAM_IPC_REQUESTOR
+
+config SUIT_STREAM_IPC_PROVIDER
+        bool "Part of functionality executed on App Core"
+        depends on SUIT_STREAM_FETCH_SOURCE_MGR
+
+config SUIT_STREAM_IPC_PROVIDER_BUFFERS
+	int "The number of buffers supported by provider. For optimal performance should be equal to CONFIG_SUIT_STREAM_IPC_REQUESTOR_MAX_CHUNKS"
+	default 3
+	depends on SUIT_STREAM_IPC_PROVIDER
+
+config SUIT_STREAM_IPC_PROVIDER_BUFFER_SIZE
+	int "Size of single buffer in bytes"
+	default 8192
+	depends on SUIT_STREAM_IPC_PROVIDER
+
+endif # SUIT_STREAM_SOURCE_IPC
+
 endif # SUIT_STREAM
