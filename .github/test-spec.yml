@@ -489,18 +489,14 @@
   - "subsys/net/lib/nrf_cloud/**/*"
 
 "CI-test_sdk_hcs":
-  - any:
-    - "!doc/**/*"
-    - "!applications/**/*"
-    - "!samples/**/*"
-    - "!tests/**/*"
+  - "include/nrf_rpc/*"
+  - "lib/fatal_error/*"
+  - "subsys/nrf_rpc/**/*"
 
 "CI-test_sdk_sysctrl":
-  - any:
-    - "!doc/**/*"
-    - "!applications/**/*"
-    - "!samples/**/*"
-    - "!tests/**/*"
+  - "include/nrf_rpc/*"
+  - "lib/fatal_error/*"
+  - "subsys/nrf_rpc/**/*"
 
 "CI-test_secdomfw_build":
   - "include/nrf_rpc/*"
