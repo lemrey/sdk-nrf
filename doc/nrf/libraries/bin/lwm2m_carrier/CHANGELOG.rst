@@ -41,6 +41,11 @@ Changes
 
   * The object is enabled for the SoftBank subscriber ID :kconfig:option:`CONFIG_LWM2M_CARRIER_SOFTBANK`, or if the LwM2M carrier library is operating in generic mode :kconfig:option:`CONFIG_LWM2M_CARRIER_GENERIC`.
 
+* FOTA procedure now only requires a single modem library initialization. For more information see the modem library :ref:`nrf_modem_changelog`.
+
+  * Old successful event flow: :c:member:`LWM2M_CARRIER_EVENT_FOTA_START` > :c:member:`LWM2M_CARRIER_EVENT_LTE_POWER_OFF` > :c:member:`LWM2M_CARRIER_EVENT_MODEM_SHUTDOWN` > :c:member:`LWM2M_CARRIER_EVENT_MODEM_INIT` > :c:member:`LWM2M_CARRIER_EVENT_MODEM_INIT` > :c:member:`LWM2M_CARRIER_EVENT_FOTA_SUCCESS` > :c:member:`LWM2M_CARRIER_EVENT_LTE_LINK_UP`.
+  * New successful event flow: :c:member:`LWM2M_CARRIER_EVENT_FOTA_START` > :c:member:`LWM2M_CARRIER_EVENT_LTE_POWER_OFF` > :c:member:`LWM2M_CARRIER_EVENT_MODEM_SHUTDOWN` > :c:member:`LWM2M_CARRIER_EVENT_MODEM_INIT` > :c:member:`LWM2M_CARRIER_EVENT_FOTA_SUCCESS` > :c:member:`LWM2M_CARRIER_EVENT_LTE_LINK_UP`.
+
 AT&T support has been deprecated
 --------------------------------
 
