@@ -2521,3 +2521,38 @@
   platforms:
     - nrf7002dk_nrf5340_cpuapp
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.central_and_peripheral_hr.build
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_ancs_client.build
+  platforms:
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_cts_client.build
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_ams_client.build
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.bluetooth.peripheral_gatt_dm
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
