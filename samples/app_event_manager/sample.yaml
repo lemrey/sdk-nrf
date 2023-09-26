@@ -24,9 +24,9 @@ tests:
       - nrf9160dk_nrf9160_ns
       - nrf21540dk_nrf52840
       - nrf54h20dk_nrf54h20_cpuapp@soc1
-      - nrf9230dk_nrf9230_cpuapp
   sample.app_event_manager.nrf9230:
     build_only: false
+    platform_allow: nrf9230dk_nrf9230_cpuapp
     integration_platforms:
       - nrf9230dk_nrf9230_cpuapp
     extra_configs:
