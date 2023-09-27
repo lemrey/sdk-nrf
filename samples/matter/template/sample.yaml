@@ -2,7 +2,13 @@ sample:
   description: Matter Template sample
   name: Matter Template
 tests:
-  # Excluded in quarantine.yaml to limit resources usage in integration builds
+  sample.matter.template.debug:
+    build_only: true
+    integration_platforms:
+      - nrf52840dk_nrf52840
+      - nrf5340dk_nrf5340_cpuapp
+      - nrf7002dk_nrf5340_cpuapp
+    platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf7002dk_nrf5340_cpuapp
   sample.matter.template.release:
     build_only: true
     extra_args: CONF_FILE=prj_release.conf
@@ -15,18 +21,11 @@ tests:
     build_only: true
     extra_args: CONF_FILE=prj_no_dfu.conf
     integration_platforms:
-      - nrf21540dk_nrf52840
       - nrf54h20dk_nrf54h20_cpuapp@soc1
       - nrf54l15dk_nrf54l15_cpuapp@soc1
     platform_allow: >
       nrf52840dk_nrf52840 nrf21540dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf7002dk_nrf5340_cpuapp
       nrf54h20dk_nrf54h20_cpuapp@soc1 nrf54l15dk_nrf54l15_cpuapp@soc1
-  sample.matter.template.debug:
-    build_only: true
-    integration_platforms:
-      - nrf5340dk_nrf5340_cpuapp
-      - nrf7002dk_nrf5340_cpuapp
-    platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf7002dk_nrf5340_cpuapp
   sample.matter.template.nrf54h20_fpga:
     build_only: true
     extra_args: CONF_FILE=prj_no_dfu.conf OVERLAY_CONFIG="boards/nrf54h20_fpga_overlay.conf"

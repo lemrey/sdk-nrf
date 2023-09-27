@@ -2,14 +2,6 @@ sample:
   description: Matter Lock example
   name: Matter Lock
 tests:
-  # Excluded in quarantine.yaml to limit resources usage in integration builds
-  sample.matter.lock.debug:
-    build_only: true
-    integration_platforms:
-      - nrf52840dk_nrf52840
-      - nrf5340dk_nrf5340_cpuapp
-      - nrf7002dk_nrf5340_cpuapp
-    platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf7002dk_nrf5340_cpuapp
   sample.matter.lock.release:
     build_only: true
     extra_args: CONF_FILE=prj_release.conf
@@ -42,29 +34,15 @@ tests:
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
-  sample.matter.lock.release.nrf21540_ek:
+  sample.matter.lock.debug.nrf21540ek:
     build_only: true
-    extra_args: CONF_FILE=prj_release.conf SHIELD=nrf21540_ek
+    extra_args: SHIELD=nrf21540_ek
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
     platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp
   sample.matter.lock.switchable_thread.nrf7002_ek:
     build_only: true
     extra_args: SHIELD=nrf7002ek hci_rpmsg_SHIELD=nrf7002ek_coex
-      CONF_FILE=prj_thread_wifi_switched.conf CONFIG_CHIP_WIFI=n
-    integration_platforms:
-      - nrf5340dk_nrf5340_cpuapp
-    platform_allow: nrf5340dk_nrf5340_cpuapp
-  sample.matter.lock.switchable_thread.nrf7000_ek:
-    build_only: true
-    extra_args: SHIELD=nrf7002ek_nrf7000 hci_rpmsg_SHIELD=nrf7002ek_nrf7000_coex CONFIG_WPA_SUPP=n
-      CONF_FILE=prj_thread_wifi_switched.conf CONFIG_CHIP_WIFI=n
-    integration_platforms:
-      - nrf5340dk_nrf5340_cpuapp
-    platform_allow: nrf5340dk_nrf5340_cpuapp
-  sample.matter.lock.switchable_thread.nrf7001_ek:
-    build_only: true
-    extra_args: SHIELD=nrf7002ek_nrf7001 hci_rpmsg_SHIELD=nrf7002ek_nrf7001_coex
       CONF_FILE=prj_thread_wifi_switched.conf CONFIG_CHIP_WIFI=n
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
@@ -76,25 +54,12 @@ tests:
     integration_platforms:
       - nrf5340dk_nrf5340_cpuapp
     platform_allow: nrf5340dk_nrf5340_cpuapp
-  sample.matter.lock.switchable_wifi.nrf7000_ek:
-    build_only: true
-    extra_args: SHIELD=nrf7002ek_nrf7000 hci_rpmsg_SHIELD=nrf7002ek_nrf7000_coex CONFIG_WPA_SUPP=n
-      CONF_FILE=prj_thread_wifi_switched.conf
-    integration_platforms:
-      - nrf5340dk_nrf5340_cpuapp
-    platform_allow: nrf5340dk_nrf5340_cpuapp
-  sample.matter.lock.switchable_wifi.nrf7001_ek:
-    build_only: true
-    extra_args: SHIELD=nrf7002ek_nrf7001 hci_rpmsg_SHIELD=nrf7002ek_nrf7001_coex
-      CONF_FILE=prj_thread_wifi_switched.conf
-    integration_platforms:
-      - nrf5340dk_nrf5340_cpuapp
-    platform_allow: nrf5340dk_nrf5340_cpuapp
   sample.matter.lock.nus:
     build_only: true
     extra_args: CONFIG_CHIP_NUS=y CONFIG_BT_FIXED_PASSKEY=y CONFIG_CHIP_NUS_FIXED_PASSKEY=112233
     integration_platforms:
       - nrf52840dk_nrf52840
+      - nrf5340dk_nrf5340_cpuapp
     platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp
   sample.matter.lock.factory_data:
     build_only: true
@@ -104,4 +69,6 @@ tests:
       CONFIG_CHIP_FACTORY_DATA_GENERATE_ONBOARDING_CODES=y
     integration_platforms:
       - nrf52840dk_nrf52840
+      - nrf5340dk_nrf5340_cpuapp
+      - nrf7002dk_nrf5340_cpuapp
     platform_allow: nrf52840dk_nrf52840 nrf5340dk_nrf5340_cpuapp nrf7002dk_nrf5340_cpuapp
