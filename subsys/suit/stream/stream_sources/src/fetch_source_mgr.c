@@ -103,9 +103,9 @@ static int write_proxy(void *ctx, uint8_t *buf, size_t *size)
 	}
 
 	int (*client_write_fct)(void *ctx, uint8_t *buf, size_t *size) = session->client_sink.write;
-	void *clinet_ctx = session->client_sink.ctx;
+	void *client_ctx = session->client_sink.ctx;
 
-	int err = client_write_fct(clinet_ctx, buf, size);
+	int err = client_write_fct(client_ctx, buf, size);
 
 	component_unlock();
 	return err;
@@ -128,9 +128,9 @@ static int seek_proxy(void *ctx, size_t offset)
 	}
 
 	int (*client_seek_fct)(void *ctx, size_t offset) = session->client_sink.seek;
-	void *clinet_ctx = session->client_sink.ctx;
+	void *client_ctx = session->client_sink.ctx;
 
-	int err = client_seek_fct(clinet_ctx, offset);
+	int err = client_seek_fct(client_ctx, offset);
 
 	component_unlock();
 	return err;
@@ -206,7 +206,7 @@ int fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sin
 				close_session(session);
 				return -1;
 			} else {
-				/* fetch source signalized an error immediatly, means it does not
+				/* fetch source signalized an error immediately, means it does not
 				 * support fetching from provided URI, let's try next fetch source
 				 */
 			}

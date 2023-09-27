@@ -9,13 +9,13 @@
 
 /*
  * SDFW (Secure Domain Firmware) is unable to fetch images from external sources on its own.
- * Instead - it is able to invoke companion image(s) on MCU(s) belonging to other domain,
+ * Instead - it is able to invoke companion image(s) on MCU(s) belonging to other domain(s),
  * typically Application MCU. Such companion image contains instructions to fetch required
  * image from image source and deliver it to SDFW via IPC (Inter-processor communication)
  * in form of image chunks.
  *
  * Implementation choice about supported protocols (i.e. http, ftp) is delegated out of SDFW,
- * allowing to keep SDFW image size and security risks managable.
+ * allowing to keep SDFW image size and security risks manageable.
  *
  * Solution is composed of two parts - ipc streamer requestor executed on Secure Domain MCU and
  * ipc streamer provider executed on local Domain MCU, typically Application Domain
@@ -35,7 +35,7 @@
 #define IPC_STREAMER_ENORESOURCES    205 /**< Not enough resources */
 #define IPC_STREAMER_ETIMEOUT	     206 /**< Timeout */
 #define IPC_STREAMER_ESINK	     207 /**< Sink operation failed */
-#define IPC_STREAMER_ECUNCURRENCY    208 /**< Data structure incoherent */
+#define IPC_STREAMER_ECONCURRENCY    208 /**< Data structure incoherent */
 #define IPC_STREAMER_EIPC	     209 /**< IPC error */
 
 /**
@@ -45,10 +45,10 @@
  * @param[in]   resource_id		Resource identifier, typically in form of URI. Not
  *interpreted by streamer requestor but just passed to streamer provider
  *
- * @param[in]   resource_id_length	Lenght of resource_id, in bytes
+ * @param[in]   resource_id_length	Length of resource_id, in bytes
  *
  * @param[in]   sink			Function pointers to pass image chunk to next chunk
- *processing element. Non-'null' write_ptr is allways required. Non-'null' seek_ptr is required if
+ *processing element. Non-'null' write_ptr is always required. Non-'null' seek_ptr is required if
  *streamer provider delivers image in non-continous chunks. In event of failure of any sink-related
  *operations ipc_streamer_stream will fail as well.
  *
@@ -124,7 +124,7 @@ typedef struct {
  * @param[in]   size			Size of image chunk, in bytes
  *
  * @param[in]   last_chunk		'true' signalizes end of stream. Once end of stream is
- *signalized - streamer requestor will not accept any new chunks. It will process remining enqueued
+ *signalized - streamer requestor will not accept any new chunks. It will process remaining enqueued
  *chunks and close session
  *
  * @return 0 on success
@@ -208,7 +208,7 @@ void ipc_streamer_chunk_status_evt_unsubscribe(void);
  * @param[in]   resource_id		requested resource identifier, typically URI. See
  *ipc_streamer_stream
  *
- * @param[in]   resource_id_length	Lenght of resource_id, in bytes
+ * @param[in]   resource_id_length	Length of resource_id, in bytes
  *
  * @param[in]   stream_session_id	Session identifier. Non-zero value assigned by streamer
  *requestor, unique for image request, as result of ipc_streamer_stream call

@@ -186,7 +186,7 @@ static int end_of_stream(image_request_info_t *ri)
 	if (READY_TO_ENQUEUE != bm->buffer_state) {
 		/* This shall not happen. There must be a flaw in design. concurrency issue?
 		 */
-		return -IPC_STREAMER_ECUNCURRENCY;
+		return -IPC_STREAMER_ECONCURRENCY;
 	}
 
 	err = chunk_enqueue(ri, bm, buffer, true);
@@ -255,7 +255,7 @@ static int write_proxy(void *ctx, uint8_t *source_bufer, size_t *size)
 		if (READY_TO_ENQUEUE != bm->buffer_state) {
 			/* This shall not happen. There must be a flaw in design. concurrency issue?
 			 */
-			return -IPC_STREAMER_ECUNCURRENCY;
+			return -IPC_STREAMER_ECONCURRENCY;
 		}
 
 		size_t to_be_copied = CONFIG_SUIT_STREAM_IPC_PROVIDER_BUFFER_SIZE - bm->chunk_size;
@@ -329,7 +329,7 @@ static int seek_proxy(void *ctx, size_t offset)
 			/* This shall not happen. There must be a flaw in design. concurrency issue?
 			 *  as max one buffer can be READY_TO_ENQUEUE
 			 */
-			return -IPC_STREAMER_ECUNCURRENCY;
+			return -IPC_STREAMER_ECONCURRENCY;
 		}
 
 		bm->offset_in_image = offset;

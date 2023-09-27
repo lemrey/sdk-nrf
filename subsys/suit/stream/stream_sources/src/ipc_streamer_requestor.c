@@ -379,7 +379,7 @@ static image_request_state_t *allocate_image_request_state(const uint8_t *resour
 
 	irs->stream_session_id = last_used_stream_session_id;
 
-	/* Initialized with 0 so suit_ssf_server_missing_image_notify will be executed immediatly
+	/* Initialized with 0 so suit_ssf_server_missing_image_notify will be executed immediately
 	 */
 	irs->last_request_ts = 0;
 	/* Initialized with current time stamp to avoid immediate inter-chunk timeout

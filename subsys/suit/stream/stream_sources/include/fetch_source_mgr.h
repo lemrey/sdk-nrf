@@ -20,14 +20,14 @@
  * @brief Fetch source callback function.
  *
  * @param[in]   resource_id		Resource identifier, typically in form of URI. Fetch source
- *interprets it. In case if fetch source is unable to retrive requested resource, i.e. due to
+ *interprets it. In case if fetch source is unable to retrieve requested resource, i.e. due to
  *unsupported protocol, it shall just fail, avoiding any prior call to function pointers provided in
  *sink.
  *
- * @param[in]   resource_id_length	Lenght of resource_id, in bytes
+ * @param[in]   resource_id_length	Length of resource_id, in bytes
  *
  * @param[in]   sink			Function pointers to pass image chunk to next chunk
- *processing element. Non-'null' write_ptr is allways required. Non-'null' seek_ptr may be required
+ *processing element. Non-'null' write_ptr is always required. Non-'null' seek_ptr may be required
  *by selected fetch sources.
  *
  * @return 0 on success, negative value otherwise
@@ -53,10 +53,10 @@ int fetch_source_register(fetch_source_mgr_fetch_request_fct request_fct);
  *
  * @param[in]   resource_id		Resource identifier, typically in form of URI.
  *
- * @param[in]   resource_id_length	Lenght of resource_id, in bytes
+ * @param[in]   resource_id_length	Length of resource_id, in bytes
  *
  * @param[in]   sink			Function pointers to pass image chunk to next chunk
- *processing element. Non-'null' write_ptr is allways required. Non-'null' seek_ptr may be required
+ *processing element. Non-'null' write_ptr is always required. Non-'null' seek_ptr may be required
  *by selected fetch sources
  *
  * @return 0 on success, negative value otherwise
