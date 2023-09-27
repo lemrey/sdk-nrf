@@ -110,6 +110,8 @@ bool suit_plat_decode_component_number(struct zcbor_string *component_id, uint32
 	res = res && zcbor_bstr_decode(state, &component_type);
 	res = res && zcbor_bstr_start_decode(state, NULL);
 	res = res && zcbor_uint32_decode(state, number);
+	res = res && zcbor_bstr_end_decode(state);
+	res = res && zcbor_list_end_decode(state);
 
 	return res;
 }
@@ -146,6 +148,7 @@ bool suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
 	res = res && zcbor_tstr_decode(state, &component_type);
 	res = res && zcbor_bstr_end_decode(state);
 	res = res && zcbor_bstr_decode(state, &class_id_bstr);
+	res = res && zcbor_list_end_decode(state);
 
 	if (res) {
 		if ((component_type.len != strlen("INSTLD_MFST")) ||

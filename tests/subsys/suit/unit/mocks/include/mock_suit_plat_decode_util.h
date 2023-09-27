@@ -9,7 +9,6 @@
 
 #include <zephyr/fff.h>
 #include <mock_globals.h>
-
 #include <suit_plat_decode_util.h>
 
 /* suit_plat_decode_util.c */

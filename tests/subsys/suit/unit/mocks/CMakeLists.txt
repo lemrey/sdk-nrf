@@ -39,9 +39,8 @@ endif()
 
 if (CONFIG_MOCK_SUIT_UTILS)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_UTILS)
-  target_include_directories(testbinary PRIVATE
-    ${SUIT_SUBSYS_DIR}/utils/include
-  )
+  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/utils/include)
+  target_include_directories(testbinary PRIVATE $ENV{ZEPHYR_BASE}/../modules/lib/zcbor/include)
 endif()
 
 if (NOT CONFIG_MOCK_SUIT_PLAT_DECODE_UTIL)
@@ -61,5 +60,15 @@ endif()
 
 if (CONFIG_MOCK_SUIT_CRYPTO)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_CRYPTO)
-  target_include_directories(testbinary PRIVATE $ENV{ZEPHYR_BASE}/../modules/crypto/mbedtls//include)
+  target_include_directories(testbinary PRIVATE $ENV{ZEPHYR_BASE}/../modules/crypto/mbedtls/include)
+endif()
+
+if (CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID)
+  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLAT_CHECK_COMPONENT_ID)
+  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
+endif()
+
+if (CONFIG_MOCK_SUIT_PLATFORM)
+  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLATFORM)
+  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
 endif()

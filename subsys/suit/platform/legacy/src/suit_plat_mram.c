@@ -87,11 +87,11 @@ static int init(suit_component_t handle)
 
 	/* Verify that the component ID has the correct format. */
 	if (suit_plat_component_id_get(handle, &component_id) != SUIT_SUCCESS) {
-		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID + 200;
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	if (!suit_plat_decode_component_id(component_id, &cpu_id, &invoke_address, &size)) {
-		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID + 100;
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	if (suit_plat_component_impl_data_set(handle, &component_instance_meta[index]) !=

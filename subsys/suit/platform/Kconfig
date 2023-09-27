@@ -57,10 +57,16 @@ config SUIT_DIGEST
 config SUIT_AUTHENTICATE
 	bool "Enable message/data authentication"
 	depends on SUIT_CRYPTO
+	depends on SUIT_CHECK_COMPONENT_ID
 	select PSA_WANT_ALG_SHA_256 if SOC_FAMILY_NRF
 	select PSA_WANT_ALG_SHA_512 if SOC_FAMILY_NRF
 	select PSA_WANT_ALG_ECDSA if SOC_FAMILY_NRF
 	select PSA_WANT_ECC_TWISTED_EDWARDS_255 if SOC_FAMILY_NRF
+
+config SUIT_CHECK_COMPONENT_ID
+	bool "Enable component ID check aginst supported manifest class IDs"
+	depends on SUIT_UTILS
+	depends on SUIT_MCI
 
 rsource "sink_selector/Kconfig"
 endif # SUIT_PLATFORM

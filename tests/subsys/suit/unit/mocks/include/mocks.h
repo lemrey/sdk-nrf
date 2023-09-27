@@ -30,6 +30,10 @@
 #include <mock_suit_crypto.h>
 #endif
 
+#ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID
+#include <mock_suit plat_check_component_id.h>
+#endif /* CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID */
+
 static inline void mocks_reset(void)
 {
 #ifdef CONFIG_MOCK_SUIT_PROCESSOR
@@ -51,6 +55,9 @@ static inline void mocks_reset(void)
 #ifdef CONFIG_MOCK_SUIT_CRYPTO
 	mock_suit_crypto_reset();
 #endif
-}
 
+#ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID
+	mock_suit_plat_check_component_id_reset();
+#endif
+}
 #endif /* MOCK_H__ */

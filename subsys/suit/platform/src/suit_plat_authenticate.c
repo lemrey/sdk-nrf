@@ -8,6 +8,7 @@
 #include <suit_platform.h>
 #include <suit_mci.h>
 #include <suit_plat_decode_util.h>
+#include <suit_plat_check_component_id.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(suit_plat_authenticate, CONFIG_SUIT_LOG_LEVEL);
@@ -76,7 +77,6 @@ int suit_plat_authenticate_manifest(struct zcbor_string *manifest_component_id,
 
 int suit_plat_authorize_unsigned_manifest(struct zcbor_string *manifest_component_id)
 {
-#ifdef CONFIG_SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
 	suit_manifest_class_id_t *class_id;
 
 	if ((manifest_component_id == NULL) ||
@@ -106,7 +106,24 @@ int suit_plat_authorize_unsigned_manifest(struct zcbor_string *manifest_componen
 	}
 
 	return SUIT_ERR_AUTHENTICATION;
-#else  /* CONFIG_SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS */
- 	return SUIT_ERR_AUTHENTICATION;
-#endif /* CONFIG_SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS */
+}
+
+int suit_plat_authorize_component_id(struct zcbor_string *manifest_component_id,
+				     struct zcbor_string *component_id)
+{
+	suit_manifest_class_id_t *class_id;
+
+	if ((manifest_component_id == NULL) || (component_id == NULL) ||
+	    (manifest_component_id->value == NULL) || (manifest_component_id->len == 0) ||
+	    (component_id->value == NULL) || (component_id->len == 0)) {
+		return SUIT_ERR_DECODING;
+	}
+
+	/* Check if component ID is a manifest class */
+	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+		LOG_ERR("Component ID is not a manifest class");
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	return suit_plat_check_component_id(class_id, component_id);
 }
