@@ -20,6 +20,7 @@ tests:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
     extra_args: CONF_FILE=prj_singlecore.conf SHIELD="sensor_hub"
+                DTC_OVERLAY_FILE="configuration/nrf54h20dk_nrf54h20_cpuapp@soc1/app_singlecore.overlay"
   applications.machine_learning.sensor_hub.zdebug:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -36,7 +37,7 @@ tests:
     extra_args: CONF_FILE=prj_singlecore.conf
                 SHIELD="sensor_hub"
                 OVERLAY_CONFIG=prj_release.conf
-                DTC_OVERLAY_FILE=configuration/nrf54h20dk_nrf54h20_cpuapp@soc1/app_release.overlay
+                DTC_OVERLAY_FILE="configuration/nrf54h20dk_nrf54h20_cpuapp@soc1/app_release.overlay;configuration/nrf54h20dk_nrf54h20_cpuapp@soc1/app_singlecore.overlay"
   applications.machine_learning.sensor_hub.power_consumption_test:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
@@ -54,6 +55,7 @@ tests:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: ci_build
     extra_args: CONF_FILE=prj_singlecore.conf SHIELD="sensor_hub"
+                DTC_OVERLAY_FILE="configuration/nrf54h20dk_nrf54h20_cpuapp@soc1/app_singlecore.overlay"
     extra_configs:
       - CONFIG_EMULATOR_FPGA=y
   applications.machine_learning.zdebug.fpga:

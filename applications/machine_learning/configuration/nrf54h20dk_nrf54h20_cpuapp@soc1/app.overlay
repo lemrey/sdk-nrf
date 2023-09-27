@@ -76,9 +76,9 @@
 	};
 };
 
-/* Required for nrf54's sensor hub shield. */
+/* Reserve a peripheral for the default (multicore) configuration. */
 &spi130 {
-	memory-regions = <&ram3x_cpuapp>;
+	status = "reserved";
 };
 
 &mram0 {
