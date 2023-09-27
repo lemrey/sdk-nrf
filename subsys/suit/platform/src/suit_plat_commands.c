@@ -73,36 +73,6 @@ int suit_plat_retrive_manifest(suit_component_t component_handle, uint8_t **enve
 	return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 }
 
-int suit_plat_check_image_match(suit_component_t image_handle, enum suit_cose_alg alg_id,
-				struct zcbor_string *digest, size_t image_size)
-{
-	const struct suit_component_impl *impl = suit_plat_component_impl_get(image_handle);
-	uint8_t *read_address = NULL;
-	size_t read_size = 0;
-	struct zcbor_string payload;
-
-	/* Check the component implementation. */
-	if (impl == NULL) {
-		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
-	}
-
-	/* Check if the driver supports direct read mode. */
-	if (impl->read_address == NULL) {
-		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
-	}
-
-	/* Get the pointer to the readable data. */
-	read_size = impl->read_address(image_handle, &read_address);
-	if (read_size < image_size) {
-		return SUIT_ERR_UNAVAILABLE_PAYLOAD;
-	}
-
-	payload.value = read_address;
-	payload.len = image_size;
-
-	return suit_plat_check_digest(alg_id, digest, &payload);
-}
-
 /** File a report on a command result. */
 int suit_plat_report(unsigned int rep_policy, struct suit_report *report)
 {

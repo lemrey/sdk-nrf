@@ -15,6 +15,7 @@ zephyr_library_sources(src/plat_components.c)
 zephyr_library_sources(src/plat_swap.c)
 zephyr_library_sources(src/plat_fetch.c)
 zephyr_library_sources(src/plat_copy.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_CHECK_IMAGE_MATCH src/plat_check_image_match.c)
 
 zephyr_library_sources(src/plat_invoke.c)
 zephyr_library_sources_ifdef(CONFIG_SOC_NRF54H20_CPUSEC src/runners/run_nrf54h20.c)
