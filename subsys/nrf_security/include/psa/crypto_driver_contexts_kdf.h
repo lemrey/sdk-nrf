@@ -9,7 +9,9 @@
 
 #include "psa/crypto_driver_common.h"
 
-/* Include the context structure definitions for enabled drivers. */
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+#include "cracen_psa_primitives.h"
+#endif
 
 #if defined(PSA_NEED_OBERON_KDF_DRIVER)
 #include "oberon_kdf.h"
@@ -46,6 +48,9 @@ typedef union {
 	unsigned int dummy; /* Make sure this union is always non-empty */
 #ifdef PSA_NEED_OBERON_KDF_DRIVER
 	oberon_key_derivation_operation_t oberon_kdf_ctx;
+#endif
+#ifdef PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN
+	cracen_key_derivation_operation_t cracen_kdf_ctx;
 #endif
 } psa_driver_key_derivation_context_t;
 

@@ -2268,6 +2268,13 @@ psa_status_t psa_driver_wrapper_key_derivation_setup(psa_key_derivation_operatio
 	}
 	return status;
 #endif /* PSA_NEED_OBERON_KDF_DRIVER */
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+	status = cracen_key_derivation_setup(&operation->ctx.cracen_kdf_ctx, alg);
+	if (status == PSA_SUCCESS) {
+		operation->id = PSA_CRYPTO_CRACEN_DRIVER_ID;
+	}
+	return status;
+#endif /* PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN */
 
 	(void)status;
 	(void)operation;
@@ -2284,6 +2291,10 @@ psa_driver_wrapper_key_derivation_set_capacity(psa_key_derivation_operation_t *o
 	case PSA_CRYPTO_OBERON_DRIVER_ID:
 		return oberon_key_derivation_set_capacity(&operation->ctx.oberon_kdf_ctx, capacity);
 #endif /* PSA_NEED_OBERON_KDF_DRIVER */
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+	case PSA_CRYPTO_CRACEN_DRIVER_ID:
+		return cracen_key_derivation_set_capacity(&operation->ctx.cracen_kdf_ctx, capacity);
+#endif /* PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN */
 
 	default:
 		(void)capacity;
@@ -2302,6 +2313,11 @@ psa_driver_wrapper_key_derivation_input_bytes(psa_key_derivation_operation_t *op
 		return oberon_key_derivation_input_bytes(&operation->ctx.oberon_kdf_ctx, step, data,
 							 data_length);
 #endif /* PSA_NEED_OBERON_KDF_DRIVER */
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+	case PSA_CRYPTO_CRACEN_DRIVER_ID:
+		return cracen_key_derivation_input_bytes(&operation->ctx.cracen_kdf_ctx, step, data,
+							 data_length);
+#endif /* PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN */
 
 	default:
 		(void)step;
@@ -2321,6 +2337,11 @@ psa_driver_wrapper_key_derivation_input_integer(psa_key_derivation_operation_t *
 		return oberon_key_derivation_input_integer(&operation->ctx.oberon_kdf_ctx, step,
 							   value);
 #endif /* PSA_NEED_OBERON_KDF_DRIVER */
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+	case PSA_CRYPTO_CRACEN_DRIVER_ID:
+		return cracen_key_derivation_input_integer(&operation->ctx.cracen_kdf_ctx, step,
+							   value);
+#endif /* PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN */
 
 	default:
 		(void)step;
@@ -2339,6 +2360,11 @@ psa_driver_wrapper_key_derivation_output_bytes(psa_key_derivation_operation_t *o
 		return oberon_key_derivation_output_bytes(&operation->ctx.oberon_kdf_ctx, output,
 							  output_length);
 #endif /* PSA_NEED_OBERON_KDF_DRIVER */
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+	case PSA_CRYPTO_CRACEN_DRIVER_ID:
+		return cracen_key_derivation_output_bytes(&operation->ctx.cracen_kdf_ctx, output,
+							  output_length);
+#endif /* PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN */
 
 	default:
 		(void)output;
@@ -2354,6 +2380,10 @@ psa_status_t psa_driver_wrapper_key_derivation_abort(psa_key_derivation_operatio
 	case PSA_CRYPTO_OBERON_DRIVER_ID:
 		return oberon_key_derivation_abort(&operation->ctx.oberon_kdf_ctx);
 #endif /* PSA_NEED_OBERON_KDF_DRIVER */
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN)
+	case PSA_CRYPTO_CRACEN_DRIVER_ID:
+		return cracen_key_derivation_abort(&operation->ctx.cracen_kdf_ctx);
+#endif /* PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN */
 
 	default:
 		return PSA_SUCCESS;
