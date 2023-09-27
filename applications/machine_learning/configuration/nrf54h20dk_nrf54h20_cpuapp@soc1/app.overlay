@@ -76,9 +76,11 @@
 	};
 };
 
-/* Reserve a peripheral for the default (multicore) configuration. */
+/* Reserve peripheral for cpuppr in the default (multicore) configuration. */
 &spi130 {
 	status = "reserved";
+	/* Configure IRQ to be forwarded to CPUPPR (13). */
+	global-irqs = <421 421 13>;
 };
 
 &mram0 {

@@ -8,6 +8,7 @@
 
 &spi130 {
 	memory-regions = <&ram3x_cpuapp>;
-	/* Override the default (multicore) configuration status. */
+	/* Override the default (multicore) configuration. */
 	status = "okay";
+	/delete-property/ global-irqs;
 };
