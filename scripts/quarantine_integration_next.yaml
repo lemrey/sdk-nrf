@@ -2541,6 +2541,7 @@
   platforms:
     - nrf5340dk_nrf5340_cpuapp
     - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf52840dk_nrf52840
   comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
@@ -2548,6 +2549,7 @@
   platforms:
     - nrf5340dk_nrf5340_cpuapp
     - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf52dk_nrf52832
   comment: "Configurations excluded to limit resources usage in integration builds"
 
 - scenarios:
