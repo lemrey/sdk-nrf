@@ -884,6 +884,7 @@ static int cmd_carriers_set(const struct shell *shell, size_t argc, char **argv)
 {
 	if (argc < 2) {
 		shell_print(shell, "%s all", argv[0]);
+		shell_print(shell, "  All carriers except AT&T");
 		shell_print(shell, "%s <id1> <id2> ...", argv[0]);
 		for (int i = 0; i < ARRAY_SIZE(carriers_enabled_map); i++) {
 			shell_print(shell, "  %d = %s", i, carriers_enabled_map[i].name);

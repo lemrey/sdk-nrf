@@ -633,7 +633,7 @@ static int do_carrier_event_log_log_data(void)
 	char data[CONFIG_SLM_CARRIER_APP_DATA_BUFFER_LEN] = {0};
 	int size = CONFIG_SLM_CARRIER_APP_DATA_BUFFER_LEN;
 
-	int ret = util_string_get(&at_param_list, 2, data, &size);
+	int ret = util_string_get(&slm_at_param_list, 2, data, &size);
 
 	if (ret) {
 		return ret;

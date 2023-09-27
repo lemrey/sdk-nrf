@@ -45,7 +45,7 @@ typedef void (*lwm2m_os_thread_entry_t)(void *p1, void *p2, void *p3);
 /**
  * @brief Maximum number of semaphores that the system must support.
  */
-#define LWM2M_OS_MAX_SEM_COUNT (2 + (LWM2M_OS_MAX_WORK_QS * 2))
+#define LWM2M_OS_MAX_SEM_COUNT (4 + (LWM2M_OS_MAX_WORK_QS * 2))
 
 typedef int lwm2m_os_sem_t;
 
