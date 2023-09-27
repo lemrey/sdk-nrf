@@ -10,7 +10,7 @@ LOG_MODULE_REGISTER(suit_plat_driver_com, CONFIG_SUIT_LOG_LEVEL);
 
 /*
  * It is assumed that in future, sets of vid_uuid_raw and cid_uuid_raw will be stored securely
- * and selected for comparision based on component "type".
+ * and selected for comparison based on component "type".
  * In such case check_vid and check_cid should be common for all drivers.
  * Also current defined in code vid_uuid_raw and cid_uuid_raw can be considered common.
  */

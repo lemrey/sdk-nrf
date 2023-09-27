@@ -77,7 +77,7 @@ static void *test_suit_setup(void)
 		DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
 
 	err = flash_erase(flash_dev, FLASH_SIMULATOR_BASE_OFFSET, FLASH_SIMULATOR_FLASH_SIZE);
-	zassert_equal(0, err, "Unable to erase flash area befor test execution");
+	zassert_equal(0, err, "Unable to erase flash area before test execution");
 #endif /* CONFIG_ARCH_POSIX */
 
 	return NULL;

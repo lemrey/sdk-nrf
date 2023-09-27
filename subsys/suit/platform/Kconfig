@@ -21,7 +21,7 @@ rsource "legacy/Kconfig"
 endif # SUIT_LEGACY_PLATFORM
 
 config SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
-	bool "Accept envelopes wth unsigned manifests"
+	bool "Accept envelopes with unsigned manifests"
 	default y if !ZTEST && !SUIT_ENVELOPE_SIGN
 	select EXPERIMENTAL
 	help

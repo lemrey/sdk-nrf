@@ -36,7 +36,7 @@ int suit_plat_check_invoke(suit_component_t image_handle, struct zcbor_string *i
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	/* Check if component type supports invokation */
+	/* Check if component type supports invocation */
 	switch (component_type) {
 	case SUIT_COMPONENT_TYPE_MEM:
 		/* memory-mapped */
@@ -72,7 +72,7 @@ int suit_plat_invoke(suit_component_t image_handle, struct zcbor_string *invoke_
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	/* Check if component type supports invokation */
+	/* Check if component type supports invocation */
 	switch (component_type) {
 	case SUIT_COMPONENT_TYPE_MEM:
 		/* memory-mapped */

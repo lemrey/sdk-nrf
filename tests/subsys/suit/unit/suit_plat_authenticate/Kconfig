@@ -8,6 +8,6 @@
 rsource "../mocks/Kconfig"
 
 config SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
-	bool "Accept envelopes wth unsigned manifests"
+	bool "Accept envelopes with unsigned manifests"
 
 source "Kconfig.zephyr"

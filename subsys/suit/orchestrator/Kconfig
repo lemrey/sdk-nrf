@@ -15,7 +15,7 @@ menuconfig SUIT_ORCHESTRATOR
 if SUIT_ORCHESTRATOR
 
 config SUIT_UPDATE_REBOOT_ENABLED
-	bool "Reboot the system after successfull execution of the update path"
+	bool "Reboot the system after successful execution of the update path"
 	default y if IS_SECURE_DOMAIN_FW
 	depends on REBOOT
 

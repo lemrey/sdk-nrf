@@ -32,7 +32,7 @@ int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *diges
 	}
 
 	if ((payload->value == NULL) || (payload->len == 0)) {
-		LOG_ERR("Ivalid payload");
+		LOG_ERR("Invalid payload");
 		return SUIT_ERR_DECODING;
 	}
 

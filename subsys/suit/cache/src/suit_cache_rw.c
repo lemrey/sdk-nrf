@@ -171,7 +171,7 @@ static int initialize_partition(struct suit_cache_partition_ext *part)
 /**
  * @brief Get cache partition of specified id
  *
- * @param partition_id Integer from partition label fromm dts.
+ * @param partition_id Integer from partition label from dts.
  *		For example if partition label is suit_cache_3 than 3 is partition id.
  * @return struct suit_cache_partition_ext* In case of success pointer to partition or
  *		NULL if requested partition was not found

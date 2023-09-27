@@ -26,10 +26,10 @@ int digest_sink_get(struct stream_sink *sink, psa_algorithm_t algorithm,
 /**
  * @brief Check if digest matches expected digest value
  *
- * @note A sink has to be initialzed with digest_sink_get function call.
+ * @note A sink has to be initialized with digest_sink_get function call.
  * @note Then data intended for digest calculation has to be fed in using sink's write API function
  * call(s).
- * @note Finaly this function can be called to finilize digest calculation and perform its
+ * @note Finally this function can be called to finilize digest calculation and perform its
  * verification.
  *
  * @param[in] ctx Context of a sink used for digest calculation

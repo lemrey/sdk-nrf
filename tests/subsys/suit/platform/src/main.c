@@ -45,7 +45,7 @@ static void test_impl_selector(void)
 		"Suit component implementation should be NULL for unsupported component type");
 
 	/* [h'MEM', h'02', h'1A00080000', h'1A00000008'] */
-	/* Mdified to be malformed: the second byte containing type substring length modified: 0x44
+	/* Modified to be malformed: the second byte containing type substring length modified: 0x44
 	 * => 0x46
 	 */
 	uint8_t invalid_value[] = {0x84, 0x46, 0x63, 'M',  'E',	 'M',  0x41, 0x02, 0x45, 0x1A,

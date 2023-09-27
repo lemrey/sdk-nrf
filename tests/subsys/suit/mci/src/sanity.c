@@ -102,7 +102,7 @@ static void test_output_buffer_too_small(void)
 	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
 	zassert_equal(
 		rc, 0,
-		"mci_get_supported_manifest_class_ids returned (%d), isn't %d manifests enaugh?!",
+		"mci_get_supported_manifest_class_ids returned (%d), isn't %d manifests enough?!",
 		rc, OUTPUT_MAX_SIZE);
 	supported_manifest_count = output_size;
 
@@ -126,7 +126,7 @@ static void test_output_buffer_too_small(void)
 
 	output_size = OUTPUT_MAX_SIZE;
 	rc = mci_get_invoke_order(result_uuid, &output_size);
-	zassert_equal(rc, 0, "mci_get_invoke_order returned (%d), isn't %d manifests enaugh?!", rc,
+	zassert_equal(rc, 0, "mci_get_invoke_order returned (%d), isn't %d manifests enough?!", rc,
 		      OUTPUT_MAX_SIZE);
 	invokable_manifest_count = output_size;
 

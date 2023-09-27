@@ -191,7 +191,7 @@ static int check_urot_activated(uint8_t *buf, size_t size)
 }
 
 /* NOTE: Size means size of the SDFW binary to be updated,
- * excluding Signed Manifest preceeding it within update candidate */
+ * excluding Signed Manifest preceding it within update candidate */
 static int write(void *ctx, uint8_t *buf, size_t *size)
 {
 	LOG_DBG("buf: %p", (void *)buf);
