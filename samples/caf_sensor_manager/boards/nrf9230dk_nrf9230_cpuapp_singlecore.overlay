@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+ /{
+	chosen {
+		zephyr,console = &uart136;
+	};
+
+	allocatable_ram {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Configure RAM3x region.
+		 * This is done to ensure correct UICR generation.
+		 */
+		ram3x_app: memory@2fc00000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc00000 DT_SIZE_K(32)>;
+			perm-read;
+			perm-write;
+		};
+	};
+
+	sensor_stub: sensor_stub {
+		compatible = "nordic,sensor-stub";
+		generator = "sensor_stub_gen";
+		status = "okay";
+	};
+
+	agg0: agg0 {
+		compatible = "caf,aggregator";
+		sensor_descr = "accel_sim_xyz";
+		buf_data_length = <240>;
+		sample_size = <3>;
+		status = "okay";
+	};
+};
+
+/* ram3x_cpuapp buffer is used by App core UART driver. */
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+&uart136 {
+	status = "okay";
+	memory-regions = <&ram3x_cpuapp>;
+};
