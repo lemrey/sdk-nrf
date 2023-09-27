@@ -213,5 +213,6 @@ int fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sin
 		}
 	}
 
+	close_session(session);
 	return -1;
 }
