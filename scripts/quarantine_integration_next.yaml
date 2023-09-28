@@ -2806,3 +2806,12 @@
     - nrf52dk_nrf52832
     - nrf9160dk_nrf9160_ns
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - nrf5340_audio.macros_test
+    - nrf5340_audio.data_fifo_test
+    - nrf5340_audio.tone_test
+    - nrf5340_audio.contin_array_test
+  platforms:
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
