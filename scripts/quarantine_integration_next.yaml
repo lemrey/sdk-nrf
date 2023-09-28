@@ -2825,3 +2825,17 @@
   platforms:
     - native_posix
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - regions.little_fs
+    - regions.nvs_storage
+    - regions.settings_storage
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - regions.settings_storage_tfm
+  platforms:
+    - nrf5340dk_nrf5340_cpuapp_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
