@@ -64,7 +64,7 @@
 	mram1: mram@e1b4000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
 		reg = < 0xe1b4000 DT_SIZE_K(304) >;
-		erase-block-size = < 0x1000 >;
+		erase-block-size = < 0x400 >;
 		/* Hardcoded inside the soc_flash_nrf_mram.c (MRAM_WORD_SIZE) */
 		write-block-size = < 0x10 >;
 

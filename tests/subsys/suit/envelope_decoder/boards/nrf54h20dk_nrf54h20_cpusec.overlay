@@ -5,16 +5,20 @@
  */
 
 / {
-	rng_sim: rng_sim {
-		status = "okay";
-		compatible = "nordic,entropy-prng";
-		label = "ENTROPY_0";
-	};
-
 	chosen {
-		zephyr,entropy = &rng_sim;
+		sdfw,mramc = &mramc;
+
+		sdfw,tdd-spu = &spu200;
+		sdfw,grtc-spu = &spu133;
+
+		sdfw,gpio-spu = &spu131;
+		zephyr,entropy = &cracen;
 		zephyr,console = &uart137;
 	};
+};
+
+&cracen {
+	status = "okay";
 };
 
 &ram3x_cpusec {
@@ -65,4 +69,20 @@
 			};
 		};
 	};
+};
+
+&spu131 {
+	status = "okay";
+};
+
+&spu133 {
+	status = "okay";
+};
+
+&spu137 {
+	status = "okay";
+};
+
+&spu200 {
+	status = "okay";
 };
