@@ -19,3 +19,4 @@ The following user guides introduce important concepts to consider when developi
    app_dev/testing_unity_cmock/index
    app_dev/working_with_fem/index
    app_dev/wifi_coex/index
+   app_dev/use_gpio_pin_directly
