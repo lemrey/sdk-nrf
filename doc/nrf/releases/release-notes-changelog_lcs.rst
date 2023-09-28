@@ -195,7 +195,13 @@ No changes since the latest nRF Connect SDK release.
 Other samples
 -------------
 
-No changes since the latest nRF Connect SDK release.
+* Added the nRF9230 support for the following samples:
+
+  * :ref:`multicore_hello_world` sample
+  * :ref:`app_event_manager` sample
+  * :ref:`ipc_service` sample
+  * :ref:`event_manager_proxy` sample
+  * :ref:`caf_sensor_manager_sample` sample
 
 Devicetree configuration
 ========================
