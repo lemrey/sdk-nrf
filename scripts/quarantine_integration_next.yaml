@@ -2783,3 +2783,26 @@
     - nrf9160dk_nrf9160_ns
     - thingy91_nrf9160_ns
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.app_event_manager_profiler_tracer
+  platforms:
+    - nrf21540dk_nrf52840
+    - nrf52dk_nrf52832
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.nrf_profiler
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf21540dk_nrf52840
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - nrf_profiler.core
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
