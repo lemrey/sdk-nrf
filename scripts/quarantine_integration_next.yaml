@@ -2739,3 +2739,24 @@
     - nrf52840dk_nrf52840
     - nrf9160dk_nrf9160
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.edge_impulse.wrapper
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+    - qemu_cortex_m3
+  comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - sample.ei_data_forwarder
+  platforms:
+    - nrf52dk_nrf52832
+    - nrf52840dk_nrf52840
+    - nrf5340dk_nrf5340_cpuapp
+    - nrf5340dk_nrf5340_cpuapp_ns
+    - nrf9160dk_nrf9160_ns
+  comment: "Configurations excluded to limit resources usage in integration builds"
