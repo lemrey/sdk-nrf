@@ -2815,3 +2815,13 @@
   platforms:
     - qemu_cortex_m3
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - hw_id.device_id
+    - hw_id.uuid
+    - hw_id.imei
+    - hw_id.ble
+    - hw_id.net
+  platforms:
+    - native_posix
+  comment: "Configurations excluded to limit resources usage in integration builds"
