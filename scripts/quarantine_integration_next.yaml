@@ -2839,3 +2839,11 @@
   platforms:
     - nrf5340dk_nrf5340_cpuapp_ns
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - flash_patch.flash_patch_on
+    - flash_patch.flash_patch_off
+  platforms:
+    - nrf52833dk_nrf52833
+    - nrf52840dk_nrf52840
+  comment: "Configurations excluded to limit resources usage in integration builds"
