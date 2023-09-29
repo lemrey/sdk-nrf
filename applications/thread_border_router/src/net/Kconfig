@@ -1,0 +1,22 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config NRF_TBR_ROUTE_IPV4
+    bool "Route IPv4 packets"
+    default y if OPENTHREAD_NAT64_BORDER_ROUTING
+    imply NET_PKT_FILTER
+    imply NET_PKT_FILTER_IPV4_HOOK
+    help
+      Enable IPv4 packets routing between interfaces.
+
+if NRF_TBR_ROUTE_IPV4
+
+module = NRF_TBR_ROUTEV4
+module-dep = LOG
+module-str = IPv4 packets routing
+source "subsys/logging/Kconfig.template.log_config"
+
+endif

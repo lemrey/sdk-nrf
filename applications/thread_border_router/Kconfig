@@ -74,5 +74,6 @@ module-help = Enables nRF TBR log messages.
 source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
 
 source "${ZEPHYR_BASE}/../nrf/applications/thread_border_router/Kconfig.defaults"
+rsource "src/net/Kconfig"
 
 endif #NRF_TBR
