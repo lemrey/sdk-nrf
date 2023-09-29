@@ -252,12 +252,6 @@
   comment: "Compilation error in nrfx_twis.c"
 
 - scenarios:
-    - applications.thread_border_router.application
-  platforms:
-    - nrf54h20dk_nrf54h20_cpuapp@soc1
-  comment: "Compilation warnings in infra_if.c"
-
-- scenarios:
     - applications.zigbee_weather_station.*
     - applications.matter_weather_station.*
     - applications.homekit.weather_station.hdfu.debug
