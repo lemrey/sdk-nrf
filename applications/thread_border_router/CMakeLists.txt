@@ -21,4 +21,5 @@ target_sources(app PRIVATE
 	src/tbr.c
 	src/shell.c
 	src/platform/infra_if.c
+	src/utils/utils.c
 )
