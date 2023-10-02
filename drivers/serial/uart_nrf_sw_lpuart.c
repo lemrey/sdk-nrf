@@ -1101,10 +1101,11 @@ static int api_config_get(const struct device *dev, struct uart_config *cfg)
 	}
 
 static const struct lpuart_config lpuart_config = {
-	.req_pin = NRF_GPIO_PIN_MAP(DT_GPIO_PIN(LPUART_NODE, req_pin_gpios),
-				    DT_PROP(GPIO_CTLR(req_pin_gpios), port)),
-	.rdy_pin = NRF_GPIO_PIN_MAP(DT_GPIO_PIN(LPUART_NODE, rdy_pin_gpios),
-				    DT_PROP(GPIO_CTLR(rdy_pin_gpios), port))
+	.req_pin = NRF_GPIO_PIN_MAP(DT_PROP(GPIO_CTLR(req_pin_gpios), port),
+				    DT_GPIO_PIN(LPUART_NODE, req_pin_gpios)),
+	.rdy_pin = NRF_GPIO_PIN_MAP(DT_PROP(GPIO_CTLR(rdy_pin_gpios), port),
+				    DT_GPIO_PIN(LPUART_NODE, rdy_pin_gpios))
+
 };
 
 static struct lpuart_data lpuart_data;
