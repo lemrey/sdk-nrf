@@ -202,7 +202,9 @@ void AppTask::IdentifyStartHandler(Identify *)
 	AppEvent event;
 	event.Type = AppEventType::IdentifyStart;
 	event.Handler = [](const AppEvent &) {
+#if defined(CONFIG_PWM)
 		WindowCovering::Instance().GetLiftIndicator().SuppressOutput();
+#endif
 		sIdentifyLED.Blink(LedConsts::kIdentifyBlinkRate_ms);
 	};
 	PostEvent(event);
@@ -214,7 +216,9 @@ void AppTask::IdentifyStopHandler(Identify *)
 	event.Type = AppEventType::IdentifyStop;
 	event.Handler = [](const AppEvent &) {
 		sIdentifyLED.Set(false);
+#if defined(CONFIG_PWM)
 		WindowCovering::Instance().GetLiftIndicator().ApplyLevel();
+#endif
 	};
 	PostEvent(event);
 }

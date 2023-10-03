@@ -22,7 +22,7 @@ using namespace ::chip::Credentials;
 using namespace ::chip::DeviceLayer;
 using namespace chip::app::Clusters::WindowCovering;
 
-#ifdef CONFIG_DK_LIBRARY
+#if defined(CONFIG_PWM)
 static const struct pwm_dt_spec sLiftPwmDevice = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led1));
 static const struct pwm_dt_spec sTiltPwmDevice = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led2));
 #endif
@@ -34,7 +34,7 @@ WindowCovering::WindowCovering()
 	mLiftLED.Init(LIFT_STATE_LED);
 	mTiltLED.Init(TILT_STATE_LED);
 
-#ifdef CONFIG_DK_LIBRARY
+#if defined(CONFIG_PWM)
 	if (mLiftIndicator.Init(&sLiftPwmDevice, 0, 255) != 0) {
 		LOG_ERR("Cannot initialize the lift indicator");
 	}
@@ -258,9 +258,17 @@ void WindowCovering::SetBrightness(MoveType aMoveType, uint16_t aPosition)
 {
 	uint8_t brightness = PositionToBrightness(aPosition, aMoveType);
 	if (aMoveType == MoveType::LIFT) {
+#if defined(CONFIG_PWM)
 		mLiftIndicator.InitiateAction(PWMDevice::LEVEL_ACTION, 0, &brightness);
+#else
+		mLiftLED.Set(static_cast<bool>(brightness));
+#endif
 	} else if (aMoveType == MoveType::TILT) {
+#if defined(CONFIG_PWM)
 		mTiltIndicator.InitiateAction(PWMDevice::LEVEL_ACTION, 0, &brightness);
+#else
+		mTiltLED.Set(static_cast<bool>(brightness));
+#endif
 	}
 }
 
@@ -268,6 +276,7 @@ uint8_t WindowCovering::PositionToBrightness(uint16_t aPosition, MoveType aMoveT
 {
 	AbsoluteLimits pwmLimits{};
 
+#if defined(CONFIG_PWM)
 	if (aMoveType == MoveType::LIFT) {
 		pwmLimits.open = mLiftIndicator.GetMinLevel();
 		pwmLimits.closed = mLiftIndicator.GetMaxLevel();
@@ -275,6 +284,10 @@ uint8_t WindowCovering::PositionToBrightness(uint16_t aPosition, MoveType aMoveT
 		pwmLimits.open = mTiltIndicator.GetMinLevel();
 		pwmLimits.closed = mTiltIndicator.GetMaxLevel();
 	}
+#else
+	pwmLimits.open = 0;
+	pwmLimits.closed = 255;
+#endif
 
 	return Percent100thsToValue(pwmLimits, aPosition);
 }

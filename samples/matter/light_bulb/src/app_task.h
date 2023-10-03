@@ -36,7 +36,23 @@ public:
 	CHIP_ERROR StartApp();
 
 	void UpdateClusterState();
+#if defined(CONFIG_PWM)
 	PWMDevice &GetPWMDevice() { return mPWMDevice; }
+#else
+	void SetLedWidget(LEDWidget *ledWidget)
+	{
+		if (ledWidget) {
+			mLedWidget = ledWidget;
+		}
+	}
+
+	LEDWidget *GetLedWidget(){
+		if(mLedWidget){
+			return mLedWidget;
+		}
+		return nullptr;
+	}
+#endif
 
 	static void IdentifyStartHandler(Identify *);
 	static void IdentifyStopHandler(Identify *);
@@ -69,7 +85,11 @@ private:
 
 	FunctionEvent mFunction = FunctionEvent::NoneSelected;
 	bool mFunctionTimerActive = false;
+#if defined(CONFIG_PWM)
 	PWMDevice mPWMDevice;
+#else
+	LEDWidget *mLedWidget;
+#endif
 #if CONFIG_CHIP_FACTORY_DATA
 	chip::DeviceLayer::FactoryDataProvider<chip::DeviceLayer::InternalFlashFactoryData> mFactoryDataProvider;
 #endif

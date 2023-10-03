@@ -8,7 +8,9 @@
 
 #include "app_config.h"
 #include "led_util.h"
+#if defined(CONFIG_PWM)
 #include "pwm_device.h"
+#endif
 
 #include <platform/CHIPDeviceLayer.h>
 
@@ -75,7 +77,7 @@ bool sIsNetworkEnabled = false;
 bool sHaveBLEConnections = false;
 bool sIsTriggerEffectActive = false;
 
-#ifdef CONFIG_DK_LIBRARY
+#if defined(CONFIG_PWM)
 const struct pwm_dt_spec sLightPwmDevice = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led1));
 #endif
 
@@ -194,13 +196,15 @@ CHIP_ERROR AppTask::Init()
 	uint8_t maxLightLevel = kDefaultMaxLevel;
 	Clusters::LevelControl::Attributes::MaxLevel::Get(kLightEndpointId, &maxLightLevel);
 
-#ifdef CONFIG_DK_LIBRARY
+#if defined(CONFIG_PWM)
 	ret = mPWMDevice.Init(&sLightPwmDevice, minLightLevel, maxLightLevel, maxLightLevel);
 	if (ret != 0) {
 		return chip::System::MapErrorZephyr(ret);
 	}
-#endif
 	mPWMDevice.SetCallbacks(ActionInitiated, ActionCompleted);
+#else
+	SetLedWidget(&sIdentifyLED);
+#endif
 
 	/* Initialize CHIP server */
 #if CONFIG_CHIP_FACTORY_DATA
@@ -256,7 +260,9 @@ void AppTask::IdentifyStartHandler(Identify *)
 	AppEvent event;
 	event.Type = AppEventType::IdentifyStart;
 	event.Handler = [](const AppEvent &) {
+#if defined(CONFIG_PWM)
 		Instance().mPWMDevice.SuppressOutput();
+#endif
 		sIdentifyLED.Blink(LedConsts::kIdentifyBlinkRate_ms);
 	};
 	PostEvent(event);
@@ -268,7 +274,9 @@ void AppTask::IdentifyStopHandler(Identify *)
 	event.Type = AppEventType::IdentifyStop;
 	event.Handler = [](const AppEvent &) {
 		sIdentifyLED.Set(false);
+#if defined(CONFIG_PWM)
 		Instance().mPWMDevice.ApplyLevel();
+#endif
 	};
 	PostEvent(event);
 }
@@ -280,7 +288,9 @@ void AppTask::TriggerEffectTimerTimeoutCallback(k_timer *timer)
 	sIsTriggerEffectActive = false;
 
 	sIdentifyLED.Set(false);
+#if defined(CONFIG_PWM)
 	Instance().mPWMDevice.ApplyLevel();
+#endif
 }
 
 void AppTask::TriggerIdentifyEffectHandler(Identify *identify)
@@ -298,7 +308,9 @@ void AppTask::TriggerIdentifyEffectHandler(Identify *identify)
 		k_timer_stop(&sTriggerEffectTimer);
 		k_timer_start(&sTriggerEffectTimer, K_MSEC(kTriggerEffectTimeout), K_NO_WAIT);
 
+#if defined(CONFIG_PWM)
 		Instance().mPWMDevice.SuppressOutput();
+#endif
 		sIdentifyLED.Blink(LedConsts::kIdentifyBlinkRate_ms);
 
 		break;
@@ -314,7 +326,9 @@ void AppTask::TriggerIdentifyEffectHandler(Identify *identify)
 			k_timer_stop(&sTriggerEffectTimer);
 
 			sIdentifyLED.Set(false);
+#if defined(CONFIG_PWM)
 			Instance().mPWMDevice.ApplyLevel();
+#endif
 		}
 		break;
 	default:
@@ -347,6 +361,7 @@ void AppTask::StartBLEAdvertisementAndLightActionEventHandler(const AppEvent &ev
 
 void AppTask::LightingActionEventHandler(const AppEvent &event)
 {
+#if defined(CONFIG_PWM)
 	PWMDevice::Action_t action = PWMDevice::INVALID_ACTION;
 	int32_t actor = 0;
 
@@ -361,6 +376,9 @@ void AppTask::LightingActionEventHandler(const AppEvent &event)
 	if (action != PWMDevice::INVALID_ACTION && Instance().mPWMDevice.InitiateAction(action, actor, NULL)) {
 		LOG_INF("Action is already in progress or active.");
 	}
+#else
+	sIdentifyLED.Set(!sIdentifyLED.GetState());
+#endif
 }
 
 void AppTask::ButtonEventHandler(uint32_t buttonState, uint32_t hasChanged)
@@ -650,17 +668,30 @@ void AppTask::DispatchEvent(const AppEvent &event)
 void AppTask::UpdateClusterState()
 {
 	SystemLayer().ScheduleLambda([this] {
+#if defined(CONFIG_PWM)
 		/* write the new on/off value */
 		EmberAfStatus status =
 			Clusters::OnOff::Attributes::OnOff::Set(kLightEndpointId, mPWMDevice.IsTurnedOn());
+#else
+		EmberAfStatus status =
+			Clusters::OnOff::Attributes::OnOff::Set(kLightEndpointId, sIdentifyLED.GetState());
+#endif
 
 		if (status != EMBER_ZCL_STATUS_SUCCESS) {
 			LOG_ERR("Updating on/off cluster failed: %x", status);
 		}
 
+#if defined(CONFIG_PWM)
 		/* write the current level */
 		status = Clusters::LevelControl::Attributes::CurrentLevel::Set(kLightEndpointId, mPWMDevice.GetLevel());
-
+#else
+		/* write the current level */
+		if (sIdentifyLED.GetState()) {
+			status = Clusters::LevelControl::Attributes::CurrentLevel::Set(kLightEndpointId, 100);
+		} else {
+			status = Clusters::LevelControl::Attributes::CurrentLevel::Set(kLightEndpointId, 0);
+		}
+#endif
 		if (status != EMBER_ZCL_STATUS_SUCCESS) {
 			LOG_ERR("Updating level cluster failed: %x", status);
 		}

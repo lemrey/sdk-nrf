@@ -7,7 +7,9 @@
 #pragma once
 
 #include "led_widget.h"
+#if defined(CONFIG_PWM)
 #include "pwm_device.h"
+#endif
 
 #include <app/clusters/window-covering-server/window-covering-server.h>
 
@@ -31,8 +33,10 @@ public:
 		return sInstance;
 	}
 
+#if defined(CONFIG_PWM)
 	PWMDevice &GetLiftIndicator() { return mLiftIndicator; }
 	PWMDevice &GetTiltIndicator() { return mTiltIndicator; }
+#endif
 
 	void StartMove(MoveType aMoveType);
 	void SetSingleStepTarget(OperationalState aDirection);
@@ -60,8 +64,10 @@ private:
 	MoveType mCurrentUIMoveType;
 	LEDWidget mLiftLED;
 	LEDWidget mTiltLED;
+#if defined(CONFIG_PWM)
 	PWMDevice mLiftIndicator;
 	PWMDevice mTiltIndicator;
+#endif
 	bool mInLiftMove{ false };
 	bool mInTiltMove{ false };
 };
