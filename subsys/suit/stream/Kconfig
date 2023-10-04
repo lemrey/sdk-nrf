@@ -6,7 +6,6 @@
 
 menuconfig SUIT_STREAM
         bool "Enable SUIT stream module"
-        depends on SUIT_UTILS
 
 if SUIT_STREAM
 
@@ -28,6 +27,7 @@ config SUIT_STREAM_SINK_RAM
 
 menuconfig SUIT_STREAM_SINK_SDFW
   bool "Enable SDFW sink"
+  depends on SUIT_UTILS
   depends on SOC_NRF54H20
   depends on !HW_REVISION_SOC1
   default y if IS_SECURE_DOMAIN_FW

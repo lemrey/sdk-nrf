@@ -29,26 +29,10 @@ config SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
 	  for development purposes only.
 	  Use SUIT_ENVELOPE_SIGN_SCRIPT to configure signing method.
 
-config SUIT_CRYPTO
-	bool "Enable crypto backend, suitable for SUIT components"
-	imply MBEDTLS if !SOC_FAMILY_NRF
-	imply NRF_SECURITY if SOC_FAMILY_NRF
-	imply MBEDTLS_ENABLE_HEAP if SOC_FAMILY_NRF
-
 config SUIT_DEVCONFIG
 	bool "Enable manifest authorization and installation"
 	depends on SUIT_STORAGE
 	depends on SUIT_MCI
-
-if MBEDTLS
-config SUIT_DEFAULT_MBEDTLS_CONFIG
-	bool "Use default mbedTLS configuration file"
-	default y
-	select MBEDTLS_USER_CONFIG_ENABLE
-
-config MBEDTLS_USER_CONFIG_FILE
-	default "user-tls-conf.h" if SUIT_DEFAULT_MBEDTLS_CONFIG
-endif
 
 config SUIT_DIGEST
 	bool "Enable digest calculation"
@@ -77,3 +61,19 @@ config SUIT_CHECK_IMAGE_MATCH
 
 rsource "sink_selector/Kconfig"
 endif # SUIT_PLATFORM
+
+config SUIT_CRYPTO
+	bool "Enable crypto backend, suitable for SUIT components"
+	imply MBEDTLS if !SOC_FAMILY_NRF
+	imply NRF_SECURITY if SOC_FAMILY_NRF
+	imply MBEDTLS_ENABLE_HEAP if SOC_FAMILY_NRF
+
+if MBEDTLS
+config SUIT_DEFAULT_MBEDTLS_CONFIG
+	bool "Use default mbedTLS configuration file"
+	default y
+	select MBEDTLS_USER_CONFIG_ENABLE
+
+config MBEDTLS_USER_CONFIG_FILE
+	default "user-tls-conf.h" if SUIT_DEFAULT_MBEDTLS_CONFIG
+endif
