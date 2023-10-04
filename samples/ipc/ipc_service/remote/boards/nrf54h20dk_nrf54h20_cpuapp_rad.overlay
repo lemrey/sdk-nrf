@@ -10,9 +10,17 @@
 	chosen {
 		zephyr,console = &uart135;
 	};
-};
 
-ipc0: &ipc_cpuapp { };
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-openamp-static-vrings";
+		memory-region = <&ipc_shm_area_cpuapp_cpurad>;
+		mboxes = <&bellboard_cpuapp 18>,
+			 <&bellboard_cpurad 12>;
+		mbox-names = "tx", "rx";
+		role = "remote";
+		status = "okay";
+	};
+};
 
 &ram3x_cpurad {
 	status = "okay";
