@@ -45,17 +45,14 @@ endif()
 
 if (NOT CONFIG_MOCK_SUIT_PLAT_DECODE_UTIL)
   target_sources(testbinary PRIVATE
-    ${SUIT_SUBSYS_DIR}/utils/src/suit_plat_decode_util.c
-  )
+    ${SUIT_SUBSYS_DIR}/utils/src/suit_plat_decode_util.c)
 endif()
 
 if (CONFIG_MOCK_SUIT_LOG)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_LOG_LEVEL)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_LOG_LEVEL_DBG)
   target_compile_options(test_interface INTERFACE -include ztest.h)
-  target_sources(testbinary PRIVATE 
-    $ENV{ZEPHYR_BASE}/subsys/logging/log_minimal.c
-  )
+  target_sources(testbinary PRIVATE $ENV{ZEPHYR_BASE}/subsys/logging/log_minimal.c)
 endif()
 
 if (CONFIG_MOCK_SUIT_CRYPTO)
@@ -63,7 +60,7 @@ if (CONFIG_MOCK_SUIT_CRYPTO)
   target_include_directories(testbinary PRIVATE $ENV{ZEPHYR_BASE}/../modules/crypto/mbedtls/include)
 endif()
 
-if (CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID)
+if (CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLAT_CHECK_COMPONENT_ID)
   target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
 endif()
@@ -76,4 +73,14 @@ endif()
 if (CONFIG_MOCK_SUIT_MEMPTR_STORAGE)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_MEMPTR_STORAGE)
   target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/memptr_storage/include)
+endif()
+
+if (CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY)
+  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY)
+  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
+endif()
+
+if (CONFIG_MOCK_SUIT_PLATFORM_INTERNAL)
+  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLATFORM)
+  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
 endif()

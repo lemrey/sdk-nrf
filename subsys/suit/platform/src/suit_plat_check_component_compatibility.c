@@ -8,8 +8,8 @@
 #include <suit_plat_decode_util.h>
 #include <suit_platform_internal.h>
 
-int suit_plat_check_component_id(suit_manifest_class_id_t *class_id,
-				 struct zcbor_string *component_id)
+int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *class_id,
+					    struct zcbor_string *component_id)
 {
 	suit_manifest_class_id_t *decoded_class_id;
 	suit_component_type_t type;

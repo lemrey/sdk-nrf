@@ -41,16 +41,25 @@ config SUIT_DIGEST
 config SUIT_AUTHENTICATE
 	bool "Enable message/data authentication"
 	depends on SUIT_CRYPTO
-	depends on SUIT_CHECK_COMPONENT_ID
+	depends on SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 	select PSA_WANT_ALG_SHA_256 if SOC_FAMILY_NRF
 	select PSA_WANT_ALG_SHA_512 if SOC_FAMILY_NRF
 	select PSA_WANT_ALG_ECDSA if SOC_FAMILY_NRF
 	select PSA_WANT_ECC_TWISTED_EDWARDS_255 if SOC_FAMILY_NRF
 
-config SUIT_CHECK_COMPONENT_ID
+config SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 	bool "Enable component ID check against supported manifest class IDs"
 	depends on SUIT_UTILS
 	depends on SUIT_MCI
+	
+config MAX_NUMBER_OF_MANIFEST_CLASS_IDS
+	int  "Maximum number of supported manifest class IDs that can be handled"
+	range 1 200
+	default 8 if SOC_NRF54H20
+	default 5 if SOC_NRF52840
+	default 5 if SOC_POSIX
+	help 
+		Check SUIT_STORAGE_N_ENVELOPES 
 
 config SUIT_CHECK_IMAGE_MATCH
   bool "Enable image digest verification"

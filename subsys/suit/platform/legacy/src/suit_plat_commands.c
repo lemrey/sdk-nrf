@@ -139,6 +139,51 @@ int suit_plat_invoke(suit_component_t image_handle, struct zcbor_string *invoke_
 	return impl->invoke(image_handle, invoke_args);
 }
 
+int suit_plat_check_vid(suit_component_t component_handle, struct zcbor_string *vid_uuid)
+{
+	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
+
+	if (impl == NULL) {
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	if (impl->check_vid == NULL) {
+		return SUIT_FAIL_CONDITION;
+	}
+
+	return impl->check_vid(component_handle, vid_uuid);
+}
+
+int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *cid_uuid)
+{
+	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
+
+	if (impl == NULL) {
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	if (impl->check_cid == NULL) {
+		return SUIT_FAIL_CONDITION;
+	}
+
+	return impl->check_cid(component_handle, cid_uuid);
+}
+
+int suit_plat_check_did(suit_component_t component_handle, struct zcbor_string *did_uuid)
+{
+	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
+
+	if (impl == NULL) {
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	if (impl->check_did == NULL) {
+		return SUIT_FAIL_CONDITION;
+	}
+
+	return impl->check_did(component_handle, did_uuid);
+}
+
 int suit_plat_check_image_match(suit_component_t image_handle, enum suit_cose_alg alg_id,
 				struct zcbor_string *digest, size_t image_size)
 {

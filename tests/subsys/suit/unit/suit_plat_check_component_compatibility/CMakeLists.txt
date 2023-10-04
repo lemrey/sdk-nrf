@@ -12,5 +12,5 @@ include(../cmake/test_template.cmake)
 
 target_sources(testbinary PRIVATE
   src/main.c
-  ${SUIT_SUBSYS_DIR}/platform/src/suit_plat_check_component_id.c
+  ${SUIT_SUBSYS_DIR}/platform/src/suit_plat_check_component_compatibility.c
 )

@@ -1105,7 +1105,6 @@ static const struct lpuart_config lpuart_config = {
 				    DT_GPIO_PIN(LPUART_NODE, req_pin_gpios)),
 	.rdy_pin = NRF_GPIO_PIN_MAP(DT_PROP(GPIO_CTLR(rdy_pin_gpios), port),
 				    DT_GPIO_PIN(LPUART_NODE, rdy_pin_gpios))
-
 };
 
 static struct lpuart_data lpuart_data;

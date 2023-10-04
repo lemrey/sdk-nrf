@@ -30,9 +30,13 @@
 #include <mock_suit_crypto.h>
 #endif
 
-#ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID
-#include <mock_suit plat_check_component_id.h>
-#endif /* CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID */
+#ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
+#include <mock_suit plat_check_component_compatibility.h>
+#endif /* CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY */
+
+#ifdef CONFIG_MOCK_SUIT_PLATFORM_INTERNAL
+#include <mock_suit_platform_internal.h>
+#endif
 
 #ifdef CONFIG_MOCK_SUIT_PLATFORM
 #include <mock_suit_platform_internal.h>
@@ -64,8 +68,12 @@ static inline void mocks_reset(void)
 	mock_suit_crypto_reset();
 #endif
 
-#ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID
-	mock_suit_plat_check_component_id_reset();
+#ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
+	mock_suit_plat_check_component_compatibility_reset();
+#endif
+
+#ifdef CONFIG_MOCK_SUIT_PLATFORM_INTERNAL
+	mock_suit_platform_internal_reset();
 #endif
 
 #ifdef CONFIG_MOCK_SUIT_PLATFORM

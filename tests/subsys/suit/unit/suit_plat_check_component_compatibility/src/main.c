@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/ztest.h>
-#include <suit_plat_check_component_id.h>
+#include <suit_plat_check_component_compatibility.h>
 #include <mocks.h>
 
 static suit_manifest_class_id_t sample_class_id = {{0xca, 0xd8, 0x52, 0x3a, 0xf8, 0x29, 0x5a, 0x9a,
@@ -265,11 +265,11 @@ mci_validate_memory_access_rights_correct_fake_func(const suit_manifest_class_id
 	return SUIT_SUCCESS;
 }
 
-ZTEST_SUITE(suit_plat_check_component_id_tests, NULL, NULL, test_before, NULL, NULL);
+ZTEST_SUITE(suit_plat_check_component_compatibility_tests, NULL, NULL, test_before, NULL, NULL);
 
-ZTEST(suit_plat_check_component_id_tests, test_null_manifest_class_id)
+ZTEST(suit_plat_check_component_compatibility_tests, test_null_manifest_class_id)
 {
-	int ret = suit_plat_check_component_id(NULL, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(NULL, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
@@ -294,9 +294,9 @@ ZTEST(suit_plat_check_component_id_tests, test_null_manifest_class_id)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_null_component_id)
+ZTEST(suit_plat_check_component_compatibility_tests, test_null_component_id)
 {
-	int ret = suit_plat_check_component_id(&sample_class_id, NULL);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, NULL);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
@@ -321,14 +321,14 @@ ZTEST(suit_plat_check_component_id_tests, test_null_component_id)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_invalid_component_id_null_value)
+ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_component_id_null_value)
 {
 	struct zcbor_string invalid_component_id = {
 		.value = NULL,
 		.len = 8,
 	};
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &invalid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &invalid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
@@ -353,14 +353,14 @@ ZTEST(suit_plat_check_component_id_tests, test_invalid_component_id_null_value)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_invalid_component_id_0_len)
+ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_component_id_0_len)
 {
 	struct zcbor_string invalid_component_id = {
 		.value = (const uint8_t *)0x1234,
 		.len = 0,
 	};
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &invalid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &invalid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
@@ -385,12 +385,12 @@ ZTEST(suit_plat_check_component_id_tests, test_invalid_component_id_0_len)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_invalid_validate_manifest_class_id)
+ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_validate_manifest_class_id)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
@@ -415,14 +415,14 @@ ZTEST(suit_plat_check_component_id_tests, test_invalid_validate_manifest_class_i
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_invalid_decode_component_type)
+ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_decode_component_type)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
@@ -447,7 +447,7 @@ ZTEST(suit_plat_check_component_id_tests, test_invalid_decode_component_type)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_decode_component_id)
+ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_decode_component_id)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -456,7 +456,7 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_decode_component
 	suit_plat_decode_component_id_fake.custom_fake =
 		suit_plat_decode_component_id_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
@@ -481,7 +481,7 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_decode_component
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_processor_start_rights)
+ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_processor_start_rights)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -492,7 +492,7 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_processor_start_
 	mci_validate_processor_start_rights_fake.custom_fake =
 		mci_validate_processor_start_rights_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
@@ -517,7 +517,7 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_processor_start_
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_memory_access_rights)
+ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_memory_access_rights)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -530,7 +530,7 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_memory_access_ri
 	mci_validate_memory_access_rights_fake.custom_fake =
 		mci_validate_memory_access_rights_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
@@ -555,7 +555,7 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_invalid_memory_access_ri
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_mem_type_OK)
+ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_OK)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -568,7 +568,7 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_OK)
 	mci_validate_memory_access_rights_fake.custom_fake =
 		mci_validate_memory_access_rights_correct_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication succeeds */
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
@@ -593,7 +593,8 @@ ZTEST(suit_plat_check_component_id_tests, test_mem_type_OK)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_special_type_invalid_decode_component_number)
+ZTEST(suit_plat_check_component_compatibility_tests,
+      test_special_type_invalid_decode_component_number)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -602,7 +603,7 @@ ZTEST(suit_plat_check_component_id_tests, test_special_type_invalid_decode_compo
 	suit_plat_decode_component_number_fake.custom_fake =
 		suit_plat_decode_component_number_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
@@ -627,7 +628,7 @@ ZTEST(suit_plat_check_component_id_tests, test_special_type_invalid_decode_compo
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests,
+ZTEST(suit_plat_check_component_compatibility_tests,
       test_special_type_invalid_validate_platform_specific_component_rights)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
@@ -639,7 +640,7 @@ ZTEST(suit_plat_check_component_id_tests,
 	mci_validate_platform_specific_component_rights_fake.custom_fake =
 		mci_validate_platform_specific_component_rights_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
@@ -664,7 +665,7 @@ ZTEST(suit_plat_check_component_id_tests,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_special_type_OK)
+ZTEST(suit_plat_check_component_compatibility_tests, test_special_type_OK)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -675,7 +676,7 @@ ZTEST(suit_plat_check_component_id_tests, test_special_type_OK)
 	mci_validate_platform_specific_component_rights_fake.custom_fake =
 		mci_validate_platform_specific_component_rights_correct_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication succeeds */
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
@@ -700,7 +701,8 @@ ZTEST(suit_plat_check_component_id_tests, test_special_type_OK)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_cand_mfst_type_invalid_decode_component_number)
+ZTEST(suit_plat_check_component_compatibility_tests,
+      test_cand_mfst_type_invalid_decode_component_number)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -709,7 +711,7 @@ ZTEST(suit_plat_check_component_id_tests, test_cand_mfst_type_invalid_decode_com
 	suit_plat_decode_component_number_fake.custom_fake =
 		suit_plat_decode_component_number_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
@@ -734,7 +736,7 @@ ZTEST(suit_plat_check_component_id_tests, test_cand_mfst_type_invalid_decode_com
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_cand_mfst_type_OK)
+ZTEST(suit_plat_check_component_compatibility_tests, test_cand_mfst_type_OK)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -743,7 +745,7 @@ ZTEST(suit_plat_check_component_id_tests, test_cand_mfst_type_OK)
 	suit_plat_decode_component_number_fake.custom_fake =
 		suit_plat_decode_component_number_correct_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication succeeds */
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
@@ -768,7 +770,7 @@ ZTEST(suit_plat_check_component_id_tests, test_cand_mfst_type_OK)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests,
+ZTEST(suit_plat_check_component_compatibility_tests,
       test_instld_mfst_type_invalid_suit_plat_decode_manifest_class_id)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
@@ -778,7 +780,7 @@ ZTEST(suit_plat_check_component_id_tests,
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_invalid_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
@@ -803,7 +805,7 @@ ZTEST(suit_plat_check_component_id_tests,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_instld_mfst_type_OK)
+ZTEST(suit_plat_check_component_compatibility_tests, test_instld_mfst_type_OK)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
@@ -812,7 +814,7 @@ ZTEST(suit_plat_check_component_id_tests, test_instld_mfst_type_OK)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication succeeds */
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
@@ -837,14 +839,14 @@ ZTEST(suit_plat_check_component_id_tests, test_instld_mfst_type_OK)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
-ZTEST(suit_plat_check_component_id_tests, test_unsupported_type_err)
+ZTEST(suit_plat_check_component_compatibility_tests, test_unsupported_type_err)
 {
 	mci_validate_manifest_class_id_fake.custom_fake =
 		mci_validate_manifest_class_id_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_unsupported_correct_fake_func;
 
-	int ret = suit_plat_check_component_id(&sample_class_id, &valid_component_id);
+	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
 	/* Manifest authentication fails */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
