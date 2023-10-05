@@ -48,7 +48,7 @@ config SUIT_AUTHENTICATE
 	select PSA_WANT_ECC_TWISTED_EDWARDS_255 if SOC_FAMILY_NRF
 
 config SUIT_CHECK_COMPONENT_ID
-	bool "Enable component ID check aginst supported manifest class IDs"
+	bool "Enable component ID check against supported manifest class IDs"
 	depends on SUIT_UTILS
 	depends on SUIT_MCI
 

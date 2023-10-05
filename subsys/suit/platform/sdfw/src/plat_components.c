@@ -57,7 +57,8 @@ int suit_plat_release_component_handle(suit_component_t handle)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (component_type == SUIT_COMPONENT_TYPE_CAND_IMG) {
+	if ((component_type == SUIT_COMPONENT_TYPE_CAND_IMG) ||
+	    (component_type == SUIT_COMPONENT_TYPE_CAND_MFST)) {
 		int ret = release_memptr_storage(component->impl_data);
 
 		if (ret != 0) {
@@ -105,7 +106,8 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (component_type == SUIT_COMPONENT_TYPE_CAND_IMG) {
+	if ((component_type == SUIT_COMPONENT_TYPE_CAND_IMG) ||
+	    (component_type == SUIT_COMPONENT_TYPE_CAND_MFST)) {
 		return get_memptr_storage(&component->impl_data);
 	}
 

@@ -43,19 +43,35 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 	switch (component_type) {
 #ifdef CONFIG_SUIT_STREAM_SINK_MEMPTR
 	case SUIT_COMPONENT_TYPE_CAND_IMG: { /* memptr_sink */
-
 		uint32_t number;
+		memptr_storage_handle handle;
 
 		if (!suit_plat_decode_component_number(component_id, &number)) {
-			LOG_ERR("Missing component id number");
+			LOG_ERR("Missing component id number in candidate image component");
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
 
+		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
+		if (ret != 0) {
+			LOG_ERR("Unable to get component data for candidate image (err: %d)", ret);
+			return ret;
+		}
+
+		return get_memptr_sink(sink, handle);
+	} break;
+	case SUIT_COMPONENT_TYPE_CAND_MFST: { /* memptr_sink */
+		uint32_t number;
 		memptr_storage_handle handle;
 
-		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
+		if (!suit_plat_decode_component_number(component_id, &number)) {
+			LOG_ERR("Missing component id number in candiadate manifest component");
+			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+		}
 
+		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
 		if (ret != 0) {
+			LOG_ERR("Unable to get component data for candidate manifest (err: %d)",
+				ret);
 			return ret;
 		}
 

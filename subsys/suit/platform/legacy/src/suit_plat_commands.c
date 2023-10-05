@@ -168,3 +168,9 @@ int suit_plat_check_image_match(suit_component_t image_handle, enum suit_cose_al
 
 	return suit_plat_check_digest(alg_id, digest, &payload);
 }
+
+int suit_plat_retrieve_manifest(suit_component_t component_handle, uint8_t **envelope_str,
+				size_t *envelope_len)
+{
+	return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+}

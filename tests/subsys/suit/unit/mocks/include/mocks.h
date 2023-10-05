@@ -34,6 +34,14 @@
 #include <mock_suit plat_check_component_id.h>
 #endif /* CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID */
 
+#ifdef CONFIG_MOCK_SUIT_PLATFORM
+#include <mock_suit_platform_internal.h>
+#endif /* CONFIG_MOCK_SUIT_PLATFORM */
+
+#ifdef CONFIG_MOCK_SUIT_MEMPTR_STORAGE
+#include <mock_suit_memptr_storage.h>
+#endif /* CONFIG_MOCK_SUIT_MEMPTR_STORAGE */
+
 static inline void mocks_reset(void)
 {
 #ifdef CONFIG_MOCK_SUIT_PROCESSOR
@@ -58,6 +66,14 @@ static inline void mocks_reset(void)
 
 #ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_ID
 	mock_suit_plat_check_component_id_reset();
+#endif
+
+#ifdef CONFIG_MOCK_SUIT_PLATFORM
+	mock_suit_platform_internal_reset();
+#endif
+
+#ifdef CONFIG_MOCK_SUIT_MEMPTR_STORAGE
+	mock_suit_memptr_storage_reset();
 #endif
 }
 #endif /* MOCK_H__ */

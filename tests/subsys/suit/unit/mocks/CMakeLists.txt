@@ -72,3 +72,8 @@ if (CONFIG_MOCK_SUIT_PLATFORM)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLATFORM)
   target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
 endif()
+
+if (CONFIG_MOCK_SUIT_MEMPTR_STORAGE)
+  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_MEMPTR_STORAGE)
+  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/memptr_storage/include)
+endif()

@@ -8,7 +8,7 @@
 #define SUIT_MEMPTR_STORAGE_H__
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 #define SUCCESS		   0

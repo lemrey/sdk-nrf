@@ -15,6 +15,7 @@ zephyr_library_sources(src/plat_components.c)
 zephyr_library_sources(src/plat_swap.c)
 zephyr_library_sources(src/plat_fetch.c)
 zephyr_library_sources(src/plat_copy.c)
+zephyr_library_sources(src/plat_retrieve_manifest.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_CHECK_IMAGE_MATCH src/plat_check_image_match.c)
 
 zephyr_library_sources(src/plat_invoke.c)
@@ -24,6 +25,7 @@ zephyr_library_sources_ifdef(CONFIG_SOC_POSIX src/runners/run_posix.c)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM suit_stream_sinks_interface)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM suit_stream_sources_interface)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_SINK_SELECTOR suit_sink_selector_interface)
+zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STORAGE suit_storage_interface)
 
 
 zephyr_library_link_libraries(suit_sdfw_platform)

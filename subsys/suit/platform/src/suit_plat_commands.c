@@ -67,12 +67,6 @@ int suit_plat_check_did(suit_component_t component_handle, struct zcbor_string *
 	return impl->check_did(component_handle, did_uuid);
 }
 
-int suit_plat_retrive_manifest(suit_component_t component_handle, uint8_t **envelope_str,
-			       size_t *envelope_len)
-{
-	return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
-}
-
 /** File a report on a command result. */
 int suit_plat_report(unsigned int rep_policy, struct suit_report *report)
 {
