@@ -239,7 +239,7 @@ manifest:
           compare-by-default: false
 
     - name: suit-processor
-      revision: 7a1f618f7515b02c18947bd38a3ec57444bc4f9e
+      revision: b6789cdb03a4ee768f6f200b07d940429869875b
       path: modules/lib/suit-processor
     - name: suit-generator
       revision: e691112283adc5f3242a801fb0f528456ca9c80d
