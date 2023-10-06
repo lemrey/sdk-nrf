@@ -217,7 +217,7 @@ int ppi_trace_dppi_ch_trace(uint32_t pin, uint32_t dppi_ch)
 	}
 
 	task_id = offsetof(NRF_GPIOTE_Type, TASKS_OUT[gpiote_ch]);
-	task = nrf_gpiote_task_address_get(NRF_GPIOTE, task_id);
+	task = nrf_gpiote_task_address_get(gpiote.p_reg, task_id);
 
 	*SUBSCRIBE_ADDR(task) = DPPIC_SUBSCRIBE_CHG_EN_EN_Msk | dppi_ch;
 
