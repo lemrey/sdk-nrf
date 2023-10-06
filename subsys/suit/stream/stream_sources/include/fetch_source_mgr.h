@@ -12,8 +12,8 @@
 /*
  * Fetch source manager allows for registration of multiple data sources. When fetch_source_stream
  * is called, fetch source manager iterates over registered fetch sources, calling respective
- * fetch_source_mgr_fetch_request_fct. Iteration will be broken if one of registered fetch sources
- * start to call any of stream_sink function pointers - see fetch_source_mgr_fetch_request_fct
+ * fetch_source_mgr_fetch_request_fn. Iteration will be broken if one of registered fetch sources
+ * start to call any of stream_sink function pointers - see fetch_source_mgr_fetch_request_fn
  */
 
 /**
@@ -32,13 +32,13 @@
  *
  * @return 0 on success, negative value otherwise
  */
-typedef int (*fetch_source_mgr_fetch_request_fct)(const uint8_t *uri, size_t uri_length,
-						  struct stream_sink *sink);
+typedef int (*fetch_source_mgr_fetch_request_fn)(const uint8_t *uri, size_t uri_length,
+						 struct stream_sink *sink);
 
 /**
  * @brief Registers fetch source
  *
- * @param[in]   request_fct		Fetch source callback function. Fetch source manager will
+ * @param[in]   request_fn		Fetch source callback function. Fetch source manager will
  *iterate over registered callback functions as result of fetch_source_stream call. Attention! Order
  *of execution of callback functions is not guaranteed!
  *
@@ -46,7 +46,7 @@ typedef int (*fetch_source_mgr_fetch_request_fct)(const uint8_t *uri, size_t uri
  * @return 0 on success, negative value otherwise
  */
 
-int fetch_source_register(fetch_source_mgr_fetch_request_fct request_fct);
+int fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn);
 
 /**
  * @brief Streams an image from source to sink

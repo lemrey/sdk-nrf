@@ -13,7 +13,7 @@ typedef enum {
 } session_stage_t;
 
 typedef struct {
-	fetch_source_mgr_fetch_request_fct request_fct;
+	fetch_source_mgr_fetch_request_fn request_fn;
 
 } fetch_source_t;
 
@@ -102,10 +102,10 @@ static int write_proxy(void *ctx, uint8_t *buf, size_t *size)
 		session->stage = STAGE_IN_PROGRESS;
 	}
 
-	int (*client_write_fct)(void *ctx, uint8_t *buf, size_t *size) = session->client_sink.write;
+	int (*client_write_fn)(void *ctx, uint8_t *buf, size_t *size) = session->client_sink.write;
 	void *client_ctx = session->client_sink.ctx;
 
-	int err = client_write_fct(client_ctx, buf, size);
+	int err = client_write_fn(client_ctx, buf, size);
 
 	component_unlock();
 	return err;
@@ -127,23 +127,23 @@ static int seek_proxy(void *ctx, size_t offset)
 		session->stage = STAGE_IN_PROGRESS;
 	}
 
-	int (*client_seek_fct)(void *ctx, size_t offset) = session->client_sink.seek;
+	int (*client_seek_fn)(void *ctx, size_t offset) = session->client_sink.seek;
 	void *client_ctx = session->client_sink.ctx;
 
-	int err = client_seek_fct(client_ctx, offset);
+	int err = client_seek_fn(client_ctx, offset);
 
 	component_unlock();
 	return err;
 }
 
-int fetch_source_register(fetch_source_mgr_fetch_request_fct request_fct)
+int fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn)
 {
 	component_lock();
 
 	for (int i = 0; i < sizeof(sources) / sizeof(fetch_source_t); i++) {
 		fetch_source_t *source = &sources[i];
-		if (NULL == source->request_fct) {
-			source->request_fct = request_fct;
+		if (NULL == source->request_fn) {
+			source->request_fn = request_fn;
 			component_unlock();
 			return 0;
 		}
@@ -181,7 +181,7 @@ int fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sin
 		component_lock();
 
 		fetch_source_t *source = &sources[i];
-		fetch_source_mgr_fetch_request_fct request_fct = source->request_fct;
+		fetch_source_mgr_fetch_request_fn request_fn = source->request_fn;
 
 		if (0 == ++last_used_session_id) {
 			++last_used_session_id;
@@ -192,9 +192,9 @@ int fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sin
 
 		component_unlock();
 
-		if (NULL != request_fct) {
+		if (NULL != request_fn) {
 
-			int err = request_fct(uri, uri_length, &session_sink);
+			int err = request_fn(uri, uri_length, &session_sink);
 
 			if (0 == err) {
 				close_session(session);

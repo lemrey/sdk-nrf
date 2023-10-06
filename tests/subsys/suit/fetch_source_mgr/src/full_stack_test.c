@@ -44,7 +44,7 @@ typedef struct {
 
 } access_pattern_t;
 
-static int fetch_request_fct(const uint8_t *uri, size_t uri_length, struct stream_sink *sink)
+static int fetch_request_fn(const uint8_t *uri, size_t uri_length, struct stream_sink *sink)
 {
 	zassert_equal(uri_length, strlen(requested_resource_id), "uri_length (%d)", uri_length);
 	zassert_mem_equal(uri, requested_resource_id, strlen(requested_resource_id));
@@ -115,7 +115,7 @@ void test_full_stack(void)
 	rc = ipc_streamer_provider_init();
 	zassert_equal(rc, 0, "ipc_streamer_provider_init returned (%d)", rc);
 
-	rc = fetch_source_register(fetch_request_fct);
+	rc = fetch_source_register(fetch_request_fn);
 	zassert_equal(rc, 0, "fetch_source_register returned (%d)", rc);
 
 	struct stream_sink test_sink = {

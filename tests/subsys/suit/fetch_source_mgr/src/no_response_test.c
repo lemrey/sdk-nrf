@@ -19,11 +19,11 @@ static int ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
 	return 0;
 }
 
-static int missing_image_notify_fct(const uint8_t *resource_id, size_t resource_id_length,
-				    uint32_t stream_session_id, void *context)
+static int missing_image_notify_fn(const uint8_t *resource_id, size_t resource_id_length,
+				   uint32_t stream_session_id, void *context)
 {
 	zassert_equal(context, missing_image_notify_requested_ctx,
-		      "missing_image_notify_fct context (%08x)", context);
+		      "missing_image_notify_fn context (%08x)", context);
 	zassert_equal(resource_id_length, strlen(requested_resource_id), "resource_id_length (%d)",
 		      resource_id_length);
 	zassert_mem_equal(resource_id, requested_resource_id, strlen(requested_resource_id));
@@ -49,7 +49,7 @@ void test_ipc_streamer_requestor_no_response(void)
 	int rc = 0;
 
 	ipc_streamer_missing_image_evt_unsubscribe();
-	rc = ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fct,
+	rc = ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fn,
 						      missing_image_notify_requested_ctx);
 	zassert_equal(rc, 0, "ipc_streamer_missing_image_evt_subscribe returned (%d)", rc);
 
@@ -59,7 +59,7 @@ void test_ipc_streamer_requestor_no_response(void)
 	zassert_equal(write_chunk_count, 0, "write_chunk_count (%d)", write_chunk_count);
 
 	/* taking requesting_period_ms = 1s and inter_chunk_timeout_ms = 10s
-	 * ~10 missing_image_notify_fct() calls is expected.
+	 * ~10 missing_image_notify_fn() calls is expected.
 	 */
 	zassert_between_inclusive(missing_image_notify_count, 9, 11,
 				  "missing_image_notify_count (%d)", missing_image_notify_count);

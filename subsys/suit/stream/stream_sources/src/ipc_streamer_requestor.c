@@ -94,10 +94,10 @@ static image_request_state_t image_request_state = {
 	.stage = STAGE_IDLE,
 };
 
-static ipc_streamer_chunk_status_notify_fct chunk_status_notify_fct = NULL;
+static ipc_streamer_chunk_status_notify_fn chunk_status_notify_fn = NULL;
 static void *chunk_status_notify_context = 0;
 
-static ipc_streamer_missing_image_notify_fct missing_image_notify_fct = NULL;
+static ipc_streamer_missing_image_notify_fn missing_image_notify_fn = NULL;
 static void *missing_image_notify_context = 0;
 
 static inline void lock_image_request_state()
@@ -184,16 +184,16 @@ static int get_non_empty_chunk_slot_count(image_request_state_t *irs)
 static void chunk_status_notify(image_request_state_t *irs)
 {
 
-	ipc_streamer_chunk_status_notify_fct notify_fct = chunk_status_notify_fct;
+	ipc_streamer_chunk_status_notify_fn notify_fn = chunk_status_notify_fn;
 	void *context = chunk_status_notify_context;
 	uint32_t stream_session_id = irs->stream_session_id;
 
-	if (NULL == notify_fct) {
+	if (NULL == notify_fn) {
 		return;
 	}
 
 	unlock_image_request_state();
-	notify_fct(stream_session_id, context);
+	notify_fn(stream_session_id, context);
 	lock_image_request_state();
 }
 
@@ -201,15 +201,15 @@ static void chunk_status_notify(image_request_state_t *irs)
  */
 static void missing_image_notify(image_request_state_t *irs)
 {
-	ipc_streamer_missing_image_notify_fct notify_fct = missing_image_notify_fct;
+	ipc_streamer_missing_image_notify_fn notify_fn = missing_image_notify_fn;
 	void *context = missing_image_notify_context;
 	const uint8_t *resource_id = irs->resource_id;
 	size_t resource_id_length = irs->resource_id_length;
 	uint32_t stream_session_id = irs->stream_session_id;
 
-	if (NULL != notify_fct) {
+	if (NULL != notify_fn) {
 		unlock_image_request_state();
-		notify_fct(resource_id, resource_id_length, stream_session_id, context);
+		notify_fn(resource_id, resource_id_length, stream_session_id, context);
 		lock_image_request_state();
 	}
 }
@@ -221,7 +221,7 @@ static void missing_image_notify(image_request_state_t *irs)
  * ipc_streamer_chunk_enqueue while other chunk is being processed, i.e. decrypting,
  * storing in non-volatile memory, and also to avoid potential deadlock between
  * ipc_streamer_chunk_enqueue,
- * and ipc_streamer_missing_image_notify_fct, ipc_streamer_chunk_status_notify_fct
+ * and ipc_streamer_missing_image_notify_fn, ipc_streamer_chunk_status_notify_fn
  */
 static int data_loop(image_request_state_t *irs)
 {
@@ -566,15 +566,15 @@ int ipc_streamer_chunk_status_req(uint32_t stream_session_id, ipc_streamer_chunk
 	return err;
 }
 
-int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fct notify_fct,
+int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fn notify_fn,
 					    void *context)
 {
 	int err = 0;
 
 	lock_image_request_state();
 
-	if (NULL == chunk_status_notify_fct) {
-		chunk_status_notify_fct = notify_fct;
+	if (NULL == chunk_status_notify_fn) {
+		chunk_status_notify_fn = notify_fn;
 		chunk_status_notify_context = context;
 	} else {
 		err = -IPC_STREAMER_ENOSPACE;
@@ -588,20 +588,20 @@ int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fct
 void ipc_streamer_chunk_status_evt_unsubscribe(void)
 {
 	lock_image_request_state();
-	chunk_status_notify_fct = NULL;
+	chunk_status_notify_fn = NULL;
 	chunk_status_notify_context = 0;
 	unlock_image_request_state();
 }
 
-int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_fct notify_fct,
+int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_fn notify_fn,
 					     void *context)
 {
 	int err = 0;
 
 	lock_image_request_state();
 
-	if (NULL == missing_image_notify_fct) {
-		missing_image_notify_fct = notify_fct;
+	if (NULL == missing_image_notify_fn) {
+		missing_image_notify_fn = notify_fn;
 		missing_image_notify_context = context;
 	} else {
 		err = -IPC_STREAMER_ENOSPACE;
@@ -615,7 +615,7 @@ int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_f
 void ipc_streamer_missing_image_evt_unsubscribe(void)
 {
 	lock_image_request_state();
-	missing_image_notify_fct = NULL;
+	missing_image_notify_fn = NULL;
 	missing_image_notify_context = 0;
 	unlock_image_request_state();
 }

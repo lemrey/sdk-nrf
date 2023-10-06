@@ -261,8 +261,8 @@ static int ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
 	return 0;
 }
 
-static int missing_image_notify_fct(const uint8_t *resource_id, size_t resource_id_length,
-				    uint32_t stream_session_id, void *context)
+static int missing_image_notify_fn(const uint8_t *resource_id, size_t resource_id_length,
+				   uint32_t stream_session_id, void *context)
 {
 	zassert_equal(context, missing_image_notify_requested_ctx, "context (%08x)", context);
 	zassert_equal(resource_id_length, strlen(requested_resource_id), "resource_id_length (%d)",
@@ -283,7 +283,7 @@ static int missing_image_notify_fct(const uint8_t *resource_id, size_t resource_
 	return 0;
 }
 
-static int chunk_status_notify_fct(uint32_t stream_session_id, void *context)
+static int chunk_status_notify_fn(uint32_t stream_session_id, void *context)
 {
 	zassert_equal(context, chunk_status_notify_requested_ctx, "context (%08x)", context);
 	k_sem_give(&chunk_status_changed_sem);
@@ -310,12 +310,12 @@ void test_ipc_streamer_requestor(void)
 	zassert_equal(rc, 0, "ipc_streamer_requestor_init returned (%d)", rc);
 
 	ipc_streamer_chunk_status_evt_unsubscribe();
-	rc = ipc_streamer_chunk_status_evt_subscribe(chunk_status_notify_fct,
+	rc = ipc_streamer_chunk_status_evt_subscribe(chunk_status_notify_fn,
 						     chunk_status_notify_requested_ctx);
 	zassert_equal(rc, 0, "ipc_streamer_chunk_status_evt_subscribe returned (%d)", rc);
 
 	ipc_streamer_missing_image_evt_unsubscribe();
-	rc = ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fct,
+	rc = ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fn,
 						      missing_image_notify_requested_ctx);
 	zassert_equal(rc, 0, "ipc_streamer_missing_image_evt_unsubscribe returned (%d)", rc);
 

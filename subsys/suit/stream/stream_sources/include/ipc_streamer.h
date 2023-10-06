@@ -105,7 +105,7 @@ typedef struct {
  *
  *
  * @param[in]   stream_session_id	Session identifier - see
- *ipc_streamer_missing_image_notify_fct
+ *ipc_streamer_missing_image_notify_fn
  *
  * @param[in]   chunk_id		Chunk identifier assigned by streamer provider, not
  *interpreted by streamer requestor, but provided back as output of ipc_streamer_chunk_status_req
@@ -144,7 +144,7 @@ int ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id, ui
  *function will succeed eventually.
  *
  * @param[in]   stream_session_id	Session identifier - see
- *ipc_streamer_missing_image_notify_fct
+ *ipc_streamer_missing_image_notify_fn
  *
  * @param[out]  chunk_info		An array, holding information about chunks enqueued by
  *streamer requestor. At time when chunk is passed to streamer requestor - see
@@ -177,22 +177,22 @@ int ipc_streamer_chunk_status_req(uint32_t stream_session_id, ipc_streamer_chunk
  *
  * @return 0 on success, negative value in case of failure
  */
-typedef int (*ipc_streamer_chunk_status_notify_fct)(uint32_t stream_session_id, void *context);
+typedef int (*ipc_streamer_chunk_status_notify_fn)(uint32_t stream_session_id, void *context);
 
 /**
  * @brief Registers chunk status update notification function. Implemented individually by streamer
  *requestor and streamer requestor proxy.
  *
- * @param[in]   notify_fct		see ipc_streamer_chunk_status_notify_fct
+ * @param[in]   notify_fn		see ipc_streamer_chunk_status_notify_fn
  *
  * @param[in]   context			parameter not interpreted by streamer requestor or streamer
- *requestor proxy, provided back to ipc_streamer_chunk_status_notify_fct
+ *requestor proxy, provided back to ipc_streamer_chunk_status_notify_fn
  *
  * @return 0 on success,
  *		-IPC_STREAMER_ENOSPACE not enough space to register another notification function
  *
  */
-int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fct notify_fct,
+int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fn notify_fn,
 					    void *context);
 
 /**
@@ -218,24 +218,24 @@ void ipc_streamer_chunk_status_evt_unsubscribe(void);
  *
  * @return 0 on success, negative value in case of failure
  */
-typedef int (*ipc_streamer_missing_image_notify_fct)(const uint8_t *resource_id,
-						     size_t resource_id_length,
-						     uint32_t stream_session_id, void *context);
+typedef int (*ipc_streamer_missing_image_notify_fn)(const uint8_t *resource_id,
+						    size_t resource_id_length,
+						    uint32_t stream_session_id, void *context);
 
 /**
  * @brief Registers missing image notification function. Implemented individually by streamer
  *requestor and streamer requestor proxy.
  *
- * @param[in]   notify_fct		see ipc_streamer_missing_image_notify_fct
+ * @param[in]   notify_fn		see ipc_streamer_missing_image_notify_fn
  *
  * @param[in]   context			parameter not interpreted by streamer requestor or streamer
- *requestor proxy, provided back to ipc_streamer_missing_image_notify_fct
+ *requestor proxy, provided back to ipc_streamer_missing_image_notify_fn
  *
  * @return 0 on success,
  *		-IPC_STREAMER_ENOSPACE not enough space to register another notification function
  *
  */
-int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_fct notify_fct,
+int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_fn notify_fn,
 					     void *context);
 
 /**
