@@ -8,7 +8,7 @@ Getting started with the nRF54L15 PDK
    :depth: 2
 
 This page will get you started with your nRF54L15 PDK using the |NCS|.
-First, you will test if your PDK is working correctly by running the preflashed :ref:`PWM Blinky <zephyr:blink-led-sample>` sample.
+First, you will test if your PDK is working correctly by running the preflashed :ref:`Blinky <zephyr:blinky-sample>` sample.
 Once successfully completed, the instructions will guide you through how to configure, build, and program the :ref:`Hello World <zephyr:hello_world>` sample to the development kit, and how to read its logs.
 
 .. _ug_nrf54l15_gs_requirements:
