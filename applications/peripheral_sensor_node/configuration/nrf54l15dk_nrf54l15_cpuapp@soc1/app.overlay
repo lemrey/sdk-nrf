@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/ {
+	cpus {
+		cpu: cpu@0 {
+			/* Temporary change to 64Mhz.
+			 * Will be fixed by:
+			 * NRFX-3331
+			 * NRFX-4580
+			 */
+			clock-frequency = <DT_FREQ_M(64)>;
+		};
+	};
+};
