@@ -35,7 +35,7 @@ echo "Signing SUIT envelope using key_priv.pem ..."
 suit-generator sign --input-file sample.suit --private-key key_priv.pem --output-file sample_signed.suit
 generated_files+=("\tsigned binary envelope:\t\t\t$PWD/sample_signed.suit")
 echo "Converting binary envelope into C code ..."
-zcbor convert -c ../../../../../../modules/lib/suit-processor/cddl/manifest.cddl -c ../../../../../../modules/lib/suit-processor/cddl/trust_domains.cddl -i ./sample_signed.suit --input-as cbor -t SUIT_Envelope_Tagged -o sample_signed.suit.c --c-code-var-name manifest --c-code-columns 15
+zcbor convert -c ../../../../../modules/lib/suit-processor/cddl/manifest.cddl -c ../../../../../modules/lib/suit-processor/cddl/trust_domains.cddl -i ./sample_signed.suit --input-as cbor -t SUIT_Envelope_Tagged -o sample_signed.suit.c --c-code-var-name manifest --c-code-columns 15
 generated_files+=("\tsigned binary envelope as C code:\t$PWD/sample_signed.suit.c")
 echo "Done, following files have been created:"
 for file in "${generated_files[@]}"
