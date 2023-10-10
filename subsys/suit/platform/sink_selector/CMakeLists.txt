@@ -8,7 +8,7 @@ zephyr_interface_library_named(suit_sink_selector_interface)
 target_include_directories(suit_sink_selector_interface INTERFACE include)
 
 zephyr_library()
-zephyr_library_sources(src/sink_selector.c)
+zephyr_library_sources(src/sdfw_sink_selector.c)
 
 zephyr_library_link_libraries(suit)
 zephyr_library_link_libraries(suit_utils)

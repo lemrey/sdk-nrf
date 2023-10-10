@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-# SUIT SDFW Platform API
-zephyr_interface_library_named(suit_sdfw_platform)
-target_include_directories(suit_sdfw_platform INTERFACE include)
-target_link_libraries(suit_sdfw_platform INTERFACE suit)
+# SUIT APP Platform API
+zephyr_interface_library_named(suit_app_platform)
+target_include_directories(suit_app_platform INTERFACE include)
+target_link_libraries(suit_app_platform INTERFACE suit)
 
 zephyr_library()
 
@@ -18,14 +18,10 @@ zephyr_library_sources(src/plat_retrieve_manifest.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_CHECK_IMAGE_MATCH src/plat_check_image_match.c)
 
 zephyr_library_sources(src/plat_invoke.c)
-zephyr_library_sources_ifdef(CONFIG_SOC_NRF54H20_CPUSEC src/runners/run_nrf54h20.c)
-zephyr_library_sources_ifdef(CONFIG_SOC_POSIX src/runners/run_posix.c)
 
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM suit_stream_sinks_interface)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM suit_stream_sources_interface)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_SINK_SELECTOR suit_sink_selector_interface)
-zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STORAGE suit_storage_interface)
-
 
 zephyr_library_link_libraries(suit_sdfw_platform)
 zephyr_library_link_libraries(suit_utils)

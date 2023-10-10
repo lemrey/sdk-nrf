@@ -50,7 +50,6 @@ int suit_plat_release_component_handle(suit_component_t handle)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	/* If component is of type D (or C ?) release attached memptr_record */
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	if (!suit_plat_decode_component_type(&component->component_id, &component_type)) {
@@ -97,7 +96,6 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 	component->component_id.len = component_id->len;
 	component->in_use = true;
 
-	/* If component is of type D (or C ?) get and attach memptr_record */
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	if (!suit_plat_decode_component_type(component_id, &component_type)) {
@@ -209,6 +207,25 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 		if (err) {
 			return err;
 		}
+	}
+
+	return SUIT_SUCCESS;
+}
+
+int suit_plat_component_type_get(suit_component_t handle, suit_component_type_t *component_type)
+{
+	struct zcbor_string *component_id;
+
+	int ret = suit_plat_component_id_get(handle, &component_id);
+
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("suit_plat_component_id_get failed: %i", ret);
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+	if (!suit_plat_decode_component_type(component_id, component_type)) {
+		LOG_ERR("suit_plat_decode_component_type failed");
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	return SUIT_SUCCESS;

@@ -122,6 +122,9 @@ int suit_plat_component_impl_data_get(suit_component_t handle, void **impl_data)
 /** Return the full component ID associated with the component. */
 int suit_plat_component_id_get(suit_component_t handle, struct zcbor_string **component_id);
 
+/** Return component type based on component handle */
+int suit_plat_component_type_get(suit_component_t handle, suit_component_type_t *component_type);
+
 /** Select the component implementation, based on component ID.
  *
  *  @param[in]  component_id  The CBOR-encoded component identifier.

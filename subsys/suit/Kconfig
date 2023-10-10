@@ -9,6 +9,10 @@ menuconfig SUIT
 
 if SUIT
 
+config SUIT_PLATFORM_VARIANT_APP
+	bool "Set platform variant to application domain"
+	default y if SUIT_ENABLE_DEFAULTS_APP
+
 choice SUIT_ENABLE_DEFAULTS
 	prompt "Enable default SUIT modules"
 	default SUIT_ENABLE_DEFAULTS_NONE if ZTEST
