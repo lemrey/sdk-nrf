@@ -20,6 +20,7 @@ zephyr_library_sources_ifdef(CONFIG_SUIT_CHECK_IMAGE_MATCH src/plat_check_image_
 zephyr_library_sources(src/plat_invoke.c)
 zephyr_library_sources_ifdef(CONFIG_SOC_NRF54H20_CPUSEC src/runners/run_nrf54h20.c)
 zephyr_library_sources_ifdef(CONFIG_SOC_POSIX src/runners/run_posix.c)
+zephyr_library_sources_ifdef(CONFIG_SOC_NRF52840 src/runners/run_posix.c)
 
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM suit_stream_sinks_interface)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM suit_stream_sources_interface)

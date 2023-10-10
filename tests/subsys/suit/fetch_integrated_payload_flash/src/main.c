@@ -10,6 +10,7 @@
 
 #include <suit.h>
 #include <suit_platform.h>
+#include <suit_storage.h>
 
 #ifdef CONFIG_ARCH_POSIX
 #include <zephyr/drivers/flash.h>
@@ -104,6 +105,16 @@ ZTEST(fetch_integrated_payoad_flash_tests, test_suit_process)
 
 	err = suit_processor_init();
 	zassert_equal(err, 0, "Unable to initialise SUIT processor (err: %d)", err);
+
+	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
+	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
+
+	err = mci_get_supported_manifest_class_ids(
+		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
+	zassert_equal(0, err, "Failed to get list of supported manifest class IDs (%d)", err);
+
+	err = suit_storage_init(supported_class_ids, supported_class_ids_len);
+	zassert_equal(0, err, "Failed to init suit storage (%d)", err);
 
 	err = suit_process_sequence(manifest_buf, manifest_len, SUIT_SEQ_PARSE);
 	zassert_equal(err, 0, "Parsing SUIT envelope failed (err: %d)", err);
