@@ -20,15 +20,6 @@ if SUIT_LEGACY_PLATFORM
 rsource "legacy/Kconfig"
 endif # SUIT_LEGACY_PLATFORM
 
-config SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
-	bool "Accept envelopes with unsigned manifests"
-	default y if !ZTEST && !SUIT_ENVELOPE_SIGN
-	select EXPERIMENTAL
-	help
-	  This option should not be enabled in the final product and is meant
-	  for development purposes only.
-	  Use SUIT_ENVELOPE_SIGN_SCRIPT to configure signing method.
-
 config SUIT_DEVCONFIG
 	bool "Enable manifest authorization and installation"
 	depends on SUIT_STORAGE

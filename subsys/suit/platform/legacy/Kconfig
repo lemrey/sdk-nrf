@@ -4,6 +4,15 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+config SUIT_PLATFORM_ACCEPT_UNSIGNED_MANIFESTS
+	bool "Accept envelopes with unsigned manifests"
+	default y if !ZTEST && !SUIT_ENVELOPE_SIGN
+	select EXPERIMENTAL
+	help
+	  This option should not be enabled in the final product and is meant
+	  for development purposes only.
+	  Use SUIT_ENVELOPE_SIGN_SCRIPT to configure signing method.
+
 config SUIT_COMPONENT_RAMBUF
 	bool "Include RAM buffer as NVM suit component implementation"
 	depends on !SUIT_COMPONENT_MRAM
