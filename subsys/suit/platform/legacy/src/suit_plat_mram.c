@@ -10,10 +10,7 @@
 #include <suit_plat_decode_util.h>
 #include <suit_plat_driver_com.h>
 #include <zephyr/drivers/flash.h>
-#include <platform_mem_util.h>
-#ifdef CONFIG_FLASH_SIMULATOR
-#include <zephyr/drivers/flash/flash_simulator.h>
-#endif /* CONFIG_FLASH_SIMULATOR */
+#include <suit_plat_mem_util.h>
 #ifdef CONFIG_SDFW_RESET_HANDLING_ENABLED
 #include <reset_mgr.h>
 #endif /* CONFIG_SDFW_RESET_HANDLING_ENABLED */
@@ -32,19 +29,6 @@ struct component_instance_meta {
 
 static struct component_instance_meta component_instance_meta[CONFIG_SUIT_MAX_MRAM_COMPONENTS];
 static const struct device *fdev;
-
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-
-static void init_flash_sim(void)
-{
-	if (f_base_address == NULL) {
-		size_t f_size;
-
-		f_base_address = flash_simulator_get_memory(fdev, &f_size);
-	}
-}
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 static int get_free_slot_index(void)
 {
@@ -76,10 +60,6 @@ static int init(suit_component_t handle)
 	intptr_t invoke_address;
 	size_t size;
 	uint8_t index = get_free_slot_index();
-
-#ifdef CONFIG_FLASH_SIMULATOR
-	init_flash_sim();
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 	if (index < 0) {
 		return SUIT_ERR_CRASH;
@@ -145,15 +125,7 @@ static int read(suit_component_t handle, size_t offset, uint8_t *buf, size_t *le
 		}
 
 		if (buf != NULL) {
-#ifdef CONFIG_FLASH_SIMULATOR
-			/* Since flash addresses are unpredictable in case of flash simulator,
-			 * the flash offset is used inside component IDs, thus there is no need
-			 * to translate those values before passing them to the flash driver API.
-			 */
-			return flash_read(fdev, run_address + offset, buf, *len);
-#else  /* CONFIG_FLASH_SIMULATOR */
-			return flash_read(fdev, FLASH_OFFSET(run_address + offset), buf, *len);
-#endif /* CONFIG_FLASH_SIMULATOR */
+			return flash_read(fdev, suit_plat_get_nvm_offset((uint8_t *)(run_address + offset)), buf, *len);
 		}
 
 		return SUIT_SUCCESS;
@@ -195,15 +167,7 @@ static int write(suit_component_t handle, size_t offset, uint8_t *buf, size_t le
 			}
 		}
 
-#ifdef CONFIG_FLASH_SIMULATOR
-		/* Since flash addresses are unpredictable in case of flash simulator,
-		 * the flash offset is used inside component IDs, thus there is no need
-		 * to translate those values before passing them to the flash driver API.
-		 */
-		return flash_write(fdev, run_address + offset, buf, len);
-#else  /* CONFIG_FLASH_SIMULATOR */
-		return flash_write(fdev, FLASH_OFFSET(run_address + offset), buf, len);
-#endif /* CONFIG_FLASH_SIMULATOR */
+		return flash_write(fdev, suit_plat_get_nvm_offset((uint8_t *)(run_address + offset)), buf, len);
 	} else {
 		if (offset + len > cs->dry_read_size) {
 			cs->dry_read_size = offset + len;
@@ -259,18 +223,6 @@ static size_t read_address(suit_component_t handle, uint8_t **read_address)
 			return 0;
 		}
 
-#ifdef CONFIG_FLASH_SIMULATOR
-		size_t f_size;
-		void *f_base_address;
-
-		f_base_address = flash_simulator_get_memory(fdev, &f_size);
-		if ((size_t)*read_address >= f_size) {
-			read_address = NULL;
-			return 0;
-		}
-
-		*read_address = &(((uint8_t *)f_base_address)[(size_t)(*read_address)]);
-#endif /* CONFIG_FLASH_SIMULATOR */
 	}
 
 	return (read_address == NULL ? cs->dry_read_size : cs->read_size);

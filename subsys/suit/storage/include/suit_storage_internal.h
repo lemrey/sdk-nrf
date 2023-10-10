@@ -9,9 +9,9 @@
 
 #include <suit_storage.h>
 #include <zcbor_common.h>
-#include <platform_mem_util.h>
+#include <suit_plat_mem_util.h>
 
-#define SUIT_STORAGE_ADDRESS	FLASH_ADDRESS(SUIT_STORAGE_OFFSET)
+#define SUIT_STORAGE_ADDRESS	suit_plat_get_nvm_ptr(SUIT_STORAGE_OFFSET)
 #define SUIT_STORAGE_OFFSET	FIXED_PARTITION_OFFSET(suit_storage)
 #define SUIT_STORAGE_SIZE	FIXED_PARTITION_SIZE(suit_storage)
 #define SUIT_STORAGE_WRITE_SIZE FLASH_AREA_WRITE_BLOCK_SIZE(suit_storage)

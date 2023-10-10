@@ -9,19 +9,12 @@
 #include <psa/crypto.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
-#include <platform_mem_util.h>
-#ifdef CONFIG_FLASH_SIMULATOR
-#include <zephyr/drivers/flash/flash_simulator.h>
-#endif /* CONFIG_FLASH_SIMULATOR */
+#include <suit_plat_mem_util.h>
 
 #include <suit.h>
 #include <suit_platform.h>
 
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-#endif /* CONFIG_FLASH_SIMULATOR */
-
-#define DFU_PARTITION_ADDRESS ((uint8_t *)FLASH_ADDRESS(DFU_PARTITION_OFFSET))
+#define DFU_PARTITION_ADDRESS (suit_plat_get_nvm_ptr(DFU_PARTITION_OFFSET))
 #define DFU_PARTITION_OFFSET  ((size_t)FIXED_PARTITION_OFFSET(dfu_partition))
 #define DFU_PARTITION_SIZE    ((size_t)FIXED_PARTITION_SIZE(dfu_partition))
 
@@ -74,14 +67,6 @@ static void *test_suit_setup(void)
 {
 	int err = load_keys();
 	zassert_equal(err, 0, "Unable to initialize crypto backend\n");
-
-#ifdef CONFIG_FLASH_SIMULATOR
-	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-	zassert_true(device_is_ready(fdev), "Unable to initialize flash simulator device.");
-
-	size_t f_size = 0;
-	f_base_address = flash_simulator_get_memory(fdev, &f_size);
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 	err = suit_processor_init();
 	zassert_equal(err, 0, "Unable to initialise SUIT processor (err: %d)", err);

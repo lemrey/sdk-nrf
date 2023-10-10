@@ -6,16 +6,9 @@
 
 #include <zephyr/ztest.h>
 #include <suit_storage.h>
-#include <platform_mem_util.h>
-#ifdef CONFIG_FLASH_SIMULATOR
-#include <zephyr/drivers/flash/flash_simulator.h>
-#endif /* CONFIG_FLASH_SIMULATOR */
+#include <suit_plat_mem_util.h>
 
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-#endif /* CONFIG_FLASH_SIMULATOR */
-
-#define SUIT_STORAGE_ADDRESS FLASH_ADDRESS(SUIT_STORAGE_OFFSET)
+#define SUIT_STORAGE_ADDRESS suit_plat_get_nvm_ptr(SUIT_STORAGE_OFFSET)
 #define SUIT_STORAGE_OFFSET  FIXED_PARTITION_OFFSET(suit_storage)
 #define SUIT_STORAGE_SIZE    FIXED_PARTITION_SIZE(suit_storage)
 
@@ -74,17 +67,6 @@ static const suit_manifest_class_id_t *unsupported_classes[] = {
 	&classes[5],
 };
 
-static void *test_suite_setup(void)
-{
-#ifdef CONFIG_FLASH_SIMULATOR
-	static const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-	size_t f_size = 0;
-	f_base_address = flash_simulator_get_memory(fdev, &f_size);
-#endif /* CONFIG_FLASH_SIMULATOR */
-
-	return NULL;
-}
-
 static void test_suite_before(void *f)
 {
 	/* Erase the area, to met the preconditions in the next test. */
@@ -98,7 +80,7 @@ static void test_suite_before(void *f)
 	zassert_equal(rc, 0, "Failed to initialize SUIT storage module (%d).", rc);
 }
 
-ZTEST_SUITE(suit_storage_envelopes_tests, NULL, test_suite_setup, test_suite_before, NULL, NULL);
+ZTEST_SUITE(suit_storage_envelopes_tests, NULL, NULL, test_suite_before, NULL, NULL);
 
 ZTEST(suit_storage_envelopes_tests, test_empty_envelope_get)
 {

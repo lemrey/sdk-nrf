@@ -20,6 +20,7 @@
 #include <zephyr/mgmt/mcumgr/mgmt/mgmt.h>
 #include <zephyr/mgmt/mcumgr/smp/smp.h>
 #include "suitfu_mgmt_priv.h"
+#include <suit_plat_mem_util.h>
 
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
@@ -36,20 +37,8 @@ LOG_MODULE_REGISTER(siutfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
 #define FIXED_PARTITION_WRITE_BLOCK_SIZE(label)                                                    \
 	DT_PROP(DT_GPARENT(DT_NODELABEL(label)), write_block_size)
 
-/* Calculate absolute address from flash offset. */
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-#define FLASH_ADDRESS(address) (f_base_address + address)
-#else /* CONFIG_FLASH_SIMULATOR */
-#define FLASH_ADDRESS(address)                                                                     \
-	(COND_CODE_1(                                                                              \
-		DT_NODE_EXISTS(DT_NODELABEL(mram10)),                                              \
-		(((address)&0xEFFFFFFFUL) + (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL)),   \
-		(address)))
-#endif /* CONFIG_FLASH_SIMULATOR */
-
 #define DFU_PARTITION_LABEL	 dfu_partition
-#define DFU_PARTITION_ADDRESS	 FLASH_ADDRESS(DFU_PARTITION_OFFSET)
+#define DFU_PARTITION_ADDRESS	 suit_plat_get_nvm_ptr(DFU_PARTITION_OFFSET)
 #define DFU_PARTITION_OFFSET	 FIXED_PARTITION_OFFSET(DFU_PARTITION_LABEL)
 #define DFU_PARTITION_SIZE	 FIXED_PARTITION_SIZE(DFU_PARTITION_LABEL)
 #define DFU_PARTITION_EB_SIZE	 FIXED_PARTITION_ERASE_BLOCK_SIZE(DFU_PARTITION_LABEL)
@@ -66,7 +55,7 @@ static void schedule_system_update(struct k_work *item)
 {
 	suit_plat_mreg_t update_candidate[] = {
 		{
-			.mem = (uint8_t *)DFU_PARTITION_ADDRESS,
+			.mem = DFU_PARTITION_ADDRESS,
 			.size = image_size,
 		},
 	};
@@ -83,8 +72,8 @@ static int img_mgmt_suit_erase_partition(const struct device *fdev, size_t num_b
 		return MGMT_ERR_ENOMEM;
 	}
 
-	LOG_INF("Erasing %p - %p (0x%x bytes)", (void *)DFU_PARTITION_ADDRESS,
-		(void *)(DFU_PARTITION_ADDRESS + erase_size), erase_size);
+	LOG_INF("Erasing %p - %p (0x%x bytes)", DFU_PARTITION_ADDRESS,
+		(uint8_t *)((size_t)DFU_PARTITION_ADDRESS + erase_size), erase_size);
 
 	int rc = flash_erase(fdev, DFU_PARTITION_OFFSET, erase_size);
 	if (rc < 0) {
@@ -178,7 +167,7 @@ static int img_mgmt_suit_write_image_data(const struct device *fdev, unsigned in
 	}
 
 	if (flush) {
-		const uint8_t *addr = (uint8_t *)DFU_PARTITION_ADDRESS;
+		const uint8_t *addr = DFU_PARTITION_ADDRESS;
 		LOG_INF("Last Chunk Written");
 		LOG_INF("Partition address: %p (size: 0x%x), data: %02X %02X "
 			"%02X "
@@ -260,7 +249,7 @@ static int img_mgmt_upload(struct smp_streamer *ctx)
 
 #ifdef CONFIG_SSF_SUIT_SERVICE_ENABLED
 	if ((rc == MGMT_ERR_EOK) && (last)) {
-		bool valid = suit_validate_candidate(DFU_PARTITION_ADDRESS, image_size);
+		bool valid = suit_validate_candidate((uintptr_t)DFU_PARTITION_ADDRESS, image_size);
 		if (!valid) {
 			LOG_ERR("Invalid envelope received");
 			rc = MGMT_ERR_ECORRUPT;

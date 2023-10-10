@@ -16,12 +16,9 @@
 #include <sdfw_services/suit_service.h>
 #endif /* CONFIG_SSF_SUIT_SERVICE_ENABLED */
 
-/* Calculate absolute address from flash offset. */
-#define FLASH_ADDRESS(address) ((address) + (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL))
-
 #define DFU_PARTITION_OFFSET  FIXED_PARTITION_OFFSET(dfu_partition)
 #define DFU_PARTITION_SIZE    FIXED_PARTITION_SIZE(dfu_partition)
-#define DFU_PARTITION_ADDRESS FLASH_ADDRESS(DFU_PARTITION_OFFSET)
+#define DFU_PARTITION_ADDRESS suit_plat_get_nvm_ptr(DFU_PARTITION_OFFSET)
 
 int main(void)
 {

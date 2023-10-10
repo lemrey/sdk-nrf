@@ -12,20 +12,13 @@
 #include <suit_types.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
-#include <platform_mem_util.h>
+#include <suit_plat_mem_util.h>
 #include <update_magic_values.h>
 #include <suit_cache.h>
-#ifdef CONFIG_FLASH_SIMULATOR
-#include <zephyr/drivers/flash/flash_simulator.h>
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 #include <psa/crypto.h>
 
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-#endif /* CONFIG_FLASH_SIMULATOR */
-
-#define SUIT_STORAGE_ADDRESS FLASH_ADDRESS(SUIT_STORAGE_OFFSET)
+#define SUIT_STORAGE_ADDRESS suit_plat_get_nvm_ptr(SUIT_STORAGE_OFFSET)
 #define SUIT_STORAGE_OFFSET  FIXED_PARTITION_OFFSET(suit_storage)
 #define SUIT_STORAGE_SIZE    FIXED_PARTITION_SIZE(suit_storage)
 
@@ -67,17 +60,6 @@ extern const size_t manifest_wrong_version_len;
 /* Envelope signed with a different private key */
 extern const uint8_t manifest_different_key_buf[];
 extern const size_t manifest_different_key_len;
-
-static void *orchestrator_suite_setup(void)
-{
-#ifdef CONFIG_FLASH_SIMULATOR
-	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-	size_t f_size = 0;
-	f_base_address = flash_simulator_get_memory(fdev, &f_size);
-#endif /* CONFIG_FLASH_SIMULATOR */
-
-	return NULL;
-}
 
 static void setup_erased_flash(void)
 {
@@ -189,7 +171,7 @@ static void destroy_default_key(void *fixture)
 		      PSA_DEFAULT_KEY_ID, err);
 }
 
-ZTEST_SUITE(orchestrator_tests, NULL, orchestrator_suite_setup, NULL, destroy_default_key, NULL);
+ZTEST_SUITE(orchestrator_tests, NULL, NULL, NULL, destroy_default_key, NULL);
 
 ZTEST(orchestrator_tests, test_boot_path_empty_storage)
 {

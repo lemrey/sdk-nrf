@@ -17,6 +17,7 @@ endif() # CONFIG_SUIT_PLATFORM
 
 zephyr_library()
 zephyr_library_sources(src/suit_plat_decode_util.c)
+zephyr_library_sources(src/suit_plat_mem_util.c)
 
 zephyr_library_link_libraries(suit_utils)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_MCI suit_mci)

@@ -6,9 +6,6 @@
 
 #include <suit_storage_internal.h>
 #include <zephyr/drivers/flash.h>
-#ifdef CONFIG_FLASH_SIMULATOR
-#include <zephyr/drivers/flash/flash_simulator.h>
-#endif /* CONFIG_FLASH_SIMULATOR */
 #include <zephyr/logging/log.h>
 
 #define UPDATE_MAGIC_VALUE_AVAILABLE_RAW  0x5555AAAA
@@ -17,9 +14,6 @@
 
 LOG_MODULE_REGISTER(suit_storage_update, CONFIG_SUIT_LOG_LEVEL);
 
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-#endif /* CONFIG_FLASH_SIMULATOR */
 static const struct device *fdev;
 
 /** @brief Update the candidate info structure.
@@ -52,11 +46,6 @@ int suit_storage_update_init(void)
 		fdev = NULL;
 		return -ENXIO;
 	}
-
-#ifdef CONFIG_FLASH_SIMULATOR
-	size_t f_size = 0;
-	f_base_address = flash_simulator_get_memory(fdev, &f_size);
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 	return 0;
 }

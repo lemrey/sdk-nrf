@@ -26,16 +26,16 @@ static int suit_plat_check_image_match_mem(struct zcbor_string *component_id,
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	LOG_DBG("Address: 0x%08x, size: 0x%08x", (unsigned int)address, size);
+	LOG_DBG("Address: 0x%08x, size: 0x%08x", (unsigned int)address, image_size);
 
-	if (image_size != size) {
+	if (image_size > size) {
 		LOG_ERR("Size mismatch: image: %d, component: %d", image_size, size);
 		return SUIT_FAIL_CONDITION;
 	}
 
 	struct zcbor_string payload = {
 		.value = (const uint8_t *)address,
-		.len = size,
+		.len = image_size,
 	};
 
 	int err = suit_plat_check_digest(alg_id, digest, &payload);

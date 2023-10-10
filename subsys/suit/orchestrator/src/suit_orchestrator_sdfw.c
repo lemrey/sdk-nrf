@@ -14,7 +14,7 @@
 #include <suit.h>
 #include <suit_platform.h>
 #include <suit_storage.h>
-#include <platform_mem_util.h>
+#include <suit_plat_mem_util.h>
 
 LOG_MODULE_REGISTER(suit, CONFIG_SUIT_LOG_LEVEL);
 

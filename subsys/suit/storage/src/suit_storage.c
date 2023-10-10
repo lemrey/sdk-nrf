@@ -5,20 +5,13 @@
  */
 
 #include <suit_storage_internal.h>
-#include <platform_mem_util.h>
+#include <suit_plat_mem_util.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
-#ifdef CONFIG_FLASH_SIMULATOR
-#include <zephyr/drivers/flash/flash_simulator.h>
-#endif /* CONFIG_FLASH_SIMULATOR */
 #include <zephyr/logging/log.h>
 #include <suit_plat_decode_util.h>
 
 LOG_MODULE_REGISTER(suit_storage, CONFIG_SUIT_LOG_LEVEL);
-
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 static const struct device *fdev;
 static const suit_manifest_class_id_t *manifest_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
@@ -298,11 +291,6 @@ int suit_storage_init(const suit_manifest_class_id_t **supported_class_id, size_
 		fdev = NULL;
 		return -ENXIO;
 	}
-
-#ifdef CONFIG_FLASH_SIMULATOR
-	size_t f_size = 0;
-	f_base_address = flash_simulator_get_memory(fdev, &f_size);
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 	if (sizeof(struct suit_storage) > SUIT_STORAGE_SIZE) {
 		return -ENOSR;

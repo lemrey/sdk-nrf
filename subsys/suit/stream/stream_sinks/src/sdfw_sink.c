@@ -10,7 +10,7 @@
 
 #include <sdfw_sink.h>
 #include <sdfw_update.h>
-#include <platform_mem_util.h>
+#include <suit_plat_mem_util.h>
 
 #include <digest_sink.h>
 

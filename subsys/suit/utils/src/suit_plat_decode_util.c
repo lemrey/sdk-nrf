@@ -6,6 +6,7 @@
 
 #include <zcbor_decode.h>
 #include <suit_plat_decode_util.h>
+#include <suit_plat_mem_util.h>
 #include <string.h>
 
 bool suit_plat_decode_component_id(struct zcbor_string *component_id, uint8_t *cpu_id,
@@ -28,6 +29,10 @@ bool suit_plat_decode_component_id(struct zcbor_string *component_id, uint8_t *c
 	res = res && zcbor_size_decode(state, (size_t *)size);
 	res = res && zcbor_bstr_end_decode(state);
 	res = res && zcbor_list_end_decode(state);
+
+	if (res) {
+		*run_address = (intptr_t)suit_plat_get_mem_ptr(*run_address);
+	}
 
 	return res;
 }
@@ -96,6 +101,10 @@ bool suit_plat_decode_address_size(struct zcbor_string *component_id, intptr_t *
 	res = res && zcbor_size_decode(state, (size_t *)size);
 	res = res && zcbor_bstr_end_decode(state);
 	res = res && zcbor_list_end_decode(state);
+
+	if (res) {
+		*run_address = (intptr_t)suit_plat_get_mem_ptr(*run_address);
+	}
 
 	return res;
 }

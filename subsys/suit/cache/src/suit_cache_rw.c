@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <suit_cache_rw.h>
 #include <zephyr/drivers/flash.h>
-#include <platform_mem_util.h>
+#include <suit_plat_mem_util.h>
 #include <zephyr/logging/log.h>
 #include "zcbor_encode.h"
 #include <zephyr/sys/byteorder.h>
@@ -77,28 +77,8 @@ static int allocate_slot_in_cache_partition(const struct zcbor_string *uri,
 static int cache_check_free_space(struct suit_cache_partition_ext *part,
 				  struct suit_cache_slot *slot);
 
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-
-static void init_flash_sim(void)
-{
-	if (f_base_address == NULL) {
-		size_t f_size;
-		static const struct device *fdev =
-			DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-
-		f_base_address = flash_simulator_get_memory(fdev, &f_size);
-		LOG_DBG("Initialize flash simulator. Base address: 0x%x", f_base_address);
-	}
-}
-#endif /* CONFIG_FLASH_SIMULATOR */
-
 int suit_cache_initialize_rw(void *addr, size_t size)
 {
-#ifdef CONFIG_FLASH_SIMULATOR
-	init_flash_sim();
-#endif /* CONFIG_FLASH_SIMULATOR */
-
 	int ret = update_cache_0(addr, size);
 
 	if (ret != 0) {
@@ -119,7 +99,7 @@ int suit_cache_initialize_rw(void *addr, size_t size)
 	for (size_t i = 0; i < suit_cache.partitions_count; i++) {
 		suit_cache.partitions[i].size = dfu_partitions_ext[i].size;
 		suit_cache.partitions[i].address =
-			(uint8_t *)FLASH_ADDRESS(dfu_partitions_ext[i].offset);
+			suit_plat_get_nvm_ptr(dfu_partitions_ext[i].offset);
 		LOG_DBG("Found partition %d: (addr: %p, size: 0x%x)", i,
 			suit_cache.partitions[i].address, suit_cache.partitions[i].size);
 	}
@@ -207,7 +187,7 @@ static int cache_check_free_space(struct suit_cache_partition_ext *part,
 		part_tmp_offset = part->offset;
 
 		zcbor_new_state(states, sizeof(states) / sizeof(zcbor_state_t),
-				(uint8_t *)FLASH_ADDRESS(part->offset), part->size, 1);
+				suit_plat_get_nvm_ptr(part->offset), part->size, 1);
 		ret = zcbor_map_start_decode(states);
 
 		do {
@@ -215,8 +195,8 @@ static int cache_check_free_space(struct suit_cache_partition_ext *part,
 				      (zcbor_bstr_decode(states, &current_data)));
 
 			if (ret) {
-				part_tmp_offset = FLASH_OFFSET(
-					(size_t)(current_data.value + current_data.len));
+				part_tmp_offset = suit_plat_get_nvm_offset(
+					(uint8_t *)(current_data.value + current_data.len));
 				break;
 			}
 		} while (ret);
@@ -226,7 +206,7 @@ static int cache_check_free_space(struct suit_cache_partition_ext *part,
 
 		for (; part_tmp_offset < (part->offset + part->size); part_tmp_offset++) {
 			/* cache is indefinite-length map, so to find end we look for 0xFF marker */
-			if (*(uint8_t *)(FLASH_ADDRESS(part_tmp_offset)) == 0xFF) {
+			if ((*suit_plat_get_nvm_ptr(part_tmp_offset)) == 0xFF) {
 				slot->size = part->offset + part->size - part_tmp_offset;
 				slot->slot_offset = part_tmp_offset;
 
@@ -341,14 +321,14 @@ static int update_cache_0(void *address, size_t size)
 	}
 
 	/* Check if update address is in dfu_partition range */
-	if ((FLASH_OFFSET((size_t)address) < dfu_partitions_ext[0].offset) ||
-	    (FLASH_OFFSET((size_t)address) >=
+	if ((suit_plat_get_nvm_offset(address) < dfu_partitions_ext[0].offset) ||
+	    (suit_plat_get_nvm_offset(address) >=
 	     (dfu_partitions_ext[0].offset + dfu_partitions_ext[0].size))) {
 		LOG_ERR("Envelope address doesn't match dfu_partition");
 		return -EINVAL;
 	}
 
-	size_t tmp_offset = FLASH_OFFSET((size_t)address) + size;
+	size_t tmp_offset = suit_plat_get_nvm_offset(address) + size;
 
 	if (tmp_offset >= (dfu_partitions_ext[0].offset + dfu_partitions_ext[0].size)) {
 		LOG_WRN("No free space for cache");
@@ -358,7 +338,7 @@ static int update_cache_0(void *address, size_t size)
 		dfu_partitions_ext[0].offset = tmp_offset;
 
 		/* Calculate remaining free space in dfu_partition */
-		dfu_partitions_ext[0].size -= (FLASH_OFFSET((size_t)address) + size);
+		dfu_partitions_ext[0].size -= (suit_plat_get_nvm_offset(address) + size);
 	}
 
 	if (dfu_partitions_ext[0].size > 0) {

@@ -10,7 +10,7 @@
 #include <sink.h>
 #include <cache_sink.h>
 #include <suit_cache_rw.h>
-#include <platform_mem_util.h>
+#include <suit_plat_mem_util.h>
 
 static uint8_t uri[] = "http://databucket.com";
 static uint8_t data[] = {0x43, 0x60, 0x02, 0x11, 0x35, 0x85, 0x37, 0x85, 0x76,

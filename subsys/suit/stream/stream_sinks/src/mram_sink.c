@@ -11,22 +11,11 @@
 #include <mram_sink.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
-#include <platform_mem_util.h>
-#ifdef CONFIG_FLASH_SIMULATOR
-#include <zephyr/drivers/flash/flash_simulator.h>
-#endif /* CONFIG_FLASH_SIMULATOR */
+#include <suit_plat_mem_util.h>
 
 #define MRAM_WORD_SIZE FLASH_AREA_WRITE_BLOCK_SIZE(suit_storage)
 #define MRAM_WORD_MASK 0x0000000F
-#ifdef CONFIG_FLASH_SIMULATOR
-/* Since flash addresses are unpredictable in case of flash simulator,
- * the flash offset is used inside component IDs, thus there is no need
- * to translate those values before passing them to the flash driver API.
- */
-#define WRITE_OFFSET(a) ((size_t)a->ptr + a->offset)
-#else /* CONFIG_FLASH_SIMULATOR */
-#define WRITE_OFFSET(a) (FLASH_OFFSET((size_t)a->ptr) + a->offset)
-#endif /* CONFIG_FLASH_SIMULATOR */
+#define WRITE_OFFSET(a) (suit_plat_get_nvm_offset(a->ptr) + a->offset)
 
 /* Set to more than one to allow multiple contexts in case of parallel execution */
 #define SUIT_MAX_MRAM_COMPONENTS 1
@@ -49,19 +38,6 @@ struct mram_ctx {
 
 static struct mram_ctx ctx[SUIT_MAX_MRAM_COMPONENTS];
 static const struct device *fdev = NULL;
-
-#ifdef CONFIG_FLASH_SIMULATOR
-static uint8_t *f_base_address = NULL;
-
-static void init_flash_sim(void)
-{
-	if (f_base_address == NULL) {
-		size_t f_size;
-
-		f_base_address = flash_simulator_get_memory(fdev, &f_size);
-	}
-}
-#endif /* CONFIG_FLASH_SIMULATOR */
 
 /**
  * @brief Get the new, free ctx object
@@ -92,10 +68,6 @@ int get_mram_sink(struct stream_sink *sink, uint8_t *dst, size_t size)
 					LOG_ERR("Flash device not ready.");
 					return FLASH_NOT_READY;
 				}
-
-#ifdef CONFIG_FLASH_SIMULATOR
-				init_flash_sim();
-#endif /* CONFIG_FLASH_SIMULATOR */
 			}
 
 			ctx->offset = 0;
