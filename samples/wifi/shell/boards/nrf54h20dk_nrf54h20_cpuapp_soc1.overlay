@@ -3,7 +3,6 @@
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
-#include <common/nordic_nrf_next/nrf54h20_ram0x.dtsi>
 #include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
 
 / {
@@ -20,7 +19,7 @@
 };
 
 &cpuapp_sram0x {
-    reg = <DT_ADDR(DT_NRF54H20_APP_SRAM_OFFSET_FROM_RAM0X_S) DT_SIZE_K(512)>;
+    reg = <0x1000 DT_SIZE_K(512)>;
 };
 
 /delete-node/ &slot0_partition;
