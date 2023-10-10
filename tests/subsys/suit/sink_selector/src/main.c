@@ -92,13 +92,10 @@ ZTEST(sink_selector_tests, test_select_invalid_component_id)
 		.value = invalid_value,
 		.len = sizeof(invalid_value),
 	};
-	struct stream_sink sink;
 
 	int ret = suit_plat_create_component_handle(&invalid_component_id, &handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
-
-	int err = select_sink(handle, &sink);
-	zassert_not_equal(err, 0, "sink_selector should have failed - invalid component_id");
+	zassert_equal(ret, SUIT_ERR_UNSUPPORTED_COMPONENT_ID,
+		      "create_component_handle unexpected error %i", ret);
 }
 
 /* Invalid component */

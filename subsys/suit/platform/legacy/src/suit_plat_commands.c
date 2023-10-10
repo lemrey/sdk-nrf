@@ -219,3 +219,8 @@ int suit_plat_retrieve_manifest(suit_component_t component_handle, uint8_t **env
 {
 	return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 }
+
+int suit_plat_override_image_size(suit_component_t handle, size_t size)
+{
+	return SUIT_SUCCESS;
+}

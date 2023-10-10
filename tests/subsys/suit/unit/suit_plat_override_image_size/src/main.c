@@ -1,0 +1,157 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+#include <zephyr/ztest.h>
+#include <suit_platform.h>
+#include <mocks.h>
+
+#define TEST_FAKE_ADDRESS ((intptr_t)0xDEADBEEF)
+#define TEST_FAKE_SIZE	  ((size_t)42)
+
+static uint8_t component_id_value[] = {0x84, 0x44, 0x63, 'M',  'E',  'M',  0x41, 0x02, 0x45, 0x1A,
+				       0xC0, 0xFE, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x00, 0x04};
+
+static struct zcbor_string component_id = {
+	.value = component_id_value,
+	.len = sizeof(component_id_value),
+};
+
+static suit_component_t component;
+
+static bool suit_plat_decode_component_type_fake_mem_ok(struct zcbor_string *component_id,
+							suit_component_type_t *type)
+{
+	*type = SUIT_COMPONENT_TYPE_MEM;
+	return true;
+}
+
+static bool suit_plat_decode_component_type_fake_false(struct zcbor_string *component_id,
+						       suit_component_type_t *type)
+{
+	return false;
+}
+
+static bool suit_plat_decode_address_size_fake_ok(struct zcbor_string *component_id,
+						  intptr_t *run_address, size_t *size)
+{
+	*run_address = TEST_FAKE_ADDRESS;
+	*size = TEST_FAKE_SIZE;
+	return true;
+}
+
+static int get_memptr_ptr_fake_invalid_record(memptr_storage_handle handle, uint8_t **payload_ptr,
+					      size_t *payload_size)
+{
+	return INVALID_RECORD;
+}
+
+static int store_memptr_ptr_fake_unallocated_record(memptr_storage_handle handle,
+						    uint8_t *payload_ptr, size_t payload_size)
+{
+	return UNALLOCATED_RECORD;
+}
+
+static void test_before(void *data)
+{
+	/* Reset mocks */
+	mocks_reset();
+
+	/* Reset common FFF internal structures */
+	FFF_RESET_HISTORY();
+
+	/* Create MEM component handle */
+	suit_plat_decode_component_type_fake.custom_fake =
+		suit_plat_decode_component_type_fake_mem_ok;
+	suit_plat_decode_address_size_fake.custom_fake = suit_plat_decode_address_size_fake_ok;
+	int err = suit_plat_create_component_handle(&component_id, &component);
+	zassert_equal(SUIT_SUCCESS, err, "test setup error - create_component_handle failed: %d",
+		      err);
+}
+
+static void test_after(void *data)
+{
+	suit_plat_decode_component_type_fake.custom_fake =
+		suit_plat_decode_component_type_fake_mem_ok;
+
+	int err = suit_plat_release_component_handle(component);
+	zassert_equal(SUIT_SUCCESS, err,
+		      "test teardown error - suit_plat_release_component failed: %d", err);
+}
+
+ZTEST_SUITE(suit_platform_override_image_size_tests, NULL, NULL, test_before, test_after, NULL);
+
+ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_size_init_and_override)
+{
+	/* GIVEN a MEM-type component */
+	/* WHEN a component handle is created (in test setup step) */
+	/* THEN memptr_storage size should be set to 0 */
+	int expected_call_count = 1;
+	size_t expected_size = 0;
+	zassert_equal(store_memptr_ptr_fake.call_count, expected_call_count,
+		      "Wrong initial size store call count", store_memptr_ptr_fake.call_count,
+		      expected_call_count);
+	zassert_equal(store_memptr_ptr_fake.arg2_history[0], expected_size,
+		      "Wrong initial size: %d instead of %d", store_memptr_ptr_fake.arg2_history[0],
+		      expected_size);
+
+	/* WHEN size override is called */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
+	zassert_equal(SUIT_SUCCESS, err, "Failed to override image size: %d", err);
+
+	/* THEN memptr_storage size should be updated to given value */
+	expected_call_count = 2;
+	expected_size = TEST_FAKE_SIZE;
+	zassert_equal(store_memptr_ptr_fake.call_count, expected_call_count,
+		      "Wrong size store call count: %d instead of %d",
+		      store_memptr_ptr_fake.call_count, expected_call_count);
+	zassert_equal(store_memptr_ptr_fake.arg2_history[1], expected_size,
+		      "Wrong size: %d instead of %d", store_memptr_ptr_fake.arg2_history[1],
+		      expected_size);
+}
+
+ZTEST(suit_platform_override_image_size_tests,
+      test_suit_plat_override_image_size_wrong_component_type)
+{
+	/* GIVEN a MEM-type component (created in test setup step)*/
+	/* WHEN internal function call is going to fail */
+	suit_plat_decode_component_type_fake.custom_fake =
+		suit_plat_decode_component_type_fake_false;
+
+	/* WHEN size override is called */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
+
+	/* THEN appropriate error code is returned */
+	int expected_error = SUIT_ERR_DECODING;
+	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
+		      expected_error);
+}
+
+ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_size_fail_get)
+{
+	/* GIVEN a MEM-type component (created in test setup step)*/
+	/* WHEN internal function is going to fail */
+	get_memptr_ptr_fake.custom_fake = get_memptr_ptr_fake_invalid_record;
+
+	/* WHEN size override is called */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
+	/* THEN appropriate error code is returned */
+	int expected_error = INVALID_RECORD;
+	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
+		      expected_error);
+}
+
+ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_size_fail_store)
+{
+	/* GIVEN a MEM-type component (created in test setup step)*/
+	/* WHEN internal function is going to fail */
+	store_memptr_ptr_fake.custom_fake = store_memptr_ptr_fake_unallocated_record;
+	/* WHEN size override is called */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
+	/* THEN appropriate error code is returned */
+	int expected_error = UNALLOCATED_RECORD;
+	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
+		      expected_error);
+}

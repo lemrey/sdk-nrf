@@ -159,19 +159,13 @@ ZTEST(check_image_match_tests, test_mem_invalid_component)
 	};
 
 	suit_component_t component;
+
+	/* WHEN a component handle is created */
 	int err = suit_plat_create_component_handle(&invalid_src_component_id, &component);
-	zassert_equal(SUIT_SUCCESS, err, "test error - create_component_handle failed: %d", err);
 
-	/* WHEN a check image match function is called */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
-
-	/* THEN appropriate error code is returned */
-	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, err, "unexpected error code: %d", err);
-
-	/* Cleanup */
-	err = suit_plat_release_component_handle(component);
-	zassert_equal(SUIT_SUCCESS, err, "test error - failed to cleanup component handle: %d",
-		      err);
+	/* THEN it is not supported */
+	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, err,
+		      "test error - create_component_handle failed: %d", err);
 }
 
 ZTEST(check_image_match_tests, test_cand_img_match)

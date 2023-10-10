@@ -57,8 +57,7 @@ int suit_plat_release_component_handle(suit_component_t handle)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if ((component_type == SUIT_COMPONENT_TYPE_CAND_IMG) ||
-	    (component_type == SUIT_COMPONENT_TYPE_CAND_MFST)) {
+	if (is_mem_mapped(component_type)) {
 		int ret = release_memptr_storage(component->impl_data);
 
 		if (ret != 0) {
@@ -111,6 +110,31 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 		return get_memptr_storage(&component->impl_data);
 	}
 
+	if (component_type == SUIT_COMPONENT_TYPE_MEM) {
+		/* Get address and size of the component from its id */
+		intptr_t address = (intptr_t)NULL;
+		size_t size = 0;
+		if (!suit_plat_decode_address_size(&component->component_id, &address, &size)) {
+			LOG_ERR("Failed to decode address and size");
+			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+		}
+
+		/* Associate memptr_storage with component's implementation data */
+		int err = get_memptr_storage(&component->impl_data);
+		if (err) {
+			LOG_ERR("Failed to get memptr_storage: %d", err);
+			return err;
+		}
+
+		/* Set the address as in component id but set size with 0 */
+		size = 0;
+		err = store_memptr_ptr(component->impl_data, (uint8_t *)address, size);
+		if (err) {
+			LOG_ERR("Failed to store memptr ptr: %d", err);
+			return err;
+		}
+	}
+
 	return SUIT_SUCCESS;
 }
 
@@ -147,5 +171,45 @@ int suit_plat_component_id_get(suit_component_t handle, struct zcbor_string **co
 	}
 
 	*component_id = &(component->component_id);
+	return SUIT_SUCCESS;
+}
+
+int suit_plat_override_image_size(suit_component_t handle, size_t size)
+{
+	struct zcbor_string *component_id = NULL;
+
+	int err = suit_plat_component_id_get(handle, &component_id);
+	if (err) {
+		return err;
+	}
+
+	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
+	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+		return SUIT_ERR_DECODING;
+	}
+
+	/* Size override is done for components that use memptr_storage */
+	if (is_mem_mapped(component_type)) {
+		void *impl_data = NULL;
+		err = suit_plat_component_impl_data_get(handle, &impl_data);
+		if (err) {
+			return err;
+		}
+
+		uint8_t *payload_ptr = NULL;
+		size_t payload_size = 0;
+
+		err = get_memptr_ptr(impl_data, &payload_ptr, &payload_size);
+		if (err) {
+			return err;
+		}
+
+		payload_size = size;
+		err = store_memptr_ptr(impl_data, payload_ptr, payload_size);
+		if (err) {
+			return err;
+		}
+	}
+
 	return SUIT_SUCCESS;
 }

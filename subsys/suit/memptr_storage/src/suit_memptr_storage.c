@@ -42,7 +42,7 @@ int get_memptr_storage(memptr_storage_handle *handle)
 
 int store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr, size_t payload_size)
 {
-	if ((handle != NULL) && (payload_ptr != NULL) && (payload_size > 0)) {
+	if ((handle != NULL) && (payload_ptr != NULL)) {
 		struct memptr_storage *record = (struct memptr_storage *)handle;
 
 		if (record->in_use) {

@@ -22,12 +22,12 @@ if (CONFIG_MOCK_SUIT_MCI)
   target_include_directories(testbinary PRIVATE
     ${SUIT_SUBSYS_DIR}/mci/include
   )
-endif()
 
-if (NOT CONFIG_MOCK_SUIT_MCI_UTILS)
-  target_sources(testbinary PRIVATE
-    ${SUIT_SUBSYS_DIR}/mci/src/utils.c
-  )
+  if (NOT CONFIG_MOCK_SUIT_MCI_UTILS)
+    target_sources(testbinary PRIVATE
+      ${SUIT_SUBSYS_DIR}/mci/src/utils.c
+    )
+  endif()
 endif()
 
 if (CONFIG_MOCK_SUIT_STORAGE)
@@ -41,11 +41,11 @@ if (CONFIG_MOCK_SUIT_UTILS)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_UTILS)
   target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/utils/include)
   target_include_directories(testbinary PRIVATE $ENV{ZEPHYR_BASE}/../modules/lib/zcbor/include)
-endif()
 
-if (NOT CONFIG_MOCK_SUIT_PLAT_DECODE_UTIL)
-  target_sources(testbinary PRIVATE
-    ${SUIT_SUBSYS_DIR}/utils/src/suit_plat_decode_util.c)
+  if (NOT CONFIG_MOCK_SUIT_PLAT_DECODE_UTIL)
+    target_sources(testbinary PRIVATE
+      ${SUIT_SUBSYS_DIR}/utils/src/suit_plat_decode_util.c)
+  endif()
 endif()
 
 if (CONFIG_MOCK_SUIT_LOG)
@@ -65,19 +65,9 @@ if (CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY)
   target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
 endif()
 
-if (CONFIG_MOCK_SUIT_PLATFORM)
-  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLATFORM)
-  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
-endif()
-
 if (CONFIG_MOCK_SUIT_MEMPTR_STORAGE)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_MEMPTR_STORAGE)
   target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/memptr_storage/include)
-endif()
-
-if (CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY)
-  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY)
-  target_include_directories(testbinary PRIVATE ${SUIT_SUBSYS_DIR}/platform/include)
 endif()
 
 if (CONFIG_MOCK_SUIT_PLATFORM_INTERNAL)

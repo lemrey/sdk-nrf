@@ -35,8 +35,3 @@ int suit_plat_report(unsigned int rep_policy, struct suit_report *report)
 {
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 }
-
-int suit_plat_override_image_size(suit_component_t handle, size_t size)
-{
-	return SUIT_SUCCESS;
-}

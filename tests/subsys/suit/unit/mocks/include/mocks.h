@@ -38,10 +38,6 @@
 #include <mock_suit_platform_internal.h>
 #endif
 
-#ifdef CONFIG_MOCK_SUIT_PLATFORM
-#include <mock_suit_platform_internal.h>
-#endif /* CONFIG_MOCK_SUIT_PLATFORM */
-
 #ifdef CONFIG_MOCK_SUIT_MEMPTR_STORAGE
 #include <mock_suit_memptr_storage.h>
 #endif /* CONFIG_MOCK_SUIT_MEMPTR_STORAGE */
@@ -73,10 +69,6 @@ static inline void mocks_reset(void)
 #endif
 
 #ifdef CONFIG_MOCK_SUIT_PLATFORM_INTERNAL
-	mock_suit_platform_internal_reset();
-#endif
-
-#ifdef CONFIG_MOCK_SUIT_PLATFORM
 	mock_suit_platform_internal_reset();
 #endif
 

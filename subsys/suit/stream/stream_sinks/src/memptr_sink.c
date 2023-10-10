@@ -31,7 +31,7 @@ int get_memptr_sink(struct stream_sink *sink, memptr_storage_handle handle)
 
 static int write(void *ctx, uint8_t *buf, size_t *size)
 {
-	if ((ctx != NULL) && (buf != NULL) && (size != NULL)) {
+	if ((ctx != NULL) && (buf != NULL) && (size != NULL) && (*size != 0)) {
 		return store_memptr_ptr(ctx, buf, *size);
 	}
 

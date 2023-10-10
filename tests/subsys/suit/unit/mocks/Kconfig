@@ -49,9 +49,6 @@ config MOCK_SUIT_CRYPTO
 config MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 	bool "Mock suit_plat_check_component_compatibility"
 
-config MOCK_SUIT_PLATFORM
-	bool "Include platform internal headers"
-
 config MOCK_SUIT_MEMPTR_STORAGE
 	bool "Include memory pointer storage headers"
 
