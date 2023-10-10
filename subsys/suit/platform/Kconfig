@@ -52,6 +52,10 @@ config SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 	depends on SUIT_UTILS
 	depends on SUIT_MCI
 	
+config SUIT_PLAT_CHECK_CLASSES
+	bool "Enable vendor/class/device class ID checks"
+	depends on SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
+
 config MAX_NUMBER_OF_MANIFEST_CLASS_IDS
 	int  "Maximum number of supported manifest class IDs that can be handled"
 	range 1 200
