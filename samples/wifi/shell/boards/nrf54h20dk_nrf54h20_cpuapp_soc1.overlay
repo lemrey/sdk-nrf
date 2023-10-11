@@ -14,8 +14,8 @@
 
 /* With default 256KB RAM Wi-Fi connection will not work, so, increase to 512KB */
 &cpuapp_ram0x_s {
-    reg = < 0x0 0x80000 >;
-    ranges = < 0x0 0x0 0x80000 >;
+    reg = < 0x0 DT_SIZE_K(512) >;
+    ranges = < 0x0 0x0 DT_SIZE_K(512) >;
 };
 
 &cpuapp_sram0x {
