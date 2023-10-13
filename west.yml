@@ -239,10 +239,10 @@ manifest:
           compare-by-default: false
 
     - name: suit-processor
-      revision: c8a3d4c974ae0bb655c5c22b2d7ad6fa310c6245
+      revision: 3ce7d515e45ed59cba2936b8d84229298ef783bd
       path: modules/lib/suit-processor
     - name: suit-generator
-      revision: c8be9b34649853a4f6dc16b585c6d8c0b626b926
+      revision: ac5a6d3e73eade699f43775aaf41ea55ede17946
       path: modules/lib/suit-generator
 
     # Other third-party repositories.
