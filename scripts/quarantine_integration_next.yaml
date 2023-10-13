@@ -2864,3 +2864,12 @@
     - nrf5340dk_nrf5340_cpuapp
     - nrf9160dk_nrf9160
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - project.sysctrl.nrf9230.emu.release
+    - project.sysctrl.nrf9230.emu.debug
+    - project.sysctrl.nrf9230.emu.debug_stm
+    - project.sysctrl.nrf9230.emu.debug_fido
+  platforms:
+    - nrf9230dk_nrf9230_cpusys
+  comment: "Configurations excluded to limit resources usage in integration builds"
