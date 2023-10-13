@@ -136,13 +136,13 @@ manifest:
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
-      revision: 0bed170eee4bb65f240e2b3db34ee78343ae921c
+      revision: 167e6102ef286f4d5c328dcbacfc7bdc16fb0f97
       groups:
       - doc-internal
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 24e0c1574ad3d679c84069db109f374fe3b18677
+      revision: 9dbd6ad235f69fade0373ddea5e28ef409e8d1fa
     - name: sdk-secdom
       revision: 00ec85f29e09edc81d7def1a78d4be1fda00094a
       path: core_fw/secdom
