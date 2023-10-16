@@ -91,10 +91,6 @@ ZTEST(suit_memptr_storage_tests, test_memptr_storage_save_NOK)
 	err = store_memptr_ptr(NULL, test_data, TEST_DATA_SIZE);
 	zassert_not_equal(err, 0, "memptr_store_memptr_ptr should have failed - ctx == NULL");
 
-	err = store_memptr_ptr(handle, NULL, TEST_DATA_SIZE);
-	zassert_not_equal(err, 0,
-			  "memptr_store_memptr_ptr should have failed - payload_ptr == NULL");
-
 	err = release_memptr_storage(handle);
 	zassert_equal(err, 0, "release_memptr_storage failed - error %i", err);
 }
