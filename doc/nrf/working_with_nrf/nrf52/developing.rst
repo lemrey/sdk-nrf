@@ -82,6 +82,12 @@ If you want to add SMP Service to advertising data, refer to the :ref:`zephyr:sm
 
 .. fota_upgrades_over_ble_additional_information_end
 
+.. note::
+   Support for FOTA updates with MCUboot in the direct-xip mode is available since the following versions of the `nRF Connect Device Manager`_ mobile app:
+
+   * Version ``1.8.0`` on Android.
+   * Version ``1.4.0`` on iOS.
+
 .. fota_upgrades_outro_start
 
 To perform a FOTA update, complete the following steps:
@@ -95,11 +101,19 @@ To perform a FOTA update, complete the following steps:
    .. note::
       nRF Connect for Desktop does not currently support the FOTA process.
 
-   Use `nRF Connect Device Manager`_, `nRF Connect for Mobile`_, or `nRF Toolbox`_ to update your device with the new firmware.
+#. Use the `nRF Connect Device Manager`_ mobile app to update your device with the new firmware.
 
-   a. Ensure that you can access the :file:`app_update.bin` image file from your phone or tablet.
-   #. Connect to the device with the mobile app.
-   #. Initiate the DFU process to transfer the image to the device.
+   a. Ensure that you can access the :file:`dfu_application.zip` archive from your phone or tablet.
+   #. In the mobile app, scan and select the device to update.
+   #. Switch to the :guilabel:`Image` tab.
+   #. Tap the :guilabel:`SELECT FILE` button and select the :file:`dfu_application.zip` archive.
+   #. Tap the :guilabel:`START` button.
+   #. Initiate the DFU process of transferring the image to the device:
+
+      * If you are using an Android device, select a mode in the dialog window, and tap the :guilabel:`START` button.
+      * If you are using an iOS device, tap the selected mode in the pop-up window.
+
+   #. Wait for the DFU to finish and then verify that the application works properly.
 
 FOTA update sample
 ==================
