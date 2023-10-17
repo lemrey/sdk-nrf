@@ -143,6 +143,14 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	 *	Like decryption and/or decompression sinks.
 	 */
 
+	if (dst_sink.erase != NULL) {
+		ret = dst_sink.erase(dst_sink.ctx);
+		if (ret) {
+			LOG_ERR("Sink mem erase failed: %i", ret);
+			return ret;
+		}
+	}
+
 	/* Select streamer */
 	switch (component_type) {
 #ifdef CONFIG_SUIT_STREAM_FETCH_SOURCE_MGR
@@ -162,23 +170,6 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		break;
 	}
 
-	/* If possible update component size */
-	if ((ret == SUIT_SUCCESS) && (SUIT_SUCCESS) && (dst_sink.used_storage != NULL)) {
-		size_t size;
-
-		ret = dst_sink.used_storage(dst_sink.ctx, &size);
-		if (ret != SUIT_SUCCESS) {
-			LOG_ERR("Failed to retrieve amount of used space");
-			return ret;
-		}
-
-		ret = suit_plat_override_image_size(dst_handle, size);
-		if (ret != SUIT_SUCCESS) {
-			LOG_ERR("Failed to update component size");
-			return ret;
-		}
-	}
-
 	if (dst_sink.release != NULL) {
 		int err = dst_sink.release(sink.ctx);
 
@@ -196,10 +187,108 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_string *payload)
 {
+#ifdef CONFIG_SUIT_STREAM
+	struct stream_sink dst_sink;
+	suit_component_type_t component_type;
+
+	/* Get component type based on component handle*/
+	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("Failed to decode component type %i", ret);
+		return ret;
+	}
+
+	if ((component_type != SUIT_COMPONENT_TYPE_CAND_IMG) &&
+	    (component_type != SUIT_COMPONENT_TYPE_CAND_MFST)) {
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+#ifndef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
+#endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+
+	/* Get dst_sink */
+	ret = select_sink(dst_handle, &dst_sink);
+	if (ret != SUCCESS) {
+		LOG_ERR("Selecting sink failed: %i", ret);
+		return ret;
+	}
+
+	/* Here other parts of pipe will be instantiated.
+	 *	Like decryption and/or decompression sinks.
+	 */
+
+	if (sink.release != NULL) {
+		int err = sink.release(sink.ctx);
+
+		if (err != SUCCESS) {
+			LOG_ERR("sink release failed: %i", err);
+			return err;
+		}
+	}
+
+	return ret;
+#else
+	return SUIT_ERR_UNSUPPORTED_COMMAND;
+#endif /* CONFIG_SUIT_STREAM */
 }
 
 int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string *payload)
 {
+#ifdef CONFIG_SUIT_STREAM
+	struct stream_sink dst_sink;
+	suit_component_type_t component_type;
+
+	/* Get component type based on component handle*/
+	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("Failed to decode component type: %i", ret);
+		return ret;
+	}
+
+	if ((component_type != SUIT_COMPONENT_TYPE_CAND_IMG) &&
+	    (component_type != SUIT_COMPONENT_TYPE_CAND_MFST)) {
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+#ifndef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
+#endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+
+	/* Get dst_sink - final destination sink */
+	ret = select_sink(dst_handle, &dst_sink);
+	if (ret != SUCCESS) {
+		LOG_ERR("Selecting sink failed: %i", ret);
+		return ret;
+	}
+
+	/* Here other parts of pipe will be instantiated.
+	 *	Like decryption and/or decompression sinks.
+	 */
+
+	if (dst_sink.erase != NULL) {
+		ret = dst_sink.erase(dst_sink.ctx);
+		if (ret) {
+			LOG_ERR("Sink mem erase failed: %i", ret);
+			return ret;
+		}
+	}
+
+#ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
+	ret = memptr_streamer(payload->value, payload->len, &dst_sink);
+#endif  /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+
+	if (sink.release != NULL) {
+		int err = sink.release(sink.ctx);
+
+		if (err != SUCCESS) {
+			LOG_ERR("sink release failed: %i", err);
+			return err;
+		}
+	}
+
+	return ret;
+#else
+	return SUIT_ERR_UNSUPPORTED_COMMAND;
+#endif /* CONFIG_SUIT_STREAM */
 }

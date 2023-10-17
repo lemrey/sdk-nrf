@@ -47,10 +47,10 @@ static int used_storage(void *ctx, size_t *size)
 		size_t payload_size;
 
 		if (get_memptr_ptr(ctx, &payload_ptr, &payload_size) == SUCCESS) {
-			if ((payload_ptr != NULL) && (payload_size != 0)) {
-				*size = META_STORAGE_FULL;
+			if (payload_ptr != NULL) {
+				*size = payload_size;
 			} else {
-				*size = META_STORAGE_EMPTY;
+				*size = 0;
 			}
 
 			return SUCCESS;

@@ -10,11 +10,6 @@
 #include <sink.h>
 #include <suit_memptr_storage.h>
 
-#define META_STORAGE_FULL 1 /* Value indicates that payload was written to suit_memptr_storage */
-#define META_STORAGE_EMPTY                                                                         \
-	0 /* Value indicates that suit_memptr_storage has no payload assigned                      \
-	   */
-
 /**
  * @brief Get the memptr sink object
  *

@@ -74,7 +74,7 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	/* Get component type based on component handle*/
 	int ret = suit_plat_component_type_get(dst_handle, &component_type);
 	if (ret != SUIT_SUCCESS) {
-		LOG_ERR("Failed to decode component type");
+		LOG_ERR("Failed to decode component type: %i", ret);
 		return ret;
 	}
 
@@ -82,9 +82,10 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
+	/* Get dst_sink - final destination sink */
 	ret = select_sink(dst_handle, &dst_sink);
-
 	if (ret != SUCCESS) {
+		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
 	}
 
@@ -116,7 +117,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	/* Get component type based on component handle*/
 	int ret = suit_plat_component_type_get(dst_handle, &component_type);
 	if (ret != SUIT_SUCCESS) {
-		LOG_ERR("Failed to decode component type");
+		LOG_ERR("Failed to decode component type: %i", ret);
 		return ret;
 	}
 
@@ -136,24 +137,24 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	suit_plat_digest_cache_lock();
 #endif
 
-	/* Get dst_sink - final destination) sink */
+	/* Get dst_sink - final destination sink */
 	ret = select_sink(dst_handle, &dst_sink);
 	if (ret != SUCCESS) {
+		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
-	}
-
-	if (dst_sink.erase != NULL) {
-		ret = dst_sink.erase(dst_sink.ctx);
-
-		if (ret) {
-			LOG_ERR("Sink mem erase failed");
-			return ret;
-		}
 	}
 
 	/* Here other parts of pipe will be instantiated.
 	 *	Like decryption and/or decompression sinks.
 	 */
+
+	if (dst_sink.erase != NULL) {
+		ret = dst_sink.erase(dst_sink.ctx);
+		if (ret) {
+			LOG_ERR("Sink mem erase failed: %i", ret);
+			return ret;
+		}
+	}
 
 	/* If cache is disabled, act as thou uri was not found in cache */
 	ret = SOURCE_NOT_FOUND;
@@ -173,23 +174,6 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	}
 #endif /* CONFIG_SUIT_STREAM_IPC_REQUESTOR */
 
-	/* If possible update component size */
-	if ((ret == SUIT_SUCCESS) && (dst_sink.used_storage != NULL)) {
-		size_t size;
-
-		ret = dst_sink.used_storage(dst_sink.ctx, &size);
-		if (ret != SUIT_SUCCESS) {
-			LOG_ERR("Failed to retrieve amount of used space");
-			return ret;
-		}
-
-		ret = suit_plat_override_image_size(dst_handle, size);
-		if (ret != SUIT_SUCCESS) {
-			LOG_ERR("Failed to update component size");
-			return ret;
-		}
-	}
-
 	if (dst_sink.release != NULL) {
 		int err = dst_sink.release(dst_sink.ctx);
 
@@ -207,58 +191,35 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_string *payload)
 {
-#ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
+#ifdef CONFIG_SUIT_STREAM
 	struct stream_sink dst_sink;
+	suit_component_type_t component_type;
 
-	int ret = select_sink(dst_handle, &dst_sink);
-
-	if (ret != SUCCESS) {
+	/* Get component type based on component handle*/
+	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("Failed to decode component type: %i", ret);
 		return ret;
 	}
 
-	if (dst_sink.release != NULL) {
-		int err = dst_sink.release(dst_sink.ctx);
-
-		if (err != SUCCESS) {
-			LOG_ERR("sink release failed: %i", err);
-			return err;
-		}
+	if (!is_type_supported(component_type)) {
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	return SUIT_SUCCESS;
-#else  /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+#ifndef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
-}
 
-int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string *payload)
-{
-#ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
-	struct stream_sink dst_sink;
-
-	int ret = select_sink(dst_handle, &dst_sink);
-
+	/* Get dst_sink - final destination sink */
+	ret = select_sink(dst_handle, &dst_sink);
 	if (ret != SUCCESS) {
+		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
 	}
 
-	if (dst_sink.erase != NULL) {
-		ret = dst_sink.erase(dst_sink.ctx);
-
-		if (ret) {
-			LOG_ERR("Sink mem erase failed");
-			return ret;
-		}
-	}
-
-	// Invalidate the cache entry of the digest for the destination.
-#if CONFIG_SUIT_DIGEST_CACHE
-	suit_plat_digest_cache_unlock();
-	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
-	suit_plat_digest_cache_lock();
-#endif
-
-	ret = memptr_streamer(payload->value, payload->len, &dst_sink);
+	/* Here other parts of pipe will be instantiated.
+	 *	Like decryption and/or decompression sinks.
+	 */
 
 	if (dst_sink.release != NULL) {
 		int err = dst_sink.release(dst_sink.ctx);
@@ -270,7 +231,73 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 	}
 
 	return ret;
-#else  /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+#else
+	return SUIT_ERR_UNSUPPORTED_COMMAND;
+#endif /* CONFIG_SUIT_STREAM */
+}
+
+int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string *payload)
+{
+#ifdef CONFIG_SUIT_STREAM
+	struct stream_sink dst_sink;
+	suit_component_type_t component_type;
+
+	/* Get component type based on component handle*/
+	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	if (ret != SUIT_SUCCESS) {
+		LOG_ERR("Failed to decode component type: %i", ret);
+		return ret;
+	}
+
+	if (!is_type_supported(component_type)) {
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	}
+
+#ifndef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+
+	/* Get dst_sink - final destination sink */
+	ret = select_sink(dst_handle, &dst_sink);
+	if (ret != SUCCESS) {
+		LOG_ERR("Selecting sink failed: %i", ret);
+		return ret;
+	}
+
+	/* Here other parts of pipe will be instantiated.
+	 *	Like decryption and/or decompression sinks.
+	 */
+
+	if (dst_sink.erase != NULL) {
+		ret = dst_sink.erase(dst_sink.ctx);
+		if (ret) {
+			LOG_ERR("Sink mem erase failed: %i", ret);
+			return ret;
+		}
+	}
+
+	// Invalidate the cache entry of the digest for the destination.
+#if CONFIG_SUIT_DIGEST_CACHE
+	suit_plat_digest_cache_unlock();
+	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
+	suit_plat_digest_cache_lock();
+#endif
+
+#ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
+	ret = memptr_streamer(payload->value, payload->len, &dst_sink);
+#endif  /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+
+	if (dst_sink.release != NULL) {
+		int err = dst_sink.release(dst_sink.ctx);
+
+		if (err != SUCCESS) {
+			LOG_ERR("sink release failed: %i", err);
+			return err;
+		}
+	}
+
+	return ret;
+#else
+	return SUIT_ERR_UNSUPPORTED_COMMAND;
+#endif /* CONFIG_SUIT_STREAM */
 }

@@ -131,7 +131,7 @@ ZTEST(memptr_sink_tests, test_memptr_sink_used_storage_OK)
 
 	err = memptr_sink.used_storage(memptr_sink.ctx, &size);
 	zassert_equal(err, 0, "memptr_sink.used_storage failed - error %i", err);
-	zassert_equal(size, 1, "used_storage should return 1 if something was written to storage");
+	zassert_equal(size, TEST_DATA_SIZE, "used_storage should return 1 if something was written to storage");
 
 	err = release_memptr_storage(handle);
 	zassert_equal(err, 0, "memptr_sink.release failed - error %i", err);
