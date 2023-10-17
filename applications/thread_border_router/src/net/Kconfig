@@ -6,17 +6,41 @@
 
 config NRF_TBR_ROUTE_IPV4
     bool "Route IPv4 packets"
-    default y if OPENTHREAD_NAT64_BORDER_ROUTING
+    depends on OPENTHREAD_NAT64_BORDER_ROUTING
     imply NET_PKT_FILTER
     imply NET_PKT_FILTER_IPV4_HOOK
     help
       Enable IPv4 packets routing between interfaces.
 
 if NRF_TBR_ROUTE_IPV4
+config NRF_TBR_ROUTE_IPV4_INIT_PRIORITY
+    int
+    default 90
+    help
+      Initialization priority.
 
 module = NRF_TBR_ROUTEV4
 module-dep = LOG
 module-str = IPv4 packets routing
 source "subsys/logging/Kconfig.template.log_config"
+endif # NRF_TBR_ROUTE_IPV4
 
-endif
+config NRF_TBR_NAT
+    bool "Enable NAT"
+    depends on NRF_TBR_ROUTE_IPV4
+    help
+      Enable Network Address Translator (NAT).
+
+if NRF_TBR_NAT
+config NRF_TBR_NAT_INIT_PRIORITY
+    int
+    default 89
+    help
+      Initialization priority must be higher (lower value) than
+      for NRF_TBR_ROUTE_IPV4_INIT_PRIORITY.
+
+module = NRF_TBR_NAT
+module-dep = LOG
+module-str = NAT
+source "subsys/logging/Kconfig.template.log_config"
+endif # NRF_TBR_NAT

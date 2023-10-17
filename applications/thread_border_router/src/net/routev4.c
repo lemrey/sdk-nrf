@@ -93,6 +93,8 @@ static const char *iface2str(struct net_if *iface)
 	}
 #endif
 
+#else
+	ARG_UNUSED(iface);
 #endif
 
 	return "<unknown type>";
@@ -169,6 +171,8 @@ static void pkt_clone_and_send(struct net_pkt *pkt, struct net_if *iface)
 
 static bool prerouting_cb(struct npf_test *test, struct net_pkt *pkt)
 {
+	ARG_UNUSED(test);
+
 	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(ipv4_access, struct net_ipv4_hdr);
 	struct net_ipv4_hdr *hdr = (struct net_ipv4_hdr *)net_pkt_get_data(pkt, &ipv4_access);
 	struct net_if *iface = select_iface((struct in_addr *)hdr->dst);
@@ -194,6 +198,8 @@ static bool prerouting_cb(struct npf_test *test, struct net_pkt *pkt)
 
 static bool postrouting_cb(struct npf_test *test, struct net_pkt *pkt)
 {
+	ARG_UNUSED(test);
+
 	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(ipv4_access, struct net_ipv4_hdr);
 	struct net_ipv4_hdr *hdr = (struct net_ipv4_hdr *)net_pkt_get_data(pkt, &ipv4_access);
 	struct net_if *iface = select_iface((struct in_addr *)hdr->dst);
@@ -227,4 +233,4 @@ static int routing_init(void)
 	return 0;
 }
 
-SYS_INIT(routing_init, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT);
+SYS_INIT(routing_init, POST_KERNEL, CONFIG_NRF_TBR_ROUTE_IPV4_INIT_PRIORITY);

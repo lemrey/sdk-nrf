@@ -5,3 +5,4 @@
 #
 
 zephyr_library_sources(routev4.c)
+zephyr_library_sources_ifdef(CONFIG_NRF_TBR_NAT nat_core.c)
