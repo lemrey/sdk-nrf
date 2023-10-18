@@ -9,11 +9,6 @@ add_subdirectory(mci_test)
 zephyr_include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 
 if (CONFIG_MBEDTLS)
-if (CONFIG_SUIT_ORCHESTRATOR)
-# Link SUIT orchestrator module with mbedTLS library, that provides PSA crypto APIs.
-target_link_libraries(suit_orchestrator_interface INTERFACE mbedTLS)
-endif() # CONFIG_SUIT_ORCHESTRATOR
-
 if (CONFIG_SUIT_PLATFORM)
 # Link SUIT platform (incl. crypto) module with mbedTLS library, that provides PSA crypto APIs.
 target_link_libraries(suit_platform_interface INTERFACE mbedTLS)
