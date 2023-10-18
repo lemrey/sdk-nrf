@@ -82,19 +82,28 @@ If you want to add SMP Service to advertising data, refer to the :ref:`zephyr:sm
 
 .. fota_upgrades_over_ble_additional_information_end
 
+.. fota_upgrades_over_ble_mcuboot_direct_xip_nrfcdm_note_start
+
 .. note::
    Support for FOTA updates with MCUboot in the direct-xip mode is available since the following versions of the `nRF Connect Device Manager`_ mobile app:
 
    * Version ``1.8.0`` on Android.
    * Version ``1.4.0`` on iOS.
 
+.. fota_upgrades_over_ble_mcuboot_direct_xip_nrfcdm_note_end
+
 .. fota_upgrades_outro_start
 
 To perform a FOTA update, complete the following steps:
 
-1. Create a binary file that contains the new image.
+.. fota_upgrades_over_ble_nrfcdm_common_dfu_steps_start
 
-   |fota_upgrades_building|
+1. Generate the DFU package by building your application with the FOTA support over Bluetooth Low Energy.
+   You can find the generated :file:`dfu_application.zip` archive in the following directory :file:`<build_dir>/zephyr`.
+
+   .. note::
+      For each image included in the DFU-generated package, use a higher version number than your currently active firmware.
+      Otherwise, the DFU target may reject the FOTA process due to a downgrade prevention mechanism.
 
 #. Download the :file:`app_update.bin` image file to your device.
 
@@ -114,6 +123,8 @@ To perform a FOTA update, complete the following steps:
       * If you are using an iOS device, tap the selected mode in the pop-up window.
 
    #. Wait for the DFU to finish and then verify that the application works properly.
+
+.. fota_upgrades_over_ble_nrfcdm_common_dfu_steps_end
 
 FOTA update sample
 ==================
