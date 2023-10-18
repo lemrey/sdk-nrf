@@ -118,7 +118,7 @@ config SUIT_STREAM_IPC_PROVIDER_BUFFER_SIZE
 	depends on SUIT_STREAM_IPC_PROVIDER
 
 config SUIT_STREAM_IPC_STREAMER_REQUESTING_PERIOD
-  int "Image request repitition period"
+  int "Image request repetition period"
   range 0 10000
   default 200 
 
