@@ -8,8 +8,6 @@
 declare -A envelopes=(
   ["../orchestrator/manifest/sample_unsupported_component_54.yaml"]="../orchestrator/src/manifest_unsupported_component_54.c"
   ["../orchestrator/manifest/sample_unsupported_component.yaml"]="../orchestrator/src/manifest_unsupported_component.c"
-  ["../orchestrator/manifest/sample_valid_54.yaml"]="../orchestrator/src/manifest_valid_54.c"
-  ["../orchestrator/manifest/sample_valid.yaml"]="../orchestrator/src/manifest_valid.c"
   ["../orchestrator/manifest/sample_zero_54.yaml"]="../orchestrator/src/manifest_zero_size_54.c"
   ["../orchestrator/manifest/sample_zero.yaml"]="../orchestrator/src/manifest_zero_size.c"
   ["../fetch_integrated_payload_flash/manifest/manifest_52.yaml"]="../fetch_integrated_payload_flash/src/manifest_52.c"
@@ -37,11 +35,15 @@ declare -A dependency_envelopes=(
   ["../storage/manifest/manifest_rad.yaml"]="../storage/src/manifest_rad.c"
   ["../storage/manifest/manifest_rad_v2.yaml"]="../storage/src/manifest_rad_v2.c"
   ["../storage/manifest/manifest_sys.yaml"]="../storage/src/manifest_sys.c"
+  ["../orchestrator/manifest/sample_valid_54.yaml"]="../orchestrator/src/manifest_valid_app_54.c"
+  ["../orchestrator/manifest/sample_valid.yaml"]="../orchestrator/src/manifest_valid_app.c"
 )
 declare -A root_envelopes=(
   ["../storage/manifest/manifest_root.yaml"]="../storage/src/manifest_root.c"
   ["../storage/manifest/manifest_root_v2.yaml"]="../storage/src/manifest_root_v2.c"
   ["../storage/manifest/manifest_root_posix.yaml"]="../storage/src/manifest_root_posix.c"
+  ["../orchestrator/manifest/sample_valid_root_54.yaml"]="../orchestrator/src/manifest_valid_54.c"
+  ["../orchestrator/manifest/sample_valid_root.yaml"]="../orchestrator/src/manifest_valid.c"
 )
 declare -A envelope_dependency_names=(
   ["../storage/manifest/manifest_app.yaml"]="app.suit"
@@ -53,6 +55,10 @@ declare -A envelope_dependency_names=(
   ["../storage/manifest/manifest_root.yaml"]="root.suit"
   ["../storage/manifest/manifest_root_v2.yaml"]="root_v2.suit"
   ["../storage/manifest/manifest_root_posix.yaml"]="root_posix.suit"
+  ["../orchestrator/manifest/sample_valid_54.yaml"]="sample_app.suit"
+  ["../orchestrator/manifest/sample_valid.yaml"]="sample_app_posix.suit"
+  ["../orchestrator/manifest/sample_valid_root_54.yaml"]="sample_root.suit"
+  ["../orchestrator/manifest/sample_valid_root.yaml"]="sample_root_posix.suit"
 )
 
 
@@ -71,7 +77,9 @@ for envelope_yaml in "${!dependency_envelopes[@]}"; do
   envelope_name=${envelope_dependency_names[$envelope_yaml]}
   echo "### Regenerate: ${envelope_yaml} ###"
   ./regenerate.sh ${envelope_yaml} || exit 1
-  python3 replace_manifest.py ${envelope_c} sample_signed.suit || exit 2
+  if [ -e ${envelope_c} ]; then
+    python3 replace_manifest.py ${envelope_c} sample_signed.suit || exit 2
+  fi
   mv sample_signed.suit ${envelope_name}
 done
 for envelope_yaml in "${!root_envelopes[@]}"; do

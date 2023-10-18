@@ -253,8 +253,13 @@ ZTEST(orchestrator_tests, test_update_path_size_zero)
 	/* WHEN orchestrator is launched */
 	int err = suit_orchestrator_entry();
 
-	/* THEN it exits with error code */
-	zassert_equal(SUIT_ERR_CRASH, err, "Unexpected error code");
+	/* THEN candidate availability flag is cleared... */
+	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
+	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
+		      "Update candidate flag changed");
+	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	/* ... and orchestrator returns success */
+	zassert_equal(0, err, "Unexpected error code");
 }
 
 ZTEST(orchestrator_tests, test_init_cannot_import_key)
