@@ -66,7 +66,7 @@ static int destroy_keys(void)
 static void *test_suit_setup(void)
 {
 	int err = load_keys();
-	zassert_equal(err, 0, "Unable to initialize crypto backend\n");
+	zassert_equal(err, 0, "Unable to initialize crypto backend");
 
 	err = suit_processor_init();
 	zassert_equal(err, 0, "Unable to initialise SUIT processor (err: %d)", err);
@@ -77,7 +77,7 @@ static void *test_suit_setup(void)
 static void test_suit_teardown(void *f)
 {
 	int err = destroy_keys();
-	zassert_equal(err, 0, "Unable to uninitialize crypto backend\n");
+	zassert_equal(err, 0, "Unable to uninitialize crypto backend");
 }
 
 ZTEST_SUITE(envelope_decoder, NULL, test_suit_setup, NULL, NULL, test_suit_teardown);
