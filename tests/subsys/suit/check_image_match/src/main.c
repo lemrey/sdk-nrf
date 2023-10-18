@@ -45,14 +45,6 @@ static struct zcbor_string valid_cand_img_component_id = {
 	.len = sizeof(valid_cand_img_component_id_value),
 };
 
-static void replace(uint8_t *start_address, uint32_t value)
-{
-	*(start_address) = (uint8_t)((value >> 24) & 0x000000FF);
-	*(start_address + 1) = (uint8_t)((value >> 16) & 0x000000FF);
-	*(start_address + 2) = (uint8_t)((value >> 8) & 0x000000FF);
-	*(start_address + 3) = (uint8_t)(value & 0x000000FF);
-}
-
 ZTEST_SUITE(check_image_match_tests, NULL, NULL, NULL, NULL, NULL);
 
 ZTEST(check_image_match_tests, test_mem_valid)
@@ -60,8 +52,6 @@ ZTEST(check_image_match_tests, test_mem_valid)
 	/* GIVEN a MEM component pointing to the data */
 	uint8_t component_id_value[] = {0x84, 0x44, 0x63, 'M',	'E',  'M',  0x41, 0x02, 0x45, 0x1A,
 					0x00, 0x00, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x00, 0x00};
-	replace(component_id_value + 10, (uint32_t)data);	  /* Address */
-	replace(component_id_value + 16, (uint32_t)sizeof(data)); /* Size */
 
 	struct zcbor_string valid_src_component_id = {
 		.value = component_id_value,
@@ -71,6 +61,13 @@ ZTEST(check_image_match_tests, test_mem_valid)
 	suit_component_t component;
 	int err = suit_plat_create_component_handle(&valid_src_component_id, &component);
 	zassert_equal(SUIT_SUCCESS, err, "test error - create_component_handle failed: %d", err);
+
+	void *impl_data = NULL;
+	err = suit_plat_component_impl_data_get(component, &impl_data);
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_plat_component_impl_data_get: %d", err);
+
+	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data));
+	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
 
 	/* WHEN a check image match function is called */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
@@ -89,9 +86,6 @@ ZTEST(check_image_match_tests, test_mem_wrong_size)
 	/* GIVEN a MEM component pointing to the data... */
 	uint8_t component_id_value[] = {0x84, 0x44, 0x63, 'M',	'E',  'M',  0x41, 0x02, 0x45, 0x1A,
 					0x00, 0x00, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x00, 0x00};
-	replace(component_id_value + 10, (uint32_t)data);
-	/* ... but indicating wrong data size */
-	replace(component_id_value + 16, (uint32_t)sizeof(data) - 1);
 
 	struct zcbor_string valid_src_component_id = {
 		.value = component_id_value,
@@ -101,6 +95,14 @@ ZTEST(check_image_match_tests, test_mem_wrong_size)
 	suit_component_t component;
 	int err = suit_plat_create_component_handle(&valid_src_component_id, &component);
 	zassert_equal(SUIT_SUCCESS, err, "test error - create_component_handle failed: %d", err);
+
+	void *impl_data = NULL;
+	err = suit_plat_component_impl_data_get(component, &impl_data);
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_plat_component_impl_data_get: %d", err);
+
+	/* ... but indicating wrong data size */
+	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data) - 1);
+	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
 
 	/* WHEN a check image match function is called */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
@@ -119,8 +121,6 @@ ZTEST(check_image_match_tests, test_mem_wrong_digest)
 	/* GIVEN a MEM component pointing to the data */
 	uint8_t component_id_value[] = {0x84, 0x44, 0x63, 'M',	'E',  'M',  0x41, 0x02, 0x45, 0x1A,
 					0x00, 0x00, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x00, 0x00};
-	replace(component_id_value + 10, (uint32_t)data);
-	replace(component_id_value + 16, (uint32_t)sizeof(data));
 
 	struct zcbor_string valid_src_component_id = {
 		.value = component_id_value,
@@ -130,6 +130,13 @@ ZTEST(check_image_match_tests, test_mem_wrong_digest)
 	suit_component_t component;
 	int err = suit_plat_create_component_handle(&valid_src_component_id, &component);
 	zassert_equal(SUIT_SUCCESS, err, "test error - create_component_handle failed: %d", err);
+
+	void *impl_data = NULL;
+	err = suit_plat_component_impl_data_get(component, &impl_data);
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_plat_component_impl_data_get: %d", err);
+
+	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data));
+	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
 
 	/* WHEN a check image match function is called with invalid digest */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &invalid_digest,
@@ -150,8 +157,6 @@ ZTEST(check_image_match_tests, test_mem_invalid_component)
 	uint8_t invalid_component_id_value[] = {0x84, 0x44, 0x63, 'M',	'E',  'M',  0x41,
 						0x02, 0x45, 0x1A, 0x00, 0x00, 0x00, 0x00,
 						0x45, 0xFF, 0x00, 0x00, 0x00, 0x00};
-	replace(invalid_component_id_value + 10, (uint32_t)data);
-	replace(invalid_component_id_value + 16, (uint32_t)sizeof(data));
 
 	struct zcbor_string invalid_src_component_id = {
 		.value = invalid_component_id_value,

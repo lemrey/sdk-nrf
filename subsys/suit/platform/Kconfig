@@ -63,6 +63,7 @@ config SUIT_CHECK_IMAGE_MATCH
   depends on SUIT_DIGEST
   depends on SUIT_STREAM
   depends on SUIT_STREAM_SINK_DIGEST
+  depends on SUIT_STREAM_SOURCE_MEMPTR
 
 rsource "sink_selector/Kconfig"
 endif # SUIT_PLATFORM

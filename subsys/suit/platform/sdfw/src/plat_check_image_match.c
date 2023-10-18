@@ -8,55 +8,23 @@
 #include <suit_platform_internal.h>
 #include <suit_plat_decode_util.h>
 #include <suit_memptr_storage.h>
+#include <memptr_streamer.h>
+#include <digest_sink.h>
 
 #include <psa/crypto.h>
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(suit_plat_check_image_match, CONFIG_SUIT_LOG_LEVEL);
 
-static int suit_plat_check_image_match_mem(struct zcbor_string *component_id,
-					   enum suit_cose_alg alg_id, struct zcbor_string *digest,
-					   size_t image_size)
-{
-	intptr_t address = (intptr_t)NULL;
-	size_t size = 0;
-
-	if (!suit_plat_decode_address_size(component_id, &address, &size)) {
-		LOG_ERR("Failed to decode address and size");
-		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
-	}
-
-	LOG_DBG("Address: 0x%08x, size: 0x%08x", (unsigned int)address, image_size);
-
-	if (image_size > size) {
-		LOG_ERR("Size mismatch: image: %d, component: %d", image_size, size);
-		return SUIT_FAIL_CONDITION;
-	}
-
-	struct zcbor_string payload = {
-		.value = (const uint8_t *)address,
-		.len = image_size,
-	};
-
-	int err = suit_plat_check_digest(alg_id, digest, &payload);
-	if (err) {
-		LOG_ERR("Failed to check digest: %d", err);
-		/* Translate error code to allow entering another branches in try-each sequence */
-		err = SUIT_FAIL_CONDITION;
-	}
-
-	return err;
-}
-
-static int suit_plat_check_image_match_cand_img(suit_component_t component,
-						enum suit_cose_alg alg_id,
-						struct zcbor_string *digest, size_t image_size)
+static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
+						  enum suit_cose_alg alg_id,
+						  struct zcbor_string *digest)
 {
 	void *impl_data = NULL;
 	int err = suit_plat_component_impl_data_get(component, &impl_data);
 	if (err) {
 		LOG_ERR("Failed to get implementation data: %d", err);
-		return err;
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	uint8_t *data = NULL;
@@ -67,21 +35,44 @@ static int suit_plat_check_image_match_cand_img(suit_component_t component,
 		return err;
 	}
 
-	if (image_size != size) {
-		LOG_ERR("Size mismatch: image: %d, component: %d", image_size, size);
-		return SUIT_FAIL_CONDITION;
+	psa_algorithm_t psa_alg;
+
+	if (suit_cose_sha512 == alg_id) {
+		psa_alg = PSA_ALG_SHA_512;
+	} else if (suit_cose_sha256 == alg_id) {
+		psa_alg = PSA_ALG_SHA_256;
+	} else {
+		LOG_ERR("Unsupported hash algorithm: %d", alg_id);
+		return SUIT_ERR_UNSUPPORTED_PARAMETER;
 	}
 
-	struct zcbor_string payload = {
-		.value = (const uint8_t *)data,
-		.len = size,
-	};
+	struct stream_sink digest_sink;
 
-	err = suit_plat_check_digest(alg_id, digest, &payload);
+	err = digest_sink_get(&digest_sink, psa_alg, digest->value);
 	if (err) {
-		LOG_ERR("Failed to check digest: %d", err);
-		/* Translate error code to allow entering another branches in try-each sequence */
-		err = SUIT_FAIL_CONDITION;
+		LOG_ERR("Failed to get digest sink: %d", err);
+		return err;
+	}
+
+	err = memptr_streamer(data, size, &digest_sink);
+	if (err) {
+		LOG_ERR("Failed to stream to digest sink: %d", err);
+	} else {
+		err = digest_sink_digest_match(digest_sink.ctx);
+		if (err) {
+			LOG_ERR("Failed to check digest: %d", err);
+			/* Translate error code to allow entering another branches in try-each
+			 * sequence */
+			err = SUIT_FAIL_CONDITION;
+		}
+	}
+
+	int release_err = digest_sink.release(digest_sink.ctx);
+	if (release_err) {
+		LOG_ERR("Failed to release digest sink: %d", release_err);
+		if (!err) {
+			err = release_err;
+		}
 	}
 
 	return err;
@@ -119,7 +110,7 @@ static int suit_plat_check_image_match_soc_spec_sdfw(struct zcbor_string *compon
 
 static int suit_plat_check_image_match_soc_spec(struct zcbor_string *component_id,
 						enum suit_cose_alg alg_id,
-						struct zcbor_string *digest, size_t image_size)
+						struct zcbor_string *digest)
 {
 	uint32_t number = 0;
 
@@ -172,16 +163,15 @@ int suit_plat_check_image_match(suit_component_t component, enum suit_cose_alg a
 		break;
 	}
 	case SUIT_COMPONENT_TYPE_MEM: {
-		err = suit_plat_check_image_match_mem(component_id, alg_id, digest, image_size);
+		err = suit_plat_check_image_match_mem_mapped(component, alg_id, digest);
 		break;
 	}
 	case SUIT_COMPONENT_TYPE_CAND_IMG: {
-		err = suit_plat_check_image_match_cand_img(component, alg_id, digest, image_size);
+		err = suit_plat_check_image_match_mem_mapped(component, alg_id, digest);
 		break;
 	}
 	case SUIT_COMPONENT_TYPE_SOC_SPEC: {
-		err = suit_plat_check_image_match_soc_spec(component_id, alg_id, digest,
-							   image_size);
+		err = suit_plat_check_image_match_soc_spec(component_id, alg_id, digest);
 		break;
 	}
 	case SUIT_COMPONENT_TYPE_CAND_MFST:
