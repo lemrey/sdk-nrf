@@ -18,7 +18,7 @@ SUIT_Envelope_Tagged:
           suit-parameter-class-identifier:
             RFC4122_UUID:
               namespace: nordicsemi.com
-              name: posix_sample_app
+              name: test_sample_app
           suit-parameter-image-digest:
             suit-digest-algorithm-id: cose-alg-sha-256
             suit-digest-bytes:
@@ -60,14 +60,14 @@ SUIT_Envelope_Tagged:
     - INSTLD_MFST
     - RFC4122_UUID:
         namespace: nordicsemi.com
-        name: posix_sample_app
+        name: test_sample_app
   suit-text:
     '["MEM", 0, 524288, 0]':
       suit-text-vendor-name: Nordic Semiconductor ASA
-      suit-text-model-name: posix
+      suit-text-model-name: test
       suit-text-vendor-domain: nordicsemi.com
-      suit-text-model-info: The POSIX application
-      suit-text-component-description: Sample application for POSIX
+      suit-text-model-info: The test application
+      suit-text-component-description: Sample application for test
       suit-text-component-version: v1.0.0
   suit-integrated-payloads:
     '#file.bin': file.bin

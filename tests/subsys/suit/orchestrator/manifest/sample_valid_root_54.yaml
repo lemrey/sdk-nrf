@@ -12,7 +12,7 @@ SUIT_Envelope_Tagged:
       - - INSTLD_MFST
         - RFC4122_UUID:
             namespace: nordicsemi.com
-            name: nRF54H20_sample_app
+            name: test_sample_app
       suit-shared-sequence:
       - suit-directive-set-component-index: 1
       - suit-directive-override-parameters:
@@ -21,7 +21,7 @@ SUIT_Envelope_Tagged:
           suit-parameter-class-identifier:
             RFC4122_UUID:
               namespace: nordicsemi.com
-              name: nRF54H20_sample_app
+              name: test_sample_app
 
       - suit-condition-vendor-identifier:
         - suit-send-record-success
@@ -100,13 +100,13 @@ SUIT_Envelope_Tagged:
     - INSTLD_MFST
     - RFC4122_UUID:
         namespace: nordicsemi.com
-        name: nRF54H20_sample_root
+        name: test_sample_root
   suit-text:
     '["CAND_MFST", 0]':
       suit-text-vendor-name: Nordic Semiconductor ASA
-      suit-text-model-name: nRF54H20
+      suit-text-model-name: test
       suit-text-vendor-domain: nordicsemi.com
-      suit-text-model-info: The nRF54H20 root manifest
+      suit-text-model-info: The test root manifest
       suit-text-component-description: Sample root manifest
       suit-text-component-version: v1.0.0
   suit-integrated-dependencies:
