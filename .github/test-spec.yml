@@ -513,3 +513,6 @@
   - "subsys/suit/**/*"
   - "samples/suit/**/*"
   - "tests/subsys/suit/**/*"
+
+"CI-test-zephyr-sanitycheck-low-level":
+  - "samples/egu/**/*"
