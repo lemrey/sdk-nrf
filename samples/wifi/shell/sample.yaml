@@ -143,6 +143,13 @@ tests:
       - thingy53_nrf5340_cpuapp
     platform_allow: thingy53_nrf5340_cpuapp
     tags: ci_build
+  sample.nrf54h20dk_nrf7002ek.shell:
+    build_only: true
+    extra_args: SHIELD=nrf700x_nrf54h20dk
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: ci_build
   # Used by QA and also acts as a memory stress test
   sample.nrf7001.superset:
     build_only: true
