@@ -58,9 +58,9 @@ static K_WORK_DELAYABLE_DEFINE(calibration_work, mpsl_calibration_work_handler);
 
 /* Basic build time sanity checking */
 #define MPSL_RESERVED_GRTC_CHANNELS ((1U << 8) | (1U << 9) | (1U << 10) | (1U << 11) | (1U << 12))
-#define MPSL_RESERVED_DPPI_SOURCE_CHANNELS ((1U << 0) | (1U << 1))
-#define MPSL_RESERVED_DPPI_SINK_CHANNELS ((1U << 0) | (1U << 1))
-#define MPSL_RESERVED_IPCT_SOURCE_CHANNELS ((1U << 0) | (1U << 1))
+#define MPSL_RESERVED_DPPI_SOURCE_CHANNELS (1U << 0)
+#define MPSL_RESERVED_DPPI_SINK_CHANNELS (1U << 0)
+#define MPSL_RESERVED_IPCT_SOURCE_CHANNELS (1U << 0)
 
 BUILD_ASSERT(MPSL_RTC_IRQn != GRTC_IRQn, "MPSL requires a dedicated GRTC IRQ");
 
@@ -78,8 +78,8 @@ BUILD_ASSERT((NRFX_GRTC_CONFIG_FORBIDDEN_CC_CHANNEL_MASK & MPSL_RESERVED_GRTC_CH
 /* check the GRTC source channels.
  * i.e. ensure something similar to this is present in the DT
  * &dppic132 {
- *   owned-channels = <0 1>;
- *   source-channels = <0 1>;
+ *   owned-channels = <0>;
+ *   source-channels = <0>;
  * }; */
 #define SHIFT_DPPI_SOURCE_CHANNELS(val, _)                                                         \
 	(1 << (DT_PROP_BY_IDX(DT_NODELABEL(dppic132), source_channels, val)))
@@ -93,8 +93,8 @@ BUILD_ASSERT((DPPI_SOURCE_CHANNELS & MPSL_RESERVED_DPPI_SOURCE_CHANNELS) ==
 /* check the GRTC sink channels.
  * i.e. ensure something similar to this is present in the DT
  * &dppic130 {
- *   owned-channels = <0 1>;
- *   sink-channels = <0 1>;
+ *   owned-channels = <0>;
+ *   sink-channels = <0>;
  * }; */
 #define SHIFT_DPPI_SINK_CHANNELS(val, _)                                                           \
 	(1 << (DT_PROP_BY_IDX(DT_NODELABEL(dppic130), sink_channels, val)))
@@ -108,9 +108,8 @@ BUILD_ASSERT((DPPI_SINK_CHANNELS & MPSL_RESERVED_DPPI_SINK_CHANNELS) ==
 /* check the IPCT source channels.
  * i.e. ensure something similar to this is present in the DT
  * &ipct130 {
- *   owned-channels = <0 1>;
- *   source-channel-links = <0 3 0
- *                           1 3 1>;
+ *   owned-channels = <0>;
+ *   source-channel-links = <0 3 0>;
  * }; */
 #define SHIFT_IPCT_SOURCE_CHANNELS(val, _)                                                         \
 	(1 << (DT_PROP_BY_IDX(DT_NODELABEL(ipct130), owned_channels, val)))
