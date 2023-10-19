@@ -43,3 +43,4 @@ nRF54H20 samples
    ../../../samples/crypto/rng/README
    ../../../samples/crypto/rsa/README
    ../../../samples/crypto/sha256/README
+   ../../../samples/wifi/shell/README
