@@ -6,9 +6,14 @@ tests:
       - nrf52840dk_nrf52840
       - native_posix
 
+  suit-processor.integration.fetch_integrated_payload_flash.nrf54h20:
+    platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1
+    tags: suit-processor integrated-payload fetch MRAM
+    extra_args: DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpusec.overlay;serial_cpusec.overlay;systick.overlay
+
   suit-processor.integration.fetch_integrated_payload_flash.fpga:
     platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1
     tags: suit-processor integrated-payload fetch MRAM fpga
-    extra_args: DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpusec.overlay;systick.overlay
+    extra_args: DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpusec.overlay;serial_cpusec.overlay;systick.overlay
     extra_configs:
       - CONFIG_EMULATOR_FPGA=y

@@ -6,28 +6,12 @@
 
 / {
 	chosen {
-		sdfw,mramc = &mramc;
-
-		sdfw,tdd-spu = &spu200;
-		sdfw,grtc-spu = &spu133;
-
-		sdfw,gpio-spu = &spu131;
 		zephyr,entropy = &cracen;
-		zephyr,console = &uart137;
 	};
 };
 
 &cracen {
 	status = "okay";
-};
-
-&ram3x_cpusec {
-	status = "okay";
-};
-
-&uart137 {
-	status = "okay";
-	memory-regions = <&ram3x_cpusec>;
 };
 
 &mram_controller {
@@ -50,20 +34,4 @@
 			};
 		};
 	};
-};
-
-&spu131 {
-	status = "okay";
-};
-
-&spu133 {
-	status = "okay";
-};
-
-&spu137 {
-	status = "okay";
-};
-
-&spu200 {
-	status = "okay";
 };

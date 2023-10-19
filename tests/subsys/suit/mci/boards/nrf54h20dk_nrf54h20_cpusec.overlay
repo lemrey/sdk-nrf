@@ -6,10 +6,6 @@
 
 / {
 	chosen {
-		sdfw,tdd-spu = &spu200;
-		sdfw,grtc-spu = &spu133;
-
-		sdfw,gpio-spu = &spu131;
 		zephyr,console = &uart137;
 	};
 };
@@ -21,20 +17,4 @@
 &uart137 {
 	status = "okay";
 	memory-regions = <&ram3x_cpusec>;
-};
-
-&spu131 {
-	status = "okay";
-};
-
-&spu133 {
-	status = "okay";
-};
-
-&spu137 {
-	status = "okay";
-};
-
-&spu200 {
-	status = "okay";
 };
