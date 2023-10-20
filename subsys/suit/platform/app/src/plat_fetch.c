@@ -114,7 +114,7 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	}
 
 	if (dst_sink.release != NULL) {
-		int err = sink.release(&sink.ctx);
+		int err = sink.release(sink.ctx);
 
 		if (err != SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
@@ -180,7 +180,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	}
 
 	if (dst_sink.release != NULL) {
-		int err = dst_sink.release(&sink.ctx);
+		int err = dst_sink.release(sink.ctx);
 
 		if (err != SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
