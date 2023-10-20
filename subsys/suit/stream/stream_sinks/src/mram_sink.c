@@ -70,12 +70,14 @@ int get_mram_sink(struct stream_sink *sink, uint8_t *dst, size_t size)
 				}
 			}
 
+			memset(ctx, 0, sizeof(*ctx));
 			ctx->offset = 0;
 			ctx->offset_limit = (size_t)dst + size;
 			ctx->size = 0;
 			ctx->ptr = dst;
 			ctx->in_use = true;
 
+			memset(sink, 0, sizeof(*sink));
 			sink->write = write;
 			sink->seek = seek;
 			sink->flush = flush;
