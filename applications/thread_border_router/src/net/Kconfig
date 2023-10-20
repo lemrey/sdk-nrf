@@ -39,6 +39,12 @@ config NRF_TBR_NAT_INIT_PRIORITY
       Initialization priority must be higher (lower value) than
       for NRF_TBR_ROUTE_IPV4_INIT_PRIORITY.
 
+config NRF_TBR_NAT_RECORDS_COUNT
+    int "Number of NAT records in the pool"
+    default 25
+    help
+      Number of total NAT records available for TCP, UDP and ICMP protocols.
+
 module = NRF_TBR_NAT
 module-dep = LOG
 module-str = NAT

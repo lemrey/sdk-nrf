@@ -14,7 +14,7 @@
 #include <zephyr/types.h>
 
 /**
- * @brief Recompute checksum for changed data.
+ * @brief Update checksum for changed data.
  *
  * @param sum_in	Old checksum to recompute.
  * @param data_old	Old value.
@@ -23,7 +23,7 @@
  *
  * @return New checksum.
  */
-uint16_t recompute_chksum_ipv4(uint16_t sum_in, const uint8_t *data_old,
-			       const uint8_t *data_new, size_t len);
+uint16_t update_chksum(uint16_t sum_in, const uint8_t *data_old,
+		       const uint8_t *data_new, size_t len);
 
 #endif /* NRF_TBR_UTILS_H_ */

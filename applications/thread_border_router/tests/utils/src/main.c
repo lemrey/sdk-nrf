@@ -143,7 +143,7 @@ ZTEST(test_utils_fn, test_pkt_checksum_updt)
 	net_ipv4_addr_copy_raw(NET_IPV4_HDR(pkt_orig)->src, new_src_addr.s4_addr);
 
 	/* Recompute checksum for IP header. */
-	chksum_got = recompute_chksum_ipv4(chksum_orig, orig_src_addr.s4_addr,
+	chksum_got = update_chksum(chksum_orig, orig_src_addr.s4_addr,
 					   new_src_addr.s4_addr, sizeof(struct in_addr));
 
 	zassert_equal(chksum_got, chksum_exp,

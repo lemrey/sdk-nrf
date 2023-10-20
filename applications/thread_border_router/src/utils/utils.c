@@ -67,8 +67,8 @@ static void recompute_chksum(uint32_t *chksum, const uint8_t *data, size_t len, 
 	}
 }
 
-uint16_t recompute_chksum_ipv4(uint16_t sum_in, const uint8_t *data_old,
-			       const uint8_t *data_new, size_t len)
+uint16_t update_chksum(uint16_t sum_in, const uint8_t *data_old,
+		       const uint8_t *data_new, size_t len)
 {
 	/* According to the rfc1624 the checksum can be recomputed using
 	 * following equation [Eqn. 3]:

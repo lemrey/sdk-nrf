@@ -10,6 +10,7 @@
 
 #include <zephyr/net/net_pkt_filter.h>
 #include <zephyr/net/net_ip.h>
+#include "nat_proto.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nat_core, CONFIG_NRF_TBR_NAT_LOG_LEVEL);
@@ -54,6 +55,9 @@ static bool nat_rx_cb(struct npf_test *test, struct net_pkt *pkt)
 		switch (NET_IPV4_HDR(pkt)->proto) {
 		case IPPROTO_ICMP:
 			LOG_DBG("ICMP <");
+			if (nat_icmp(pkt, false) == NET_DROP) {
+				drop_pkt = true;
+			}
 			break;
 		case IPPROTO_UDP:
 			LOG_DBG("UDP <");
@@ -86,6 +90,9 @@ static bool nat_tx_cb(struct npf_test *test, struct net_pkt *pkt)
 	switch (NET_IPV4_HDR(pkt)->proto) {
 	case IPPROTO_ICMP:
 		LOG_DBG("ICMP >");
+		if (nat_icmp(pkt, true) == NET_DROP) {
+			is_pkt_ok = false;
+		}
 		break;
 	case IPPROTO_UDP:
 		LOG_DBG("UDP >");
