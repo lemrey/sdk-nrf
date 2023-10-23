@@ -263,6 +263,34 @@ SUIT manifest contains the following command sequences:
 
 * ``suit-dependency-resolution`` - prepares the system for the update by identifying and fetching any missing dependency manifests.
 
+.. _ug_suit_dfu_suit_directives:
+
+Directives
+==========
+
+The SUIT procedure defines the following directives:
+
+* ``set-component-index`` - defines the component(s) to which successive directives and conditions will apply.
+
+* ``override-parameters`` - allows the manifest to configure the behavior of future directives or conditions by changing (as in, setting or modifying) parameters that are read by those directives or conditions.
+
+* ``fetch`` - retrieves the payload from a specified Uniform Resource Identifier (URI) and stores it in the destination component.
+  A URI is provided in the ``override-parameters`` directive.
+  The URI may indicate an external source, for example, HTTP or FTP, or the envelope (as a fragment-only reference as defined in `RFC3986 <https://datatracker.ietf.org/doc/html/rfc3986>`__, such as ``"#app_image.bin"``).
+
+* ``copy`` - transfers the image from the source component to the destination component.
+  The source component is provided in the ``override-parameters`` directive.
+
+* ``write`` - works similarly to ``copy``, except that the source image is embedded in the manifest.
+  This directive is best for small blocks of data due to manifest size limitations.
+
+* ``invoke`` - starts the firmware. (In other words, "boots" the firmware.)
+
+* ``try-each`` -  runs multiple ``SUIT_Command_Sequence`` instances, trying each one in succession.
+  It stops when one succeeds or continues to the next if one fails, making it valuable for handling alternative scenarios.
+
+* ``run-sequence`` - runs a single ``SUIT_Command_Sequence``.
+
 .. _ug_suit_dfu_suit_conditions:
 
 Conditions
@@ -271,6 +299,7 @@ Conditions
 The SUIT procedure defines the following conditions:
 
 * ``class-identifier``, ``vendor-identifier``, and ``device-identifier`` - these conditions make sure that the manifest procedure is working with the correct device.
+  The correct UUIDs (16 bytes) must be given.
 
 * ``image-match`` -  checks the digest of an image.
   The expected digest and corresponding component are set here.

@@ -340,4 +340,4 @@ Documentation
 
 Added:
 
-No changes since the latest nRF Connect SDK release.
+* List and description of :ref:`directives <ug_suit_dfu_suit_directives>` used in the SUIT DFU procedure.
