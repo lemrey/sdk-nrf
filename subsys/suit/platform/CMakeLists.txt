@@ -13,6 +13,7 @@ zephyr_library()
 
 zephyr_library_sources(src/suit_plat_components.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_DIGEST src/suit_plat_digest.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_DIGEST_CACHE src/suit_plat_digest_cache.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_DEVCONFIG src/suit_plat_devconfig.c)
 zephyr_library_sources(src/suit_plat_commands.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_AUTHENTICATE src/suit_plat_authenticate.c)

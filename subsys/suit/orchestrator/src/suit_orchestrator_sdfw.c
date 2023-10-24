@@ -14,6 +14,7 @@
 #include <suit_platform.h>
 #include <suit_storage.h>
 #include <suit_plat_mem_util.h>
+#include <suit_plat_digest_cache.h>
 
 LOG_MODULE_REGISTER(suit, CONFIG_SUIT_LOG_LEVEL);
 
@@ -179,12 +180,20 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 	}
 	LOG_INF("Booting from manifest version: 0x%x", seq_num);
 
+#if CONFIG_SUIT_DIGEST_CACHE
+	suit_plat_digest_cache_unlock();
+#endif
+
 	err = suit_process_sequence(installed_envelope_address, installed_envelope_size,
 				    SUIT_SEQ_VALIDATE);
 	if (err) {
 		LOG_ERR("Failed to execute suit-validate: %d", err);
 		return enter_emergency_recovery();
 	}
+#if CONFIG_SUIT_DIGEST_CACHE
+	suit_plat_digest_cache_lock();
+#endif
+
 	LOG_DBG("Processed suit-validate");
 
 	err = suit_process_sequence(installed_envelope_address, installed_envelope_size,
@@ -269,6 +278,12 @@ int suit_orchestrator_entry(void)
 	size_t update_regions_len = 0;
 
 	int err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
+
+#if CONFIG_SUIT_DIGEST_CACHE
+	suit_plat_digest_cache_unlock();
+	suit_plat_digest_cache_remove_all();
+	suit_plat_digest_cache_lock();
+#endif
 
 	if ((err == 0) && (update_regions_len > 0)) {
 		LOG_INF("Update path");

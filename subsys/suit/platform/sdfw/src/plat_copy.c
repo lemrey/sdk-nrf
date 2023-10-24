@@ -9,6 +9,7 @@
 #include <suit_platform.h>
 #include <suit_plat_decode_util.h>
 #include <suit_platform_internal.h>
+#include <suit_plat_digest_cache.h>
 
 #ifdef CONFIG_SUIT_STREAM
 #include <sink.h>
@@ -127,6 +128,13 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
+
+#if CONFIG_SUIT_DIGEST_CACHE
+	// Invalidate the cache entry of the digest for the destination.
+	suit_plat_digest_cache_unlock();
+	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
+	suit_plat_digest_cache_lock();
+#endif
 
 	/* Select source based on component type */
 	switch (component_type) {

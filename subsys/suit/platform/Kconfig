@@ -24,6 +24,18 @@ config SUIT_DIGEST
 	bool "Enable digest calculation"
 	depends on SUIT_STREAM_SINK_DIGEST
 
+config SUIT_DIGEST_CACHE
+	bool "Enable digest caching"
+	depends on SUIT_DIGEST
+
+if SUIT_DIGEST_CACHE
+
+config SUIT_DIGEST_CACHE_SIZE
+	int "Maximum number of entries in the digest cache"
+	default 16
+
+endif
+
 config SUIT_AUTHENTICATE
 	bool "Enable message/data authentication"
 	depends on SUIT_CRYPTO
@@ -38,7 +50,7 @@ config SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 	bool "Enable component ID check against supported manifest class IDs"
 	depends on SUIT_UTILS
 	depends on SUIT_MCI
-	
+
 config SUIT_PLAT_CHECK_CLASSES
 	bool "Enable vendor/class/device class ID checks"
 	depends on SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
@@ -49,8 +61,8 @@ config MAX_NUMBER_OF_MANIFEST_CLASS_IDS
 	default 8 if SOC_NRF54H20
 	default 5 if SOC_NRF52840
 	default 5 if SOC_POSIX
-	help 
-		Check SUIT_STORAGE_N_ENVELOPES 
+	help
+		Check SUIT_STORAGE_N_ENVELOPES
 
 config SUIT_CHECK_IMAGE_MATCH
 	bool "Enable image digest verification"

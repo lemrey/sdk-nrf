@@ -6,6 +6,7 @@
 
 #include <zephyr/logging/log.h>
 #include <suit_platform_internal.h>
+#include <suit_plat_digest_cache.h>
 
 #ifdef CONFIG_SUIT_STREAM
 #include <sink.h>
@@ -128,6 +129,13 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
 
+	// Invalidate the cache entry of the digest for the destination.
+#if CONFIG_SUIT_DIGEST_CACHE
+	suit_plat_digest_cache_unlock();
+	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
+	suit_plat_digest_cache_lock();
+#endif
+
 	/* Get dst_sink - final destination) sink */
 	ret = select_sink(dst_handle, &dst_sink);
 	if (ret != SUCCESS) {
@@ -224,6 +232,13 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 	if (ret != SUCCESS) {
 		return ret;
 	}
+
+	// Invalidate the cache entry of the digest for the destination.
+#if CONFIG_SUIT_DIGEST_CACHE
+	suit_plat_digest_cache_unlock();
+	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
+	suit_plat_digest_cache_lock();
+#endif
 
 	ret = memptr_streamer(payload->value, payload->len, &sink);
 

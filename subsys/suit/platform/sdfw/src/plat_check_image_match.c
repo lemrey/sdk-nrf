@@ -7,6 +7,7 @@
 #include <suit_platform.h>
 #include <suit_platform_internal.h>
 #include <suit_plat_decode_util.h>
+#include <suit_plat_digest_cache.h>
 #include <suit_memptr_storage.h>
 #include <memptr_streamer.h>
 #include <digest_sink.h>
@@ -183,6 +184,29 @@ int suit_plat_check_image_match(suit_component_t component, enum suit_cose_alg a
 		break;
 	}
 	}
+
+#if CONFIG_SUIT_DIGEST_CACHE
+	if (err == SUIT_SUCCESS && suit_plat_digest_cache_is_unlocked())
+	{
+		int ret;
+
+		switch(component_type)
+		{
+		case SUIT_COMPONENT_TYPE_MEM:
+		case SUIT_COMPONENT_TYPE_SOC_SPEC: {
+			ret = suit_plat_digest_cache_add(component_id, digest);
+
+			if (ret != SUIT_SUCCESS)
+			{
+				LOG_WRN("Failed to cache digest for component type %d, err %d", component_type, ret);
+			}
+		}
+		default: {
+			break;
+		}
+		}
+	}
+#endif /* CONFIG_SUIT_DIGEST_CACHE */
 
 	return err;
 }
