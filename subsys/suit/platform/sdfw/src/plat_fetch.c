@@ -67,7 +67,7 @@ static bool is_type_supported_by_ipc(suit_component_type_t component_type)
 int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 {
 #ifdef CONFIG_SUIT_STREAM
-	suit_component_type_t component_type;
+	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 	struct stream_sink sink;
 
 	/* Get component type based on component handle*/
@@ -110,7 +110,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 {
 #ifdef CONFIG_SUIT_STREAM
 	struct stream_sink dst_sink;
-	suit_component_type_t component_type;
+	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	/* Get component type based on component handle*/
 	int ret = suit_plat_component_type_get(dst_handle, &component_type);

@@ -12,7 +12,7 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 					    struct zcbor_string *component_id)
 {
 	suit_manifest_class_id_t *decoded_class_id;
-	suit_component_type_t type;
+	suit_component_type_t type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 	intptr_t address;
 	uint32_t number;
 	uint8_t cpu_id;
