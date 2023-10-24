@@ -12,9 +12,10 @@ LOG_MODULE_REGISTER(suit_memptr_sink, CONFIG_SUIT_LOG_LEVEL);
 static int write(void *ctx, uint8_t *buf, size_t *size);
 static int used_storage(void *ctx, size_t *size);
 
-int get_memptr_sink(struct stream_sink *sink, memptr_storage_handle handle)
+int memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle)
 {
 	if ((sink != NULL) && (handle != NULL)) {
+		sink->erase = NULL;
 		sink->write = write;
 		sink->seek = NULL;
 		sink->flush = NULL;

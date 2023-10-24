@@ -69,7 +69,7 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 {
 #ifdef CONFIG_SUIT_STREAM
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
-	struct stream_sink sink;
+	struct stream_sink dst_sink;
 
 	/* Get component type based on component handle*/
 	int ret = suit_plat_component_type_get(dst_handle, &component_type);
@@ -82,14 +82,14 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	ret = select_sink(dst_handle, &sink);
+	ret = select_sink(dst_handle, &dst_sink);
 
 	if (ret != SUCCESS) {
 		return ret;
 	}
 
-	if (sink.release != NULL) {
-		int err = sink.release(sink.ctx);
+	if (dst_sink.release != NULL) {
+		int err = dst_sink.release(dst_sink.ctx);
 
 		if (err != SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
@@ -140,6 +140,15 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	ret = select_sink(dst_handle, &dst_sink);
 	if (ret != SUCCESS) {
 		return ret;
+	}
+
+	if (dst_sink.erase != NULL) {
+		ret = dst_sink.erase(dst_sink.ctx);
+
+		if (ret) {
+			LOG_ERR("Sink mem erase failed");
+			return ret;
+		}
 	}
 
 	/* Here other parts of pipe will be instantiated.
@@ -199,16 +208,16 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_string *payload)
 {
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
-	struct stream_sink sink;
+	struct stream_sink dst_sink;
 
-	int ret = select_sink(dst_handle, &sink);
+	int ret = select_sink(dst_handle, &dst_sink);
 
 	if (ret != SUCCESS) {
 		return ret;
 	}
 
-	if (sink.release != NULL) {
-		int err = sink.release(sink.ctx);
+	if (dst_sink.release != NULL) {
+		int err = dst_sink.release(dst_sink.ctx);
 
 		if (err != SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
@@ -225,12 +234,21 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string *payload)
 {
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
-	struct stream_sink sink;
+	struct stream_sink dst_sink;
 
-	int ret = select_sink(dst_handle, &sink);
+	int ret = select_sink(dst_handle, &dst_sink);
 
 	if (ret != SUCCESS) {
 		return ret;
+	}
+
+	if (dst_sink.erase != NULL) {
+		ret = dst_sink.erase(dst_sink.ctx);
+
+		if (ret) {
+			LOG_ERR("Sink mem erase failed");
+			return ret;
+		}
 	}
 
 	// Invalidate the cache entry of the digest for the destination.
@@ -240,10 +258,10 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 	suit_plat_digest_cache_lock();
 #endif
 
-	ret = memptr_streamer(payload->value, payload->len, &sink);
+	ret = memptr_streamer(payload->value, payload->len, &dst_sink);
 
-	if (sink.release != NULL) {
-		int err = sink.release(sink.ctx);
+	if (dst_sink.release != NULL) {
+		int err = dst_sink.release(dst_sink.ctx);
 
 		if (err != SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);

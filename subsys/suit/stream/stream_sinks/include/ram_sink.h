@@ -17,6 +17,6 @@
  * @param size Write area size
  * @return int 0 if success otherwise error code.
  */
-int get_ram_sink(struct stream_sink *sink, uint8_t *dst, size_t size);
+int ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size);
 
 #endif /* RAM_SINK_H__ */

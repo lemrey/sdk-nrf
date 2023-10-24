@@ -47,11 +47,11 @@ static int release_sink(struct stream_sink *sink)
 int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handle)
 {
 #ifdef CONFIG_SUIT_STREAM
-	struct stream_sink sink;
+	struct stream_sink dst_sink;
 	struct zcbor_string *component_id;
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
-	int ret = select_sink(dst_handle, &sink);
+	int ret = select_sink(dst_handle, &dst_sink);
 
 	if (ret != SUCCESS) {
 		LOG_ERR("select_sink failed - error %i", ret);
@@ -62,19 +62,19 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("suit_plat_component_id_get failed: %i", ret);
-		release_sink(&sink);
+		release_sink(&dst_sink);
 
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	if (!suit_plat_decode_component_type(component_id, &component_type)) {
 		LOG_ERR("suit_plat_decode_component_type failed");
-		release_sink(&sink);
+		release_sink(&dst_sink);
 
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	/* Select sink based on component type */
+	/* Select dst_sink based on component type */
 	switch (component_type) {
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	case SUIT_COMPONENT_TYPE_CAND_IMG:
@@ -88,7 +88,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 		break;
 	}
 
-	release_sink(&sink);
+	release_sink(&dst_sink);
 	return ret;
 #else  /* CONFIG_SUIT_STREAM */
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
@@ -98,7 +98,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 {
 #ifdef CONFIG_SUIT_STREAM
-	struct stream_sink sink;
+	struct stream_sink dst_sink;
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	uint8_t *payload_ptr;
 	size_t payload_size;
@@ -106,25 +106,34 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 	struct zcbor_string *component_id;
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
-	int ret = select_sink(dst_handle, &sink);
+	int ret = select_sink(dst_handle, &dst_sink);
 
 	if (ret != SUCCESS) {
 		LOG_ERR("select_sink failed - error %i", ret);
 		return ret;
 	}
 
+	if (dst_sink.erase != NULL) {
+		ret = dst_sink.erase(dst_sink.ctx);
+
+		if (ret) {
+			LOG_ERR("Sink mem erase failed");
+			return ret;
+		}
+	}
+
 	ret = suit_plat_component_id_get(src_handle, &component_id);
 
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("suit_plat_component_id_get failed: %i", ret);
-		release_sink(&sink);
+		release_sink(&dst_sink);
 
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	if (!suit_plat_decode_component_type(component_id, &component_type)) {
 		LOG_ERR("suit_plat_decode_component_type failed");
-		release_sink(&sink);
+		release_sink(&dst_sink);
 
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -146,7 +155,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		if (ret != SUCCESS) {
 			LOG_ERR("suit_plat_component_impl_data_get failed - error %i", ret);
 
-			release_sink(&sink);
+			release_sink(&dst_sink);
 			return ret;
 		}
 
@@ -155,11 +164,11 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		if ((ret != SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
 			LOG_ERR("get_memptr_ptr failed - error %i", ret);
 
-			release_sink(&sink);
+			release_sink(&dst_sink);
 			return ret;
 		}
 
-		ret = memptr_streamer(payload_ptr, payload_size, &sink);
+		ret = memptr_streamer(payload_ptr, payload_size, &dst_sink);
 
 		if (ret != SUCCESS) {
 			LOG_ERR("memptr_streamer failed - error %i", ret);
@@ -172,7 +181,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		break;
 	}
 
-	release_sink(&sink);
+	release_sink(&dst_sink);
 
 	return ret;
 #else  /* CONFIG_SUIT_STREAM */

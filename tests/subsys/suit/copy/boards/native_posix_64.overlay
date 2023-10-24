@@ -10,9 +10,8 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		/* Use the last 8KB of NVM as suit storage. */
-		suit_storage: partition@fe000 {
-			label = "suit_storage";
+		/* Use the last 8KB of NVM as dfu_partition. */
+		dfu_partition: partition@fe000 {
 			reg = <0xfe000 DT_SIZE_K(8)>;
 		};
 	};

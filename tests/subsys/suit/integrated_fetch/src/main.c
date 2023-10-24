@@ -28,8 +28,8 @@ ZTEST(memptr_streamer_tests, test_memptr_streamer_OK)
 	int err = get_memptr_storage(&handle);
 	zassert_equal(err, 0, "get_memptr_storage failed - error %i", err);
 
-	err = get_memptr_sink(&memptr_sink, handle);
-	zassert_equal(err, 0, "get_memptr_sink failed - error %i", err);
+	err = memptr_sink_get(&memptr_sink, handle);
+	zassert_equal(err, 0, "memptr_sink_get failed - error %i", err);
 
 	err = memptr_streamer(test_data, TEST_DATA_SIZE, &memptr_sink);
 	zassert_equal(err, 0, "memptr_streamer failed - error %i", err);
@@ -46,8 +46,8 @@ ZTEST(memptr_streamer_tests, test_memptr_streamer_NOK)
 	int err = get_memptr_storage(&handle);
 	zassert_equal(err, 0, "get_memptr_storage failed - error %i", err);
 
-	err = get_memptr_sink(&memptr_sink, handle);
-	zassert_equal(err, 0, "get_memptr_sink failed - error %i", err);
+	err = memptr_sink_get(&memptr_sink, handle);
+	zassert_equal(err, 0, "memptr_sink_get failed - error %i", err);
 
 	err = memptr_streamer(NULL, TEST_DATA_SIZE, &memptr_sink);
 	zassert_not_equal(err, 0, "memptr_streamer should have failed - payload == NULL");

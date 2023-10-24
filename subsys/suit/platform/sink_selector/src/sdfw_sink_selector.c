@@ -12,9 +12,9 @@
 #ifdef CONFIG_SUIT_STREAM_SINK_MEMPTR
 #include <memptr_sink.h>
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
-#ifdef CONFIG_SUIT_STREAM_SINK_MRAM
-#include <mram_sink.h>
-#endif /* CONFIG_SUIT_STREAM_SINK_MRAM */
+#ifdef CONFIG_SUIT_STREAM_SINK_FLASH
+#include <flash_sink.h>
+#endif /* CONFIG_SUIT_STREAM_SINK_FLASH */
 #ifdef CONFIG_SUIT_STREAM_SINK_SDFW
 #include <sdfw_sink.h>
 #endif /* CONFIG_SUIT_STREAM_SINK_SDFW */
@@ -58,14 +58,21 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 			return ret;
 		}
 
-		return get_memptr_sink(sink, handle);
+		return memptr_sink_get(sink, handle);
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
 
-#ifdef CONFIG_SUIT_STREAM_SINK_MRAM
-	case SUIT_COMPONENT_TYPE_MEM: { /* mram_sink */
+#ifdef CONFIG_SUIT_STREAM_SINK_FLASH
+	case SUIT_COMPONENT_TYPE_MEM: { /* flash_sink */
+		memptr_storage_handle handle;
 		intptr_t run_address;
 		size_t size;
+
+		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
+		if (ret != 0) {
+			LOG_ERR("Unable to get component data for candidate image (err: %d)", ret);
+			return ret;
+		}
 
 		if (!suit_plat_decode_address_size(component_id, &run_address, &size)) {
 			LOG_ERR("suit_plat_decode_address_size failed");
@@ -84,9 +91,15 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 		 */
 
 		/* Internal MRAM/Flash on single controller */
-		return get_mram_sink(sink, (uint8_t *)run_address, size);
+		ret = flash_sink_get(sink, (uint8_t *)run_address, size, handle);
+		if (ret) {
+			LOG_ERR("Failed to get flash sink: %i", ret);
+			return ret;
+		}
+
+		return SUCCESS;
 	} break;
-#endif /* CONFIG_SUIT_STREAM_SINK_MRAM */
+#endif /* CONFIG_SUIT_STREAM_SINK_FLASH */
 #ifdef CONFIG_SUIT_STREAM_SINK_SDFW
 	case SUIT_COMPONENT_TYPE_SOC_SPEC: { /* sdfw_sink */
 		uint32_t number;
@@ -109,7 +122,7 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_SDFW */
 	default: {
-		LOG_ERR("Unsupported component type: %c", component_type);
+		LOG_ERR("Unsupported component type: %d", component_type);
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 	}

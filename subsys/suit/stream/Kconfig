@@ -17,7 +17,7 @@ config SUIT_STREAM_SINK_MEMPTR
         bool "Enable memory pointer storage sink"
         depends on SUIT_MEMPTR_STORAGE
 
-config SUIT_STREAM_SINK_MRAM
+config SUIT_STREAM_SINK_FLASH
         bool "Enable NVM storage sink"
         depends on FLASH
         depends on SUIT_UTILS

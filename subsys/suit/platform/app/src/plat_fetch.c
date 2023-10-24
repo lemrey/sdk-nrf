@@ -81,7 +81,7 @@ static int verify_and_get_sink(suit_component_t dst_handle, struct stream_sink *
 			return ret;
 		}
 
-		return get_memptr_sink(&dst_sink, handle);
+		return memptr_sink_get(&dst_sink, handle);
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
 #ifdef CONFIG_SUIT_CACHE_RW

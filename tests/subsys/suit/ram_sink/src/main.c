@@ -25,36 +25,36 @@ static void test_setup_mem(void *arg)
 
 ZTEST_SUITE(ram_sink_tests, NULL, NULL, test_setup_mem, NULL, NULL);
 
-ZTEST(ram_sink_tests, test_get_ram_sink_OK)
+ZTEST(ram_sink_tests, test_ram_sink_get_OK)
 {
 	struct stream_sink ram_sink;
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
 
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
-	zassert_not_equal(ram_sink.ctx, NULL, "get_ram_sink failed - ctx is NULL");
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
+	zassert_not_equal(ram_sink.ctx, NULL, "ram_sink_get failed - ctx is NULL");
 
 	err = ram_sink.release(ram_sink.ctx);
 	zassert_equal(err, 0, "ram_sink.release failed - error %i", err);
 }
 
-ZTEST(ram_sink_tests, test_get_ram_sink_NOK)
+ZTEST(ram_sink_tests, test_ram_sink_get_NOK)
 {
 	struct stream_sink ram_sink;
 
-	int err = get_ram_sink(&ram_sink, NULL, sizeof(dst_buffer));
-	zassert_not_equal(err, 0, "get_ram_sink should have failed - dst == NULL");
+	int err = ram_sink_get(&ram_sink, NULL, sizeof(dst_buffer));
+	zassert_not_equal(err, 0, "ram_sink_get should have failed - dst == NULL");
 
-	err = get_ram_sink(&ram_sink, dst_buffer, 0);
-	zassert_not_equal(err, 0, "get_ram_sink should have failed - offset_limit == 0");
+	err = ram_sink_get(&ram_sink, dst_buffer, 0);
+	zassert_not_equal(err, 0, "ram_sink_get should have failed - offset_limit == 0");
 }
 
 ZTEST(ram_sink_tests, test_ram_sink_release_NOK)
 {
 	struct stream_sink ram_sink;
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
 
 	err = ram_sink.release(NULL);
 	zassert_not_equal(err, 0, "ram_sink.release should have failed - ctx == NULL");
@@ -67,8 +67,8 @@ ZTEST(ram_sink_tests, test_ram_sink_seek_OK)
 {
 	struct stream_sink ram_sink;
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
 
 	err = ram_sink.seek(ram_sink.ctx, 0);
 	zassert_equal(err, 0, "ram_sink.seek failed - error %i", err);
@@ -87,8 +87,8 @@ ZTEST(ram_sink_tests, test_ram_sink_seek_NOK)
 {
 	struct stream_sink ram_sink;
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
 
 	err = ram_sink.seek(ram_sink.ctx, sizeof(dst_buffer));
 	zassert_not_equal(err, 0, "ram_sink.seek should have failed - passed arg == offset_limit");
@@ -105,8 +105,8 @@ ZTEST(ram_sink_tests, test_ram_sink_used_storage_OK)
 	struct stream_sink ram_sink;
 	size_t used_storage = 0;
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
 
 	err = ram_sink.used_storage(ram_sink.ctx, &used_storage);
 	zassert_equal(err, 0, "ram_sink.use_storage failed - error %i", err);
@@ -120,8 +120,8 @@ ZTEST(ram_sink_tests, test_ram_sink_used_storage_NOK)
 {
 	struct stream_sink ram_sink;
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
 
 	err = ram_sink.used_storage(ram_sink.ctx, NULL);
 	zassert_not_equal(err, 0, "ram_sink.use_storage should have failed - arg size == NULL");
@@ -136,8 +136,8 @@ ZTEST(ram_sink_tests, test_ram_sink_write_OK)
 	size_t used_storage = 0;
 	size_t input_size = 21; /* Arbitrary value, chosen to be unaligned */
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
 
 	err = ram_sink.write(ram_sink.ctx, test_data, &input_size);
 	zassert_equal(err, 0, "ram_sink.write failed - error %i", err);
@@ -165,8 +165,8 @@ ZTEST(ram_sink_tests, test_ram_sink_write_NOK)
 	struct stream_sink ram_sink;
 	size_t input_size = 0;
 
-	int err = get_ram_sink(&ram_sink, dst_buffer, sizeof(dst_buffer));
-	zassert_equal(err, 0, "get_ram_sink failed - error %i", err);
+	int err = ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, 0, "ram_sink_get failed - error %i", err);
 
 	err = ram_sink.write(ram_sink.ctx, test_data, &input_size);
 	zassert_not_equal(err, 0, "ram_sink.write should have failed - size == 0");

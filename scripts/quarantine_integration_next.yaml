@@ -39,7 +39,7 @@
 - scenarios:
     - suit-processor.integration.suit_storage
     - suit-platform.integration.memptr_sink
-    - suit-platform.integration.mram_sink
+    - suit-platform.integration.flash_sink
     - suit-platform.integration.common.memptr_storage
     - suit-platform.integration.memptr_streamer
     - suit-platform.integration.cache_streamer

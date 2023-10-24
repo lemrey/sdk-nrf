@@ -1,0 +1,92 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+ / {
+	allocatable_ram {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Allow to use defined RAM3x region by App and cores owned by
+		 * App, including UART DMA buffer.
+		 */
+		ram3x_app: memory@2fc00000 {
+			compatible = "nordic,allocatable-ram";
+			reg = <0x2fc00000 DT_SIZE_K(32)>;
+			perm-read;
+			perm-write;
+		};
+	};
+
+	chosen {
+		zephyr,console = &uart136;
+	};
+};
+
+/* ram3x_cpuapp buffer is used by App core UART driver. */
+&ram3x_cpuapp {
+	status = "okay";
+};
+
+/* Configure UART with test output. */
+&pinctrl {
+	uart136_default: uart136_default {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 2, 4)>;
+		};
+		group2 {
+			psels = <NRF_PSEL(UART_RX, 2, 5)>;
+			bias-pull-up;
+		};
+	};
+
+	uart136_sleep: uart136_sleep {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 2, 4)>,
+				<NRF_PSEL(UART_RX, 2, 5)>;
+			low-power-enable;
+		};
+	};
+};
+
+&uart136 {
+	status = "okay";
+	pinctrl-0 = <&uart136_default>;
+	pinctrl-1 = <&uart136_sleep>;
+	pinctrl-names = "default", "sleep";
+	memory-regions = <&ram3x_cpuapp>;
+};
+
+&mram_controller {
+	/delete-node/ mram@e1f4000;
+	mram1: mram@e1b4000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = < 0xe1b4000 DT_SIZE_K(304) >;
+		erase-block-size = < 0x400 >;
+		/* Hardcoded inside the soc_flash_nrf_mram.c (MRAM_WORD_SIZE) */
+		write-block-size = < 0x10 >;
+
+		perm-read;
+		perm-write;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = < 0x1 >;
+			#size-cells = < 0x1 >;
+
+			dfu_partition: partition@1b4000 {
+				reg = < 0x1b4000 DT_SIZE_K(8) >;
+			};
+
+			suit_cache_1: partition@1b6000 {
+				reg = <0x1b6000 DT_SIZE_K(1)>;
+			};
+			
+			suit_cache_3: partition@1b6400 {
+				reg = <0x1b6400 DT_SIZE_K(1)>;
+			};
+		};
+	};
+};

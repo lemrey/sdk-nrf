@@ -102,6 +102,7 @@ int digest_sink_get(struct stream_sink *sink, psa_algorithm_t algorithm,
 	digest_ctx->expected_digest = expected_digest;
 	digest_ctx->expected_digest_length = PSA_HASH_LENGTH(algorithm);
 
+	sink->erase = NULL;
 	sink->write = write;
 	sink->seek = NULL;
 	sink->flush = NULL;

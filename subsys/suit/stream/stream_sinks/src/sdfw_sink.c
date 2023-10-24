@@ -287,6 +287,7 @@ int sdfw_sink_get(struct stream_sink *sink)
 	ctx->in_use = true;
 	ctx->write_called = false;
 
+	sink->erase = NULL;
 	sink->write = write;
 	sink->seek = NULL;
 	sink->flush = NULL;

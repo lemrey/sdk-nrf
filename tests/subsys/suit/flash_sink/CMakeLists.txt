@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.20.0)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-project(platform_test)
+project(integration_test_flash_sink)
 include(../cmake/test_template.cmake)
 
 # Link with the CMake target, that includes SUIT platform internal APIs header

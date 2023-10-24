@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <ram_sink.h>
 #include <memptr_sink.h>
-#include <mram_sink.h>
+#include <flash_sink.h>
 #include <sink.h>
 #include <sink_selector.h>
 #include <suit_platform.h>
@@ -41,12 +41,12 @@ ZTEST(sink_selector_tests, test_select_memptr_sink_OK)
 	zassert_equal(err, 0, "sink_selector: selecting memptr_sink failed - error %i", err);
 }
 
-ZTEST(sink_selector_tests, test_select_mram_sink_OK)
+ZTEST(sink_selector_tests, test_select_flash_sink_OK)
 {
 	suit_component_t handle;
-	/* [h'MEM', h'02', h'1A00080000', h'1A00000008'] */
+	/* [h'MEM', h'02', h'1A00080000', h'1A00001000'] */
 	uint8_t valid_value[] = {0x84, 0x44, 0x63, 'M',	 'E',  'M',  0x41, 0x02, 0x45, 0x1A,
-				 0x00, 0x08, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x00, 0x08};
+				 0x00, 0x08, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x10, 0x00};
 	struct zcbor_string valid_component_id = {
 		.value = valid_value,
 		.len = sizeof(valid_value),
@@ -57,7 +57,7 @@ ZTEST(sink_selector_tests, test_select_mram_sink_OK)
 	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
 
 	int err = select_sink(handle, &sink);
-	zassert_equal(err, 0, "sink_selector: selecting mram_sink failed - error %i", err);
+	zassert_equal(err, 0, "sink_selector: selecting flash_sink failed - error %i", err);
 }
 
 #if SOC_NRF54H20 && !HW_REVISION_SOC1

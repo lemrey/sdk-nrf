@@ -22,6 +22,6 @@
  * @param handle Handle to storage object
  * @return int 0 if success otherwise error code.
  */
-int get_memptr_sink(struct stream_sink *sink, memptr_storage_handle handle);
+int memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle);
 
 #endif /* MEMPTR_SINK_H__ */

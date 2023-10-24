@@ -10,7 +10,7 @@ SUIT_Envelope_Tagged:
       - - MEM
         - 0
         - 0x0E0AA000
-        - 256
+        - 4096
       suit-shared-sequence:
       - suit-directive-override-parameters:
           suit-parameter-vendor-identifier:
@@ -62,7 +62,7 @@ SUIT_Envelope_Tagged:
         namespace: nordicsemi.com
         name: test_sample_app
   suit-text:
-    '["MEM", 0, 235577344, 256]':
+    '["MEM", 0, 235577344, 4096]':
       suit-text-vendor-name: Nordic Semiconductor ASA
       suit-text-model-name: test
       suit-text-vendor-domain: nordicsemi.com

@@ -34,11 +34,13 @@
 #define DIGEST_MISMATCH		       -21
 #define NOT_INITIALIZED		       -22
 
+typedef int (*erase_ptr)(void *ctx);
 typedef int (*write_ptr)(void *ctx, uint8_t *buf, size_t *size);
 typedef int (*seek_ptr)(void *ctx, size_t offset);
 typedef int (*flush_ptr)(void *ctx);
 typedef int (*used_storage_ptr)(void *ctx, size_t *size);
 typedef int (*release_ptr)(void *ctx);
+
 
 /**
  * @brief Structure represents node that is a target for data.
@@ -48,6 +50,7 @@ typedef int (*release_ptr)(void *ctx);
  *    - a writer, presumably a final block.
  */
 struct stream_sink {
+	erase_ptr erase;
 	write_ptr write;
 	seek_ptr seek;
 	flush_ptr flush;

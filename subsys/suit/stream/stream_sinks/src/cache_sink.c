@@ -50,6 +50,7 @@ int dfu_get_cache_sink(struct stream_sink *sink, uint8_t cache_partition_id, con
 		ctx.in_use = true;
 		ctx.write_enabled = true;
 
+		sink->erase = NULL;
 		sink->write = write;
 		sink->seek = seek;
 		sink->flush = flush;
