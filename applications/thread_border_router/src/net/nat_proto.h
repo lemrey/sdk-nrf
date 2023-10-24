@@ -24,4 +24,28 @@
  */
 enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx);
 
-#endif /* NAT_PROTO_H_ */
+/**
+ * @brief UDP packets handler for NAT.
+ *
+ * @param pkt   Network packet.
+ * @param tx    Transmission direction flag.
+ *
+ * @return Return verdict about the packet.
+ */
+#if defined(CONFIG_NET_UDP)
+
+enum net_verdict nat_udp(struct net_pkt *pkt, bool tx);
+
+#else /* CONFIG_NET_UDP */
+
+static inline enum net_verdict nat_udp(struct net_pkt *pkt, bool tx)
+{
+	ARG_UNUSED(pkt);
+	ARG_UNUSED(tx);
+
+	return NET_DROP;
+}
+
+#endif  /* CONFIG_NET_UDP */
+
+#endif  /* NAT_PROTO_H_ */
