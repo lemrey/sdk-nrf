@@ -64,7 +64,7 @@ static int enter_emergency_recovery(void)
 static int validate_update_candidate_address_and_size(const uint8_t *addr, size_t size)
 {
 	if (addr == NULL || addr == (void *)EMPTY_STORAGE_VALUE) {
-		LOG_DBG("Invalid update candidate address: %p", addr);
+		LOG_DBG("Invalid update candidate address: %p", (void *)addr);
 		return EFAULT;
 	}
 

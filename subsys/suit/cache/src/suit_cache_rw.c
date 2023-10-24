@@ -101,7 +101,7 @@ int suit_cache_initialize_rw(void *addr, size_t size)
 		suit_cache.partitions[i].address =
 			suit_plat_get_nvm_ptr(dfu_partitions_ext[i].offset);
 		LOG_DBG("Found partition %d: (addr: %p, size: 0x%x)", i,
-			suit_cache.partitions[i].address, suit_cache.partitions[i].size);
+			(void *)suit_cache.partitions[i].address, suit_cache.partitions[i].size);
 	}
 
 	return SUCCESS;
