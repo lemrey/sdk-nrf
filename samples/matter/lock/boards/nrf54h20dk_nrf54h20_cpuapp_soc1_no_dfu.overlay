@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/dt-bindings/ipc_service/static_vrings.h>
 #include <arm/nordic_nrf_next/overlays/entropy_cpuapp.overlay>
 #include <arm/nordic_nrf_next/overlays/serial_cpuapp.overlay>
 #include "nrf54h20_common.dtsi"
@@ -14,6 +13,7 @@
     status = "disabled";
 };
 
+/* Reorganize the MRAM memory space. */
 /delete-node/ &mram0;
 /delete-node/ &mram1;
 

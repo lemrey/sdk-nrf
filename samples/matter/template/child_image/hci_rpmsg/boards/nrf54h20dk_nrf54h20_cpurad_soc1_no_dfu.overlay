@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+ /delete-node/ &slot0_partition;
+ 
+&mram0 {
+    reg = <0xe054000 DT_SIZE_K(200)>;
+    partitions {
+        compatible = "fixed-partitions";
+        slot0_partition: partition@54000 {
+            label = "image-0";
+            reg = < 0x54000 DT_SIZE_K(200) >;
+        };
+    };
+};
+
+ipc0: &ipc_cpuapp { };

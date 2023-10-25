@@ -5,12 +5,12 @@
  */
 
 &cpuapp_ram0x_s {
-    reg = <0x0 DT_SIZE_K(354)>;
-    ranges = <0x0 0x0 DT_SIZE_K(354)>;
+    reg = <0x0 DT_SIZE_K(512)>;
+    ranges = <0x0 0x0 DT_SIZE_K(512)>;
 };
 
 &cpuapp_sram0x {
-    reg = <0x1000 DT_SIZE_K(350)>;
+    reg = <0x1000 DT_SIZE_K(512)>;
 };
 
 &cpurad_ram0x_s {
