@@ -92,7 +92,7 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 		return SUIT_SUCCESS;
 	}
 
-	ret = suit_processor_get_manifest_metadata(envelope_addr, envelope_size, false, NULL, NULL,
+	ret = suit_processor_get_manifest_metadata(envelope_addr, envelope_size, false, NULL, NULL, NULL,
 						   &current_seq_num);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Unable to read manifest metadata (ret: %d)", ret);

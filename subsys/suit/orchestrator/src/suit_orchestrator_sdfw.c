@@ -178,7 +178,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 	unsigned int seq_num;
 	err = suit_processor_get_manifest_metadata(
-		installed_envelope_address, installed_envelope_size, true, NULL, NULL, &seq_num);
+		installed_envelope_address, installed_envelope_size, true, NULL, NULL, NULL, &seq_num);
 	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to read manifest version and digest: %d", err);
 		return enter_emergency_recovery();

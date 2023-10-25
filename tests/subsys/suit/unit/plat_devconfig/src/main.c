@@ -56,7 +56,7 @@ suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *compon
 static int suit_processor_get_manifest_metadata_seq_one_fake_func(
 	uint8_t *envelope_str, size_t envelope_len, bool authenticate,
 	struct zcbor_string *manifest_component_id, struct zcbor_string *digest,
-	unsigned int *seq_num)
+	enum suit_cose_alg *alg, unsigned int *seq_num)
 {
 	zassert_not_equal(
 		seq_num, NULL,
@@ -69,7 +69,7 @@ static int suit_processor_get_manifest_metadata_seq_one_fake_func(
 static int suit_processor_get_manifest_metadata_decoder_busy_fake_func(
 	uint8_t *envelope_str, size_t envelope_len, bool authenticate,
 	struct zcbor_string *manifest_component_id, struct zcbor_string *digest,
-	unsigned int *seq_num)
+	enum suit_cose_alg *alg, unsigned int *seq_num)
 {
 	zassert_not_equal(
 		seq_num, NULL,
