@@ -56,7 +56,7 @@ ipc0: &ipc_cpurad {};
 
     mram1: mram@e13b000 {
         compatible = "nordic,allocatable-mram", "soc-nv-flash";
-        reg = <0xe13b000 DT_SIZE_K(719)>;
+        reg = <0xe13b000 DT_SIZE_K(696)>;
         erase-block-size = <128>;
         write-block-size = <0x10>;
         perm-read;
@@ -68,15 +68,15 @@ ipc0: &ipc_cpurad {};
             dfu_partition: partition@13b000 {
                 label = "dfu_partition";
                 /* 699 kB for the Application and 1 kB for SUIT manifest */
-                reg = <0x13b000 DT_SIZE_K(700)>;
+                reg = <0x13b000 DT_SIZE_K(677)>;
             };
-            storage_partition: partition@1ea000 {
+            storage_partition: partition@1e4400 {
                 label = "storage";
-                reg = <0x1ea000 DT_SIZE_K(16)>;
+                reg = <0x1e4400 DT_SIZE_K(16)>;
             };
-            factory_data: partition@1ee000 {
+            factory_data: partition@1e8400 {
                 label = "factory_data";
-                reg = <0x1ee000 DT_SIZE_K(3)>;
+                reg = <0x1e8400 DT_SIZE_K(3)>;
             };
         };
     };
