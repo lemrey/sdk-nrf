@@ -147,7 +147,7 @@ manifest:
       revision: c2772a4078b2dea270df1d72e1babc5615cfeca2
       path: core_fw/secdom
     - name: nrf-regtool
-      revision: 90cb81359fbf899f0adf609c775f15b8add82c78
+      revision: aa80bc58a2c20643b40f498961cef180a2c1b649
       path: modules/lib/nrf-regtool
     - name: nrfs
       path: modules/lib/nrfs
