@@ -16,7 +16,7 @@ ZTEST(invoke_tests, test_invoke_OK)
 	suit_component_t handle;
 #ifdef CONFIG_SOC_NRF54H20
 	/* [h'MEM', h'02', h'1A00080000', h'1A00000008'] */
-	uint8_t valid_value[] = {0x84, 0x44, 0x63, 'M',	 'E',  'M',  0x41, 0x02, 0x45, 0x1A,
+	uint8_t valid_value[] = {0x84, 0x44, 0x63, 'M',	 'E',  'M',  0x41, 0x00, 0x45, 0x1A,
 				 0x00, 0x08, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x00, 0x08};
 #else  /* CONFIG_SOC_NRF54H20 */
 	/* [h'MEM', h'00', h'1A00080000', h'1A00000008'] */

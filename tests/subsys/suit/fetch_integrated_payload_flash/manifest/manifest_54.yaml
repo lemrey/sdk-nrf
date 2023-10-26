@@ -8,7 +8,7 @@ SUIT_Envelope_Tagged:
     suit-common:
       suit-components:
       - - MEM
-        - 0x02
+        - 0x00
         - 0x0E0AA000
         - 0x0007f800
       - - CAND_IMG
@@ -87,7 +87,7 @@ SUIT_Envelope_Tagged:
         namespace: nordicsemi.com
         name: test_sample_app
   suit-text:
-    '["MEM", 2, 235577344, 522240]':
+    '["MEM", 0, 235577344, 522240]':
       suit-text-vendor-name: Nordic Semiconductor ASA
       suit-text-model-name: test
       suit-text-vendor-domain: nordicsemi.com
