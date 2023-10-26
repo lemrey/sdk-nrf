@@ -898,7 +898,7 @@ void test_nrf91_socket_offload_setsockopt_tls_session_cache_success(void)
 	TEST_ASSERT_EQUAL(fd, 0);
 
 	__cmock_nrf_setsockopt_ExpectAndReturn(nrf_fd, NRF_SOL_SECURE, NRF_SO_SEC_SESSION_CACHE,
-					      NULL, sizeof(nrf_sec_session_cache_t), 0);
+					      NULL, sizeof(int), 0);
 	__cmock_nrf_setsockopt_IgnoreArg_option_value();
 
 	ret = setsockopt(fd, SOL_TLS, TLS_SESSION_CACHE, &data, sizeof(data));
