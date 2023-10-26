@@ -1,0 +1,25 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/* Remove nodes defined at board configuration level by default. */
+/delete-node/ &mram0;
+/delete-node/ &mram1;
+
+#include "nrf54h20dk_memory_map.dtsi"
+
+/* Remove application-defined nodes related to memory regions that are not used by the core. */
+/delete-node/ &mram0_reserved;
+/delete-node/ &mram1_reserved;
+/delete-node/ &mram0_future_usage;
+/delete-node/ &mram0_cpurad;
+
+/ {
+	chosen {
+		zephyr,flash = &mram0_cpuapp;
+		nrf,tz-secure-image = &mram0_cpuapp;
+		zephyr,code-partition = &cpuapp_slot0_partition;
+	};
+};

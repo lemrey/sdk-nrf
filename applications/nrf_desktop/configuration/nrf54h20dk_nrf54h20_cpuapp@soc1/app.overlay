@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+#include "nrf54h20dk_cpuapp_memory_map.dtsi"
+
 / {
 	chosen {
 		zephyr,console = &uart136;
@@ -67,6 +69,12 @@
 			label = "Green LED 3";
 		};
 	};
+};
+
+/* The application core communicates with the secure domain to perform
+ * the SUIT DFU. */
+&ipc_to_cpusec {
+	status = "okay";
 };
 
 /* Configure permission of RAM3X DMA node used by App core UART driver. */

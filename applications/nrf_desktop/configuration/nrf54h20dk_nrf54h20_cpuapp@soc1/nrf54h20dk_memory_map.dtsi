@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/* Remove nodes defined at board configuration level by default. */
+/delete-node/ &secdom_nvs;
+
+/* Declare new partition map. */
+&mram_controller {
+	/* MRAM_10 */
+
+	/* Reserved for Secure Domain and System Controller (firmware provided by Nordic).
+	 * This memory area placement and size cannot by modified by the application configuration. */
+	mram0_reserved: mram@e000000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe000000 DT_SIZE_K(336)>;
+	};
+
+	mram0_cpurad: mram@e054000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe054000 DT_SIZE_K(256)>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		erase-block-size = <4096>;
+		write-block-size = <1>;
+		perm-read;
+		perm-execute;
+		perm-secure;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			cpurad_slot0_partition: partition@54000 {
+				label = "cpurad-image-0";
+				reg = <0x54000 DT_SIZE_K(256)>;
+			};
+		};
+	};
+
+	mram0_cpuapp: mram@e094000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe094000 DT_SIZE_K(320)>;
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		erase-block-size = <128>;
+		write-block-size = <16>;
+		owner-id = <0x2>;
+		perm-read;
+		perm-execute;
+		perm-secure;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			cpuapp_slot0_partition: partition@94000 {
+				label = "cpuapp-image-0";
+				reg = <0x94000 DT_SIZE_K(320)>;
+			};
+		};
+	};
+
+	/* Reserved for future usage by the application. */
+	mram0_future_usage: mram@e0e4000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe0e4000 DT_SIZE_K(112)>;
+	};
+
+	/* MRAM_11 */
+
+	mram1_cpuapp: mram@e100000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe100000 DT_SIZE_K(932)>;
+		erase-block-size = <128>;
+		write-block-size = <16>;
+		perm-read;
+		perm-write;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			dfu_partition: partition@100000 {
+				label = "dfu_partition";
+				reg = <0x100000 DT_SIZE_K(912)>;
+			};
+
+			storage_partition: partition@1e4000 {
+				label = "storage";
+				reg = <0x1e4000 DT_SIZE_K(20)>;
+			};
+		};
+	};
+
+	/* Reserved for the Secure Domain Non Volatile Storage (firmware provided by Nordic).
+	 * This memory area placement and size cannot by modified by the application configuration. */
+	mram1_reserved: mram@e1e9000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe1e9000 DT_SIZE_K(92)>;
+	};
+};
