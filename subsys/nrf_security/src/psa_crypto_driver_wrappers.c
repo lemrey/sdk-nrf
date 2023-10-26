@@ -2306,12 +2306,16 @@ psa_status_t psa_driver_wrapper_key_agreement(const psa_key_attributes_t *attrib
 		status =
 			cc3xx_key_agreement(attributes, priv_key, priv_key_size, publ_key,
 					    publ_key_size, output, output_size, output_length, alg);
-		return status;
+		if (status != PSA_ERROR_NOT_SUPPORTED) {
+			return status;
+		}
 #endif /* PSA_NEED_CC3XX_KEY_AGREEMENT_DRIVER */
 #if defined(PSA_NEED_OBERON_KEY_AGREEMENT_DRIVER)
 		status = oberon_key_agreement(attributes, priv_key, priv_key_size, alg, publ_key,
 					      publ_key_size, output, output_size, output_length);
-		return status;
+		if (status != PSA_ERROR_NOT_SUPPORTED) {
+			return status;
+		}
 #endif /* PSA_NEED_OBERON_KEY_AGREEMENT_DRIVER */
 #if defined(PSA_CRYPTO_DRIVER_ALG_ECDH_CRACEN)
 		status = cracen_key_agreement(attributes, priv_key, priv_key_size, publ_key,
@@ -2526,13 +2530,17 @@ psa_status_t psa_driver_wrapper_asymmetric_encrypt(
 		status = cc3xx_asymmetric_encrypt(attributes, key_buffer, key_buffer_size, alg,
 						  input, input_length, salt, salt_length, output,
 						  output_size, output_length);
-		return status;
+		if (status != PSA_ERROR_NOT_SUPPORTED) {
+			return status;
+		}
 #endif /* PSA_NEED_CC3XX_ASYMMETRIC_ENCRYPTION_DRIVER */
 #if defined(PSA_NEED_OBERON_ASYMMETRIC_ENCRYPTION_DRIVER)
 		status = oberon_asymmetric_encrypt(attributes, key_buffer, key_buffer_size, alg,
 						   input, input_length, salt, salt_length, output,
 						   output_size, output_length);
-		return status;
+		if (status != PSA_ERROR_NOT_SUPPORTED) {
+			return status;
+		}
 #endif /* PSA_NEED_OBERON_ASYMMETRIC_ENCRYPTION_DRIVER */
 #if defined(PSA_CRYPTO_DRIVER_HAS_ASYM_ENCRYPT_SUPPORT_CRACEN)
 		status = cracen_asymmetric_encrypt(attributes, key_buffer, key_buffer_size, alg,
@@ -2582,12 +2590,17 @@ psa_status_t psa_driver_wrapper_asymmetric_decrypt(
 		status = cc3xx_asymmetric_decrypt(attributes, key_buffer, key_buffer_size, alg,
 						  input, input_length, salt, salt_length, output,
 						  output_size, output_length);
-		return status;
+		if (status != PSA_ERROR_NOT_SUPPORTED) {
+			return status;
+		}
 #endif /* PSA_NEED_CC3XX_ASYMMETRIC_ENCRYPTION_DRIVER */
 #if defined(PSA_NEED_OBERON_ASYMMETRIC_ENCRYPTION_DRIVER)
-		return oberon_asymmetric_decrypt(attributes, key_buffer, key_buffer_size, alg,
-						 input, input_length, salt, salt_length, output,
-						 output_size, output_length);
+		status = oberon_asymmetric_decrypt(attributes, key_buffer, key_buffer_size, alg,
+						   input, input_length, salt, salt_length, output,
+						   output_size, output_length);
+		if (status != PSA_ERROR_NOT_SUPPORTED) {
+			return status;
+		}
 #endif /* PSA_NEED_OBERON_ASYMMETRIC_ENCRYPTION_DRIVER */
 #if defined(PSA_CRYPTO_DRIVER_HAS_ASYM_ENCRYPT_SUPPORT_CRACEN)
 		status = cracen_asymmetric_decrypt(attributes, key_buffer, key_buffer_size, alg,
