@@ -2738,7 +2738,7 @@ psa_status_t psa_driver_wrapper_asymmetric_encrypt(
 		return status;
 #endif /* PSA_NEED_OBERON_RSA_CRYPT */
 #if defined(PSA_CRYPTO_DRIVER_HAS_ASYM_ENCRYPT_SUPPORT_CRACEN)
-		status = cracen_asymmetric_decrypt(attributes, key_buffer, key_buffer_size, alg,
+		status = cracen_asymmetric_encrypt(attributes, key_buffer, key_buffer_size, alg,
 						   input, input_length, salt, salt_length, output,
 						   output_size, output_length);
 		return (status);
@@ -2792,6 +2792,12 @@ psa_status_t psa_driver_wrapper_asymmetric_decrypt(
 						 input, input_length, salt, salt_length, output,
 						 output_size, output_length);
 #endif /* PSA_NEED_OBERON_RSA_CRYPT */
+#if defined(PSA_CRYPTO_DRIVER_HAS_ASYM_ENCRYPT_SUPPORT_CRACEN)
+		status = cracen_asymmetric_decrypt(attributes, key_buffer, key_buffer_size, alg,
+						   input, input_length, salt, salt_length, output,
+						   output_size, output_length);
+		return (status);
+#endif /* PSA_CRYPTO_DRIVER_HAS_ASYM_ENCRYPT_SUPPORT_CRACEN */
 #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
 		(void)status;
 		return PSA_ERROR_NOT_SUPPORTED;
