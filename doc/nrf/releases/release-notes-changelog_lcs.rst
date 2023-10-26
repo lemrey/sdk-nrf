@@ -170,7 +170,9 @@ No changes since the latest nRF Connect SDK release.
 Matter samples
 --------------
 
-No changes since the latest nRF Connect SDK release.
+* :ref:`matter_lock_sample` sample:
+
+  * Fixed an issue that prevented nRF Toolbox for iOS in version 5.0.9 from controlling the sample using the :ref:`nus_service_readme`.
 
 NFC samples
 -----------
