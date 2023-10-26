@@ -43,6 +43,7 @@ LOG_MODULE_REGISTER(siutfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
 #define DFU_PARTITION_SIZE	 FIXED_PARTITION_SIZE(DFU_PARTITION_LABEL)
 #define DFU_PARTITION_EB_SIZE	 FIXED_PARTITION_ERASE_BLOCK_SIZE(DFU_PARTITION_LABEL)
 #define DFU_PARTITION_WRITE_SIZE FIXED_PARTITION_WRITE_BLOCK_SIZE(DFU_PARTITION_LABEL)
+#define DFU_PARTITION_DEVICE     FIXED_PARTITION_DEVICE(DFU_PARTITION_LABEL)
 
 #define ENCODE_FLAG(zse, flag, value) (zcbor_tstr_put_lit(zse, flag) && zcbor_bool_put(zse, value))
 
@@ -193,7 +194,7 @@ static int img_mgmt_upload(struct smp_streamer *ctx)
 	};
 	int rc = MGMT_ERR_EOK;
 
-	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+	const struct device *fdev = DFU_PARTITION_DEVICE;
 
 	if (!device_is_ready(fdev)) {
 		fdev = NULL;
@@ -352,7 +353,7 @@ static int img_mgmt_erase(struct smp_streamer *ctx)
 {
 	zcbor_state_t *zse = ctx->writer->zs;
 	int rc = 0;
-	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+	const struct device *fdev = DFU_PARTITION_DEVICE;
 
 	if (!device_is_ready(fdev)) {
 		fdev = NULL;
