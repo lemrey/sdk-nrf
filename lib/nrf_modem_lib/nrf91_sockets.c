@@ -518,7 +518,7 @@ static int nrf91_socket_offload_setsockopt(void *obj, int level, int optname,
 			nrf_optlen = sizeof(struct nrf_timeval);
 		}
 	} else if ((level == SOL_TLS) && (optname == TLS_SESSION_CACHE)) {
-		nrf_optlen = sizeof(nrf_sec_session_cache_t);
+		nrf_optlen = sizeof(int);
 	}
 
 	retval = nrf_setsockopt(sd, nrf_level, nrf_optname, nrf_optval,
