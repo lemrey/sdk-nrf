@@ -143,3 +143,10 @@ tests:
       - nrf52840dongle_nrf52840
     tags: bluetooth ci_build
     extra_args: CONF_FILE=prj_release_4llpmconn.conf
+  applications.nrf_desktop.zdebug_suit_smp:
+    build_only: true
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: bluetooth ci_build
+    extra_args: CONF_FILE=prj_suit_smp.conf
