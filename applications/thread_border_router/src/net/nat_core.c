@@ -67,6 +67,9 @@ static bool nat_rx_cb(struct npf_test *test, struct net_pkt *pkt)
 			break;
 		case IPPROTO_TCP:
 			LOG_DBG("TCP <");
+			if (nat_tcp(pkt, false) == NET_DROP) {
+				drop_pkt = true;
+			}
 			break;
 		}
 
@@ -105,6 +108,9 @@ static bool nat_tx_cb(struct npf_test *test, struct net_pkt *pkt)
 		break;
 	case IPPROTO_TCP:
 		LOG_DBG("TCP >");
+		if (nat_tcp(pkt, true) == NET_DROP) {
+			is_pkt_ok = false;
+		}
 		break;
 	}
 

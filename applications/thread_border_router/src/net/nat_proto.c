@@ -13,6 +13,7 @@
 #include <utils.h>
 #include "nat_proto.h"
 #include "icmpv4.h"
+#include "tcp_private.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nat_proto, CONFIG_NRF_TBR_NAT_LOG_LEVEL);
@@ -20,20 +21,14 @@ LOG_MODULE_REGISTER(nat_proto, CONFIG_NRF_TBR_NAT_LOG_LEVEL);
 #define WELL_KNOWN_PORTS_MAX 1023U
 #define ICMPV4_HDR_UNUSED_SIZE (4 * sizeof(uint8_t))
 
-#if defined(CONFIG_NET_UDP)
-#define UDP_PROTO(_hdr) ((_hdr->proto == IPPROTO_UDP) ? UDP : PROTO_NUM_MAX)
-#else
-#define UDP_PROTO(_hdr) (PROTO_NUM_MAX)
-#endif
-
-#define GET_NAT_PROTO(_hdr) ((_hdr->proto == IPPROTO_ICMP) ? ICMP : \
-			     UDP_PROTO(_hdr))
-
 enum nat_proto {
 	ICMP = 0,
 #if defined(CONFIG_NET_UDP)
 	UDP,
 #endif /* CONFIG_NET_UDP */
+#if defined(CONFIG_NET_TCP)
+	TCP,
+#endif /* CONFIG_NET_TCP */
 	PROTO_NUM_MAX
 };
 
@@ -120,6 +115,20 @@ static uint16_t port_no_generate()
 	return port;
 }
 
+static enum nat_proto nat_proto_get(const struct net_ipv4_hdr *hdr)
+{
+	switch (hdr->proto) {
+	case IPPROTO_ICMP: return ICMP;
+#if defined(CONFIG_NET_UDP)
+	case IPPROTO_UDP: return UDP;
+#endif /* CONFIG_NET_UDP */
+#if defined(CONFIG_NET_TCP)
+	case IPPROTO_TCP: return TCP;
+#endif /* CONFIG_NET_TCP */
+	}
+	return PROTO_NUM_MAX;
+}
+
 static void tuple_invert(struct nat_tuple *tuple)
 {
 	struct nataddr_in tmp;
@@ -180,7 +189,7 @@ static void tuple_cpy_from_hdr(struct nat_tuple *tuple, const struct net_ipv4_hd
 	__ASSERT(tuple != NULL, "Null pointer");
 	__ASSERT(hdr != NULL, "Null pointer");
 
-	tuple->proto = GET_NAT_PROTO(hdr);
+	tuple->proto = nat_proto_get(hdr);
 	net_ipv4_addr_copy_raw((uint8_t *)&tuple->src.addr, hdr->src);
 	net_ipv4_addr_copy_raw((uint8_t *)&tuple->dst.addr, hdr->dst);
 }
@@ -364,6 +373,18 @@ static void icmp_dst_port_unreach(struct net_pkt *pkt, bool tx)
 			tuple.dst.port = udp_hdr->dst_port;
 			tuple.src.port = udp_hdr->src_port;
 		} else if (IS_ENABLED(CONFIG_NET_TCP) && ip_hdr->proto == IPPROTO_TCP) {
+			NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(tcp_hdr_access, struct tcphdr);
+			struct tcphdr *tcp_hdr =
+				(struct tcphdr *)net_pkt_get_data(pkt, &tcp_hdr_access);
+			if (!tcp_hdr) {
+				LOG_WRN("Failed to read TCP header");
+				goto exit;
+			}
+
+			LOG_DBG("Ports: src %u dst %u", ntohs(tcp_hdr->th_sport),
+				ntohs(tcp_hdr->th_dport));
+			tuple.dst.port = tcp_hdr->th_dport;
+			tuple.src.port = tcp_hdr->th_sport;
 		}
 
 		if (tx) {
@@ -657,3 +678,148 @@ drop:
 }
 
 #endif /* CONFIG_NET_UDP */
+
+#if defined(CONFIG_NET_TCP)
+
+enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
+{
+	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(tcp_hdr_access, struct tcphdr);
+	struct net_pkt_cursor ipv4_hdr_pos;
+	struct tcphdr *tcp_hdr;
+	struct nat_tuple tuple;
+	const struct in_addr *new_addr;
+	struct in_addr prev_addr;
+	bool overwrite;
+
+	if (!pkt) {
+		return NET_DROP;
+	}
+
+	new_addr = net_if_ipv4_select_src_addr(net_pkt_iface(pkt),
+					       (struct in_addr *)NET_IPV4_HDR(pkt)->dst);
+
+	tuple_cpy_from_hdr(&tuple, NET_IPV4_HDR(pkt));
+
+	overwrite = net_pkt_is_being_overwritten(pkt);
+	net_pkt_set_overwrite(pkt, true);
+	net_pkt_cursor_backup(pkt, &ipv4_hdr_pos);
+	if (net_pkt_skip(pkt, net_pkt_ip_hdr_len(pkt) + net_pkt_ip_opts_len(pkt))) {
+		goto drop;
+	}
+
+	tcp_hdr = (struct tcphdr *)net_pkt_get_data(pkt, &tcp_hdr_access);
+	if (!tcp_hdr) {
+		LOG_WRN("Failed to read TCP header");
+		goto drop;
+	}
+
+	tuple.dst.port = tcp_hdr->th_dport;
+	tuple.src.port = tcp_hdr->th_sport;
+
+	if (tx) {
+		/* Store previous IP address. */
+		net_ipaddr_copy(&prev_addr, &tuple.src.addr);
+
+		if (!tp_tx_conn_handle(&tuple)) {
+			LOG_DBG("New mapping");
+
+			if (is_src_port_used(&tuple)) {
+				/* If port number is already reserved, generate a new port
+				 * number.
+				 */
+				do {
+					tuple.port = tcp_hdr->th_sport = htons(port_no_generate());
+				} while (is_ext_port_used(&tuple));
+
+				LOG_DBG("New port number: %d", ntohs(tcp_hdr->th_sport));
+				tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
+								(uint8_t *)&tuple.orig.port,
+								(uint8_t *)&tuple.port,
+								sizeof(uint16_t));
+			} else {
+				/* Otherwise left the same port number. */
+				tuple.port = tcp_hdr->th_sport;
+			}
+
+			if (!tp_hairpinning(&tuple)) {
+				goto drop;
+			}
+
+			/* TODO 4. set timeout. */
+		} else {
+			LOG_DBG("Mapping exists");
+
+			/* Recompute checksum only when ports are different. */
+			if (tuple.orig.port != tuple.port) {
+				tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
+								(uint8_t *)&tuple.orig.port,
+								(uint8_t *)&tuple.port,
+								sizeof(uint16_t));
+			}
+
+			/* TODO 2a. Update timeout. */
+		}
+	} else {
+		/* Store previous IP address. */
+		net_ipaddr_copy(&prev_addr, &tuple.dst.addr);
+
+		if (tp_rx_conn_handle(&tuple)) {
+			LOG_DBG("Mapping exists");
+			/* Checksum must be recomputed before data will be overwritten. */
+			tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
+							(uint8_t *)&tcp_hdr->th_dport,
+							(uint8_t *)&tuple.orig.port,
+							sizeof(uint16_t));
+
+			new_addr = &tuple.dst.addr;
+			tcp_hdr->th_dport = tuple.dst.port;
+		} else {
+			LOG_DBG("New mapping");
+			/* Left the port number, because it may already has
+			 * been binded.
+			 */
+			tuple.port = tcp_hdr->th_dport;
+
+			/* In order to make this code more generic, invert tuple and
+			 * add it to NAT records.
+			 */
+			tuple_invert(&tuple);
+			if (!tp_hairpinning(&tuple)) {
+				goto drop;
+			}
+
+			/* And now throw in packet to the net stack
+			 * without any additional modification.
+			 */
+			new_addr = net_ipv4_unspecified_address();
+		}
+	}
+
+	if (!net_ipv4_is_addr_unspecified(new_addr)) {
+		/* rfc793: "The checksum also covers a 96 bit pseudo header conceptually
+		 * prefixed to the TCP header.  This pseudo header contains the Source Address,
+		 * the Destination Address, the Protocol, and TCP length."
+		 * The TCP checksum must include IP address as well.
+		 */
+		tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
+						(uint8_t *)&prev_addr,
+						(uint8_t *)new_addr,
+						sizeof(struct in_addr));
+
+		net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
+		modify_ipv4_hdr(NET_IPV4_HDR(pkt), new_addr, tx);
+	} else {
+		net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
+	}
+
+	net_pkt_set_overwrite(pkt, overwrite);
+
+	return NET_OK;
+
+drop:
+	net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
+	net_pkt_set_overwrite(pkt, overwrite);
+	return NET_DROP;
+}
+
+#endif /* CONFIG_NET_TCP */

@@ -48,4 +48,28 @@ static inline enum net_verdict nat_udp(struct net_pkt *pkt, bool tx)
 
 #endif  /* CONFIG_NET_UDP */
 
+/**
+ * @brief TCP packets handler for NAT.
+ *
+ * @param pkt   Network packet.
+ * @param tx    Transmission direction flag.
+ *
+ * @return Return verdict about the packet.
+ */
+#if defined(CONFIG_NET_TCP)
+
+enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx);
+
+#else /* CONFIG_NET_TCP */
+
+static inline enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
+{
+	ARG_UNUSED(pkt);
+	ARG_UNUSED(tx);
+
+	return NET_DROP;
+}
+
+#endif  /* CONFIG_NET_TCP */
+
 #endif  /* NAT_PROTO_H_ */
