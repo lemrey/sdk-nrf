@@ -2376,6 +2376,15 @@ psa_status_t psa_driver_wrapper_pake_setup(psa_pake_operation_t *operation,
 {
 	psa_status_t status;
 
+#ifdef PSA_CRYPTO_DRIVER_ALG_JPAKE_CRACEN
+	if (cipher_suite->algorithm == PSA_ALG_JPAKE) {
+		status = cracen_jpake_setup(&operation->ctx.cracen_jpake_ctx, cipher_suite);
+		if (status == PSA_SUCCESS) {
+			operation->id = CRACEN_JPAKE_DRIVER_ID;
+		}
+		return status;
+	}
+#endif /* PSA_CRYPTO_DRIVER_ALG_JPAKE_CRACEN */
 #ifdef PSA_NEED_OBERON_JPAKE_DRIVER
 	if (cipher_suite->algorithm == PSA_ALG_JPAKE) {
 		status = oberon_jpake_setup(&operation->ctx.oberon_jpake_ctx, cipher_suite);
