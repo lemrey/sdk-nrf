@@ -53,9 +53,9 @@ ipc0: &ipc_cpurad {};
         };
     };
 
-    mram1: mram@e13e000 {
+    mram1: mram@e138000 {
         compatible = "nordic,allocatable-mram", "soc-nv-flash";
-        reg = <0xe13e000 DT_SIZE_K(684)>;
+        reg = <0xe138000 DT_SIZE_K(692)>;
         erase-block-size = <128>;
         write-block-size = <0x10>;
         perm-read;
@@ -64,18 +64,17 @@ ipc0: &ipc_cpurad {};
             compatible = "fixed-partitions";
             #address-cells = <0x1>;
             #size-cells = <0x1>;
-            dfu_partition: partition@13b000 {
+            dfu_partition: partition@138000 {
                 label = "dfu_partition";
-                /* 699 kB for the Application and 1 kB for SUIT manifest */
-                reg = <0x13e000 DT_SIZE_K(640)>;
+                reg = <0x138000 DT_SIZE_K(656)>;
             };
-            storage_partition: partition@1de000 {
+            storage_partition: partition@1dc000 {
                 label = "storage";
-                reg = <0x1de000 DT_SIZE_K(32)>;
+                reg = <0x1dc000 DT_SIZE_K(32)>;
             };
-            factory_data: partition@1e6000 {
+            factory_data: partition@1e4000 {
                 label = "factory_data";
-                reg = <0x1e6000 DT_SIZE_K(4)>;
+                reg = <0x1e4000 DT_SIZE_K(4)>;
             };
         };
     };

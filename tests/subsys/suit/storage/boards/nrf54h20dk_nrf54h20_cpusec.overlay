@@ -17,9 +17,9 @@
 		#size-cells = <1>;
 
 		/* Use the last 32 kB of SecDom NVM storage. */
-		suit_storage: partition@1eb000 {
+		suit_storage: partition@1e7000 {
 			label = "suit_storage";
-			reg = <0x1eb000 DT_SIZE_K(32)>;
+			reg = <0x1e7000 DT_SIZE_K(32)>;
 		};
 	};
 };

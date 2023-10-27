@@ -13,7 +13,7 @@
 	};
 };
 
-/delete-node/ &slot0_partition;
+/delete-node/ &ppr_code_partition;
 
 &mram0 {
     reg = <0xe0a6000 DT_SIZE_K(1092)>;
@@ -21,7 +21,7 @@
         compatible = "fixed-partitions";
         #address-cells = < 0x1 >;
         #size-cells = < 0x1 >;
-        slot0_partition: partition@aa000 {
+        slot0_partition: partition@a6000 {
             label = "image-0";
             reg = < 0xa6000 DT_SIZE_K(1092) >;
         };
@@ -31,6 +31,28 @@
 &cpuapp_ram0x_s {
 	reg = < 0x0 DT_SIZE_K(512) >;
 	ranges = < 0x0 0x0 DT_SIZE_K(512) >;
+};
+
+/* Remove the dfu_partition */
+/delete-node/ &mram1;
+&mram_controller {
+	mram1: mram@e1df000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe1df000 DT_SIZE_K(24)>;
+		erase-block-size = <4096>;
+		write-block-size = <1>;
+		perm-read;
+		perm-write;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			storage_partition: partition@1df000 {
+				label = "storage";
+				reg = <0x1df000 DT_SIZE_K(24)>;
+			};
+		};
+	};
 };
 
 /* ram3x_cpuapp buffer is used by App core UART driver. */

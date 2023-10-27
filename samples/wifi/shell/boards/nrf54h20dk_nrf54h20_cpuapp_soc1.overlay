@@ -23,21 +23,39 @@
 };
 
 /delete-node/ &slot0_partition;
-/delete-node/ &cpuapp_uicr_ext;
+/delete-node/ &ppr_code_partition;
 
 &mram0 {
-    reg = <0xe0aa000 DT_SIZE_K(1000)>;
+    reg = <0xe0a6000 DT_SIZE_K(1000)>;
     partitions {
         compatible = "fixed-partitions";
         #address-cells = < 0x1 >;
         #size-cells = < 0x1 >;
-        slot0_partition: partition@aa000 {
+        slot0_partition: partition@a6000 {
             label = "image-0";
-            reg = < 0xaa000 DT_SIZE_K(998) >;
+            reg = < 0xa6000 DT_SIZE_K(1000) >;
         };
     };
-    cpuapp_uicr_ext: uicr@e1a3800 {
-        compatible = "nordic,nrf-uicr";
-        reg = <0xe1a3800 DT_SIZE_K(2)>;
-    };
+};
+
+/* Remove the dfu_partition */
+/delete-node/ &mram1;
+&mram_controller {
+	mram1: mram@e1df000 {
+		compatible = "nordic,allocatable-mram", "soc-nv-flash";
+		reg = <0xe1df000 DT_SIZE_K(24)>;
+		erase-block-size = <4096>;
+		write-block-size = <1>;
+		perm-read;
+		perm-write;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			storage_partition: partition@1df000 {
+				label = "storage";
+				reg = <0x1df000 DT_SIZE_K(24)>;
+			};
+		};
+	};
 };

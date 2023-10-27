@@ -55,11 +55,12 @@
 	memory-regions = <&ram3x_cpuapp>;
 };
 
+/delete-node/ &mram1;
+
 &mram_controller {
-	/delete-node/ mram@e1e3000;
-	mram1: mram@e13a000 {
+	mram1: mram@e136000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
-		reg = < 0xe13a000 DT_SIZE_K(700) >;
+		reg = < 0xe136000 DT_SIZE_K(680) >;
 		erase-block-size = < 128 >;
 		/* Hardcoded inside the soc_flash_nrf_mram.c (MRAM_WORD_SIZE) */
 		write-block-size = < 0x10 >;
@@ -72,17 +73,17 @@
 			#address-cells = < 0x1 >;
 			#size-cells = < 0x1 >;
 
-			/* The default application code partition ends at 0xe12a000.
-			 * If the application uses PPR, it extends the code partition to 0xe13a000.
+			/* The default application code partition ends at 0xe126000.
+			 * If the application uses PPR, it extends the code partition to 0xe136000.
 			 */
-			dfu_partition: partition@13a000 {
+			dfu_partition: partition@136000 {
 				label = "dfu_partition";
-				reg = < 0x13a000 DT_SIZE_K(676) >;
+				reg = < 0x136000 DT_SIZE_K(656) >;
 			};
 
-			storage_partition: partition@1e3000 {
+			storage_partition: partition@1da000 {
 				label = "storage";
-				reg = < 0x1e3000 DT_SIZE_K(24) >;
+				reg = < 0x1da000 DT_SIZE_K(24) >;
 			};
 		};
 	};

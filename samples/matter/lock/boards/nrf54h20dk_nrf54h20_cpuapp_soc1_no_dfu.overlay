@@ -33,7 +33,7 @@
             compatible = "fixed-partitions";
             #address-cells = <0x1>;
             #size-cells = <0x1>;
-            slot0_partition: partition@98000  {
+            slot0_partition: partition@98000 {
                 label = "image-0";
                 reg = <0x98000 DT_SIZE_K(1000)>;
             };

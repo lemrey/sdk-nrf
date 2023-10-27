@@ -136,15 +136,15 @@ manifest:
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
-      revision: 60e4021d2648b0ef2d6fad3d9133a99776c17cfc
+      revision: 49ea914c68ddb961a4acebd9cadc8f3581d289e3
       groups:
       - doc-internal
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: 96a7ad4821c556e3154974e6f9421e2eb77f9c77
+      revision: 9f30d3949c93812a2dd2868be8c4425eb04bfd1b
     - name: sdk-secdom
-      revision: 8937bef0e3522928eb84b846bfa04d4e27d1efc0
+      revision: f079936988e73d4060e6a1230d32ed81c215487d
       path: core_fw/secdom
     - name: nrf-regtool
       revision: v4.3.0
@@ -153,7 +153,7 @@ manifest:
       path: modules/lib/nrfs
       revision: 4c3e1dbfbdc302b82a7f1e5e90d9f468cade9326
     - name: sdk-sysctrl
-      revision: db5b67f4427d5141d0df7605d5bbf1aa63a027b1
+      revision: e4013205045bab7d385f544e4efc4cc044d02481
       path: core_fw/sysctrl
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m-next
@@ -239,7 +239,7 @@ manifest:
       revision: c90fd2241935cf8246ac105c34dc6ef8d6130e1e
       path: modules/lib/suit-processor
     - name: suit-generator
-      revision: 78c61e5d7d4b590f85e95b9e82bed7f15a1b3a1b
+      revision: 9bc74eb79497f0b721b5d36e24f975272bacb939
       path: modules/lib/suit-generator
       groups:
         - suit-generator
