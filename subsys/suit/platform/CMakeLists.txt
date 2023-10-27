@@ -11,7 +11,7 @@ target_include_directories(suit_platform_interface INTERFACE include)
 # SUIT Platform implementation
 zephyr_library()
 
-zephyr_library_sources_ifndef(CONFIG_SUIT_LEGACY_PLATFORM src/plat_components.c)
+zephyr_library_sources(src/suit_plat_components.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_DIGEST src/suit_plat_digest.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_DEVCONFIG src/suit_plat_devconfig.c)
 zephyr_library_sources(src/suit_plat_commands.c)
@@ -28,15 +28,10 @@ zephyr_library_link_libraries_ifdef(CONFIG_SUIT_DIGEST suit_stream_sinks_interfa
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_MEMPTR_STORAGE suit_memptr_storage_interface)
 
 
-if(CONFIG_SUIT_LEGACY_PLATFORM)
-	# SUIT legacy platform implementation
-	add_subdirectory(legacy)
+if(SUIT_PLATFORM_VARIANT_APP)
+	add_subdirectory(app)
 else()
-	if(SUIT_PLATFORM_VARIANT_APP)
-		add_subdirectory(app)
-	else()
-		add_subdirectory(sdfw)
-	endif()
+	add_subdirectory(sdfw)
 endif()
 
 add_subdirectory_ifdef(CONFIG_SUIT_SINK_SELECTOR sink_selector)

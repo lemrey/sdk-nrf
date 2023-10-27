@@ -5,29 +5,10 @@
  */
 
 #include <suit_platform.h>
-#ifdef CONFIG_SUIT_LEGACY_PLATFORM
-#include <suit_platform_internal.h>
-#endif /* CONFIG_SUIT_LEGACY_PLATFORM */
 
 int suit_plat_check_slot(suit_component_t component_handle, unsigned int slot)
 {
-#ifdef CONFIG_SUIT_LEGACY_PLATFORM
-	const struct suit_component_impl *impl = suit_plat_component_impl_get(component_handle);
-
-	if (impl == NULL) {
-		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
-	}
-
-	if (impl->check_slot == NULL) {
-		return SUIT_FAIL_CONDITION;
-	}
-
-	return impl->check_slot(component_handle, slot);
-
-	return SUIT_SUCCESS;
-#else /* CONFIG_SUIT_LEGACY_PLATFORM */
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
-#endif /* CONFIG_SUIT_LEGACY_PLATFORM */
 }
 
 /** File a report on a command result. */

@@ -213,21 +213,6 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 static int boot_path(void)
 {
-#if CONFIG_SUIT_LEGACY_PLATFORM
-#ifdef CONFIG_SOC_NRF54H20
-	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_app') */
-	const suit_manifest_class_id_t nordic_app_manifest_class_id = {
-		{0x08, 0xc1, 0xb5, 0x99, 0x55, 0xe8, 0x5f, 0xbc, 0x9e, 0x76, 0x7b, 0xc2, 0x9c, 0xe1,
-		 0xb0, 0x4d}};
-#else  /* CONFIG_SOC_NRF54H20 */
-	/* RFC4122 uuid5(nordic_vid, 'posix_sample_app') */
-	const suit_manifest_class_id_t nordic_app_manifest_class_id = {
-		{0x56, 0xdc, 0x9a, 0x14, 0x28, 0xd8, 0x52, 0xd3, 0xbd, 0x62, 0xe7, 0x7a, 0x08, 0xbc,
-		 0x8b, 0x91}};
-#endif /* CONFIG_SOC_NRF54H20 */
-
-	return boot_envelope(&nordic_app_manifest_class_id);
-#else  /* CONFIG_SUIT_LEGACY_PLATFORM */
 	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES];
 	size_t class_ids_to_boot_len = ARRAY_SIZE(class_ids_to_boot);
 
@@ -248,7 +233,6 @@ static int boot_path(void)
 	}
 
 	return ret;
-#endif /* CONFIG_SUIT_LEGACY_PLATFORM */
 }
 
 int suit_orchestrator_init(void)
