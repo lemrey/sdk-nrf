@@ -18,10 +18,10 @@ zephyr_library_sources(src/plat_retrieve_manifest.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_CHECK_IMAGE_MATCH src/plat_check_image_match.c)
 
 zephyr_library_sources(src/plat_invoke.c)
-if (!CONFIG_ZTEST)
-  zephyr_library_sources_ifdef(CONFIG_SOC_NRF54H20_CPUSEC src/runners/run_nrf54h20.c)
-else ()
+if(${CONFIG_ZTEST})
   zephyr_library_sources(src/runners/run_posix.c)
+else ()
+  zephyr_library_sources_ifdef(CONFIG_SOC_NRF54H20_CPUSEC src/runners/run_nrf54h20.c)
 endif ()
 
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM suit_stream_sinks_interface)
