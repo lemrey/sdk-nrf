@@ -6,6 +6,11 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
+if (BACKBONE_WIFI)
+	set(EXTRA_CONF_FILE "configuration/nrf7002eb.conf")
+	set(EXTRA_DTC_OVERLAY_FILE "configuration/nrf7002eb.overlay")
+endif()
+
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(thread_border_router)
 

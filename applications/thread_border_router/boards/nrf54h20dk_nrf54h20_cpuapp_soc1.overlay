@@ -13,28 +13,33 @@
 	};
 };
 
-/delete-node/ &cpuapp_uicr_ext;
+/delete-node/ &slot0_partition;
 
 &mram0 {
-    reg = <0xe0aa000 DT_SIZE_K(1000)>;
+    reg = <0xe0a6000 DT_SIZE_K(1092)>;
     partitions {
         compatible = "fixed-partitions";
         #address-cells = < 0x1 >;
         #size-cells = < 0x1 >;
         slot0_partition: partition@aa000 {
             label = "image-0";
-            reg = < 0xaa000 DT_SIZE_K(998) >;
+            reg = < 0xa6000 DT_SIZE_K(1092) >;
         };
     };
-    cpuapp_uicr_ext: uicr@e1a3800 {
-        compatible = "nordic,nrf-uicr";
-        reg = <0xe1a3800 DT_SIZE_K(2)>;
-    };
+};
+
+&cpuapp_ram0x_s {
+	reg = < 0x0 DT_SIZE_K(512) >;
+	ranges = < 0x0 0x0 DT_SIZE_K(512) >;
 };
 
 /* ram3x_cpuapp buffer is used by App core UART driver. */
 &ram3x_cpuapp {
 	status = "okay";
+};
+
+&cpuapp_sram0x {
+	reg = <0x1000 DT_SIZE_K(512)>;
 };
 
 &uart136 {

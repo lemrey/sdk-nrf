@@ -1,0 +1,59 @@
+/*
+* Copyright (c) 2023 Nordic Semiconductor ASA
+*
+* SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+*/
+
+#include <freq.h>
+
+&pinctrl {
+	spi131_default: spi131_default {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 2, 1)>,
+			        <NRF_PSEL(SPIM_MISO, 0, 5)>,
+			        <NRF_PSEL(SPIM_MOSI, 0, 4)>;
+		};
+	};
+
+	spi131_sleep: spi131_sleep {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 2, 1)>,
+			        <NRF_PSEL(SPIM_MISO, 0, 5)>,
+			        <NRF_PSEL(SPIM_MOSI, 0, 4)>;
+			low-power-enable;
+		};
+	};
+};
+
+&spi130 {
+	status = "disabled";
+	enc424j600_link_board_eth: enc424j600@0 {
+		status = "disabled";
+	};
+};
+
+&spi131 {
+	compatible = "nordic,nrf-spim";
+	status = "okay";
+	cs-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&spi131_default>;
+	pinctrl-1 = <&spi131_sleep>;
+	pinctrl-names = "default", "sleep";
+	memory-regions = <&ram3x_cpuapp>;
+
+	nrf700x: nrf7002@0 {
+		compatible = "nordic,nrf700x-spi";
+		status = "okay";
+		reg = <0>;
+		spi-max-frequency = <DT_FREQ_M(8)>;
+
+		bucken-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+
+		/* No separate pin for IOVDD, BUCKEN will handle IOVDD automatically,
+		 * but this entry is for compatibility purposes and to avoid adding a
+		 * special case in the nRF700x driver.
+		 */
+		iovdd-ctrl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+		host-irq-gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+	};
+};

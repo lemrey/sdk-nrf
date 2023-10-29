@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+DT_COMPAT_NORDIC_NRF700X_SPI := nordic,nrf700x-spi
+
 menuconfig NRF_TBR
     bool "nRF Thread Border Router"
     imply NEWLIB_LIBC_NANO
@@ -24,6 +26,10 @@ menuconfig NRF_TBR
     imply NET_HOSTNAME_ENABLE
     imply MDNS_RESPONDER
     imply DNS_SD
+    imply NET_PKT_FILTER # This should be removed after next upmerge
+    imply NET_PKT_FILTER_IPV6_HOOK # This should be removed after next upmerge
+
+menu "nRF Thread Border Router"
 
 if NRF_TBR
 
@@ -77,3 +83,9 @@ source "${ZEPHYR_BASE}/../nrf/applications/thread_border_router/Kconfig.defaults
 rsource "src/net/Kconfig"
 
 endif #NRF_TBR
+
+endmenu
+
+config NRF7002_ON_SPI
+	def_bool $(dt_compat_enabled,$(DT_COMPAT_NORDIC_NRF700X_SPI))
+	depends on WIFI_NRF700X

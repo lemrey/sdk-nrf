@@ -23,13 +23,78 @@
 #include <zephyr/sys/printk.h>
 #include <zephyr/device.h>
 #include <zephyr/net/net_config.h>
+#include <zephyr/net/net_pkt_filter.h>
+#include <zephyr/net/openthread.h>
+#include <zephyr/net/wifi_mgmt.h>
 
 LOG_MODULE_REGISTER(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
+#define WIFI_MGMT_EVENTS (NET_EVENT_WIFI_CONNECT_RESULT)
+
 K_SEM_DEFINE(ll_addr_wait, 0, 1);
+K_SEM_DEFINE(run_app, 0, 1);
 
 static struct net_mgmt_event_callback net_event_cb;
 static struct tbr_context *context;
+
+#if defined(CONFIG_WIFI_NRF700X)
+static struct net_mgmt_event_callback wifi_mgmt_cb;
+
+struct ipv6_input_test {
+	struct npf_test test;
+};
+
+static bool filter_mcast_loopback(struct npf_test *test, struct net_pkt *pkt);
+
+struct ipv6_input_test mcast_loopback_test = {
+	.test.fn = filter_mcast_loopback,
+};
+
+static NPF_RULE(filter_mcast_loopback_rule, NET_OK, mcast_loopback_test);
+
+static void handle_wifi_connect_result(struct net_mgmt_event_callback *cb)
+{
+	const struct wifi_status *status =
+		(const struct wifi_status *) cb->info;	
+
+	if (status->status) {
+		LOG_ERR("Backbone link connection request failed (%d)", status->status);
+	} else {
+		LOG_INF("Backbone link connected");
+		k_sem_give(&run_app);
+	}
+}
+
+static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb,
+				    uint32_t mgmt_event, struct net_if *iface)
+{
+	ARG_UNUSED(iface);
+
+	switch (mgmt_event) {
+	case NET_EVENT_WIFI_CONNECT_RESULT:
+		handle_wifi_connect_result(cb);
+		break;
+	default:
+		break;
+	}
+}
+
+static bool filter_mcast_loopback(struct npf_test *test, struct net_pkt *pkt)
+{
+	ARG_UNUSED(test);
+
+	struct net_ipv6_hdr *hdr = NET_IPV6_HDR(pkt);
+
+	if (!hdr) {
+		LOG_WRN("Multicast loopback filter - failed to read IPv6 header");
+		return false;
+	}
+
+	return !context->ll_addr || !net_ipv6_is_addr_mcast((struct in6_addr *)hdr->dst) ||
+	       !net_ipv6_addr_cmp_raw((const uint8_t *)context->ll_addr, hdr->src);
+}
+
+#endif /* defined(CONFIG_WIFI_NRF700X) */
 
 static void net_ev_cb_handler(struct net_mgmt_event_callback *cb,
 			      uint32_t mgmt_event, struct net_if *iface)
@@ -50,6 +115,9 @@ static bool join_all_routers_group(struct net_if *iface)
 	struct in6_addr all_routers_addr;
 	int ret;
 
+	k_sem_take(&ll_addr_wait, K_FOREVER);
+	net_mgmt_del_event_callback(&net_event_cb);
+
 	net_ipv6_addr_create_ll_allrouters_mcast(&all_routers_addr);
 
 	ret = net_ipv6_mld_join(iface, &all_routers_addr);
@@ -65,7 +133,19 @@ static int init_backbone_iface(void)
 {
 	const struct device *backbone_device;
 
+#if defined(CONFIG_WIFI_NRF700X)
+	npf_insert_ipv6_recv_rule(&filter_mcast_loopback_rule);
+
+	backbone_device = device_get_binding("wlan0");
+	/* Wait for WiFi connection */
+	net_mgmt_init_event_callback(&wifi_mgmt_cb,
+				wifi_mgmt_event_handler,
+				WIFI_MGMT_EVENTS);
+	net_mgmt_add_event_callback(&wifi_mgmt_cb);
+#else
 	backbone_device = DEVICE_DT_GET(DT_NODELABEL(enc424j600_link_board_eth));
+	k_sem_give(&run_app);
+#endif
 
 	if (!device_is_ready(backbone_device)) {
 		LOG_ERR("Backbone device not ready.");
@@ -80,16 +160,15 @@ static int init_backbone_iface(void)
 		return EXIT_FAILURE;
 	}
 
-	net_config_init_app(net_if_get_device(context->backbone_iface),
-			    "Initializing backbone interface");
-
 	return EXIT_SUCCESS;
 }
 
 static bool configure_backbone_link(struct net_if *iface)
 {
-	k_sem_take(&ll_addr_wait, K_FOREVER);
-	net_mgmt_del_event_callback(&net_event_cb);
+	k_sem_take(&run_app, K_FOREVER);
+
+	net_config_init_app(net_if_get_device(context->backbone_iface),
+			    "Initializing backbone interface");
 
 	if (!join_all_routers_group(iface)) {
 		return false;
@@ -105,6 +184,12 @@ static bool configure_backbone_link(struct net_if *iface)
 
 static int init_application(void)
 {
+#ifdef CLOCK_FEATURE_HFCLK_DIVIDE_PRESENT
+	/* For now hardcode to 128MHz */
+	nrfx_clock_divider_set(NRF_CLOCK_DOMAIN_HFCLK,
+			       NRF_CLOCK_HFCLK_DIV_1);
+#endif
+
 	context = tbr_get_context();
 	context->ll_addr = NULL;
 	context->ot = openthread_get_default_context();
@@ -170,6 +255,11 @@ static struct openthread_state_changed_cb ot_state_chaged_cb = { .state_changed_
 int main(void)
 {
 	openthread_state_changed_cb_register(context->ot, &ot_state_chaged_cb);
+
+	if (!context->backbone_iface) {
+		LOG_ERR("Backbone link interface uninitialized");
+		return EXIT_FAILURE;
+	}
 
 	if (!configure_backbone_link(context->backbone_iface)) {
 		LOG_WRN("Backbone link configuration fail");
