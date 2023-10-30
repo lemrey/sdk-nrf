@@ -6,9 +6,9 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-project(suit_plat_suit_plat_class_check)
-
 include(../cmake/test_template.cmake)
+
+project(suit_plat_suit_plat_class_check)
 
 target_sources(testbinary PRIVATE
   src/main.c

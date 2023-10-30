@@ -6,9 +6,9 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-project(plat_retrieve_manifest)
-
 include(../cmake/test_template.cmake)
+
+project(plat_retrieve_manifest)
 
 target_sources(testbinary PRIVATE
   src/main.c

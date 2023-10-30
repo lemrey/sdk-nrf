@@ -6,9 +6,9 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-project(plat_devconfig)
-
 include(../cmake/test_template.cmake)
+
+project(plat_devconfig)
 
 target_sources(testbinary PRIVATE
   src/main.c
