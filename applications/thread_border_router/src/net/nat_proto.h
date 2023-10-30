@@ -72,4 +72,10 @@ static inline enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
 
 #endif  /* CONFIG_NET_TCP */
 
+/**
+ * @brief Remove all active NAT records.
+ *
+ */
+void nat_records_remove_all();
+
 #endif  /* NAT_PROTO_H_ */

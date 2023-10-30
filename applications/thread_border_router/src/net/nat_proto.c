@@ -21,6 +21,12 @@ LOG_MODULE_REGISTER(nat_proto, CONFIG_NRF_TBR_NAT_LOG_LEVEL);
 #define WELL_KNOWN_PORTS_MAX 1023U
 #define ICMPV4_HDR_UNUSED_SIZE (4 * sizeof(uint8_t))
 
+#if CONFIG_NRF_TBR_NAT_LOG_LEVEL >= LOG_LEVEL_DBG
+#define PRINT_TUPLE(_str, _tuple)       print_tuple(__FUNCTION__, _str, _tuple)
+#else
+#define PRINT_TUPLE(_str, _tuple)
+#endif
+
 enum nat_proto {
 	ICMP = 0,
 #if defined(CONFIG_NET_UDP)
@@ -59,6 +65,8 @@ struct nat_tuple {
 		uint16_t port;
 		/** ICMPv4 */
 		uint16_t unused;
+		/** all */
+		uint16_t all;
 	};
 
 	enum nat_proto proto;
@@ -76,6 +84,33 @@ static K_MUTEX_DEFINE(lock_mtx);
 K_MEM_SLAB_DEFINE_STATIC(records_pool, sizeof(struct nat_node),
 			 CONFIG_NRF_TBR_NAT_RECORDS_COUNT, 4);
 static sys_slist_t nat_records[PROTO_NUM_MAX];
+
+#if CONFIG_NRF_TBR_NAT_LOG_LEVEL >= LOG_LEVEL_DBG
+
+static void print_tuple(const char *func, const char *str, const struct nat_tuple *tuple)
+{
+	char src[INET_ADDRSTRLEN];
+	char dst[INET_ADDRSTRLEN];
+
+	__ASSERT(tuple != NULL, "Null pointer");
+
+	if (tuple->proto == ICMP) {
+		LOG_DBG("%s: %s tuple: [%s %u] [%s %u]", !func ? "" : func, !str ? "" : str,
+			net_addr_ntop(AF_INET, &tuple->src.addr, src, sizeof(src)),
+			ntohs(tuple->src.query_id),
+			net_addr_ntop(AF_INET, &tuple->dst.addr, dst, sizeof(dst)),
+			ntohs(tuple->dst.query_id));
+	} else {
+		LOG_DBG("%s: %s tuple: [%s %u] [%s %u] [%u]", !func ? "" : "", !str ? "" : str,
+			net_addr_ntop(AF_INET, &tuple->src.addr, src, sizeof(src)),
+			ntohs(tuple->src.port),
+			net_addr_ntop(AF_INET, &tuple->dst.addr, dst, sizeof(dst)),
+			ntohs(tuple->dst.port),
+			ntohs(tuple->port));
+	}
+}
+
+#endif
 
 static void modify_ipv4_hdr(struct net_ipv4_hdr *hdr, const struct in_addr *new_addr, bool src)
 {
@@ -143,8 +178,6 @@ static void tuple_invert(struct nat_tuple *tuple)
 static bool record_add(const struct nat_tuple *tuple)
 {
 	struct nat_node *new_node = NULL;
-	char src[INET_ADDRSTRLEN];
-	char dst[INET_ADDRSTRLEN];
 
 	__ASSERT(tuple != NULL, "Null pointer");
 
@@ -166,20 +199,7 @@ static bool record_add(const struct nat_tuple *tuple)
 
 	k_mutex_unlock(&lock_mtx);
 
-	if (tuple->proto == ICMP) {
-		LOG_DBG("Added tuple: [%s %u] [%s %u]",
-			net_addr_ntop(AF_INET, &tuple->src.addr, src, sizeof(src)),
-			ntohs(tuple->src.query_id),
-			net_addr_ntop(AF_INET, &tuple->dst.addr, dst, sizeof(dst)),
-			ntohs(tuple->dst.query_id));
-	} else {
-		LOG_DBG("Added tuple: [%s %u] [%s %u] [%u]",
-			net_addr_ntop(AF_INET, &tuple->src.addr, src, sizeof(src)),
-			ntohs(tuple->src.port),
-			net_addr_ntop(AF_INET, &tuple->dst.addr, dst, sizeof(dst)),
-			ntohs(tuple->dst.port),
-			ntohs(tuple->port));
-	}
+	PRINT_TUPLE("Add", &new_node->tuple);
 
 	return true;
 }
@@ -823,3 +843,25 @@ drop:
 }
 
 #endif /* CONFIG_NET_TCP */
+
+void nat_records_remove_all()
+{
+	struct nat_node *_node, *tmp_node;
+
+	k_mutex_lock(&lock_mtx, K_FOREVER);
+	for (enum nat_proto p_it = ICMP; p_it < PROTO_NUM_MAX; p_it++) {
+		sys_slist_t *rec = &nat_records[p_it];
+
+		if (sys_slist_is_empty(rec)) {
+			continue;
+		}
+
+		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(rec, _node, tmp_node, node){
+			PRINT_TUPLE("Remove", &_node->tuple);
+
+			sys_slist_remove(rec, NULL, &_node->node);
+			k_mem_slab_free(&records_pool, (void **)&_node);
+		}
+	}
+	k_mutex_unlock(&lock_mtx);
+}

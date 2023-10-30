@@ -23,6 +23,8 @@ struct nat_test {
 	struct npf_test test;
 };
 
+static struct net_mgmt_event_callback nat_conn_mgmt_cb;
+
 static bool nat_rx_cb(struct npf_test *test, struct net_pkt *pkt);
 static bool nat_tx_cb(struct npf_test *test, struct net_pkt *pkt);
 
@@ -120,10 +122,22 @@ static bool nat_tx_cb(struct npf_test *test, struct net_pkt *pkt)
 	return is_pkt_ok;
 }
 
+static void eth_iface_down(struct net_mgmt_event_callback *cb,
+			   uint32_t mgmt_event, struct net_if *iface)
+{
+	ARG_UNUSED(cb);
+	ARG_UNUSED(iface);
+
+	/* Remove all NAT records when connection is down. */
+	nat_records_remove_all();
+}
+
 static int nat_init(void)
 {
 	npf_append_ipv4_recv_rule(&nat_rx);
 	npf_insert_send_rule(&nat_tx);
+	net_mgmt_init_event_callback(&nat_conn_mgmt_cb, eth_iface_down, NET_EVENT_IF_DOWN);
+	net_mgmt_add_event_callback(&nat_conn_mgmt_cb);
 	return 0;
 }
 
