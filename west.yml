@@ -43,7 +43,7 @@ manifest:
   defaults:
     remote: ncs
 
-  group-filter: [-homekit, -nrf-802154, -dragoon, -find-my, -ant, -babblesim, -doc-internal]
+  group-filter: [-nrf-802154, -dragoon, -find-my, -ant, -babblesim, -doc-internal]
 
   # "projects" is a list of git repositories which make up the NCS
   # source code.
@@ -59,7 +59,7 @@ manifest:
     # https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/guides/modules.html
     - name: zephyr
       repo-path: sdk-zephyr-next
-      revision: 619375968deebe129a2f27263cfe1ae771822c41
+      revision: 96ee5046e4053286cc3437848ce2a1ddcb306e6b
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -132,7 +132,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 97018b680a4b09a561fe9c9fb5a3f476c7b21b09
+      revision: ec0627ab7fd55528385a597d6d53ff26f1916203
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
@@ -200,11 +200,6 @@ manifest:
           upstream-url: https://github.com/DaveGamble/cJSON
           upstream-sha: d2735278ed1c2e4556f53a7a782063b31331dbf7
           compare-by-default: false
-    - name: homekit
-      repo-path: sdk-homekit
-      revision: 2ecf5993ca6f4662517e4e287aec0eb979962112
-      groups:
-        - homekit
     - name: find-my
       repo-path: sdk-find-my-next
       revision: 7e0084f265e24c299c034325b68620646c83f281

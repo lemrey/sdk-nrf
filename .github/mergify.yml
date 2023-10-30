@@ -7,9 +7,7 @@ pull_request_rules:
       - -draft
       - -label=DNM
       - or:
-        - label=manifest-homekit
         - label=manifest-find-my
-        - label=CI-homekit-test
         - label=CI-find-my-test
       - label!=DNM
       # Prevent Merging is the DNM github action check

@@ -254,7 +254,6 @@
 - scenarios:
     - applications.zigbee_weather_station.*
     - applications.matter_weather_station.*
-    - applications.homekit.weather_station.hdfu.debug
   platforms:
     - thingy53_nrf5340_cpuapp
   comment: "FLASH overflow"

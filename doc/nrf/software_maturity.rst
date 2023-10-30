@@ -193,17 +193,6 @@ The following table indicates the software maturity levels of the support for ea
   .. sml-table:: bluetooth
      :insert-values: [("Bluetooth LE Peripheral/Central","nRF54H20","Experimental"), ("Bluetooth LE Peripheral/Central","nRF54L15","Experimental"), ("LLPM","nRF54H20","Experimental"), ("LLPM","nRF54L15","Experimental")]
 
-
-HomeKit features support
-************************
-
-The following table indicates the software maturity levels of the support for each HomeKit feature:
-
-.. toggle::
-
-  .. sml-table:: homekit
-     :add-columns: [("nRF54H20", "-"), ("nRF54L15", "-")]
-
 Thread features support
 ***********************
 
