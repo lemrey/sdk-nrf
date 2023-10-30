@@ -511,6 +511,7 @@
   - "modules/tfm/**/*"
   - "include/tfm/**/*"
   - "subsys/suit/**/*"
+  - "subsys/mgmt/suitfu/**/*"
   - "samples/suit/**/*"
   - "tests/subsys/suit/**/*"
 
