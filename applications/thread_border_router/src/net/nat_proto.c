@@ -77,6 +77,7 @@ struct nat_node {
 	sys_snode_t node;
 
 	struct nat_tuple tuple;
+	struct k_work_delayable timeout;
 };
 
 static K_MUTEX_DEFINE(lock_mtx);
@@ -175,6 +176,69 @@ static void tuple_invert(struct nat_tuple *tuple)
 	memcpy(&tuple->dst, &tmp, sizeof(struct nataddr_in));
 }
 
+static k_timeout_t proto_timeout(struct nat_tuple *tuple)
+{
+	switch (tuple->proto) {
+	/* RFC5508: REQ-2: An ICMP Query session timer MUST NOT expire in less
+	 * than 60 seconds.
+	 */
+	case ICMP: return K_SECONDS(CONFIG_NAT_ICMP_QUERY_SESSION_TIMEOUT_SEC);
+#if defined(CONFIG_NET_UDP)
+	/* RFC4787:  REQ-5:  A NAT UDP mapping timer MUST NOT expire in less than two
+	 * minutes, unless REQ-5a applies.
+	 * a) For specific destination ports in the well-known port range
+	 *    (ports 0-1023), a NAT MAY have shorter UDP mapping timers that
+	 *    are specific to the IANA-registered application running over
+	 *    that specific destination port.
+	 * b) The value of the NAT UDP mapping timer MAY be configurable.
+	 * c) A default value of five minutes or more for the NAT UDP mapping
+	 *    timer is RECOMMENDED.
+	 */
+	case UDP: return K_SECONDS(CONFIG_NAT_UDP_SESSION_TIMEOUT_SEC);
+#endif /* CONFIG_NET_UDP */
+#if defined(CONFIG_NET_TCP)
+	/* RFC5382:  REQ-5: f a NAT cannot determine whether the endpoints of a TCP
+	 * connection are active, it MAY abandon the session if it has been
+	 * idle for some time.  In such cases, the value of the "established
+	 * connection idle-timeout" MUST NOT be less than 2 hours 4 minutes.
+	 */
+	case TCP: return K_SECONDS(CONFIG_NAT_TCP_SESSION_TIMEOUT_SEC);
+#endif /* CONFIG_NET_TCP */
+	case PROTO_NUM_MAX:
+	default:
+	}
+	return K_FOREVER;
+}
+
+static void timeout_cb(struct k_work *work)
+{
+	struct nat_node *_node = CONTAINER_OF(work, struct nat_node, timeout);
+
+	print_tuple(__FUNCTION__, "Remove", &_node->tuple);
+
+	k_mutex_lock(&lock_mtx, K_FOREVER);
+	sys_slist_find_and_remove(&nat_records[_node->tuple.proto], &_node->node);
+	k_mem_slab_free(&records_pool, (void **)&_node);
+
+	k_mutex_unlock(&lock_mtx);
+}
+
+static void timeout_start(struct nat_node *record)
+{
+	k_work_init_delayable(&record->timeout, timeout_cb);
+	k_work_schedule(&record->timeout, proto_timeout(&record->tuple));
+}
+
+static void timeout_restart(struct nat_node *record)
+{
+	k_work_reschedule(&record->timeout, proto_timeout(&record->tuple));
+}
+
+static void timeout_cancel(struct nat_node *record)
+{
+	k_work_cancel_delayable(&record->timeout);
+}
+
 static bool record_add(const struct nat_tuple *tuple)
 {
 	struct nat_node *new_node = NULL;
@@ -196,6 +260,7 @@ static bool record_add(const struct nat_tuple *tuple)
 	k_mutex_lock(&lock_mtx, K_FOREVER);
 
 	sys_slist_append(&nat_records[tuple->proto], (sys_snode_t *)&new_node->node);
+	timeout_start(new_node);
 
 	k_mutex_unlock(&lock_mtx);
 
@@ -251,10 +316,12 @@ static bool tp_rx_conn_handle(struct nat_tuple *tuple)
 				sys_slist_remove(&nat_records[tuple->proto],
 						 prev ? &prev->node : NULL,
 						 &_node->node);
+				timeout_cancel(_node);
 				k_mem_slab_free(&records_pool, (void **)&_node);
 			} else if (tuple->dst.port == _node->tuple.port) {
 				/* Restore original addr & port number. */
 				memcpy(&tuple->dst, &_node->tuple.orig, sizeof(struct nataddr_in));
+				timeout_restart(_node);
 			}
 
 			k_mutex_unlock(&lock_mtx);
@@ -285,6 +352,7 @@ static bool tp_tx_conn_handle(struct nat_tuple *tuple)
 		    addr_cmp(&tuple->orig, &_node->tuple.orig)) {
 			/* Set proper port number. */
 			tuple->port = _node->tuple.port;
+			timeout_restart(_node);
 			k_mutex_unlock(&lock_mtx);
 			return true;
 		}
@@ -620,8 +688,6 @@ enum net_verdict nat_udp(struct net_pkt *pkt, bool tx)
 			if (!tp_hairpinning(&tuple)) {
 				goto drop;
 			}
-
-			/* TODO 4. set timeout. */
 		} else {
 			LOG_DBG("Mapping exists");
 
@@ -632,8 +698,6 @@ enum net_verdict nat_udp(struct net_pkt *pkt, bool tx)
 								(uint8_t *)&tuple.port,
 								sizeof(uint16_t));
 			}
-
-			/* TODO 2a. Update timeout. */
 		}
 	} else {
 		/* Store previous IP address. */
@@ -764,8 +828,6 @@ enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
 			if (!tp_hairpinning(&tuple)) {
 				goto drop;
 			}
-
-			/* TODO 4. set timeout. */
 		} else {
 			LOG_DBG("Mapping exists");
 
@@ -776,8 +838,6 @@ enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
 								(uint8_t *)&tuple.port,
 								sizeof(uint16_t));
 			}
-
-			/* TODO 2a. Update timeout. */
 		}
 	} else {
 		/* Store previous IP address. */
@@ -859,6 +919,7 @@ void nat_records_remove_all()
 		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(rec, _node, tmp_node, node){
 			PRINT_TUPLE("Remove", &_node->tuple);
 
+			timeout_cancel(_node);
 			sys_slist_remove(rec, NULL, &_node->node);
 			k_mem_slab_free(&records_pool, (void **)&_node);
 		}

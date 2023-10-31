@@ -45,6 +45,32 @@ config NRF_TBR_NAT_RECORDS_COUNT
     help
       Number of total NAT records available for TCP, UDP and ICMP protocols.
 
+config NAT_ICMP_QUERY_SESSION_TIMEOUT_SEC
+    int "NAT mapping timout for ICMP query"
+    range 60 240
+    default 60
+    help
+      The mapping timeout is the amount of time where NAT mapping will
+      stay active without packets traversing the NAT.
+
+config NAT_UDP_SESSION_TIMEOUT_SEC
+    int "NAT mapping timout for UDP"
+    range 120 65535
+    default 300
+    depends on NET_UDP
+    help
+      The mapping timeout is the amount of time where NAT mapping will
+      stay active without packets traversing the NAT.
+
+config NAT_TCP_SESSION_TIMEOUT_SEC
+    int "NAT mapping timout for TCP"
+    range 7440 65535
+    default 7440
+    depends on NET_TCP
+    help
+      The mapping timeout is the amount of time where NAT mapping will
+      stay active without packets traversing the NAT.
+
 module = NRF_TBR_NAT
 module-dep = LOG
 module-str = NAT
