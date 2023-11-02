@@ -206,7 +206,7 @@
 #cmakedefine PSA_NEED_OBERON_SPAKE2P_DRIVER                     @PSA_NEED_OBERON_SPAKE2P_DRIVER@
 #cmakedefine PSA_NEED_OBERON_SRP_DRIVER                         @PSA_NEED_OBERON_SRP_DRIVER@
 
-#cmakedefine PSA_NEED_ZEPHYR_ENTROPY_DRIVER                     @PSA_NEED_ZEPHYR_ENTROPY_DRIVER@
+#cmakedefine PSA_NEED_NRF_RNG_ENTROPY_DRIVER                    @PSA_NEED_NRF_RNG_ENTROPY_DRIVER@
 
 /*
  * CRACEN driver configuration
