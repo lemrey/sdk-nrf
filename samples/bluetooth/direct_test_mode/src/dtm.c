@@ -390,7 +390,7 @@ static struct dtm_instance {
 	nrf_radio_mode_t radio_mode;
 
 	/* Radio output power. */
-	nrf_radio_txpower_t txpower;
+	int8_t txpower;
 
 	/* Constant Tone Extension configuration. */
 	struct dtm_cte_info cte_info;
@@ -414,7 +414,7 @@ static struct dtm_instance {
 	.anomaly_timer = NRFX_TIMER_INSTANCE(ANOMALY_172_TIMER_INSTANCE),
 #endif
 	.radio_mode = NRF_RADIO_MODE_BLE_1MBIT,
-	.txpower = NRF_RADIO_TXPOWER_0DBM,
+	.txpower = 0,
 	.fem.gain = FEM_USE_DEFAULT_GAIN,
 };
 
@@ -705,6 +705,170 @@ static int gppi_init(void)
 	return 0;
 }
 
+static void radio_tx_power_set(int8_t tx_power)
+{
+	uint32_t tx_power_reg;
+
+	/* The tx_power is in dBm unit and has to be converted
+	 * to the appropriate radio register enumerator.
+	 */
+	switch (tx_power) {
+#if defined(RADIO_TXPOWER_TXPOWER_Neg70dBm)
+	case -70:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg70dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg70dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg46dBm)
+	case -46:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg46dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg46dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg40dBm)
+	case -40:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg40dBm;
+		break;
+#endif /* RADIO_TXPOWER_TXPOWER_Neg40dBm */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg30dBm)
+	case -30:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg30dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg30dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg26dBm)
+	case -26:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg26dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg26dBm) */
+
+	case -20:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg20dBm;
+		break;
+
+	case -16:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg16dBm;
+		break;
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg14dBm)
+	case -14:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg14dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg14dBm) */
+
+	case -12:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg12dBm;
+		break;
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg10dBm)
+	case -10:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg10dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg10dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg9dBm)
+	case -9:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg9dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg9dBm) */
+
+	case -8:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg8dBm;
+		break;
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg7dBm)
+	case -7:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg7dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg7dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg6dBm)
+	case -6:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg6dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg6dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg5dBm)
+	case -5:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg5dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg5dBm) */
+
+	case -4:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg4dBm;
+		break;
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg3dBm)
+	case -3:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg3dBm;
+		break;
+#endif /* defined (RADIO_TXPOWER_TXPOWER_Neg3dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg2dBm)
+	case -2:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg2dBm;
+		break;
+#endif /* defined (RADIO_TXPOWER_TXPOWER_Neg2dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg1dBm)
+	case -1:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Neg1dBm;
+		break;
+#endif /* defined (RADIO_TXPOWER_TXPOWER_Neg1dBm) */
+
+	case 0:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_0dBm;
+		break;
+
+#if defined(RADIO_TXPOWER_TXPOWER_Pos1dBm)
+	case 1:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos1dBm;
+		break;
+#endif /* RADIO_TXPOWER_TXPOWER_Pos1dBm */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos2dBm)
+	case 2:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos2dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos2dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos3dBm)
+	case 3:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos3dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos3dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos4dBm)
+	case 4:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos4dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos4dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos5dBm)
+	case 5:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos5dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos5dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos6dBm)
+	case 6:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos6dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos6dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos7dBm)
+	case 7:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos7dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos7dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos8dBm)
+	case 8:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos8dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos8dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos9dBm)
+	case 9:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos9dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos9dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos10dBm)
+	case 10:
+		tx_power_reg = RADIO_TXPOWER_TXPOWER_Pos10dBm;
+		break;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos10dBm) */
+	default:
+		__ASSERT_NO_MSG(0);
+	}
+
+	nrf_radio_txpower_set(NRF_RADIO, (nrf_radio_txpower_t)tx_power_reg);
+}
+
 static void radio_reset(void)
 {
 	if (nrfx_gppi_channel_check(dtm_inst.ppi_radio_start))
@@ -744,7 +908,7 @@ static int radio_init(void)
 	/* Turn off radio before configuring it */
 	radio_reset();
 
-	nrf_radio_txpower_set(NRF_RADIO, dtm_inst.txpower);
+	radio_tx_power_set(dtm_inst.txpower);
 	nrf_radio_mode_set(NRF_RADIO, dtm_inst.radio_mode);
 
 	/* Set the access address, address0/prefix0 used for both Rx and Tx
@@ -1223,7 +1387,7 @@ static void radio_prepare(bool rx)
 
 		radio_start(rx, false);
 	} else { /* tx */
-		nrf_radio_txpower_set(NRF_RADIO, dtm_inst.txpower);
+		radio_tx_power_set(dtm_inst.txpower);
 
 #ifdef NRF52840_XXAA
 		/* Stop the timer used by anomaly 172 */
@@ -1245,7 +1409,7 @@ static bool dtm_set_txpower(uint32_t new_tx_power)
 	/* radio->TXPOWER register is 32 bits, low octet a tx power value,
 	 * upper 24 bits zeroed.
 	 */
-	uint8_t new_power8 = (uint8_t) (new_tx_power & 0xFF);
+	int8_t new_power8 = (int8_t)(new_tx_power & 0xFF);
 
 	/* The two most significant bits are not sent in the 6 bit field of
 	 * the DTM command. These two bits are 1's if and only if the tx_power
@@ -1737,7 +1901,7 @@ static uint32_t constant_tone_setup(uint8_t cte_info)
 static uint32_t transmit_power_set(int8_t parameter)
 {
 	size_t size = dtm_hw_radio_power_array_size_get();
-	const uint32_t *power = dtm_hw_radio_power_array_get();
+	const int8_t *power = dtm_hw_radio_power_array_get();
 
 	if (parameter == LE_TRANSMIT_POWER_LVL_SET_MIN) {
 		dtm_inst.txpower = dtm_hw_radio_min_power_get();
