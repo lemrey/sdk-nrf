@@ -144,7 +144,7 @@ manifest:
       path: modules/ic-next
       revision: 9c0f7beb1398fcbde958d0b84168e31bfdb15b2b
     - name: sdk-secdom
-      revision: 2c0c5b17007fcf2c6f3b4697fdcaef3608326fed
+      revision: 88807856e213b8194f70e67ad09aed4dba976ef7
       path: core_fw/secdom
     - name: nrf-regtool
       revision: 8bb646724d6ec95813a48815b2e41f541b0452ec
@@ -237,7 +237,7 @@ manifest:
       revision: e6c23e9a565cb588a745634058d29b97c1ac1818
       path: modules/lib/suit-processor
     - name: suit-generator
-      revision: 95e4ab4fc6b6b217b79879dc6440e7f79e37d0d9
+      revision: 8159323be1956f935a2417c24fc689af28055ab5
       path: modules/lib/suit-generator
 
     # Other third-party repositories.
