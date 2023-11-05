@@ -24,7 +24,7 @@
 #include "oberon_hmac_drbg.h"
 #endif
 
-#ifdef PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN || defined(PSA_CRYPTO_DRIVER_ALG_SRP_CRACEN)
+#if defined(PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN) || defined(PSA_CRYPTO_DRIVER_HAS_PAKE_CRACEN)
 #include "cracen_psa_primitives.h"
 #endif
 
@@ -42,6 +42,9 @@ typedef union {
 #ifdef PSA_NEED_OBERON_KEY_DERIVATION_DRIVER
 	oberon_key_derivation_operation_t oberon_kdf_ctx;
 #endif
+#ifdef PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN
+	cracen_key_derivation_operation_t cracen_kdf_ctx;
+#endif
 } psa_driver_key_derivation_context_t;
 
 typedef union {
@@ -49,6 +52,9 @@ typedef union {
 	unsigned int dummy;
 #ifdef PSA_NEED_OBERON_PAKE_DRIVER
 	oberon_pake_operation_t oberon_pake_ctx;
+#endif
+#ifdef PSA_CRYPTO_DRIVER_HAS_PAKE_CRACEN
+	cracen_pake_operation_t cracen_pake_ctx;
 #endif
 } psa_driver_pake_context_t;
 

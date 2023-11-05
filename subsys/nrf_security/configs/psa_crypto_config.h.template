@@ -231,6 +231,7 @@
 #define PSA_CRYPTO_DRIVER_HAS_HASH_SUPPORT_CRACEN               1
 #define PSA_CRYPTO_DRIVER_HAS_KDF_SUPPORT_CRACEN                1
 #define PSA_CRYPTO_DRIVER_HAS_MAC_SUPPORT_CRACEN                1
+#define PSA_CRYPTO_DRIVER_HAS_PAKE_CRACEN                       1
 #define PSA_CRYPTO_DRIVER_ALG_CBC_NO_PADDING_CRACEN             1
 #define PSA_CRYPTO_DRIVER_ALG_CBC_PKCS7_CRACEN                  1
 #define PSA_CRYPTO_DRIVER_ALG_CCM_CRACEN                        1
