@@ -1940,7 +1940,7 @@ psa_status_t psa_driver_wrapper_mac_sign_setup(psa_mac_operation_t *operation,
 		}
 #endif /* PSA_NEED_OBERON_MAC_DRIVER */
 #if defined(PSA_CRYPTO_DRIVER_HAS_MAC_SUPPORT_CRACEN)
-		status = cracen_mac_verify_setup(&operation->ctx.cracen_driver_ctx, attributes,
+		status = cracen_mac_sign_setup(&operation->ctx.cracen_driver_ctx, attributes,
 						 key_buffer, key_buffer_size, alg);
 		if (status == PSA_SUCCESS) {
 			operation->id = PSA_CRYPTO_CRACEN_DRIVER_ID;
@@ -2007,6 +2007,16 @@ psa_status_t psa_driver_wrapper_mac_verify_setup(psa_mac_operation_t *operation,
 			return status;
 		}
 #endif /* PSA_NEED_OBERON_MAC_DRIVER */
+#if defined(PSA_CRYPTO_DRIVER_HAS_MAC_SUPPORT_CRACEN)
+		status = cracen_mac_verify_setup(&operation->ctx.cracen_driver_ctx, attributes,
+						 key_buffer, key_buffer_size, alg);
+		if (status == PSA_SUCCESS) {
+			operation->id = PSA_CRYPTO_CRACEN_DRIVER_ID;
+		}
+		if (status != PSA_ERROR_NOT_SUPPORTED) {
+			return status;
+		}
+#endif /* PSA_CRYPTO_DRIVER_HAS_MAC_SUPPORT_CRACEN */
 #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
 		(void)status;
 		(void)key_buffer;
