@@ -246,12 +246,6 @@
   comment: "RAM region overflow"
 
 - scenarios:
-    - drivers.i2c.api.slave_emulated
-  platforms:
-    - nrf54l15dk_nrf54l15_cpuapp@soc1
-  comment: "Compilation error in nrfx_twis.c"
-
-- scenarios:
     - applications.zigbee_weather_station.*
     - applications.matter_weather_station.*
   platforms:
