@@ -6,7 +6,7 @@
 
 / {
 	chosen {
-		zephyr,entropy = &nordic_rng;
+		zephyr,entropy = &rng;
 		zephyr,console = &uart136;
 	};
 
