@@ -15,8 +15,13 @@
 #include <suit_storage.h>
 #include <suit_plat_mem_util.h>
 #include <suit_plat_digest_cache.h>
+#include "suit_plat_err.h"
 
 LOG_MODULE_REGISTER(suit, CONFIG_SUIT_LOG_LEVEL);
+
+#define SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err) ((err) == SUIT_SUCCESS ? 0 : -EACCES)
+
+#define SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err) ((err) == SUIT_PLAT_SUCCESS ? 0 : -EACCES)
 
 static int enter_emergency_recovery(void)
 {
@@ -28,12 +33,12 @@ static int validate_update_candidate_address_and_size(const uint8_t *addr, size_
 {
 	if (addr == NULL || addr == (void *)EMPTY_STORAGE_VALUE) {
 		LOG_DBG("Invalid update candidate address: %p", (void *)addr);
-		return EFAULT;
+		return -EFAULT;
 	}
 
 	if (size == 0 || size == EMPTY_STORAGE_VALUE) {
 		LOG_DBG("Invalid update candidate size: %d", size);
-		return EFAULT;
+		return -EFAULT;
 	}
 
 	return 0;
@@ -49,16 +54,16 @@ static int validate_update_candidate_manifest(uint8_t *manifest_address, size_t 
 {
 	int err = suit_process_sequence(manifest_address, manifest_size, SUIT_SEQ_PARSE);
 
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to validate update candidate manifest: %d", err);
-		return err;
+		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err);
 	}
 
 	if (update_candidate_applicable()) {
 		LOG_INF("Update candidate applicable");
 	} else {
 		LOG_INF("Update candidate not applicable");
-		return ENOTSUP;
+		return -ENOTSUP;
 	}
 
 	return 0;
@@ -72,7 +77,7 @@ static int update_path(void)
 	int err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
 	if ((err) || (update_regions_len < 1)) {
 		LOG_ERR("Failed to get update candidate data: %d", err);
-		return err;
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 	}
 
 	LOG_DBG("Update candidate address: %p", update_regions[0].mem);
@@ -80,13 +85,13 @@ static int update_path(void)
 
 	err = validate_update_candidate_address_and_size(update_regions[0].mem,
 							 update_regions[0].size);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_INF("Invalid update candidate: %d", err);
 
 		err = suit_storage_update_cand_set(NULL, 0);
-		if (err) {
-			LOG_ERR("Failed to clear update candidate");
-			return err;
+		if (err != SUIT_SUCCESS) {
+			LOG_ERR("Failed to clear update candidate: %d", err);
+			return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 		}
 
 		LOG_DBG("Update candidate cleared");
@@ -97,12 +102,12 @@ static int update_path(void)
 
 	err = validate_update_candidate_manifest((uint8_t *)update_regions[0].mem,
 						 update_regions[0].size);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to validate update candidate manifest: %d", err);
 		err = suit_storage_update_cand_set(NULL, 0);
-		if (err) {
-			LOG_ERR("Failed to clear update candidate");
-			return err;
+		if (err != SUIT_SUCCESS) {
+			LOG_ERR("Failed to clear update candidate: %d", err);
+			return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 		}
 
 		LOG_DBG("Update candidate cleared");
@@ -113,17 +118,17 @@ static int update_path(void)
 
 	err = suit_process_sequence((uint8_t *)update_regions[0].mem, update_regions[0].size,
 				    SUIT_SEQ_INSTALL);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to execute suit-install: %d", err);
-		return err;
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 	}
 
 	LOG_DBG("suit-install successful");
 
 	err = suit_storage_update_cand_set(NULL, 0);
-	if (err) {
-		LOG_ERR("Failed to clear update candidate");
-		return err;
+	if (err != SUIT_SUCCESS) {
+		LOG_ERR("Failed to clear update candidate: %d", err);
+		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err);
 	}
 
 	LOG_DBG("Update candidate cleared");
@@ -149,7 +154,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 	int err = suit_storage_installed_envelope_get(class_id, &installed_envelope_address,
 						      &installed_envelope_size);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to get installed envelope data: %d", err);
 		return enter_emergency_recovery();
 	}
@@ -165,7 +170,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 	err = suit_process_sequence(installed_envelope_address, installed_envelope_size,
 				    SUIT_SEQ_PARSE);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to validate installed root manifest: %d", err);
 		return enter_emergency_recovery();
 	}
@@ -174,7 +179,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 	unsigned int seq_num;
 	err = suit_processor_get_manifest_metadata(
 		installed_envelope_address, installed_envelope_size, true, NULL, NULL, &seq_num);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to read manifest version and digest: %d", err);
 		return enter_emergency_recovery();
 	}
@@ -186,7 +191,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 	err = suit_process_sequence(installed_envelope_address, installed_envelope_size,
 				    SUIT_SEQ_VALIDATE);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to execute suit-validate: %d", err);
 		return enter_emergency_recovery();
 	}
@@ -198,7 +203,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 	err = suit_process_sequence(installed_envelope_address, installed_envelope_size,
 				    SUIT_SEQ_LOAD);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		if (err == SUIT_ERR_UNAVAILABLE_COMMAND_SEQ) {
 			LOG_DBG("Command sequence suit-load not available - skip it");
 			err = 0;
@@ -211,7 +216,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 	err = suit_process_sequence(installed_envelope_address, installed_envelope_size,
 				    SUIT_SEQ_INVOKE);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to execute suit-invoke: %d", err);
 		return enter_emergency_recovery();
 	}
@@ -224,24 +229,24 @@ static int boot_path(void)
 {
 	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES];
 	size_t class_ids_to_boot_len = ARRAY_SIZE(class_ids_to_boot);
-
-	int ret = mci_get_invoke_order((const suit_manifest_class_id_t **)&class_ids_to_boot,
+	int ret = SUIT_SUCCESS;
+	mci_err_t mci_ret = mci_get_invoke_order((const suit_manifest_class_id_t **)&class_ids_to_boot,
 				       &class_ids_to_boot_len);
-	if (ret != 0) {
-		LOG_ERR("Unable to get invoke order (%d)", ret);
-		return ret;
+	if (mci_ret != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Unable to get invoke order (MCI err: %d)", mci_ret);
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(mci_ret);
 	}
 
 	for (size_t i = 0; i < class_ids_to_boot_len; i++) {
 		ret = boot_envelope((const suit_manifest_class_id_t *)class_ids_to_boot[i]);
-		if (ret != 0) {
+		if (ret != SUIT_SUCCESS) {
 			LOG_ERR("Booting %d manifest failed (%d)", i, ret);
 		} else {
 			LOG_DBG("Manifest %d booted", i);
 		}
 	}
 
-	return ret;
+	return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(ret);
 }
 
 int suit_orchestrator_init(void)
@@ -249,23 +254,24 @@ int suit_orchestrator_init(void)
 	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
 	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
 
+	suit_plat_err_t plat_err;
 	int err = suit_processor_init();
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to initialize suit processor: %d", err);
-		return err;
+		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err);
 	}
 
-	err = mci_get_supported_manifest_class_ids(
-		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
-	if (err) {
-		LOG_ERR("Failed to get list of supported manifest class IDs: %d", err);
-		return err;
+	plat_err = mci_get_supported_manifest_class_ids(
+		   (const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
+	if (plat_err != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Failed to get list of supported manifest class IDs: MCI err %d", plat_err);
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(plat_err);
 	}
 
-	err = suit_storage_init(supported_class_ids, supported_class_ids_len);
-	if (err) {
-		LOG_ERR("Failed to init suit storage: %d", err);
-		return err;
+	plat_err = suit_storage_init(supported_class_ids, supported_class_ids_len);
+	if (plat_err != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Failed to init suit storage: %d", plat_err);
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(plat_err);
 	}
 
 	LOG_DBG("SUIT orchestrator init ok");
@@ -277,7 +283,7 @@ int suit_orchestrator_entry(void)
 	const suit_plat_mreg_t *update_regions = NULL;
 	size_t update_regions_len = 0;
 
-	int err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
+	suit_plat_err_t err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
 
 #if CONFIG_SUIT_DIGEST_CACHE
 	suit_plat_digest_cache_unlock();
@@ -285,11 +291,11 @@ int suit_orchestrator_entry(void)
 	suit_plat_digest_cache_lock();
 #endif
 
-	if ((err == 0) && (update_regions_len > 0)) {
+	if ((err == SUIT_PLAT_SUCCESS) && (update_regions_len > 0)) {
 		LOG_INF("Update path");
 		return update_path();
-	} else {
-		LOG_INF("Boot path");
-		return boot_path();
 	}
+
+	LOG_INF("Boot path");
+	return boot_path();
 }
