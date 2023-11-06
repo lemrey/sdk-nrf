@@ -69,7 +69,7 @@ find_manifest_config(const suit_manifest_class_id_t *manifest_class_id)
 	for (int i = 0; i < sizeof(supported_manifests) / sizeof(manifest_config_t); ++i) {
 		const manifest_config_t *manifest_config = &supported_manifests[i];
 
-		if (0 ==
+		if (SUIT_PLAT_SUCCESS ==
 		    mci_compare_suit_uuid(manifest_config->manifest_class_id, manifest_class_id)) {
 			return manifest_config;
 		}
@@ -77,17 +77,17 @@ find_manifest_config(const suit_manifest_class_id_t *manifest_class_id)
 	return NULL;
 }
 
-int mci_get_supported_manifest_class_ids(const suit_manifest_class_id_t **class_id, size_t *size)
+mci_err_t mci_get_supported_manifest_class_ids(const suit_manifest_class_id_t **class_id, size_t *size)
 {
 	if (NULL == class_id || NULL == size) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	size_t output_max_size = *size;
 	size_t output_size = sizeof(supported_manifests) / sizeof(manifest_config_t);
 
 	if (output_size > output_max_size) {
-		return -MCI_ESIZE;
+		return SUIT_PLAT_ERR_SIZE;
 	}
 
 	for (int i = 0; i < output_size; ++i) {
@@ -95,13 +95,13 @@ int mci_get_supported_manifest_class_ids(const suit_manifest_class_id_t **class_
 	}
 
 	*size = output_size;
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_invoke_order(const suit_manifest_class_id_t **class_id, size_t *size)
+mci_err_t mci_get_invoke_order(const suit_manifest_class_id_t **class_id, size_t *size)
 {
 	if (NULL == class_id || NULL == size) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 	size_t output_max_size = *size;
 
@@ -111,93 +111,93 @@ int mci_get_invoke_order(const suit_manifest_class_id_t **class_id, size_t *size
 	size_t output_size = 1;
 
 	if (output_size > output_max_size) {
-		return -MCI_ESIZE;
+		return SUIT_PLAT_ERR_SIZE;
 	}
 
 	class_id[0] = &nordic_root_manifest_class_id;
 	*size = output_size;
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_downgrade_prevention_policy(const suit_manifest_class_id_t *class_id,
+mci_err_t mci_get_downgrade_prevention_policy(const suit_manifest_class_id_t *class_id,
 					downgrade_prevention_policy_t *policy)
 {
 	if (NULL == class_id || NULL == policy) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *manifest_config = find_manifest_config(class_id);
 
 	if (NULL == manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
 	*policy = manifest_config->downgrade_prevention_policy;
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_validate_manifest_class_id(const suit_manifest_class_id_t *class_id)
+mci_err_t mci_validate_manifest_class_id(const suit_manifest_class_id_t *class_id)
 {
 	if (NULL == class_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *manifest_config = find_manifest_config(class_id);
 
 	if (NULL == manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_validate_signing_key_id(const suit_manifest_class_id_t *class_id, uint32_t key_id)
+mci_err_t mci_validate_signing_key_id(const suit_manifest_class_id_t *class_id, uint32_t key_id)
 {
 	if (NULL == class_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *manifest_config = find_manifest_config(class_id);
 
 	if (NULL == manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
 
 	if ((manifest_config->signing_key_bits & manifest_config->signing_key_mask) !=
 	    (key_id & manifest_config->signing_key_mask)) {
-		return MCI_EWRONGKEYID;
+		return MCI_ERR_WRONGKEYID;
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id, int processor_id)
+mci_err_t mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id, int processor_id)
 {
 	if (NULL == class_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *manifest_config = find_manifest_config(class_id);
 
 	if (NULL == manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	if (0 == mci_compare_suit_uuid(&nordic_root_manifest_class_id, class_id)) {
+	if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_root_manifest_class_id, class_id)) {
 		/* Root manifest - ability to start any cpu are intentionally blocked
 		 */
-		return -MCI_ENOACCESS;
+		return MCI_ERR_NOACCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_sec_sys_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_sec_sys_manifest_class_id, class_id)) {
 		/* Sec manifest
 		 */
 		if (NRF_PROCESSOR_SYSCTRL == processor_id) {
 			/* SysCtrl
 			 */
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		}
 
-		return -MCI_ENOACCESS;
+		return MCI_ERR_NOACCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_app_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_app_manifest_class_id, class_id)) {
 		/* App manifest.
 		 * TODO - implement verification for NRF_PROCESSOR_ID_PPR(13) and
 		 * NRF_PROCESSOR_ID_FLPR(14) support(based on UICR)
@@ -205,12 +205,12 @@ int mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id
 		if (NRF_PROCESSOR_APPLICATION == processor_id) {
 			/* Appcore
 			 */
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		}
 
-		return -MCI_ENOACCESS;
+		return MCI_ERR_NOACCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_rad_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_rad_manifest_class_id, class_id)) {
 		/* Rad manifest
 		 * TODO - implement verification for NRF_PROCESSOR_ID_PPR(13) and
 		 * NRF_PROCESSOR_ID_FLPR(14) support(based on UICR)
@@ -218,119 +218,119 @@ int mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id
 		if (NRF_PROCESSOR_RADIOCORE == processor_id) {
 			/* Radiocore
 			 */
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		} else if (NRF_PROCESSOR_BBPR == processor_id) {
 			/* BBPR
 			 */
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		}
 
-		return -MCI_ENOACCESS;
+		return MCI_ERR_NOACCESS;
 	}
 
-	return -MCI_ENOACCESS;
+	return MCI_ERR_NOACCESS;
 }
 
-int mci_validate_memory_access_rights(const suit_manifest_class_id_t *class_id, void *address,
+mci_err_t mci_validate_memory_access_rights(const suit_manifest_class_id_t *class_id, void *address,
 				      size_t mem_size)
 {
 	if (NULL == class_id || NULL == address || 0 == mem_size) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *manifest_config = find_manifest_config(class_id);
 
 	if (NULL == manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	if (0 == mci_compare_suit_uuid(&nordic_root_manifest_class_id, class_id)) {
+	if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_root_manifest_class_id, class_id)) {
 		/* Root manifest - ability to operate on memory ranges intentionally blocked
 		 */
-		return -MCI_ENOACCESS;
+		return MCI_ERR_NOACCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_sec_sys_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_sec_sys_manifest_class_id, class_id)) {
 		/* Sec and sysctrl manifest - TODO - implement checks based on UICR/SICR
 		 */
-		return 0;
+		return SUIT_PLAT_SUCCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_app_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_app_manifest_class_id, class_id)) {
 		/* App manifest - TODO - implement checks based on UICR
 		 */
-		return 0;
+		return SUIT_PLAT_SUCCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_rad_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_rad_manifest_class_id, class_id)) {
 		/* Rad manifest - TODO - implement checks based on UICR
 		 */
-		return 0;
+		return SUIT_PLAT_SUCCESS;
 	}
 
-	return -MCI_ENOACCESS;
+	return MCI_ERR_NOACCESS;
 }
 
-int mci_validate_platform_specific_component_rights(const suit_manifest_class_id_t *class_id,
+mci_err_t mci_validate_platform_specific_component_rights(const suit_manifest_class_id_t *class_id,
 						    int platform_specific_component_number)
 {
 	if (NULL == class_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *manifest_config = find_manifest_config(class_id);
 
 	if (NULL == manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	if (0 == mci_compare_suit_uuid(&nordic_sec_sys_manifest_class_id, class_id)) {
+	if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(&nordic_sec_sys_manifest_class_id, class_id)) {
 		/* The only manifest with ability to control platform specific components is secdom.
 		 * 0 - SDFW Firmware
 		 * 1 - SDFW Recovery Firmware
 		 */
 		if (0 == platform_specific_component_number ||
 		    1 == platform_specific_component_number) {
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		}
-		return -MCI_ENOACCESS;
+		return MCI_ERR_NOACCESS;
 	}
 
-	return -MCI_ENOACCESS;
+	return MCI_ERR_NOACCESS;
 }
 
-int mci_get_manifest_parent(const suit_manifest_class_id_t *child_class_id,
+mci_err_t mci_get_manifest_parent(const suit_manifest_class_id_t *child_class_id,
 			    const suit_manifest_class_id_t **parent_class_id)
 {
 	if (NULL == child_class_id || NULL == parent_class_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *child_manifest_config = find_manifest_config(child_class_id);
 
 	if (NULL == child_manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
 
 	*parent_class_id = child_manifest_config->parent_manifest_class_id;
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_vendor_id_for_manifest_class_id(const suit_manifest_class_id_t *class_id,
+mci_err_t mci_get_vendor_id_for_manifest_class_id(const suit_manifest_class_id_t *class_id,
 					    const suit_uuid_t **vendor_id)
 {
 	if (NULL == class_id || NULL == vendor_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const manifest_config_t *manifest_config = find_manifest_config(class_id);
 
 	if (NULL == manifest_config) {
-		return -MCI_EMANIFESTCLASSID;
+		return MCI_ERR_MANIFESTCLASSID;
 	}
 
 	return mci_get_nordic_vendor_id(vendor_id);
 }
 
-int mci_init(void)
+mci_err_t mci_init(void)
 {
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }

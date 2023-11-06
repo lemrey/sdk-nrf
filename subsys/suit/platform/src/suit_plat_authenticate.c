@@ -46,9 +46,9 @@ int suit_plat_authenticate_manifest(struct zcbor_string *manifest_component_id,
 	}
 
 	/* Validate manifest class ID against supported manifests */
-	int ret = mci_validate_manifest_class_id(class_id);
-	if (ret != 0) {
-		LOG_ERR("Manifest class ID validation failed: %i", ret);
+	mci_err_t ret = mci_validate_manifest_class_id(class_id);
+	if (ret != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Manifest class ID validation failed: MCI err %i", ret);
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
@@ -61,8 +61,8 @@ int suit_plat_authenticate_manifest(struct zcbor_string *manifest_component_id,
 
 	/* Validate KEY ID */
 	ret = mci_validate_signing_key_id(class_id, public_key_id);
-	if (ret != 0) {
-		LOG_ERR("Signing key validation failed: %i", ret);
+	if (ret != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Signing key validation failed: MCI err %i", ret);
 		return SUIT_ERR_AUTHENTICATION;
 	}
 
@@ -92,16 +92,16 @@ int suit_plat_authorize_unsigned_manifest(struct zcbor_string *manifest_componen
 	}
 
 	/* Validate manifest class ID against supported manifests */
-	int ret = mci_validate_manifest_class_id(class_id);
-	if (ret != 0) {
-		LOG_ERR("Manifest class ID validation failed: %i", ret);
+	mci_err_t ret = mci_validate_manifest_class_id(class_id);
+	if (ret != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Manifest class ID validation failed: MCI err %i", ret);
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	/* Check if unsigned manifest is allowed - pass key_id == 0*/
 	ret = mci_validate_signing_key_id(class_id, 0);
 
-	if (ret == 0) {
+	if (ret == SUIT_PLAT_SUCCESS) {
 		return SUIT_SUCCESS;
 	}
 

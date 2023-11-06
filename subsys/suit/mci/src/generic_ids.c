@@ -16,20 +16,20 @@ static const suit_uuid_t nordic_unspecified_class_id = {{0xca, 0xd8, 0x52, 0x3a,
 							 0x9a, 0xba, 0x85, 0x2e, 0xa0, 0xb2, 0xf5,
 							 0x77, 0xc9}};
 
-int mci_get_nordic_vendor_id(const suit_uuid_t **vendor_id)
+mci_err_t mci_get_nordic_vendor_id(const suit_uuid_t **vendor_id)
 {
 	if (NULL == vendor_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 	*vendor_id = &nordic_vendor_id;
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_nordic_unspecified_class_id(const suit_uuid_t **class_id)
+mci_err_t mci_get_nordic_unspecified_class_id(const suit_uuid_t **class_id)
 {
 	if (NULL == class_id) {
-		return -MCI_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 	*class_id = &nordic_unspecified_class_id;
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }

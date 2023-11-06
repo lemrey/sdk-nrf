@@ -18,7 +18,7 @@ int suit_plat_sequence_completed(enum suit_command_sequence seq_name,
 				 const uint8_t *envelope_str, size_t envelope_len)
 {
 	suit_manifest_class_id_t *class_id;
-	int err = SUIT_SUCCESS;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
 	if ((manifest_component_id == NULL) || (manifest_component_id->value == NULL)) {
 		LOG_ERR("Manifest class ID not specified");
@@ -31,9 +31,9 @@ int suit_plat_sequence_completed(enum suit_command_sequence seq_name,
 	}
 
 	err = mci_validate_manifest_class_id(class_id);
-	if (err != SUIT_SUCCESS) {
-		LOG_ERR("Failed to validate manifest class ID (ret: %d)", err);
-		return err;
+	if (err != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Failed to validate manifest class ID (MCI err: %d)", err);
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
 	if (seq_name == SUIT_SEQ_INSTALL) {
@@ -58,7 +58,7 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 	uint32_t current_seq_num;
 	suit_manifest_class_id_t *class_id;
 	downgrade_prevention_policy_t policy;
-	int ret = -MCI_EMANIFESTCLASSID;
+	suit_plat_err_t ret = SUIT_PLAT_ERR_CRASH;
 
 	if ((manifest_component_id == NULL) || (manifest_component_id->value == NULL)) {
 		LOG_ERR("Manifest class ID not specified");
@@ -71,8 +71,8 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 	}
 
 	ret = mci_validate_manifest_class_id(class_id);
-	if (ret != SUIT_SUCCESS) {
-		LOG_ERR("Unsupported manifest class ID (ret: %d)", ret);
+	if (ret != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Unsupported manifest class ID (MCI err: %d)", ret);
 		return SUIT_ERR_AUTHENTICATION;
 	}
 
@@ -111,8 +111,8 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 	}
 
 	ret = mci_get_downgrade_prevention_policy(class_id, &policy);
-	if (ret != SUIT_SUCCESS) {
-		LOG_ERR("Unable to get downgrade prevention policy (ret: %d)", ret);
+	if (ret != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Unable to get downgrade prevention policy (MCI err: %d)", ret);
 		return SUIT_ERR_AUTHENTICATION;
 	}
 

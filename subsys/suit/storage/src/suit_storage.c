@@ -168,7 +168,7 @@ static bool is_supported_class_id(const suit_manifest_class_id_t *id)
 	}
 
 	for (size_t i = 0; i < manifest_class_ids_len; i++) {
-		if (mci_compare_suit_uuid(id, manifest_class_ids[i]) == 0) {
+		if (mci_compare_suit_uuid(id, manifest_class_ids[i]) == SUIT_PLAT_SUCCESS) {
 			return true;
 		}
 	}
@@ -223,7 +223,7 @@ static int find_manifest_index(const suit_manifest_class_id_t *id, size_t *curre
 			continue;
 		}
 
-		if (mci_compare_suit_uuid(id, class_id) == 0) {
+		if (mci_compare_suit_uuid(id, class_id) == SUIT_PLAT_SUCCESS) {
 			LOG_DBG("Envelope with given class ID found at index %d", index);
 			break;
 		}
@@ -433,7 +433,7 @@ int suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *a
 		return -EINVAL;
 	}
 
-	if (0 != mci_compare_suit_uuid(id, class_id)) {
+	if (SUIT_PLAT_SUCCESS != mci_compare_suit_uuid(id, class_id)) {
 		LOG_ERR("Unable to install envelope: class ID does not match");
 		return -EINVAL;
 	}

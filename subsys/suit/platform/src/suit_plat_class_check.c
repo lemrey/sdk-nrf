@@ -35,9 +35,9 @@ int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	int ret = mci_get_supported_manifest_class_ids(manifest_class_ids_list, &size);
+	mci_err_t ret = mci_get_supported_manifest_class_ids(manifest_class_ids_list, &size);
 
-	if (ret != SUIT_SUCCESS) {
+	if (ret != SUIT_PLAT_SUCCESS) {
 		return SUIT_ERR_CRASH;
 	}
 
@@ -49,7 +49,7 @@ int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *
 	for (size_t i = 0; i < size; i++) {
 		if ((suit_plat_check_component_compatibility(manifest_class_ids_list[i],
 							     component_id) == SUIT_SUCCESS) &&
-		    (mci_compare_suit_uuid(cid, manifest_class_ids_list[i]) == SUIT_SUCCESS)) {
+		    (mci_compare_suit_uuid(cid, manifest_class_ids_list[i]) == SUIT_PLAT_SUCCESS)) {
 			return SUIT_SUCCESS;
 		}
 	}
@@ -71,9 +71,9 @@ int suit_plat_check_vid(suit_component_t component_handle, struct zcbor_string *
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	int ret = mci_get_supported_manifest_class_ids(manifest_class_ids_list, &size);
+	mci_err_t ret = mci_get_supported_manifest_class_ids(manifest_class_ids_list, &size);
 
-	if (ret != SUIT_SUCCESS) {
+	if (ret != SUIT_PLAT_SUCCESS) {
 		return SUIT_ERR_CRASH;
 	}
 
@@ -86,8 +86,8 @@ int suit_plat_check_vid(suit_component_t component_handle, struct zcbor_string *
 		if ((suit_plat_check_component_compatibility(manifest_class_ids_list[i],
 							     component_id) == SUIT_SUCCESS) &&
 		    (mci_get_vendor_id_for_manifest_class_id(manifest_class_ids_list[i],
-							     &vendor_id) == SUIT_SUCCESS) &&
-		    (mci_compare_suit_uuid(vid, vendor_id) == SUIT_SUCCESS)) {
+							     &vendor_id) == SUIT_PLAT_SUCCESS) &&
+		    (mci_compare_suit_uuid(vid, vendor_id) == SUIT_PLAT_SUCCESS)) {
 			return SUIT_SUCCESS;
 		}
 	}
