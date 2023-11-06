@@ -296,6 +296,10 @@ extern "C" {
 #endif
 #endif
 
+#if defined(CONFIG_PSA_WANT_ALG_HKDF)
+#define MBEDTLS_ASN1_PARSE_C
+#endif
+
 /* TLS/DTLS additions */
 #if !defined(MBEDTLS_PSA_CRYPTO_SPM)
 #if     defined(MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED)    || \
