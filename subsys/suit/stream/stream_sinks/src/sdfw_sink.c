@@ -5,6 +5,8 @@
  */
 
 #include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
+#include <zephyr/sys/reboot.h>
 #include <psa/crypto.h>
 #include <mram.h>
 
@@ -37,7 +39,7 @@ static struct sdfw_sink_context *get_new_context(void)
 }
 
 static digest_sink_err_t verify_digest(uint8_t *buf, size_t buf_size, psa_algorithm_t algorithm,
-			 uint8_t *expected_digest)
+				       uint8_t *expected_digest)
 {
 	struct stream_sink digest_sink;
 
@@ -123,17 +125,15 @@ static suit_plat_err_t check_update_candidate(uint8_t *buf, size_t size)
 	uint8_t *current_sdfw_digest = (uint8_t *)(NRF_SICR->UROT.SM.TBS.FW.DIGEST);
 
 	/* First check if calculated digest of candidate matches the digest from Signed Manifest */
-	digest_sink_err_t err = verify_digest(candidate_binary_start, size, PSA_ALG_SHA_512,
-					candidate_digest_in_manifest);
+	digest_sink_err_t err = verify_digest(
+		candidate_binary_start, size - (size_t)CONFIG_SUIT_SDFW_UPDATE_FIRMWARE_OFFSET,
+		PSA_ALG_SHA_512, candidate_digest_in_manifest);
 
-	if (err != SUIT_PLAT_SUCCESS)
-	{
+	if (SUIT_PLAT_SUCCESS != err) {
 		if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
 			LOG_ERR("Candidate inconsistent");
-		}
-		else
-		{
-			LOG_ERR("Failed to calculate digest");
+		} else {
+			LOG_ERR("Failed to calculate digest: %d", err);
 		}
 
 		return SUIT_PLAT_ERR_CRASH;
@@ -165,7 +165,28 @@ static suit_plat_err_t check_urot_none(uint8_t *buf, size_t size)
 		return SUIT_PLAT_ERR_NOT_FOUND;
 	} else {
 		LOG_INF("Update candidate found");
-		return check_update_candidate(buf, size);
+
+		suit_plat_err_t err = check_update_candidate(buf, size);
+
+		if (SUIT_PLAT_SUCCESS != err) {
+			LOG_ERR("Failed to check update candidate: %d", err);
+			return err;
+		}
+
+		if (IS_ENABLED(CONFIG_SUIT_UPDATE_REBOOT_ENABLED)) {
+			LOG_INF("Reboot the system to continue SDFW update");
+
+			if (IS_ENABLED(CONFIG_LOG)) {
+				/* Flush all logs */
+				log_panic();
+			}
+
+			sys_reboot(SYS_REBOOT_COLD);
+		} else {
+			LOG_DBG("Reboot disabled - perform manually");
+		}
+
+		return err;
 	}
 }
 
@@ -176,16 +197,17 @@ static suit_plat_err_t check_urot_activated(uint8_t *buf, size_t size)
 	uint8_t *current_sdfw_digest = (uint8_t *)(NRF_SICR->UROT.SM.TBS.FW.DIGEST);
 
 	/* Compare candidate's digest with current SDFW digest */
-	digest_sink_err_t err = verify_digest(candidate_binary_start, size,
-					      PSA_ALG_SHA_512, current_sdfw_digest);
-	if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
-		LOG_ERR("Digest mismatch - update failure");
-		return SUIT_PLAT_ERR_AUTHENTICATION;
-	}
-	else
-	{
-		LOG_ERR("Failed to calculate digest");
-		return SUIT_PLAT_ERR_CRASH;
+	digest_sink_err_t err = verify_digest(
+		candidate_binary_start, size - (size_t)CONFIG_SUIT_SDFW_UPDATE_FIRMWARE_OFFSET,
+		PSA_ALG_SHA_512, current_sdfw_digest);
+	if (SUIT_PLAT_SUCCESS != err) {
+		if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
+			LOG_ERR("Digest mismatch - update failure");
+			return SUIT_PLAT_ERR_AUTHENTICATION;
+		} else {
+			LOG_ERR("Failed to calculate digest: %d", err);
+			return SUIT_PLAT_ERR_CRASH;
+		}
 	}
 
 	LOG_DBG("Digest match - update success");
@@ -196,6 +218,11 @@ static suit_plat_err_t check_urot_activated(uint8_t *buf, size_t size)
  * excluding Signed Manifest preceding it within update candidate */
 static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 {
+	if (NULL == ctx || NULL == buf || NULL == size) {
+		LOG_ERR("NULL argument");
+		return SUIT_PLAT_ERR_INVAL;
+	}
+
 	LOG_DBG("buf: %p", (void *)buf);
 	LOG_DBG("size: %d", *size);
 
