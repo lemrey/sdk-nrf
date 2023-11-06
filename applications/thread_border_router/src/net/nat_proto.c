@@ -18,6 +18,11 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nat_proto, CONFIG_NRF_TBR_NAT_LOG_LEVEL);
 
+/* Net Unreachable */
+#define NET_ICMPV4_DST_UNREACH_NO_HOST   0
+/* Communication Administratively Prohibited */
+#define NET_ICMPV4_DST_UNREACH_COMM_PROHIBITED  13
+
 #define WELL_KNOWN_PORTS_MAX 1023U
 #define ICMPV4_HDR_UNUSED_SIZE (4 * sizeof(uint8_t))
 
@@ -85,6 +90,8 @@ static K_MUTEX_DEFINE(lock_mtx);
 K_MEM_SLAB_DEFINE_STATIC(records_pool, sizeof(struct nat_node),
 			 CONFIG_NRF_TBR_NAT_RECORDS_COUNT, 4);
 static sys_slist_t nat_records[PROTO_NUM_MAX];
+
+extern uint16_t net_calc_chksum(struct net_pkt *pkt, uint8_t proto);
 
 #if CONFIG_NRF_TBR_NAT_LOG_LEVEL >= LOG_LEVEL_DBG
 
@@ -411,118 +418,94 @@ static bool tp_hairpinning(const struct nat_tuple *tuple)
 	return true;
 }
 
-static void icmp_dst_port_unreach(struct net_pkt *pkt, bool tx)
+static void send_icmp_error(struct net_pkt *pkt)
 {
-	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(ipv4_access, struct net_ipv4_hdr);
-	struct net_ipv4_hdr *ip_hdr;
-
 	__ASSERT(pkt != NULL, "Null pointer");
 
-	LOG_DBG("Destination port unreachable");
+	/* rfc5508: REQ-8: When a NAT device is unable to establish a NAT Session for a
+	 * new transport-layer (TCP, UDP, ICMP, etc.) flow due to
+	 * resource constraints or administrative restrictions, the NAT
+	 * device SHOULD send an ICMP destination unreachable message,
+	 * with a code of 13 (Communication administratively prohibited)
+	 * to the sender, and drop the original packet.
+	 */
+	net_icmpv4_send_error(pkt, NET_ICMPV4_DST_UNREACH,
+			      NET_ICMPV4_DST_UNREACH_COMM_PROHIBITED);
+}
 
-	/* Skip unused bytes. */
-	if (net_pkt_skip(pkt, ICMPV4_HDR_UNUSED_SIZE)) {
-		return;
+static enum net_verdict icmp_error_handle(struct net_pkt *pkt, struct nat_tuple *tuple,
+					  struct net_icmp_hdr *main_icmp_hdr)
+{
+	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_hdr_access, struct net_icmp_hdr);
+	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_echo_req_access, struct net_icmpv4_echo_req);
+	struct net_pkt_cursor icmp_hdr_pos;
+	struct net_icmpv4_echo_req *echo_req;
+	struct net_icmp_hdr *icmp_hdr = NULL;
+
+	/* The ICMP error message body contains fragment of failed IP packet in original form thus
+	 * it is a ICMP message in this case.
+	 */
+	icmp_hdr = (struct net_icmp_hdr *)net_pkt_get_data(pkt, &icmp_hdr_access);
+	if (!icmp_hdr) {
+		LOG_ERR("Failed to read ICMP header");
+		return NET_DROP;
 	}
 
-	ip_hdr = (struct net_ipv4_hdr *)net_pkt_get_data(pkt, &ipv4_access);
-
-	if (!ip_hdr) {
-		LOG_WRN("Failed to read IPv4 header");
-		return;
+	net_pkt_cursor_backup(pkt, &icmp_hdr_pos);
+	if (net_pkt_skip(pkt, sizeof(struct net_icmp_hdr))) {
+		return NET_DROP;
 	}
 
-	if ((IS_ENABLED(CONFIG_NET_UDP) && ip_hdr->proto == IPPROTO_UDP) ||
-	    (IS_ENABLED(CONFIG_NET_TCP) && ip_hdr->proto == IPPROTO_TCP)) {
-		struct nat_tuple tuple;
-		struct net_pkt_cursor pos;
+	if (icmp_hdr->type == NET_ICMPV4_ECHO_REQUEST) {
+		echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
+									  &icmp_echo_req_access);
+		tuple->src.query_id = echo_req->identifier;
 
-		/* Copy to tuple before changing cursor position. */
-		tuple_cpy_from_hdr(&tuple, ip_hdr);
-
-		net_pkt_cursor_backup(pkt, &pos);
-		if (net_pkt_skip(pkt, net_pkt_ip_hdr_len(pkt) +
-				 net_pkt_ip_opts_len(pkt))) {
-			return;
+		if (tp_rx_conn_handle(tuple)) {
+			echo_req->identifier = tuple->new.query_id;
+		} else {
+			/* rfc5508: REQ-4 & REQ-5: If a NAT device receives an ICMP Error packet
+			 * from an external (the private) realm, and the NAT device does not have
+			 * an active mapping for the embedded payload, the NAT SHOULD silently
+			 * drop the ICMP Error packet.
+			 */
+			return NET_DROP;
 		}
-
-		if (IS_ENABLED(CONFIG_NET_UDP) && ip_hdr->proto == IPPROTO_UDP) {
-			NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(udp_hdr_access,
-							      struct net_udp_hdr);
-			struct net_udp_hdr *udp_hdr =
-				(struct net_udp_hdr *)net_pkt_get_data(pkt, &udp_hdr_access);
-			if (!udp_hdr) {
-				LOG_WRN("Failed to read UDP header");
-				goto exit;
-			}
-
-			LOG_DBG("Ports: src %u dst %u", ntohs(udp_hdr->src_port),
-				ntohs(udp_hdr->dst_port));
-			tuple.dst.port = udp_hdr->dst_port;
-			tuple.src.port = udp_hdr->src_port;
-		} else if (IS_ENABLED(CONFIG_NET_TCP) && ip_hdr->proto == IPPROTO_TCP) {
-			NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(tcp_hdr_access, struct tcphdr);
-			struct tcphdr *tcp_hdr =
-				(struct tcphdr *)net_pkt_get_data(pkt, &tcp_hdr_access);
-			if (!tcp_hdr) {
-				LOG_WRN("Failed to read TCP header");
-				goto exit;
-			}
-
-			LOG_DBG("Ports: src %u dst %u", ntohs(tcp_hdr->th_sport),
-				ntohs(tcp_hdr->th_dport));
-			tuple.dst.port = tcp_hdr->th_dport;
-			tuple.src.port = tcp_hdr->th_sport;
-		}
-
-		if (tx) {
-			tuple_invert(&tuple);
-		}
-
-		tuple.port = tuple.src.port;
-		/* TODO:
-		 * RFC5508 REQ-5:
-		 * If a NAT device receives an ICMP Error packet from the private
-		 * realm, and the NAT does not have an active mapping for the
-		 * embedded payload, the NAT SHOULD silently drop the ICMP Error
-		 * packet. If the NAT has active mapping for the embedded
-		 * payload, then the NAT MUST do the following prior to
-		 * forwarding the packet, unless explicitly overridden by local
-		 * policy:
-		 * a) Revert the IP and transport headers of the embedded IP
-		 *    packet to their original form, using the matching mapping;
-		 *    and
-		 * b) Leave the ICMP Error type and code unchanged; and
-		 * c) If the NAT enforces Basic NAT function ([NAT-TRAD]), and
-		 *    the NAT has active mapping for the IP address that sent the
-		 *    ICMP Error, translate the source IP address of the ICMP
-		 *    Error packet with the public IP address in the mapping.  In
-		 *    all other cases, translate the source IP address of the
-		 *    ICMP Error packet with its own public IP address.
-		 */
-
-exit:
-		net_pkt_cursor_restore(pkt, &pos);
+	} else {
+		return NET_DROP;
 	}
+
+	net_pkt_cursor_restore(pkt, &icmp_hdr_pos);
+
+	icmp_hdr->chksum = update_chksum(icmp_hdr->chksum,
+					 (uint8_t *)&tuple->orig.query_id,
+					 (uint8_t *)&tuple->new.query_id,
+					 sizeof(uint16_t));
+
+	/* Update checksum in main ICMP header as well. */
+	main_icmp_hdr->chksum = update_chksum(main_icmp_hdr->chksum,
+					      (uint8_t *)&tuple->orig.query_id,
+					      (uint8_t *)&tuple->new.query_id,
+					      sizeof(uint16_t));
+
+	return NET_OK;
 }
 
 enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx)
 {
 	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_hdr_access, struct net_icmp_hdr);
-	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_echo_req_access,
-					      struct net_icmpv4_echo_req);
 	struct net_pkt_cursor ipv4_hdr_pos;
 	struct net_pkt_cursor icmp_hdr_pos;
 	struct net_icmp_hdr *icmp_hdr = NULL;
-	struct net_icmpv4_echo_req *echo_req;
 	struct nat_tuple tuple;
-	const struct in_addr *new_addr = net_ipv4_unspecified_address();
+	struct in_addr new_addr;
 	bool overwrite;
 
 	if (!pkt) {
 		return NET_DROP;
 	}
 
+	net_ipaddr_copy(&new_addr, net_ipv4_unspecified_address());
 	tuple_cpy_from_hdr(&tuple, NET_IPV4_HDR(pkt));
 
 	overwrite = net_pkt_is_being_overwritten(pkt);
@@ -547,70 +530,146 @@ enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx)
 
 	switch (icmp_hdr->type) {
 	case NET_ICMPV4_ECHO_REQUEST:
-	{
-		if (tx) {
-			echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
-										  &icmp_echo_req_access);
-			tuple.orig.query_id = echo_req->identifier;
-			tuple.new.query_id = echo_req->identifier = htons(sys_rand32_get());
-			if (!tp_hairpinning(&tuple)) {
-				goto drop;
-			}
-			new_addr = net_if_ipv4_select_src_addr(net_pkt_iface(
-								       pkt),
-							       (struct in_addr *)NET_IPV4_HDR(
-								       pkt)->dst);
-		} else {
-			/* Incoming echo request is routed to net stack. */
-			goto exit;
-		}
-	}
-	break;
 	case NET_ICMPV4_ECHO_REPLY:
 	{
-		if (!tx) {
-			echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
-										  &icmp_echo_req_access);
-			tuple.src.query_id = echo_req->identifier;
-			if (tp_rx_conn_handle(&tuple)) {
-				echo_req->identifier = tuple.new.query_id;
-				new_addr = &tuple.new.addr;
+		NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_echo_req_access,
+						      struct net_icmpv4_echo_req);
+		struct net_icmpv4_echo_req *echo_req;
+
+		if (icmp_hdr->type == NET_ICMPV4_ECHO_REQUEST) {
+			if (tx) {
+				echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
+											  &icmp_echo_req_access);
+				tuple.orig.query_id = echo_req->identifier;
+				tuple.new.query_id = echo_req->identifier = htons(sys_rand32_get());
+				if (!tp_hairpinning(&tuple)) {
+					send_icmp_error(pkt);
+					goto drop;
+				}
+				net_ipaddr_copy(&new_addr, net_if_ipv4_select_src_addr(
+							net_pkt_iface(pkt),
+							(struct in_addr *)NET_IPV4_HDR(pkt)->
+							dst));
+			} else {
+				/* Incoming echo request is routed to net stack. */
+				goto exit;
 			}
-		} else {
-			/* Echo response for outgoing request don't need to be handled. */
-			goto exit;
+		} else if (icmp_hdr->type == NET_ICMPV4_ECHO_REPLY) {
+			if (!tx) {
+				echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
+											  &icmp_echo_req_access);
+				tuple.src.query_id = echo_req->identifier;
+				if (tp_rx_conn_handle(&tuple)) {
+					echo_req->identifier = tuple.new.query_id;
+					net_ipaddr_copy(&new_addr, &tuple.new.addr);
+				}
+			} else {
+				/* Echo response for outgoing request don't need to be handled. */
+				goto exit;
+			}
 		}
+
+		net_pkt_cursor_restore(pkt, &icmp_hdr_pos);
+		icmp_hdr->chksum = update_chksum(icmp_hdr->chksum,
+						 (uint8_t *)&tuple.orig.query_id,
+						 (uint8_t *)&tuple.new.query_id,
+						 sizeof(uint16_t));
 	}
 	break;
 	case NET_ICMPV4_DST_UNREACH:
-		if (icmp_hdr->code == NET_ICMPV4_DST_UNREACH_NO_PORT) {
-			icmp_dst_port_unreach(pkt, tx);
-		}
-		goto exit;
-		break;
 	case NET_ICMPV4_TIME_EXCEEDED:
-		LOG_DBG("ICMP NET_ICMPV4_TIME_EXCEEDED");
-		goto exit;
-		break;
 	case NET_ICMPV4_BAD_IP_HEADER:
-		LOG_DBG("ICMP NET_ICMPV4_BAD_IP_HEADER");
-		goto exit;
+		/* rfc5508: REQ-3: When an ICMP Error packet is received, if the ICMP checksum
+		 * fails to validate, the NAT SHOULD silently drop the ICMP Error
+		 * packet.
+		 * So, we can do it here for for each supported ICMP error packet.
+		 */
+		if (net_calc_chksum(pkt, IPPROTO_ICMP) != 0U) {
+			LOG_DBG("Invalid checksum");
+			goto drop;
+		}
+
+		if (icmp_hdr->type == NET_ICMPV4_DST_UNREACH) {
+			if (icmp_hdr->code == NET_ICMPV4_DST_UNREACH_NO_PORT ||
+			    icmp_hdr->code == NET_ICMPV4_DST_UNREACH_NO_HOST) {
+				NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(ipv4_access,
+								      struct net_ipv4_hdr);
+				struct net_ipv4_hdr *ip_hdr;
+				struct net_pkt_cursor msg_body;
+				struct net_pkt_cursor ipv4_hdr_pos;
+				struct nat_tuple icmp_tuple;
+
+				LOG_DBG("Destination unreachable");
+
+				net_pkt_cursor_backup(pkt, &msg_body);
+				/* Skip unused bytes. */
+				if (net_pkt_skip(pkt, ICMPV4_HDR_UNUSED_SIZE)) {
+					goto drop;
+				}
+
+				ip_hdr = (struct net_ipv4_hdr *)net_pkt_get_data(pkt, &ipv4_access);
+				if (!ip_hdr) {
+					LOG_WRN("Failed to read IPv4 header");
+					goto drop;
+				}
+
+				if (ip_hdr->proto != IPPROTO_ICMP &&
+				    (IS_ENABLED(CONFIG_NET_UDP) && ip_hdr->proto != IPPROTO_UDP) &&
+				    (IS_ENABLED(CONFIG_NET_TCP) && ip_hdr->proto != IPPROTO_TCP)) {
+					LOG_WRN("Wrong protocol");
+					goto drop;
+				}
+
+				/* Copy to tuple before changing cursor position. */
+				tuple_cpy_from_hdr(&icmp_tuple, ip_hdr);
+
+				net_pkt_cursor_backup(pkt, &ipv4_hdr_pos);
+				if (net_pkt_skip(pkt, net_pkt_ip_hdr_len(pkt) +
+						 net_pkt_ip_opts_len(pkt))) {
+					goto drop;
+				}
+
+				if (ip_hdr->proto == IPPROTO_ICMP) {
+					tuple_invert(&icmp_tuple);
+					icmp_error_handle(pkt, &icmp_tuple, icmp_hdr);
+				}
+
+				/* It is still ICMP error message body. Restore old IP address
+				 * in the failed IP packet.
+				 * But first update checksum for main ICMP header.
+				 */
+				icmp_hdr->chksum = update_chksum(icmp_hdr->chksum,
+								 (uint8_t *)&ip_hdr->src,
+								 (uint8_t *)&icmp_tuple.new.addr,
+								 sizeof(uint16_t));
+				net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
+				modify_ipv4_hdr(ip_hdr, &icmp_tuple.new.addr, true);
+
+				/* And copy original address. */
+				net_ipaddr_copy(&new_addr, &icmp_tuple.new.addr);
+				net_pkt_cursor_restore(pkt, &msg_body);
+
+				goto exit;
+			}
+
+			goto drop;
+		} else if (icmp_hdr->type == NET_ICMPV4_TIME_EXCEEDED) {
+			LOG_DBG("ICMP NET_ICMPV4_TIME_EXCEEDED");
+		} else if (icmp_hdr->type == NET_ICMPV4_TIME_EXCEEDED) {
+			LOG_DBG("ICMP NET_ICMPV4_BAD_IP_HEADER");
+		} else {
+			goto drop;
+		}
 		break;
 	default:
 		goto drop;
 	}
 
-	net_pkt_cursor_restore(pkt, &icmp_hdr_pos);
-	icmp_hdr->chksum = update_chksum(icmp_hdr->chksum,
-					 (uint8_t *)&tuple.orig.query_id,
-					 (uint8_t *)&tuple.new.query_id,
-					 sizeof(uint16_t));
-
 exit:
 	net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
 
-	if (!net_ipv4_is_addr_unspecified(new_addr)) {
-		modify_ipv4_hdr(NET_IPV4_HDR(pkt), new_addr, tx);
+	if (!net_ipv4_is_addr_unspecified(&new_addr)) {
+		modify_ipv4_hdr(NET_IPV4_HDR(pkt), &new_addr, tx);
 	}
 
 	net_pkt_set_overwrite(pkt, overwrite);
@@ -686,6 +745,7 @@ enum net_verdict nat_udp(struct net_pkt *pkt, bool tx)
 			}
 
 			if (!tp_hairpinning(&tuple)) {
+				send_icmp_error(pkt);
 				goto drop;
 			}
 		} else {
@@ -725,6 +785,7 @@ enum net_verdict nat_udp(struct net_pkt *pkt, bool tx)
 			 */
 			tuple_invert(&tuple);
 			if (!tp_hairpinning(&tuple)) {
+				send_icmp_error(pkt);
 				goto drop;
 			}
 
@@ -826,6 +887,7 @@ enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
 			}
 
 			if (!tp_hairpinning(&tuple)) {
+				send_icmp_error(pkt);
 				goto drop;
 			}
 		} else {
@@ -865,6 +927,7 @@ enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
 			 */
 			tuple_invert(&tuple);
 			if (!tp_hairpinning(&tuple)) {
+				send_icmp_error(pkt);
 				goto drop;
 			}
 
