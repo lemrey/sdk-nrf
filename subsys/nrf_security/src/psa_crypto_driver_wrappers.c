@@ -107,10 +107,6 @@
 #include "cracen_psa.h"
 #endif /* PSA_CRYPTO_DRIVER_CRACEN */
 
-#if defined(PSA_CRYPTO_DRIVER_ENTROPY_ZEPHYR)
-#include "zephyr_entropy.h"
-#endif
-
 /* Include TF-M builtin key driver */
 #if defined(PSA_CRYPTO_DRIVER_TFM_BUILTIN_KEY_LOADER)
 #ifndef PSA_CRYPTO_DRIVER_PRESENT
