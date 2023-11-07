@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+add_subdirectory(plat_err)
 add_subdirectory_ifdef(CONFIG_SUIT_ORCHESTRATOR orchestrator)
 add_subdirectory_ifdef(CONFIG_SUIT_PLATFORM platform)
 add_subdirectory_ifdef(CONFIG_SUIT_MEMPTR_STORAGE memptr_storage)

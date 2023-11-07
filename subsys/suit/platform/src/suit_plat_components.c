@@ -184,7 +184,7 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 	struct zcbor_string *component_id = NULL;
 
 	int err = suit_plat_component_id_get(handle, &component_id);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		return err;
 	}
 
@@ -197,7 +197,7 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 	if (is_mem_mapped(component_type)) {
 		void *impl_data = NULL;
 		err = suit_plat_component_impl_data_get(handle, &impl_data);
-		if (err) {
+		if (err != SUIT_SUCCESS) {
 			return err;
 		}
 

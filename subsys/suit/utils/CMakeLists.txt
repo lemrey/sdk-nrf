@@ -14,6 +14,7 @@ if(CONFIG_SUIT_PLATFORM)
 target_link_libraries(suit_utils INTERFACE suit_platform_interface)
 target_link_libraries(suit_utils INTERFACE suit)
 endif() # CONFIG_SUIT_PLATFORM
+target_link_libraries(suit_utils INTERFACE suit_platform_err)
 
 zephyr_library()
 zephyr_library_sources(src/suit_plat_decode_util.c)

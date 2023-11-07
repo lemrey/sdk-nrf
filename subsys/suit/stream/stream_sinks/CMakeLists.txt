@@ -9,6 +9,7 @@ target_include_directories(suit_stream_sinks_interface INTERFACE include)
 if(CONFIG_SUIT_STREAM_SINK_MEMPTR OR CONFIG_SUIT_STREAM_SINK_FLASH)
 target_link_libraries(suit_stream_sinks_interface INTERFACE suit_memptr_storage_interface)
 endif() # CONFIG_SUIT_STREAM_SINK_MEMPTR
+target_link_libraries(suit_stream_sinks_interface INTERFACE suit_platform_err)
 
 
 

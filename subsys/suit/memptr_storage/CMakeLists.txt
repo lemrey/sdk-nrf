@@ -6,6 +6,7 @@
 
 zephyr_interface_library_named(suit_memptr_storage_interface)
 target_include_directories(suit_memptr_storage_interface INTERFACE include)
+target_link_libraries(suit_memptr_storage_interface INTERFACE suit_platform_err)
 
 zephyr_library()
 

@@ -17,6 +17,10 @@ if (CONFIG_MOCK_SUIT_PROCESSOR)
   )
 endif()
 
+target_include_directories(testbinary PRIVATE
+  ${SUIT_SUBSYS_DIR}/plat_err/include
+)
+
 if (CONFIG_MOCK_SUIT_MCI)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_MCI)
   target_include_directories(testbinary PRIVATE
