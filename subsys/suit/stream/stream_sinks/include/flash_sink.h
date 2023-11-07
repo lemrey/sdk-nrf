@@ -17,8 +17,8 @@
  * @param dst Destination address - start of write area
  * @param size Write area size
  * @param handle Handle to storage object
- * @return int 0 if success otherwise error code.
+ * @return SUIT_PLAT_SUCCESS if success otherwise error code.
  */
-int flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle handle);
+suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle handle);
 
 #endif /* FLASH_SINK_H__ */

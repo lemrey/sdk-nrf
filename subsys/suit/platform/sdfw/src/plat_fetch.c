@@ -7,6 +7,7 @@
 #include <zephyr/logging/log.h>
 #include <suit_platform_internal.h>
 #include <suit_plat_digest_cache.h>
+#include <suit_plat_error_convert.h>
 
 #ifdef CONFIG_SUIT_STREAM
 #include <sink.h>
@@ -18,6 +19,7 @@
 #endif /* CONFIG_SUIT_STREAM_SOURCE_CACHE */
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 #include <memptr_streamer.h>
+#include <memptr_sink.h>
 #endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
 
 #include <stdbool.h>
@@ -84,17 +86,17 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 	/* Get dst_sink - final destination sink */
 	ret = select_sink(dst_handle, &dst_sink);
-	if (ret != SUCCESS) {
+	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
 	}
 
 	if (dst_sink.release != NULL) {
-		int err = dst_sink.release(dst_sink.ctx);
+		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
 
-		if (err != SUCCESS) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return err;
+			return suit_plat_err_to_proccessor_err_convert(err);
 		}
 	}
 
@@ -139,7 +141,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 	/* Get dst_sink - final destination sink */
 	ret = select_sink(dst_handle, &dst_sink);
-	if (ret != SUCCESS) {
+	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
 	}
@@ -165,7 +167,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 #endif /* CONFIG_SUIT_STREAM_SOURCE_CACHE */
 
 #ifdef CONFIG_SUIT_STREAM_IPC_REQUESTOR
-	if ((ret == SOURCE_NOT_FOUND) &&		/* URI was not found in cache */
+	if ((ret == SUIT_PLAT_ERR_NOT_FOUND) &&		/* URI was not found in cache */
 	    is_type_supported_by_ipc(component_type)) { /* component type is supported */
 		/* Request uri through ipc streamer */
 		ret = ipc_streamer_stream(uri->value, uri->len, &dst_sink,
@@ -175,15 +177,15 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 #endif /* CONFIG_SUIT_STREAM_IPC_REQUESTOR */
 
 	if (dst_sink.release != NULL) {
-		int err = dst_sink.release(dst_sink.ctx);
+		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
 
-		if (err != SUCCESS) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return err;
+			ret = err;
 		}
 	}
 
-	return ret;
+	return suit_plat_err_to_proccessor_err_convert(ret);
 #else
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM */
@@ -212,7 +214,7 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 
 	/* Get dst_sink - final destination sink */
 	ret = select_sink(dst_handle, &dst_sink);
-	if (ret != SUCCESS) {
+	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
 	}
@@ -222,11 +224,11 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 	 */
 
 	if (dst_sink.release != NULL) {
-		int err = dst_sink.release(dst_sink.ctx);
+		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
 
-		if (err != SUCCESS) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return err;
+			return suit_plat_err_to_proccessor_err_convert(err);
 		}
 	}
 
@@ -259,7 +261,7 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 
 	/* Get dst_sink - final destination sink */
 	ret = select_sink(dst_handle, &dst_sink);
-	if (ret != SUCCESS) {
+	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
 	}
@@ -288,16 +290,16 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 #endif  /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
 
 	if (dst_sink.release != NULL) {
-		int err = dst_sink.release(dst_sink.ctx);
+		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
 
-		if (err != SUCCESS) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return err;
+			ret = err;
 		}
 	}
 
-	return ret;
-#else
+	return suit_plat_err_to_proccessor_err_convert(ret);
+#else  /* CONFIG_SUIT_STREAM */
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM */
 }

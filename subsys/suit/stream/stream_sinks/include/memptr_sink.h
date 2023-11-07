@@ -15,8 +15,8 @@
  *
  * @param sink Pointer to sink_stream to be filled
  * @param handle Handle to storage object
- * @return int 0 if success otherwise error code.
+ * @return SUIT_PLAT_SUCCESS if success otherwise error code.
  */
-int memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle);
+suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle);
 
 #endif /* MEMPTR_SINK_H__ */

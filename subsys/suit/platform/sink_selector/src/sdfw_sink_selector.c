@@ -8,6 +8,8 @@
 #include <sink_selector.h>
 #include <suit_platform_internal.h>
 #include <suit_plat_decode_util.h>
+#include <suit_plat_err.h>
+#include <suit_plat_error_convert.h>
 
 #ifdef CONFIG_SUIT_STREAM_SINK_MEMPTR
 #include <memptr_sink.h>
@@ -24,7 +26,12 @@ LOG_MODULE_REGISTER(suit_plat_sink_selector, CONFIG_SUIT_LOG_LEVEL);
 int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 {
 	struct zcbor_string *component_id;
-	int ret = 0;
+	int ret = SUIT_SUCCESS;
+#if defined(CONFIG_SUIT_STREAM_SINK_MEMPTR) || defined(CONFIG_SUIT_STREAM_SINK_FLASH) \
+	|| defined(CONFIG_SUIT_STREAM_SINK_SDFW)
+	suit_plat_err_t sink_get_err = SUIT_PLAT_SUCCESS;
+#endif
+
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	ret = suit_plat_component_id_get(dst_handle, &component_id);
@@ -58,7 +65,8 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 			return ret;
 		}
 
-		return memptr_sink_get(sink, handle);
+		sink_get_err = memptr_sink_get(sink, handle);
+		return suit_plat_err_to_proccessor_err_convert(sink_get_err);
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
 
@@ -91,13 +99,13 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 		 */
 
 		/* Internal MRAM/Flash on single controller */
-		ret = flash_sink_get(sink, (uint8_t *)run_address, size, handle);
-		if (ret) {
-			LOG_ERR("Failed to get flash sink: %i", ret);
-			return ret;
+		sink_get_err = flash_sink_get(sink, (uint8_t *)run_address, size, handle);
+		if (sink_get_err != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("Failed to get flash sink: %i", sink_get_err);
+			return suit_plat_err_to_proccessor_err_convert(sink_get_err);
 		}
 
-		return SUCCESS;
+		return SUIT_SUCCESS;
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_FLASH */
 #ifdef CONFIG_SUIT_STREAM_SINK_SDFW
@@ -111,7 +119,8 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 
 		if (1 == number) {
 			if (IS_ENABLED(CONFIG_SUIT_STREAM_SINK_SDFW)) {
-				return sdfw_sink_get(sink);
+				sink_get_err = sdfw_sink_get(sink);
+				return suit_plat_err_to_proccessor_err_convert(sink_get_err);
 			}
 
 			LOG_ERR("SDFW sink not enabled");

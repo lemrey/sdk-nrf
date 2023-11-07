@@ -36,34 +36,34 @@ static struct sdfw_sink_context *get_new_context(void)
 	return NULL;
 }
 
-static int verify_digest(uint8_t *buf, size_t buf_size, psa_algorithm_t algorithm,
+static digest_sink_err_t verify_digest(uint8_t *buf, size_t buf_size, psa_algorithm_t algorithm,
 			 uint8_t *expected_digest)
 {
 	struct stream_sink digest_sink;
 
-	int err = digest_sink_get(&digest_sink, algorithm, expected_digest);
-	if (err) {
+	suit_plat_err_t err = digest_sink_get(&digest_sink, algorithm, expected_digest);
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
 		return err;
 	}
 
 	err = digest_sink.write(digest_sink.ctx, buf, &buf_size);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to write to stream: %d", err);
 		return err;
 	}
 
-	int ret = digest_sink_digest_match(digest_sink.ctx);
+	digest_sink_err_t ret = digest_sink_digest_match(digest_sink.ctx);
 
 	err = digest_sink.release(digest_sink.ctx);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_WRN("Failed to release stream: %d", err);
 	}
 
 	return ret;
 }
 
-static int clear_urot_update_status(void)
+static suit_plat_err_t clear_urot_update_status(void)
 {
 	mram_erase((uintptr_t)&NRF_SICR->UROT.UPDATE,
 		   sizeof(NRF_SICR->UROT.UPDATE) / CONFIG_SDFW_MRAM_WORD_SIZE);
@@ -74,15 +74,15 @@ static int clear_urot_update_status(void)
 	 * to handle such case. */
 	if (NRF_SICR->UROT.UPDATE.STATUS == SICR_UROT_UPDATE_STATUS_CODE_None &&
 	    NRF_SICR->UROT.UPDATE.OPERATION == SICR_UROT_UPDATE_OPERATION_OPCODE_Nop) {
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	} else {
-		return MRAM_ERASE_FAILED;
+		return SUIT_PLAT_ERR_IO;
 	}
 }
 
-static int schedule_sdfw_update(uint8_t *buf, size_t size)
+static suit_plat_err_t schedule_sdfw_update(uint8_t *buf, size_t size)
 {
-	int err = SUCCESS;
+	int err = 0;
 
 	uintptr_t signed_manifest =
 		(uintptr_t)(buf + CONFIG_SUIT_SDFW_UPDATE_SIGNED_MANIFEST_OFFSET);
@@ -106,14 +106,15 @@ static int schedule_sdfw_update(uint8_t *buf, size_t size)
 
 	if (err) {
 		LOG_ERR("Failed to schedule SDFW update: %d", err);
+		return SUIT_PLAT_ERR_CRASH;
 	} else {
 		LOG_INF("SDFW update scheduled");
 	}
 
-	return err;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int check_update_candidate(uint8_t *buf, size_t size)
+static suit_plat_err_t check_update_candidate(uint8_t *buf, size_t size)
 {
 	uint8_t *candidate_binary_start =
 		(uint8_t *)(buf + CONFIG_SUIT_SDFW_UPDATE_FIRMWARE_OFFSET);
@@ -122,77 +123,78 @@ static int check_update_candidate(uint8_t *buf, size_t size)
 	uint8_t *current_sdfw_digest = (uint8_t *)(NRF_SICR->UROT.SM.TBS.FW.DIGEST);
 
 	/* First check if calculated digest of candidate matches the digest from Signed Manifest */
-	int err = verify_digest(candidate_binary_start, size, PSA_ALG_SHA_512,
-				candidate_digest_in_manifest);
-	if (DIGEST_MISMATCH == err) {
-		LOG_ERR("Candidate inconsistent");
-		return CANDIDATE_INCONSISTENT;
-	} else if (DIGEST_CALCULATION_FAILURE == err) {
-		LOG_ERR("Failed to calculate digest");
-		return err;
-	} else if (DIGEST_ABORTION_FAILURE == err) {
-		LOG_ERR("Failed to abort digest calculation");
-		return err;
+	digest_sink_err_t err = verify_digest(candidate_binary_start, size, PSA_ALG_SHA_512,
+					candidate_digest_in_manifest);
+
+	if (err != SUIT_PLAT_SUCCESS)
+	{
+		if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
+			LOG_ERR("Candidate inconsistent");
+		}
+		else
+		{
+			LOG_ERR("Failed to calculate digest");
+		}
+
+		return SUIT_PLAT_ERR_CRASH;
 	}
 
 	LOG_DBG("Candidate consistent");
 
 	/* Then compare candidate's digest with current SDFW digest */
 	err = verify_digest(candidate_binary_start, size, PSA_ALG_SHA_512, current_sdfw_digest);
-	if (DIGEST_MISMATCH == err) {
+	if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
 		LOG_INF("Different candidate");
 		return schedule_sdfw_update(buf, size);
-	} else if (DIGEST_CALCULATION_FAILURE == err) {
+	} else {
 		LOG_ERR("Failed to calculate digest");
-		return err;
-	} else if (DIGEST_ABORTION_FAILURE == err) {
-		LOG_ERR("Failed to abort digest calculation");
-		return err;
+		return SUIT_PLAT_ERR_CRASH;
 	}
 
 	LOG_INF("Same candidate - skip update");
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int check_urot_none(uint8_t *buf, size_t size)
+static suit_plat_err_t check_urot_none(uint8_t *buf, size_t size)
 {
 	/* Detect update candidate. */
 	/* It is enough to check Public Key Size field which occupies first 4B of Signed Manifest.
 	 */
 	if (EMPTY_STORAGE_VALUE == *((uint32_t *)buf)) {
 		LOG_INF("Update candidate not found");
-		return NOT_FOUND;
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	} else {
 		LOG_INF("Update candidate found");
 		return check_update_candidate(buf, size);
 	}
 }
 
-static int check_urot_activated(uint8_t *buf, size_t size)
+static suit_plat_err_t check_urot_activated(uint8_t *buf, size_t size)
 {
 	uint8_t *candidate_binary_start =
 		(uint8_t *)(buf + CONFIG_SUIT_SDFW_UPDATE_FIRMWARE_OFFSET);
 	uint8_t *current_sdfw_digest = (uint8_t *)(NRF_SICR->UROT.SM.TBS.FW.DIGEST);
 
 	/* Compare candidate's digest with current SDFW digest */
-	int err = verify_digest(candidate_binary_start, size, PSA_ALG_SHA_512, current_sdfw_digest);
-	if (DIGEST_MISMATCH == err) {
+	digest_sink_err_t err = verify_digest(candidate_binary_start, size,
+					      PSA_ALG_SHA_512, current_sdfw_digest);
+	if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
 		LOG_ERR("Digest mismatch - update failure");
-		return SDFW_UPDATE_FAILURE;
-	} else if (DIGEST_CALCULATION_FAILURE == err) {
-		LOG_ERR("Digest calculation failure");
-		return err;
-	} else if (DIGEST_ABORTION_FAILURE == err) {
-		LOG_ERR("Digest abortion failure");
-		return err;
+		return SUIT_PLAT_ERR_AUTHENTICATION;
 	}
+	else
+	{
+		LOG_ERR("Failed to calculate digest");
+		return SUIT_PLAT_ERR_CRASH;
+	}
+
 	LOG_DBG("Digest match - update success");
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 /* NOTE: Size means size of the SDFW binary to be updated,
  * excluding Signed Manifest preceding it within update candidate */
-static int write(void *ctx, uint8_t *buf, size_t *size)
+static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 {
 	LOG_DBG("buf: %p", (void *)buf);
 	LOG_DBG("size: %d", *size);
@@ -200,12 +202,12 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 	struct sdfw_sink_context *context = (struct sdfw_sink_context *)ctx;
 	if (context->write_called) {
 		LOG_ERR("Multiple write calls not allowed");
-		return MULTIPLE_WRITE_CALLS;
+		return SUIT_PLAT_ERR_INCORRECT_STATE;
 	} else {
 		context->write_called = true;
 	}
 
-	int err = SUCCESS;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	bool clear_registers = true;
 
 	switch (NRF_SICR->UROT.UPDATE.STATUS) {
@@ -226,7 +228,7 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 	case SICR_UROT_UPDATE_STATUS_CODE_RecoveryActivated:
 	case SICR_UROT_UPDATE_STATUS_CODE_AROTRecovery: {
 		LOG_ERR("Unsupported UROT update status: 0x%08X", NRF_SICR->UROT.UPDATE.STATUS);
-		err = UNSUPPORTED_SDFW_UPDATE_STATUS;
+		err = SUIT_PLAT_ERR_INCORRECT_STATE;
 		clear_registers = true;
 		break;
 	}
@@ -240,12 +242,12 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 	}
 
 	if (clear_registers) {
-		int clear_err = clear_urot_update_status();
+		suit_plat_err_t clear_err = clear_urot_update_status();
 		if (clear_err) {
 			LOG_ERR("Failed to clear UROT update status");
 			/* If the only error was during register clearing - report it. */
 			/* Otherwise report the original cause of failure. */
-			if (SUCCESS == err) {
+			if (SUIT_PLAT_SUCCESS == err) {
 				err = clear_err;
 			}
 		} else {
@@ -256,31 +258,31 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 	return err;
 }
 
-static int release(void *ctx)
+static suit_plat_err_t release(void *ctx)
 {
 	if (NULL == ctx) {
 		LOG_ERR("Invalid argument");
-		return INVALID_ARGUMENT;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	struct sdfw_sink_context *context = (struct sdfw_sink_context *)ctx;
 	memset(context, 0, sizeof(struct sdfw_sink_context));
 
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int sdfw_sink_get(struct stream_sink *sink)
+suit_plat_err_t sdfw_sink_get(struct stream_sink *sink)
 {
 	if (NULL == sink) {
 		LOG_ERR("Invalid arguments");
-		return INVALID_ARGUMENT;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	struct sdfw_sink_context *ctx = get_new_context();
 
 	if (NULL == ctx) {
 		LOG_ERR("Failed to get a new context");
-		return SUIT_MAX_COMPONENTS_REACHED;
+		return SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
 	memset((void *)ctx, 0, sizeof(struct sdfw_sink_context));
@@ -295,5 +297,5 @@ int sdfw_sink_get(struct stream_sink *sink)
 	sink->release = release;
 	sink->ctx = ctx;
 
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }

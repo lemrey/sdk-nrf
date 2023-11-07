@@ -10,6 +10,11 @@
 #include <sink.h>
 #include <psa/crypto.h>
 
+typedef int digest_sink_err_t;
+
+ /**< The compared digests do not match */
+#define DIGEST_SINK_ERR_DIGEST_MISMATCH 1
+
 /**
  * @brief Get the digest_sink object
  *
@@ -18,10 +23,10 @@
  * @param[in] sink Pointer to sink_stream to be filled
  * @param[in] algorithm Algorithm to be used for digest calculation
  * @param[in] expected_digest digest to be used for comparison against calculated digest value
- * @return int SUCCESS if success, error code otherwise
+ * @return int SUIT_PLAT_SUCCESS if success, error code otherwise
  */
-int digest_sink_get(struct stream_sink *sink, psa_algorithm_t algorithm,
-		    const uint8_t *expected_digest);
+suit_plat_err_t digest_sink_get(struct stream_sink *sink, psa_algorithm_t algorithm,
+		    		  const uint8_t *expected_digest);
 
 /**
  * @brief Check if digest matches expected digest value
@@ -34,14 +39,14 @@ int digest_sink_get(struct stream_sink *sink, psa_algorithm_t algorithm,
  *
  * @param[in] ctx Context of a sink used for digest calculation
  *
- * @return int SUCCESS Digest calculation was successful and it matches expected digest
- * @return int DIGEST_MISMATCH Digest calculation was successful but it does not match expected
- * digest
- * @return int DIGEST_CALCULATION_FAILURE Digest could not be calculated
- * @return int DIGEST_ABORTION_FAILURE Failure during cleanup after error
- * @return int INVALID_ARGUMENT @ctx is NULL
- * @return int NOT_INITIALIZED A sink was not initialized using digest_sink_get function
+ * @return SUIT_PLAT_SUCCESS Digest calculation was successful and it matches expected digest
+ * @return DIGEST_SINK_ERR_DIGEST_MISMATCH Digest calculation was successful but it does
+* not match expected digest
+ * @return SUIT_PLAT_ERR_CRASH Digest could not be calculated or crash during cleanup
+ * @return SUIT_PLAT_ERR_INVAL @ctx is NULL
+ * @return SUIT_PLAT_ERR_INCORRECT_STATE A sink was not initialized
+ * using digest_sink_get function
  */
-int digest_sink_digest_match(void *ctx);
+digest_sink_err_t digest_sink_digest_match(void *ctx);
 
 #endif /* DIGEST_SINK_H__ */

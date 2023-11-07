@@ -13,8 +13,8 @@
  * @brief Get the sdfw_sink object
  *
  * @param sink Pointer to sink_stream to be filled
- * @return int 0 if success, error code otherwise
+ * @return SUIT_PLAT_SUCCESS if success, error code otherwise
  */
-int sdfw_sink_get(struct stream_sink *sink);
+suit_plat_err_t sdfw_sink_get(struct stream_sink *sink);
 
 #endif /* SDFW_SINK_H__ */

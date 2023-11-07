@@ -5,6 +5,7 @@
  */
 
 #include <suit_platform.h>
+#include <suit_plat_error_convert.h>
 #include <digest_sink.h>
 
 #include <zephyr/logging/log.h>
@@ -44,27 +45,32 @@ int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *diges
 
 	struct stream_sink digest_sink;
 
-	int err = digest_sink_get(&digest_sink, psa_alg, digest->value);
-	if (err) {
+	suit_plat_err_t err = digest_sink_get(&digest_sink, psa_alg, digest->value);
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
-		return err;
+		return suit_plat_err_to_proccessor_err_convert(err);
 	}
 
 	err = digest_sink.write(digest_sink.ctx, (uint8_t *)payload->value, &payload->len);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to write to stream: %d", err);
-		return err;
+		return suit_plat_err_to_proccessor_err_convert(err);
 	}
 
-	int ret = digest_sink_digest_match(digest_sink.ctx);
+	digest_sink_err_t ret = digest_sink_digest_match(digest_sink.ctx);
 
 	err = digest_sink.release(digest_sink.ctx);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to release stream: %d", err);
-		if (SUIT_SUCCESS == ret) {
-			return err;
+		if (SUIT_PLAT_SUCCESS == ret) {
+			return suit_plat_err_to_proccessor_err_convert(err);
 		}
 	}
 
-	return ret;
+	if (DIGEST_SINK_ERR_DIGEST_MISMATCH == ret)
+	{
+		return SUIT_FAIL_CONDITION;
+	}
+
+	return suit_plat_err_to_proccessor_err_convert(err);
 }

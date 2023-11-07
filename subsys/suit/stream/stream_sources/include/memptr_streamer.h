@@ -15,8 +15,9 @@
  * @param payload Pointer to payload - source
  * @param payload_size Size of payload
  * @param sink Pointer to sink that will write payload - target
- * @return int 0 if success otherwise error code
+ * @return SUIT_PLAT_SUCCESS if success otherwise error code
  */
-int memptr_streamer(const uint8_t *payload, size_t payload_size, struct stream_sink *sink);
+suit_plat_err_t memptr_streamer(const uint8_t *payload, size_t payload_size,
+				struct stream_sink *sink);
 
 #endif /* MEMPTR_STREAMER_H__ */

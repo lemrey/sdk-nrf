@@ -9,7 +9,8 @@
 
 LOG_MODULE_REGISTER(suit_memptr_streamer, CONFIG_SUIT_LOG_LEVEL);
 
-int memptr_streamer(const uint8_t *payload, size_t payload_size, struct stream_sink *sink)
+suit_plat_err_t memptr_streamer(const uint8_t *payload, size_t payload_size,
+				struct stream_sink *sink)
 {
 	if ((payload != NULL) && (sink != NULL) && (sink->write != NULL) && (payload_size > 0)) {
 		return sink->write(sink->ctx, (uint8_t *)payload, &payload_size);
@@ -24,5 +25,5 @@ int memptr_streamer(const uint8_t *payload, size_t payload_size, struct stream_s
 
 	LOG_ERR("payload_size: %u", payload_size);
 
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }

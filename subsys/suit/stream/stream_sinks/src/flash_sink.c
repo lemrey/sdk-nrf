@@ -46,12 +46,12 @@
 
 LOG_MODULE_REGISTER(suit_flash_sink, CONFIG_SUIT_LOG_LEVEL);
 
-static int erase(void *ctx);
-static int write(void *ctx, uint8_t *buf, size_t *size);
-static int seek(void *ctx, size_t offset);
-static int flush(void *ctx);
-static int used_storage(void *ctx, size_t *size);
-static int release(void *ctx);
+static suit_plat_err_t erase(void *ctx);
+static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size);
+static suit_plat_err_t seek(void *ctx, size_t offset);
+static suit_plat_err_t flush(void *ctx);
+static suit_plat_err_t used_storage(void *ctx, size_t *size);
+static suit_plat_err_t release(void *ctx);
 
 struct nvm_area {
 	uintptr_t na_start;
@@ -109,9 +109,9 @@ static struct flash_ctx *new_ctx_get()
  *
  * @param flash_ctx Flash sink context pointer
  * @param write_size Size of written data
- * @return int 0 in case of success, otherwise error code
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-static int register_write(struct flash_ctx *flash_ctx, size_t write_size)
+static suit_plat_err_t register_write(struct flash_ctx *flash_ctx, size_t write_size)
 {
 	flash_ctx->offset += write_size;
 
@@ -123,20 +123,20 @@ static int register_write(struct flash_ctx *flash_ctx, size_t write_size)
 	uint8_t *payload_ptr = NULL;
 	size_t payload_size = 0;
 
-	int res = get_memptr_ptr(flash_ctx->handle, &payload_ptr, &payload_size);
-	if (res) {
+	suit_plat_err_t res = get_memptr_ptr(flash_ctx->handle, &payload_ptr, &payload_size);
+	if (res != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to retrieve memptr");
 		return res;
 	}
 
 	payload_size = flash_ctx->size_used;
 	res = store_memptr_ptr(flash_ctx->handle, payload_ptr, payload_size);
-	if (res) {
+	if (res != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to update memptr");
 		return res;
 	}
 
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 /**
@@ -174,7 +174,7 @@ static size_t flash_write_size_get(const struct device *fdev)
 	return parameters->write_block_size;
 }
 
-int erase(void *ctx)
+suit_plat_err_t erase(void *ctx)
 {
 	if (ctx != NULL) {
 		struct flash_ctx *flash_ctx = (struct flash_ctx *)ctx;
@@ -183,19 +183,19 @@ int erase(void *ctx)
 		LOG_DBG("flash_sink_init_mem size %u", size);
 
 		/* Erase requested area in preparation for data. */
-		int res = flash_erase(flash_ctx->fdev, flash_ctx->ptr, size);
-		if (res) {
+		suit_plat_err_t res = flash_erase(flash_ctx->fdev, flash_ctx->ptr, size);
+		if (res != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to erase requested memory area: %i", res);
 			return res;
 		}
 
-		return SUCCESS;
-	} 
+		return SUIT_PLAT_SUCCESS;
+	}
 
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-int flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle handle)
+suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle handle)
 {
 	if ((dst != NULL) && (size > 0) && (sink != NULL) && (handle != NULL)) {
 		struct flash_ctx *ctx = new_ctx_get();
@@ -207,18 +207,18 @@ int flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_s
 
 			if (nvm_area == NULL) {
 				LOG_ERR("Failed to find nvm area corresponding to requested address.");
-				return FLASH_NOT_READY;
+				return SUIT_PLAT_ERR_HW_NOT_READY;
 			}
 
 			if (!device_is_ready(nvm_area->na_fdev)) {
 				LOG_ERR("Flash device not ready.");
-				return FLASH_NOT_READY;
+				return SUIT_PLAT_ERR_HW_NOT_READY;
 			}
 
 			/* Check if requested area fits in found nvm */
 			if ((suit_plat_get_nvm_offset(dst) + size) > (nvm_area->na_start + nvm_area->na_size)) {
 				LOG_ERR("Requested memory area out of bounds of corresponding nvm");
-				return WRITE_OUT_OF_BOUNDS;
+				return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
 			}
 
 			memset(ctx, 0, sizeof(*ctx));
@@ -237,15 +237,15 @@ int flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_s
 
 				memset(ctx, 0, sizeof(*ctx));
 				LOG_ERR("Write block size exceeds set safety limits");
-				return INVALID_ARGUMENT;
+				return SUIT_PLAT_ERR_INVAL;
 			}
 
 			/* Set memptr size to zero */
 			uint8_t *payload_ptr = NULL;
 			size_t payload_size = 0;
 
-			int res = get_memptr_ptr(handle, &payload_ptr, &payload_size);
-			if (res) {
+			suit_plat_err_t res = get_memptr_ptr(handle, &payload_ptr, &payload_size);
+			if (res != SUIT_PLAT_SUCCESS) {
 				memset(ctx, 0, sizeof(*ctx));
 				LOG_ERR("Failed to retrieve memptr");
 				return res;
@@ -253,7 +253,7 @@ int flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_s
 
 			payload_size = 0;
 			res = store_memptr_ptr(handle, payload_ptr, payload_size);
-			if (res) {
+			if (res != SUIT_PLAT_SUCCESS) {
 				memset(ctx, 0, sizeof(*ctx));
 				LOG_ERR("Failed to update memptr");
 				return res;
@@ -268,18 +268,18 @@ int flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_s
 			sink->release = release;
 			sink->ctx = ctx;
 
-			return SUCCESS; /* SUCCESS */
+			return SUIT_PLAT_SUCCESS; /* SUCCESS */
 		}
 
 		LOG_ERR("ERROR - SUIT_MAX_FLASH_COMPONENTS reached.");
-		return SUIT_MAX_COMPONENTS_REACHED;
+		return SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int write_unaligned_start(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t **buf)
+static suit_plat_err_t write_unaligned_start(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t **buf)
 {
 	LOG_ERR("write_unaligned_start...start");
 
@@ -296,7 +296,7 @@ static int write_unaligned_start(struct flash_ctx *flash_ctx, size_t *size_left,
 	LOG_ERR("write_unaligned)_start...1");
 	if (flash_read(flash_ctx->fdev, block_start, edit_buffer, flash_ctx->flash_write_size) != 0) {
 		LOG_ERR("Flash read failed.");
-		return READ_1_FAIL;
+		return SUIT_PLAT_ERR_IO;
 	}
 
 	LOG_ERR("write_unaligned)_start...2");
@@ -310,12 +310,12 @@ static int write_unaligned_start(struct flash_ctx *flash_ctx, size_t *size_left,
 	/* Write back edit_buffer that now contains unaligned bytes from the start of buf */
 	if (flash_write(flash_ctx->fdev, block_start, edit_buffer, flash_ctx->flash_write_size) != 0) {
 		LOG_ERR("Writing initial unaligned data failed.");
-		return WRITE_1_FAIL;
+		return SUIT_PLAT_ERR_IO;
 	}
 
 	/* Move offset for bytes written */
-	int ret = register_write(flash_ctx, write_size);
-	if (ret) {
+	suit_plat_err_t ret = register_write(flash_ctx, write_size);
+	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to update size after write");
 		return ret;
 	}
@@ -327,11 +327,11 @@ static int write_unaligned_start(struct flash_ctx *flash_ctx, size_t *size_left,
 	*size_left -= write_size;
 
 	LOG_ERR("write_unaligned_start...end");
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int write_aligned(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t **buf,
-			 size_t write_size)
+static suit_plat_err_t write_aligned(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t **buf,
+				     size_t write_size)
 {
 	size_t block_start = 0;
 
@@ -340,14 +340,14 @@ static int write_aligned(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t
 
 	if (flash_write(flash_ctx->fdev, block_start, *buf, write_size) != 0) {
 		LOG_ERR("Writing aligned blocks failed.");
-		return WRITE_2_FAIL;
+		return SUIT_PLAT_ERR_IO;
 	}
 
 	write_size = *size_left >= write_size ? write_size : *size_left;
 
 	/* Move offset for bytes written */
-	int ret = register_write(flash_ctx, write_size);
-	if (ret) {
+	suit_plat_err_t ret = register_write(flash_ctx, write_size);
+	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to update size after write");
 		return ret;
 	}
@@ -357,10 +357,10 @@ static int write_aligned(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t
 
 	/* Decrease size by the number of bytes written */
 	*size_left -= write_size;
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int write_remaining(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t **buf)
+static suit_plat_err_t write_remaining(struct flash_ctx *flash_ctx, size_t *size_left, uint8_t **buf)
 {
 	uint8_t edit_buffer[SWAP_BUFFER_SIZE];
 	size_t block_start = 0;
@@ -374,24 +374,24 @@ static int write_remaining(struct flash_ctx *flash_ctx, size_t *size_left, uint8
 		/* Write back edit_buffer that now contains unaligned bytes from the start of buf */
 		if (flash_write(flash_ctx->fdev, block_start, edit_buffer, flash_ctx->flash_write_size) != 0) {
 			LOG_ERR("Writing remaining unaligned data failed.");
-			return WRITE_3_FAIL;
+			return SUIT_PLAT_ERR_IO;
 		}
 
 		/* Move offset for bytes written */
-		int ret = register_write(flash_ctx, *size_left);
-		if (ret) {
+		suit_plat_err_t ret = register_write(flash_ctx, *size_left);
+		if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to update size after write");
 		return ret;
 	}
 
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Flash read failed.");
-	return READ_2_FAIL;
+	return SUIT_PLAT_ERR_IO;
 }
 
-static int write(void *ctx, uint8_t *buf, size_t *size)
+static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 {
 	size_t size_left = *size;
 
@@ -400,16 +400,18 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 
 		if (flash_ctx->fdev == NULL) {
 			LOG_ERR("Invalid arguments.");
-			return INVALID_ARGUMENT;
+			return SUIT_PLAT_ERR_INVAL;
 		}
 
 		if ((flash_ctx->offset_limit - (size_t)flash_ctx->ptr) >= size_left) {
 			if (flash_ctx->flash_write_size == 1) {
-				int ret = flash_write(flash_ctx->fdev, WRITE_OFFSET(flash_ctx), buf, size_left);
+				suit_plat_err_t ret = flash_write(flash_ctx->fdev,
+								  WRITE_OFFSET(flash_ctx),
+								  buf, size_left);
 
-				if (ret == SUCCESS) {
+				if (ret == SUIT_PLAT_SUCCESS) {
 					ret = register_write(flash_ctx, size_left);
-					if (ret) {
+					if (ret != SUIT_PLAT_SUCCESS) {
 						LOG_ERR("Failed to update size after write");
 						return ret;
 					}
@@ -419,19 +421,19 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 			}
 
 			size_t write_size = 0;
-			int err = 0;
+			suit_plat_err_t err = 0;
 
 			if (WRITE_OFFSET(flash_ctx) % flash_ctx->flash_write_size) {
 				/* Write offset is not aligned with start of block */
 				err = write_unaligned_start(flash_ctx, &size_left, &buf);
 
-				if (err != 0) {
+				if (err != SUIT_PLAT_SUCCESS) {
 					return err;
 				}
 
 				if (size_left == 0) {
 					/* All data written */
-					return SUCCESS;
+					return SUIT_PLAT_SUCCESS;
 				}
 			}
 
@@ -441,13 +443,13 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 			if (write_size > 0) {
 				err = write_aligned(flash_ctx, &size_left, &buf, write_size);
 
-				if (err != 0) {
+				if (err != SUIT_PLAT_SUCCESS) {
 					return err;
 				}
 
 				if (size_left == 0) {
 					/* All data written */
-					return SUCCESS;
+					return SUIT_PLAT_SUCCESS;
 				}
 			}
 
@@ -455,49 +457,49 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 
 		} else {
 			LOG_ERR("Write out of bounds.");
-			return WRITE_OUT_OF_BOUNDS;
+			return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
 		}
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int seek(void *ctx, size_t offset)
+static suit_plat_err_t seek(void *ctx, size_t offset)
 {
 	if (ctx != NULL) {
 		struct flash_ctx *flash_ctx = (struct flash_ctx *)ctx;
 
 		if (offset < (flash_ctx->offset_limit - (size_t)flash_ctx->ptr)) {
 			flash_ctx->offset = offset;
-			return SUCCESS;
+			return SUIT_PLAT_SUCCESS;
 		}
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int flush(void *ctx)
+static suit_plat_err_t flush(void *ctx)
 {
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int used_storage(void *ctx, size_t *size)
+static suit_plat_err_t used_storage(void *ctx, size_t *size)
 {
 	if ((ctx != NULL) && (size != NULL)) {
 		struct flash_ctx *flash_ctx = (struct flash_ctx *)ctx;
 
 		*size = flash_ctx->size_used;
 
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int release(void *ctx)
+static suit_plat_err_t release(void *ctx)
 {
 	if (ctx != NULL) {
 		struct flash_ctx *flash_ctx = (struct flash_ctx *)ctx;
@@ -509,9 +511,9 @@ static int release(void *ctx)
 		flash_ctx->fdev = NULL;
 		flash_ctx->in_use = false;
 
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }

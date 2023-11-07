@@ -8,7 +8,8 @@
 #include <suit_cache.h>
 #include <zcbor_decode.h>
 
-int cache_streamer(const uint8_t *uri, size_t uri_size, struct stream_sink *sink)
+suit_plat_err_t cache_streamer(const uint8_t *uri, size_t uri_size,
+							   struct stream_sink *sink)
 {
 	if ((uri != NULL) && (sink != NULL) && (sink->write != NULL) && (uri_size > 0)) {
 		int err = 0;
@@ -18,14 +19,15 @@ int cache_streamer(const uint8_t *uri, size_t uri_size, struct stream_sink *sink
 			.len = uri_size,
 		};
 
+		// TODO: convert error code when err codes in cache are refactored
 		err = suit_cache_search(&uri_tmp, &payload);
 
-		if (err == SUCCESS) {
+		if (err == SUIT_PLAT_SUCCESS) {
 			return sink->write(sink->ctx, (uint8_t *)payload.value, &payload.len);
 		}
 
-		return SOURCE_NOT_FOUND;
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }

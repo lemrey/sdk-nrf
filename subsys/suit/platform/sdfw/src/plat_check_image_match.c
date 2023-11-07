@@ -8,6 +8,7 @@
 #include <suit_platform_internal.h>
 #include <suit_plat_decode_util.h>
 #include <suit_plat_digest_cache.h>
+#include <suit_plat_error_convert.h>
 #include <suit_memptr_storage.h>
 #include <memptr_streamer.h>
 #include <digest_sink.h>
@@ -50,29 +51,34 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 	struct stream_sink digest_sink;
 
 	err = digest_sink_get(&digest_sink, psa_alg, digest->value);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
-		return err;
+		return suit_plat_err_to_proccessor_err_convert(err);
 	}
 
 	err = memptr_streamer(data, size, &digest_sink);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to stream to digest sink: %d", err);
+		err = suit_plat_err_to_proccessor_err_convert(err);
 	} else {
 		err = digest_sink_digest_match(digest_sink.ctx);
-		if (err) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to check digest: %d", err);
 			/* Translate error code to allow entering another branches in try-each
 			 * sequence */
 			err = SUIT_FAIL_CONDITION;
 		}
+		else
+		{
+			err = SUIT_SUCCESS;
+		}
 	}
 
-	int release_err = digest_sink.release(digest_sink.ctx);
-	if (release_err) {
+	suit_plat_err_t release_err = digest_sink.release(digest_sink.ctx);
+	if (release_err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to release digest sink: %d", release_err);
-		if (!err) {
-			err = release_err;
+		if (err != SUIT_SUCCESS) {
+			err = suit_plat_err_to_proccessor_err_convert(release_err);
 		}
 	}
 

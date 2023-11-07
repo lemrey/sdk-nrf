@@ -5,6 +5,7 @@
  */
 #include <zephyr/kernel.h>
 #include "fetch_source_mgr.h"
+#include <suit_plat_err.h>
 
 typedef enum {
 	STAGE_IDLE,
@@ -127,7 +128,8 @@ static int seek_proxy(void *ctx, size_t offset)
 		session->stage = STAGE_IN_PROGRESS;
 	}
 
-	int (*client_seek_fn)(void *ctx, size_t offset) = session->client_sink.seek;
+	suit_plat_err_t (*client_seek_fn)(void *ctx, size_t offset)
+				= session->client_sink.seek;
 	void *client_ctx = session->client_sink.ctx;
 
 	int err = client_seek_fn(client_ctx, offset);

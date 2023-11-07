@@ -9,10 +9,10 @@
 
 LOG_MODULE_REGISTER(suit_memptr_sink, CONFIG_SUIT_LOG_LEVEL);
 
-static int write(void *ctx, uint8_t *buf, size_t *size);
-static int used_storage(void *ctx, size_t *size);
+static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size);
+static suit_plat_err_t used_storage(void *ctx, size_t *size);
 
-int memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle)
+suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle)
 {
 	if ((sink != NULL) && (handle != NULL)) {
 		sink->erase = NULL;
@@ -23,25 +23,33 @@ int memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle)
 		sink->release = NULL;
 		sink->ctx = handle;
 
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 };
 
-static int write(void *ctx, uint8_t *buf, size_t *size)
+static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 {
+	suit_memptr_storage_err_t err;
 	if ((ctx != NULL) && (buf != NULL) && (size != NULL) && (*size != 0)) {
-		/* TODO: convert to sink error during sink error codes refactor */
-		return store_memptr_ptr(ctx, buf, *size);
+		err = store_memptr_ptr(ctx, buf, *size);
+		if (err != SUIT_PLAT_SUCCESS)
+		{
+			// In the current condtions store_memptr_ptr will only
+			// fail with SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int used_storage(void *ctx, size_t *size)
+static suit_plat_err_t used_storage(void *ctx, size_t *size)
 {
 	if ((ctx != NULL) && (size != NULL)) {
 		uint8_t *payload_ptr;
@@ -54,13 +62,13 @@ static int used_storage(void *ctx, size_t *size)
 				*size = 0;
 			}
 
-			return SUCCESS;
+			return SUIT_PLAT_SUCCESS;
 		}
 
 		LOG_ERR("Storage get failed");
-		return STORAGE_GET_FAILED;
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }

@@ -16,8 +16,9 @@
  * @param uri URI to be found in cache - source
  * @param uri_size Uri size
  * @param sink Pointer to sink that will write payload - target
- * @return int 0 if success otherwise error code
+ * @return SUIT_PLAT_SUCCESS if success otherwise error code
  */
-int cache_streamer(const uint8_t *uri, size_t uri_size, struct stream_sink *sink);
+suit_plat_err_t cache_streamer(const uint8_t *uri, size_t uri_size,
+                               struct stream_sink *sink);
 
 #endif /* CACHE_FETCH_H__ */

@@ -15,11 +15,11 @@
 
 LOG_MODULE_REGISTER(suit_ram_sink, CONFIG_SUIT_LOG_LEVEL);
 
-static int erase(void *ctx);
-static int write(void *ctx, uint8_t *buf, size_t *size);
-static int seek(void *ctx, size_t offset);
-static int used_storage(void *ctx, size_t *size);
-static int release(void *ctx);
+static suit_plat_err_t erase(void *ctx);
+static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size);
+static suit_plat_err_t seek(void *ctx, size_t offset);
+static suit_plat_err_t used_storage(void *ctx, size_t *size);
+static suit_plat_err_t release(void *ctx);
 
 struct ram_ctx {
 	size_t size_used;
@@ -47,7 +47,7 @@ static struct ram_ctx *get_new_ctx()
 	return NULL; /* No free ctx */
 }
 
-int ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size)
+suit_plat_err_t ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size)
 {
 	if ((dst != NULL) && (size > 0)) {
 		struct ram_ctx *ctx = get_new_ctx();
@@ -67,18 +67,18 @@ int ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size)
 			sink->release = release;
 			sink->ctx = ctx;
 
-			return SUCCESS; /* SUCCESS */
+			return SUIT_PLAT_SUCCESS; /* SUCCESS */
 		}
 
 		LOG_ERR("ERROR - SUIT_MAX_RAM_COMPONENTS reached.");
-		return SUIT_MAX_COMPONENTS_REACHED;
+		return SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int erase(void *ctx)
+static suit_plat_err_t erase(void *ctx)
 {
 	if (ctx != NULL) {
 		struct ram_ctx *ram_ctx = (struct ram_ctx *)ctx;
@@ -87,10 +87,10 @@ static int erase(void *ctx)
 		memset(ram_ctx->ptr, 0, size);
 	}
 
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int write(void *ctx, uint8_t *buf, size_t *size)
+static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 {
 	if ((ctx != NULL) && (buf != NULL) && (*size > 0)) {
 		struct ram_ctx *ram_ctx = (struct ram_ctx *)ctx;
@@ -103,47 +103,47 @@ static int write(void *ctx, uint8_t *buf, size_t *size)
 				ram_ctx->size_used = ram_ctx->offset;
 			}
 
-			return SUCCESS;
+			return SUIT_PLAT_SUCCESS;
 		}
 
 		LOG_ERR("Write out of bounds.");
-		return WRITE_OUT_OF_BOUNDS;
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int seek(void *ctx, size_t offset)
+static suit_plat_err_t seek(void *ctx, size_t offset)
 {
 	if (ctx != NULL) {
 		struct ram_ctx *ram_ctx = (struct ram_ctx *)ctx;
 
 		if (offset < (ram_ctx->offset_limit - (size_t)ram_ctx->ptr)) {
 			ram_ctx->offset = offset;
-			return SUCCESS;
+			return SUIT_PLAT_SUCCESS;
 		}
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int used_storage(void *ctx, size_t *size)
+static suit_plat_err_t used_storage(void *ctx, size_t *size)
 {
 	if ((ctx != NULL) && (size != NULL)) {
 		struct ram_ctx *ram_ctx = (struct ram_ctx *)ctx;
 
 		*size = ram_ctx->offset;
 
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-static int release(void *ctx)
+static suit_plat_err_t release(void *ctx)
 {
 	if (ctx != NULL) {
 		struct ram_ctx *ram_ctx = (struct ram_ctx *)ctx;
@@ -154,9 +154,9 @@ static int release(void *ctx)
 		ram_ctx->ptr = NULL;
 		ram_ctx->in_use = false;
 
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Invalid arguments.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
