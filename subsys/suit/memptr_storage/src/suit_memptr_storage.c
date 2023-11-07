@@ -17,7 +17,7 @@ struct memptr_storage {
 
 static struct memptr_storage records[CONFIG_SUIT_MAX_NUMBER_OF_INTEGRATED_PAYLOADS];
 
-int get_memptr_storage(memptr_storage_handle *handle)
+suit_memptr_storage_err_t get_memptr_storage(memptr_storage_handle *handle)
 {
 	if (handle != NULL) {
 		for (size_t i = 0; i < CONFIG_SUIT_MAX_NUMBER_OF_INTEGRATED_PAYLOADS; i++) {
@@ -28,19 +28,20 @@ int get_memptr_storage(memptr_storage_handle *handle)
 
 				*handle = &records[i];
 
-				return SUCCESS;
+				return SUIT_PLAT_SUCCESS;
 			};
 		}
 
 		LOG_ERR("No free records where found.");
-		return NO_FREE_RECORDS;
+		return SUIT_PLAT_ERR_NOMEM;
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-int store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr, size_t payload_size)
+suit_memptr_storage_err_t store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr,
+					   size_t payload_size)
 {
 	if (handle != NULL) {
 		struct memptr_storage *record = (struct memptr_storage *)handle;
@@ -49,18 +50,19 @@ int store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr, size_t 
 			record->payload_ptr = payload_ptr;
 			record->payload_size = payload_size;
 
-			return SUCCESS;
+			return SUIT_PLAT_SUCCESS;
 		}
 
 		LOG_ERR("Write to unallocated record");
-		return UNALLOCATED_RECORD;
+		return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-int get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr, size_t *payload_size)
+suit_memptr_storage_err_t get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr,
+					 size_t *payload_size)
 {
 	if ((handle != NULL) && (payload_ptr != NULL) && (payload_size != NULL)) {
 		struct memptr_storage *record = (struct memptr_storage *)handle;
@@ -69,18 +71,18 @@ int get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr, size_t *
 			*payload_ptr = record->payload_ptr;
 			*payload_size = record->payload_size;
 
-			return SUCCESS;
+			return SUIT_PLAT_SUCCESS;
 		}
 
 		LOG_ERR("Invalid record.");
-		return INVALID_RECORD;
+		return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
-int release_memptr_storage(memptr_storage_handle handle)
+suit_memptr_storage_err_t release_memptr_storage(memptr_storage_handle handle)
 {
 	if (handle != NULL) {
 		struct memptr_storage *record = (struct memptr_storage *)handle;
@@ -89,9 +91,9 @@ int release_memptr_storage(memptr_storage_handle handle)
 		record->payload_size = 0;
 		record->payload_ptr = NULL;
 
-		return SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	LOG_ERR("Invalid argument.");
-	return INVALID_ARGUMENT;
+	return SUIT_PLAT_ERR_INVAL;
 }

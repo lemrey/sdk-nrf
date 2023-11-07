@@ -33,6 +33,7 @@ int memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle)
 static int write(void *ctx, uint8_t *buf, size_t *size)
 {
 	if ((ctx != NULL) && (buf != NULL) && (size != NULL) && (*size != 0)) {
+		/* TODO: convert to sink error during sink error codes refactor */
 		return store_memptr_ptr(ctx, buf, *size);
 	}
 
@@ -46,7 +47,7 @@ static int used_storage(void *ctx, size_t *size)
 		uint8_t *payload_ptr;
 		size_t payload_size;
 
-		if (get_memptr_ptr(ctx, &payload_ptr, &payload_size) == SUCCESS) {
+		if (get_memptr_ptr(ctx, &payload_ptr, &payload_size) == SUIT_PLAT_SUCCESS) {
 			if (payload_ptr != NULL) {
 				*size = payload_size;
 			} else {
@@ -56,7 +57,7 @@ static int used_storage(void *ctx, size_t *size)
 			return SUCCESS;
 		}
 
-		LOG_ERR("Storage get failed.");
+		LOG_ERR("Storage get failed");
 		return STORAGE_GET_FAILED;
 	}
 

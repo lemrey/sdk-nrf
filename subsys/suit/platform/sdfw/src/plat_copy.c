@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <suit_platform.h>
 #include <suit_plat_decode_util.h>
+#include <suit_plat_error_convert.h>
 #include <suit_platform_internal.h>
 #include <suit_plat_digest_cache.h>
 
@@ -161,11 +162,11 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 
 		ret = get_memptr_ptr(handle, &payload_ptr, &payload_size);
 
-		if ((ret != SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
+		if ((ret != SUIT_PLAT_SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
 			LOG_ERR("get_memptr_ptr failed - error %i", ret);
 
 			release_sink(&dst_sink);
-			return ret;
+			return suit_plat_err_to_proccessor_err_convert(ret);
 		}
 
 		ret = memptr_streamer(payload_ptr, payload_size, &dst_sink);

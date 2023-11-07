@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <suit_plat_err.h>
 
 #define SUCCESS			       0
 #define INVALID_ARGUMENT	       -1

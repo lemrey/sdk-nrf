@@ -74,11 +74,14 @@ int suit_plat_retrieve_manifest(suit_component_t component_handle, uint8_t **env
 		}
 
 		ret = get_memptr_ptr(handle, envelope_str, envelope_len);
-		if ((ret != SUIT_SUCCESS) || (*envelope_str == NULL) || (*envelope_len == 0)) {
-			LOG_ERR("Unable to fetch pointer to manifest candidate (err: %d)", ret);
+		if ((ret != SUIT_PLAT_SUCCESS) || (*envelope_str == NULL) || (*envelope_len == 0)) {
+			LOG_ERR("Unable to fetch pointer to manifest candidate"
+				"(memptr storage err: %d)", ret);
 			ret = SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 			break;
 		}
+
+		ret = SUIT_SUCCESS;
 	} break;
 #endif /* CONFIG_SUIT_MEMPTR_STORAGE */
 	default:

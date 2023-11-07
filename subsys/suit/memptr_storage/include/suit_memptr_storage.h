@@ -10,12 +10,14 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <suit_plat_err.h>
 
-#define SUCCESS		   0
-#define INVALID_ARGUMENT   -1
-#define INVALID_RECORD	   -2
-#define NO_FREE_RECORDS	   -3
-#define UNALLOCATED_RECORD -4
+typedef int suit_memptr_storage_err_t;
+
+/**< Invalid record */
+#define SUIT_MEMPTR_STORAGE_ERR_INVALID_RECORD     1
+/**< Write to unallocated record */
+#define SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD 2
 
 typedef void *memptr_storage_handle;
 
@@ -23,17 +25,22 @@ typedef void *memptr_storage_handle;
  * @brief Get the memptr storage object
  *
  * @param handle Memptr storage handle
- * @return int 0 in case of success, otherwise error code
+ *
+ * @retval SUIT_PLAT_SUCCESS     on success
+ * @retval SUIT_PLAT_ERR_INVAL   invalid parameter, i.e. null pointer
+ * @retval SUIT_PLAT_ERR_NOMEM   no free records were found
  */
-int get_memptr_storage(memptr_storage_handle *handle);
+suit_memptr_storage_err_t get_memptr_storage(memptr_storage_handle *handle);
 
 /**
  * @brief Release storage record
  *
  * @param handle Memptr storage handle
- * @return int 0 in case of success, otherwise error code
+ *
+ * @retval SUIT_PLAT_SUCCESS    on success
+ * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  */
-int release_memptr_storage(memptr_storage_handle handle);
+suit_memptr_storage_err_t release_memptr_storage(memptr_storage_handle handle);
 
 /**
  * @brief
@@ -41,9 +48,13 @@ int release_memptr_storage(memptr_storage_handle handle);
  * @param handle Memptr storage handle
  * @param payload_ptr Payload data pointer to be stored
  * @param payload_size Payload data size
- * @return int 0 in case of success, otherwise error code
+ *
+ * @retval SUIT_PLAT_SUCCESS    on success
+ * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
+ * @retval SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD Attempt to write to unallocated record.
  */
-int store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr, size_t payload_size);
+suit_memptr_storage_err_t store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr,
+					   size_t payload_size);
 
 /**
  * @brief Get the memptr ptr object
@@ -51,8 +62,12 @@ int store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr, size_t 
  * @param handle Memptr storage handle
  * @param payload_ptr Pointer to payload pointer
  * @param payload_size Pointer to payload size
- * @return int 0 in case of success, otherwise error code
+ *
+ * @retval SUIT_PLAT_SUCCESS    on success
+ * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
+ * @retval SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD Attempt to read from unallocated record.
  */
-int get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr, size_t *payload_size);
+suit_memptr_storage_err_t get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr,
+					 size_t *payload_size);
 
 #endif /* SUIT_MEMPTR_STORAGE_H__ */
