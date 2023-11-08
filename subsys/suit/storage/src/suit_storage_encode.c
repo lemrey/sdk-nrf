@@ -17,45 +17,46 @@
 
 LOG_MODULE_REGISTER(suit_storage_env, CONFIG_SUIT_LOG_LEVEL);
 
-int suit_storage_bstr_kv_header_len(uint32_t key, size_t bstr_len)
+suit_plat_err_t suit_storage_bstr_kv_header_len(uint32_t key, size_t bstr_len, size_t *p_len)
 {
-	size_t bytes_used = 0;
-
-	if ((key > 0x0000FFFF) || (bstr_len > 0x0000FFFF)) {
-		return -EINVAL;
+	if ((p_len == NULL) || (key > 0x0000FFFF) || (bstr_len > 0x0000FFFF)) {
+		return SUIT_PLAT_ERR_INVAL;
 	}
+
+	*p_len = 0;
 
 	/* Find key length */
 	if (key < 24) {
-		bytes_used += 1;
+		*p_len += 1;
 	} else if (key < 0x100) {
-		bytes_used += 2;
+		*p_len += 2;
 	} else {
-		bytes_used += 3;
+		*p_len += 3;
 	}
 
 	/* Find bstr header length */
 	if (bstr_len < 24) {
-		bytes_used += 1;
+		*p_len += 1;
 	} else if (bstr_len < 0x100) {
-		bytes_used += 2;
+		*p_len += 2;
 	} else {
-		bytes_used += 3;
+		*p_len += 3;
 	}
 
-	return bytes_used;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_encode_bstr_kv_header(uint32_t key, size_t bstr_len, uint8_t *buf, size_t *len)
+suit_plat_err_t suit_storage_encode_bstr_kv_header(uint32_t key, size_t bstr_len, uint8_t *buf,
+						   size_t *len)
 {
 	size_t bytes_used = 0;
 
 	if ((buf == NULL) || (len == NULL)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	if ((key > 0x0000FFFF) || (bstr_len > 0x0000FFFF) || (*len < 6)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	/* Encode key */
@@ -84,11 +85,11 @@ int suit_storage_encode_bstr_kv_header(uint32_t key, size_t bstr_len, uint8_t *b
 
 	*len = bytes_used;
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_decode_envelope_header(const uint8_t *buf, size_t len,
-					suit_envelope_hdr_t *envelope)
+suit_plat_err_t suit_storage_decode_envelope_header(const uint8_t *buf, size_t len,
+						    suit_envelope_hdr_t *envelope)
 {
 	bool ok = false;
 	zcbor_state_t states[3];
@@ -108,12 +109,19 @@ int suit_storage_decode_envelope_header(const uint8_t *buf, size_t len,
 	if (!ok) {
 		int err = zcbor_pop_error(states);
 
-		return (err == ZCBOR_SUCCESS) ? ZCBOR_ERR_UNKNOWN : err;
+		/* Use this error code if additional logging is needed:
+		   LOG_INF("Decoding of envelope header failed:, ZCBOR error %d", err);
+		   This isn't done normally as it would print lots of logs as this
+		   function is called in a loop and most envelope slots are invalid.
+		*/
+		(void) err;
+
+		return SUIT_PLAT_ERR_CBOR_DECODING;
 	}
 
 	/* Validate the class ID offset value */
 	if ((class_id_offset < 1) || (envelope_bstr.len < class_id_offset)) {
-		return ZCBOR_ERR_UNKNOWN;
+		return SUIT_PLAT_ERR_CBOR_DECODING;
 	}
 
 	/* Extract pointers to the SUIT envelope */
@@ -121,10 +129,10 @@ int suit_storage_decode_envelope_header(const uint8_t *buf, size_t len,
 	envelope->envelope.size = envelope_bstr.len;
 	envelope->class_id_offset = class_id_offset;
 
-	return ZCBOR_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *buf, size_t *len)
+suit_plat_err_t suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *buf, size_t *len)
 {
 	const uint8_t envelope_tag[SUIT_STORAGE_ENCODED_ENVELOPE_TAG_LEN] = {
 		0xD8, 0x6B, // SUIT envelope tag (107)
@@ -150,7 +158,7 @@ int suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *
 		    (envelope->envelope.size > 0x0000FFFF)) {
 			LOG_ERR("Unable to fit SUIT envelope header using %d bytes. Needs %d bytes",
 				*len, mem_used + 3 + sizeof(envelope_tag));
-			return ZCBOR_ERR_NO_PAYLOAD;
+			return SUIT_PLAT_ERR_NOMEM;
 		}
 
 		/* Encode bstr header and length */
@@ -168,16 +176,17 @@ int suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *
 
 	if (!ok) {
 		int err = zcbor_pop_error(states);
+		LOG_ERR("Encoding of envelope header failed:, ZCBOR error %d", err);
 
-		return (err == ZCBOR_SUCCESS) ? ZCBOR_ERR_UNKNOWN : err;
+		return SUIT_PLAT_ERR_CBOR_DECODING;
 	}
 
-	return ZCBOR_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_decode_suit_envelope_severed(const uint8_t *buf, size_t len,
-					      struct SUIT_Envelope_severed *envelope,
-					      size_t *envelope_len)
+suit_plat_err_t suit_storage_decode_suit_envelope_severed(const uint8_t *buf, size_t len,
+							  struct SUIT_Envelope_severed *envelope,
+							  size_t *envelope_len)
 {
 	bool ok = false;
 	zcbor_state_t states[3];
@@ -241,9 +250,10 @@ int suit_storage_decode_suit_envelope_severed(const uint8_t *buf, size_t len,
 
 	if (!ok) {
 		int err = zcbor_pop_error(states);
+		LOG_ERR("Decoding of envelope severed elements failed:, ZCBOR error %d", err);
 
-		return (err == ZCBOR_SUCCESS) ? ZCBOR_ERR_UNKNOWN : err;
+		return SUIT_PLAT_ERR_CBOR_DECODING;
 	}
 
-	return ZCBOR_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }

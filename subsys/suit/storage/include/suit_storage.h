@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <suit_mci.h>
 #include <suit_mreg.h>
+#include <suit_plat_err.h>
 
 /**
  * @brief Initialize the SUIT storage driver.
@@ -19,9 +20,9 @@
  * @param[in]  supported_class_id  List of references to the supported manifest class IDs.
  * @param[in]  len                 Length of the list.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_init(const suit_manifest_class_id_t **supported_class_id, size_t len);
+suit_plat_err_t suit_storage_init(const suit_manifest_class_id_t **supported_class_id, size_t len);
 
 /**
  * @brief Get the memory regions, containing update candidate.
@@ -30,9 +31,9 @@ int suit_storage_init(const suit_manifest_class_id_t **supported_class_id, size_
  *                       By convention, the first region holds the SUIT envelope.
  * @param[out]  len      Length of the memory regions list.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_update_cand_get(const suit_plat_mreg_t **regions, size_t *len);
+suit_plat_err_t suit_storage_update_cand_get(const suit_plat_mreg_t **regions, size_t *len);
 
 /**
  * @brief Save the information about update candidate.
@@ -41,9 +42,9 @@ int suit_storage_update_cand_get(const suit_plat_mreg_t **regions, size_t *len);
  *                      By convention, the first region holds the SUIT envelope.
  * @param[in]  len      Length of the memory regions list.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_update_cand_set(suit_plat_mreg_t *regions, size_t len);
+suit_plat_err_t suit_storage_update_cand_set(suit_plat_mreg_t *regions, size_t len);
 
 /**
  * @brief Get the address and size of the envelope, stored inside the SUIT partition.
@@ -52,10 +53,10 @@ int suit_storage_update_cand_set(suit_plat_mreg_t *regions, size_t len);
  * @param[out]  addr   SUIT envelope address.
  * @param[out]  size   SUIT envelope size.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id, uint8_t **addr,
-					size_t *size);
+suit_plat_err_t suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id,
+												    uint8_t **addr, size_t *size);
 
 /**
  * @brief Install the authentication block and manifest of the envelope inside the SUIT storage.
@@ -67,8 +68,9 @@ int suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id, uint
  * @param[in]  addr   SUIT envelope address.
  * @param[in]  size   SUIT envelope size.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *addr, size_t size);
+suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *addr,
+											  size_t size);
 
 #endif /* SUIT_STORAGE_H__ */

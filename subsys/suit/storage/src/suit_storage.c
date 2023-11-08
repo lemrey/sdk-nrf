@@ -30,10 +30,10 @@ static size_t manifest_class_ids_len;
  * @param[in]  reset  Erase envelope storage before writing.
  * @param[in]  flush  Write all remaining, unaligned data into the envelope storage.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-static int save_envelope_partial(size_t index, const void *addr, size_t size, bool reset,
-				 bool flush)
+static suit_plat_err_t save_envelope_partial(size_t index, const void *addr, size_t size,
+					     bool reset, bool flush)
 {
 	int err = 0;
 	static uint8_t write_buf[SUIT_STORAGE_WRITE_SIZE];
@@ -44,12 +44,12 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
 				 offsetof(struct suit_storage, envelopes[index].envelope_encoded);
 
 	if (fdev == NULL) {
-		return -ENXIO;
+		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
 	if ((index >= CONFIG_SUIT_STORAGE_N_ENVELOPES) ||
 	    (size >= (CONFIG_SUIT_STORAGE_ENVELOPE_SIZE - offset))) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	if (reset) {
@@ -63,7 +63,7 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
 
 	/* Require to set reset flag before changing envelope index. */
 	if ((current_index == -1) || (index != current_index)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	LOG_DBG("Writing %d bytes (cache fill: %d)", size, buf_fill_level);
@@ -124,7 +124,11 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
 		offset += sizeof(write_buf);
 	}
 
-	return err;
+	if (err != 0)
+	{
+		return SUIT_PLAT_ERR_IO;
+	}
+	return SUIT_PLAT_SUCCESS;
 }
 
 /** @brief Append the next CBOR map element with payload encoded as byte string.
@@ -134,21 +138,22 @@ static int save_envelope_partial(size_t index, const void *addr, size_t size, bo
  * @param[in]  bstr   The byte string to append.
  * @param[in]  flush  Write all remaining, unaligned data into the envelope storage.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-static int save_envelope_partial_bstr(size_t index, uint16_t key, struct zcbor_string *bstr,
-				      bool flush)
+static suit_plat_err_t save_envelope_partial_bstr(size_t index, uint16_t key,
+						  struct zcbor_string *bstr, bool flush)
 {
 	uint8_t kv_hdr_buf[SUIT_STORAGE_ENCODED_BSTR_HDR_LEN_MAX];
 	size_t hdr_len = sizeof(kv_hdr_buf);
 
-	int err = suit_storage_encode_bstr_kv_header(key, bstr->len, kv_hdr_buf, &hdr_len);
-	if (err != 0) {
+	suit_plat_err_t err = suit_storage_encode_bstr_kv_header(key, bstr->len, kv_hdr_buf,
+								 &hdr_len);
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
 	err = save_envelope_partial(index, kv_hdr_buf, hdr_len, false, false);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
@@ -185,15 +190,16 @@ static bool is_supported_class_id(const suit_manifest_class_id_t *id)
  * @param[out]  current  Current envelope index that holds a manifest with a given class.
  * @param[out]  free     The next available slot.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-static int find_manifest_index(const suit_manifest_class_id_t *id, size_t *current, size_t *free)
+static suit_plat_err_t find_manifest_index(const suit_manifest_class_id_t *id, size_t *current,
+					   size_t *free)
 {
 	struct suit_storage *storage = (struct suit_storage *)SUIT_STORAGE_ADDRESS;
 	size_t index;
 
 	if ((current == NULL) || (free == NULL)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	*current = CONFIG_SUIT_STORAGE_N_ENVELOPES;
@@ -201,7 +207,7 @@ static int find_manifest_index(const suit_manifest_class_id_t *id, size_t *curre
 
 	if (!is_supported_class_id(id)) {
 		LOG_ERR("Manifest class ID not supported.");
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	for (index = 0; index < CONFIG_SUIT_STORAGE_N_ENVELOPES; index++) {
@@ -233,7 +239,7 @@ static int find_manifest_index(const suit_manifest_class_id_t *id, size_t *curre
 		*current = index;
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
 /** @brief Erase unsupported envelopes.
@@ -241,9 +247,9 @@ static int find_manifest_index(const suit_manifest_class_id_t *id, size_t *curre
  * @details This API uses the internal list of supported manifest class IDs,
  *          set through the initialization function.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-static int erase_unsupported_envelopes(void)
+static suit_plat_err_t erase_unsupported_envelopes(void)
 {
 	const size_t eb_size = sizeof(((struct suit_storage *)0)->envelopes[0].erase_block);
 	struct suit_storage *storage = (struct suit_storage *)SUIT_STORAGE_ADDRESS;
@@ -252,10 +258,10 @@ static int erase_unsupported_envelopes(void)
 	for (index = 0; index < CONFIG_SUIT_STORAGE_N_ENVELOPES; index++) {
 		suit_envelope_hdr_t envelope;
 
-		int ret = suit_storage_decode_envelope_header(
+		suit_plat_err_t ret = suit_storage_decode_envelope_header(
 			(const uint8_t *)&storage->envelopes[index].envelope_encoded,
 			CONFIG_SUIT_STORAGE_ENVELOPE_SIZE, &envelope);
-		if (ret != 0) {
+		if (ret != SUIT_PLAT_SUCCESS) {
 			continue;
 		}
 
@@ -263,42 +269,42 @@ static int erase_unsupported_envelopes(void)
 							     .mem[envelope.class_id_offset];
 
 		if (!is_supported_class_id(class_id)) {
-			ret = flash_erase(fdev,
+			int flash_ret = flash_erase(fdev,
 					  SUIT_STORAGE_OFFSET +
 						  offsetof(struct suit_storage, envelopes[index]),
 					  eb_size);
-			if (ret != 0) {
+			if (flash_ret != 0) {
 				LOG_ERR("Unable to erase unsupported envelope at index %d (er: %d)",
 					index, ret);
-				return ret;
+				return SUIT_PLAT_ERR_IO;
 			}
 		}
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_init(const suit_manifest_class_id_t **supported_class_id, size_t len)
+suit_plat_err_t suit_storage_init(const suit_manifest_class_id_t **supported_class_id, size_t len)
 {
 	fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
 
 	if ((len == 0) || (supported_class_id == NULL) ||
 	    (len > ZCBOR_ARRAY_SIZE(manifest_class_ids))) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	if (!device_is_ready(fdev)) {
 		fdev = NULL;
-		return -ENXIO;
+		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
 	if (sizeof(struct suit_storage) > SUIT_STORAGE_SIZE) {
-		return -ENOSR;
+		return SUIT_PLAT_ERR_NOMEM;
 	}
 
 	if (CEIL_DIV(SUIT_STORAGE_SIZE, SUIT_STORAGE_EB_SIZE) * SUIT_STORAGE_EB_SIZE !=
 	    SUIT_STORAGE_SIZE) {
-		return -EBADF;
+		return SUIT_PLAT_ERR_CRASH;
 	}
 
 	LOG_DBG("Supporting %d manifest class IDs:", len);
@@ -316,40 +322,40 @@ int suit_storage_init(const suit_manifest_class_id_t **supported_class_id, size_
 	}
 	manifest_class_ids_len = len;
 
-	int err = erase_unsupported_envelopes();
-	if (err != 0) {
+	suit_plat_err_t err = erase_unsupported_envelopes();
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to erase unsupported envelopes (err: %d)", err);
 		return err;
 	}
 
 	err = suit_storage_update_init();
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to initialize update candidate staging area (err: %d)", err);
 	}
 
 	return err;
 }
 
-int suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id, uint8_t **addr,
-					size_t *size)
+suit_plat_err_t suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id,
+						    uint8_t **addr, size_t *size)
 {
 	struct SUIT_Envelope_severed envelope;
 	struct suit_storage *storage = (struct suit_storage *)SUIT_STORAGE_ADDRESS;
-	int err;
+	suit_plat_err_t err;
 	size_t index = 0;
 	size_t free_index;
 
 	if (fdev == NULL) {
-		return -ENXIO;
+		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
 	if ((id == NULL) || (addr == NULL) || (size == NULL)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	err = find_manifest_index(id, &index, &free_index);
-	if ((err != 0) || (index >= CONFIG_SUIT_STORAGE_N_ENVELOPES)) {
-		return -ENOENT;
+	if ((err != SUIT_PLAT_SUCCESS) || (index >= CONFIG_SUIT_STORAGE_N_ENVELOPES)) {
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
 	suit_envelope_hdr_t envelope_hdr;
@@ -360,7 +366,7 @@ int suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id, uint
 	err = suit_storage_decode_envelope_header(
 		(uint8_t *)(&storage->envelopes[index].envelope_encoded),
 		CONFIG_SUIT_STORAGE_ENVELOPE_SIZE, &envelope_hdr);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
@@ -372,7 +378,7 @@ int suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id, uint
 	 */
 	err = suit_storage_decode_suit_envelope_severed(
 		envelope_hdr.envelope.mem, envelope_hdr.envelope.size, &envelope, size);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to parse envelope installed at index %d", index);
 		return err;
 	}
@@ -382,27 +388,28 @@ int suit_storage_installed_envelope_get(const suit_manifest_class_id_t *id, uint
 	return err;
 }
 
-int suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *addr, size_t size)
+suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *addr,
+					      size_t size)
 {
 	uint8_t envelope_hdr_buf[SUIT_STORAGE_ENCODED_ENVELOPE_HDR_LEN_MAX];
 	size_t envelope_hdr_buf_len = sizeof(envelope_hdr_buf);
 	suit_envelope_hdr_t envelope_hdr;
 	suit_manifest_class_id_t *class_id;
 	struct SUIT_Envelope_severed envelope;
-	int err;
+	suit_plat_err_t err;
 	size_t index = 0;
 	size_t free_index;
 
 	if (fdev == NULL) {
-		return -ENXIO;
+		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
 	if ((addr == NULL) || (size == 0)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	err = find_manifest_index(id, &index, &free_index);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to find indexes for the manifest (%d).", err);
 		return err;
 	}
@@ -414,7 +421,7 @@ int suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *a
 
 	if (index >= CONFIG_SUIT_STORAGE_N_ENVELOPES) {
 		LOG_ERR("Unable to find a free slot");
-		return -ENOENT;
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
 	/* Validate input data by parsing buffer as SUIT envelope.
@@ -423,19 +430,19 @@ int suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *a
 	 */
 	err = suit_storage_decode_suit_envelope_severed((const uint8_t *)addr, size, &envelope,
 							&size);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to install envelope: decode failed (%d)", err);
 		return err;
 	}
 
 	if (!suit_plat_decode_manifest_class_id(&envelope.suit_manifest_component_id, &class_id)) {
 		LOG_ERR("Unable to install envelope: class ID not decoded");
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	if (SUIT_PLAT_SUCCESS != mci_compare_suit_uuid(id, class_id)) {
 		LOG_ERR("Unable to install envelope: class ID does not match");
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	size_t class_id_offset = (size_t)class_id - (size_t)envelope.suit_manifest.value +
@@ -445,11 +452,24 @@ int suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *a
 	 * - Authentication wrapper bstr header
 	 * - Manifest bstr header
 	 */
-	size_t encoding_overhead =
-		SUIT_STORAGE_ENCODED_ENVELOPE_TAG_LEN +
-		suit_storage_bstr_kv_header_len(SUIT_AUTHENTICATION_WRAPPER_TAG,
-						envelope.suit_authentication_wrapper.len) +
-		suit_storage_bstr_kv_header_len(SUIT_MANIFEST_TAG, envelope.suit_manifest.len);
+	size_t encoding_overhead = SUIT_STORAGE_ENCODED_ENVELOPE_TAG_LEN;
+	size_t header_len = 0;
+
+	err = suit_storage_bstr_kv_header_len(SUIT_AUTHENTICATION_WRAPPER_TAG,
+					      envelope.suit_authentication_wrapper.len, &header_len);
+	if (err != SUIT_PLAT_SUCCESS)
+	{
+		return err;
+	}
+	encoding_overhead += header_len;
+
+	err = suit_storage_bstr_kv_header_len(SUIT_MANIFEST_TAG, envelope.suit_manifest.len, &header_len);
+
+	if (err != SUIT_PLAT_SUCCESS)
+	{
+		return err;
+	}
+	encoding_overhead += header_len;
 
 	envelope_hdr.class_id_offset = encoding_overhead + class_id_offset;
 	envelope_hdr.envelope.mem = addr;
@@ -459,31 +479,31 @@ int suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *a
 	if (envelope_hdr_buf_len + envelope_hdr.envelope.size > CONFIG_SUIT_STORAGE_ENVELOPE_SIZE) {
 		LOG_ERR("Unable to install envelope: envelope too big (%d)",
 			envelope_hdr.envelope.size);
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	err = suit_storage_encode_envelope_header(&envelope_hdr, envelope_hdr_buf,
 						  &envelope_hdr_buf_len);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to encode envelope header (%d)", err);
 		return err;
 	}
 
 	err = save_envelope_partial(index, envelope_hdr_buf, envelope_hdr_buf_len, true, false);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to save envelope header (%d)", err);
 		return err;
 	}
 
 	err = save_envelope_partial_bstr(index, SUIT_AUTHENTICATION_WRAPPER_TAG,
 					 &envelope.suit_authentication_wrapper, false);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to save euthentication wrapper (%d)", err);
 		return err;
 	}
 
 	err = save_envelope_partial_bstr(index, SUIT_MANIFEST_TAG, &envelope.suit_manifest, true);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to save manifest (%d)", err);
 		return err;
 	}

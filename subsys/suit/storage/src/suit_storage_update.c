@@ -20,73 +20,78 @@ static const struct device *fdev;
  *
  * @param[in]  info  Update candidate info to write.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-static int save_update_info(struct update_candidate_info *info)
+static suit_plat_err_t save_update_info(struct update_candidate_info *info)
 {
 	if (fdev == NULL) {
-		return -ENXIO;
+		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
 	int err = flash_erase(fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update),
 			      sizeof(((struct suit_storage *)0)->update.erase_block));
 	if (err != 0) {
-		return err;
+		return SUIT_PLAT_ERR_IO;
 	}
 
-	return flash_write(fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update), info,
-			   sizeof(*info));
+	err = flash_write(fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update), info,
+			  sizeof(*info));
+	if (err != 0) {
+		return SUIT_PLAT_ERR_IO;
+	}
+
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_update_init(void)
+suit_plat_err_t suit_storage_update_init(void)
 {
 	fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
 
 	if (!device_is_ready(fdev)) {
 		fdev = NULL;
-		return -ENXIO;
+		return SUIT_PLAT_ERR_HW_NOT_READY ;
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_update_cand_get(const suit_plat_mreg_t **regions, size_t *len)
+suit_plat_err_t suit_storage_update_cand_get(const suit_plat_mreg_t **regions, size_t *len)
 {
 	struct suit_storage *storage = (struct suit_storage *)SUIT_STORAGE_ADDRESS;
 	struct update_candidate_info *info = &(storage->update.update);
 
 	if (fdev == NULL) {
-		return -ENXIO;
+		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
 	if ((regions == NULL) || (len == NULL)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	if ((info->update_magic_value != UPDATE_MAGIC_VALUE_AVAILABLE_CBOR) ||
 	    (info->update_regions_len < 1) || (info->update_regions[0].mem == NULL) ||
 	    (info->update_regions[0].size == 0)) {
-		return -ENOENT;
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
 	*len = info->update_regions_len;
 	*regions = (const suit_plat_mreg_t *)&(info->update_regions);
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_storage_update_cand_set(suit_plat_mreg_t *regions, size_t len)
+suit_plat_err_t suit_storage_update_cand_set(suit_plat_mreg_t *regions, size_t len)
 {
 	struct update_candidate_info info;
 
 	memset(&info, 0, sizeof(info));
 
 	if (((len != 0) && (regions == NULL)) || (len > CONFIG_SUIT_STORAGE_N_UPDATE_REGIONS)) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	if ((regions != NULL) && ((regions[0].mem == NULL) || (regions[0].size == 0))) {
-		return -EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	info.update_magic_value = UPDATE_MAGIC_VALUE_AVAILABLE_CBOR;

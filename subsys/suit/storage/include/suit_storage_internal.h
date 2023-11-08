@@ -110,9 +110,9 @@ struct suit_storage {
  * @brief Initialize the SUIT storage submodule, responsible for storing/returning
  *        update candidate info.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_update_init(void);
+suit_plat_err_t suit_storage_update_init(void);
 
 /** @brief Calculate the value of encoded key-value CBOR map header.
  *
@@ -120,10 +120,11 @@ int suit_storage_update_init(void);
  *
  * @param[in]     key       CBOR map key value.
  * @param[in]     bstr_len  CBOR bstr length to be encoded inside the header.
+ * @param[out]    p_len     Header length
  *
- * @return Expected header length on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_bstr_kv_header_len(uint32_t key, size_t bstr_len);
+suit_plat_err_t suit_storage_bstr_kv_header_len(uint32_t key, size_t bstr_len, size_t *p_len);
 
 /** @brief Encode key-value CBOR map header.
  *
@@ -135,9 +136,10 @@ int suit_storage_bstr_kv_header_len(uint32_t key, size_t bstr_len);
  * @param[inout]  len       As input - length of the buffer,
  *                          as output - number of bytes consumed.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_encode_bstr_kv_header(uint32_t key, size_t bstr_len, uint8_t *buf, size_t *len);
+suit_plat_err_t suit_storage_encode_bstr_kv_header(uint32_t key, size_t bstr_len, uint8_t *buf,
+						   size_t *len);
 
 /** @brief Decode SUIT storage entry.
  *
@@ -145,10 +147,10 @@ int suit_storage_encode_bstr_kv_header(uint32_t key, size_t bstr_len, uint8_t *b
  * @param[in]   len       Length of the buffer.
  * @param[out]  envelope  Decoded entry.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_decode_envelope_header(const uint8_t *buf, size_t len,
-					suit_envelope_hdr_t *envelope);
+suit_plat_err_t suit_storage_decode_envelope_header(const uint8_t *buf, size_t len,
+						    suit_envelope_hdr_t *envelope);
 
 /** @brief Encode SUIT storage entry with SUIT envelope header.
  *
@@ -157,9 +159,10 @@ int suit_storage_decode_envelope_header(const uint8_t *buf, size_t len,
  * @param[inout]  len       As input - length of the buffer,
  *                          as output - number of bytes consumed.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *buf, size_t *len);
+suit_plat_err_t suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *buf,
+						    size_t *len);
 
 /** @brief Decode SUIT envelope.
  *
@@ -168,10 +171,10 @@ int suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *
  * @param[out]  envelope      Decoded envelope.
  * @param[out]  envelope_len  Decoded envelope length.
  *
- * @return 0 on success, negative value otherwise.
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_storage_decode_suit_envelope_severed(const uint8_t *buf, size_t len,
-					      struct SUIT_Envelope_severed *envelope,
-					      size_t *envelope_len);
+suit_plat_err_t suit_storage_decode_suit_envelope_severed(const uint8_t *buf, size_t len,
+							  struct SUIT_Envelope_severed *envelope,
+							  size_t *envelope_len);
 
 #endif /* SUIT_STORAGE_INTERNAL_H__ */

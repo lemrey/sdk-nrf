@@ -75,7 +75,7 @@ static int update_path(void)
 	size_t update_regions_len = 0;
 
 	int err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
-	if ((err) || (update_regions_len < 1)) {
+	if ((err != SUIT_PLAT_SUCCESS) || (update_regions_len < 1)) {
 		LOG_ERR("Failed to get update candidate data: %d", err);
 		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 	}
@@ -89,7 +89,7 @@ static int update_path(void)
 		LOG_INF("Invalid update candidate: %d", err);
 
 		err = suit_storage_update_cand_set(NULL, 0);
-		if (err != SUIT_SUCCESS) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to clear update candidate: %d", err);
 			return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 		}
@@ -105,7 +105,7 @@ static int update_path(void)
 	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to validate update candidate manifest: %d", err);
 		err = suit_storage_update_cand_set(NULL, 0);
-		if (err != SUIT_SUCCESS) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to clear update candidate: %d", err);
 			return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 		}
@@ -126,9 +126,9 @@ static int update_path(void)
 	LOG_DBG("suit-install successful");
 
 	err = suit_storage_update_cand_set(NULL, 0);
-	if (err != SUIT_SUCCESS) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to clear update candidate: %d", err);
-		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err);
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 	}
 
 	LOG_DBG("Update candidate cleared");
@@ -154,7 +154,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 	int err = suit_storage_installed_envelope_get(class_id, &installed_envelope_address,
 						      &installed_envelope_size);
-	if (err != SUIT_SUCCESS) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get installed envelope data: %d", err);
 		return enter_emergency_recovery();
 	}

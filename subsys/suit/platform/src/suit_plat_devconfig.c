@@ -7,6 +7,7 @@
 #include <suit.h>
 #include <suit_platform.h>
 #include <suit_plat_decode_util.h>
+#include <suit_plat_error_convert.h>
 #include <suit_storage.h>
 #include <suit_mci.h>
 #include <zephyr/logging/log.h>
@@ -39,14 +40,14 @@ int suit_plat_sequence_completed(enum suit_command_sequence seq_name,
 	if (seq_name == SUIT_SEQ_INSTALL) {
 		err = suit_storage_install_envelope(class_id, (uint8_t *)envelope_str,
 						    envelope_len);
-		if (err != SUIT_SUCCESS) {
-			LOG_ERR("Failed to save envelope (ret: %d)", err);
+		if (err != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("Failed to save envelope (platform err: %d)", err);
 		} else {
 			LOG_DBG("Envelope saved");
 		}
 	}
 
-	return err;
+	return suit_plat_err_to_proccessor_err_convert(err);
 }
 
 int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
@@ -77,7 +78,7 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 	}
 
 	ret = suit_storage_installed_envelope_get(class_id, &envelope_addr, &envelope_size);
-	if (ret != SUIT_SUCCESS) {
+	if (ret != SUIT_PLAT_SUCCESS) {
 		if ((seq_name == SUIT_SEQ_VALIDATE) || (seq_name == SUIT_SEQ_LOAD) ||
 		    (seq_name == SUIT_SEQ_INVOKE)) {
 			/* It is not allowed to boot from update candidate. */
