@@ -79,7 +79,7 @@ typedef struct {
 	uint32_t last_processed_number;
 	uint32_t current_sink_write_offset;
 	uint32_t last_chunk_arrival_number;
-	int completion_error_code;
+	suit_plat_err_t completion_error_code;
 
 	chunk_processing_state_t
 		chunk_processing_state[CONFIG_SUIT_STREAM_IPC_REQUESTOR_MAX_CHUNKS];
@@ -223,7 +223,7 @@ static void missing_image_notify(image_request_state_t *irs)
  * ipc_streamer_chunk_enqueue,
  * and ipc_streamer_missing_image_notify_fn, ipc_streamer_chunk_status_notify_fn
  */
-static int data_loop(image_request_state_t *irs)
+static suit_plat_err_t data_loop(image_request_state_t *irs)
 {
 	uint32_t sleep_period_ms = 0;
 	struct k_sem *data_loop_kick_sem = irs->data_loop_kick_sem;
@@ -245,7 +245,7 @@ static int data_loop(image_request_state_t *irs)
 		if (STAGE_IN_PROGRESS == irs->stage) {
 			chunk_processing_state_t *cps = get_next_pending_chunk(irs);
 			if (NULL != cps) {
-				int sink_error = 0;
+				suit_plat_err_t sink_error = SUIT_PLAT_SUCCESS;
 
 				bool seek_needed = (irs->current_sink_write_offset != cps->offset)
 							   ? true
@@ -259,31 +259,31 @@ static int data_loop(image_request_state_t *irs)
 									     cps->offset);
 						lock_image_request_state();
 
-						if (0 == sink_error) {
+						if (SUIT_PLAT_SUCCESS == sink_error) {
 							irs->current_sink_write_offset =
 								cps->offset;
 						}
 					} else {
 						/* seek is necessary but sink does not support it
 						 */
-						sink_error = -IPC_STREAMER_ESINK;
+						sink_error = SUIT_PLAT_ERR_UNSUPPORTED;
 					}
 				}
 
-				if (0 == sink_error && NULL != cps->address && 0 != cps->size) {
+				if (SUIT_PLAT_SUCCESS == sink_error && NULL != cps->address && 0 != cps->size) {
 
 					unlock_image_request_state();
 					sink_error = irs->sink->write(irs->sink->ctx, cps->address,
 								      &cps->size);
 					lock_image_request_state();
 
-					if (0 == sink_error) {
+					if (SUIT_PLAT_SUCCESS == sink_error) {
 						irs->current_sink_write_offset =
 							cps->offset + cps->size;
 					}
 				}
 
-				if (0 == sink_error) {
+				if (SUIT_PLAT_SUCCESS == sink_error) {
 
 					irs->last_processed_number = cps->arrival_number;
 
@@ -293,7 +293,7 @@ static int data_loop(image_request_state_t *irs)
 					}
 					cps->status = CHUNK_PROCESSED_SUCCESS;
 				} else {
-					irs->completion_error_code = -IPC_STREAMER_ESINK;
+					irs->completion_error_code = SUIT_PLAT_ERR_CRASH;
 					irs->stage = STAGE_CLOSING;
 					cps->status = CHUNK_PROCESSED_FAIL;
 				}
@@ -317,7 +317,7 @@ static int data_loop(image_request_state_t *irs)
 
 			chunk_status_notify(irs);
 
-			int retval = irs->completion_error_code;
+			suit_plat_err_t retval = irs->completion_error_code;
 			irs->stage = STAGE_IDLE;
 			return retval;
 		}
@@ -342,7 +342,7 @@ static int data_loop(image_request_state_t *irs)
 		 */
 		if (current_ts - irs->last_response_ts >= irs->inter_chunk_timeout_ms) {
 			irs->stage = STAGE_IDLE;
-			return -IPC_STREAMER_ETIMEOUT;
+			return SUIT_PLAT_ERR_TIME;
 		} else {
 			uint32_t sleep_period_ms_candidate =
 				irs->last_response_ts + irs->inter_chunk_timeout_ms - current_ts;
@@ -351,6 +351,8 @@ static int data_loop(image_request_state_t *irs)
 						  : sleep_period_ms;
 		}
 	}
+
+	return SUIT_PLAT_ERR_UNREACHABLE_PATH;
 }
 
 /* Assumption - access to image_request_state locked on entry/exit
@@ -389,7 +391,7 @@ static image_request_state_t *allocate_image_request_state(const uint8_t *resour
 	irs->last_processed_number = 0;
 	irs->current_sink_write_offset = 0;
 	irs->last_chunk_arrival_number = 0;
-	irs->completion_error_code = 0;
+	irs->completion_error_code = SUIT_PLAT_SUCCESS;
 
 	for (int i = 0; i < CONFIG_SUIT_STREAM_IPC_REQUESTOR_MAX_CHUNKS; i++) {
 		chunk_processing_state_t *cps = &irs->chunk_processing_state[i];
@@ -399,12 +401,12 @@ static image_request_state_t *allocate_image_request_state(const uint8_t *resour
 	return irs;
 }
 
-int ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
+suit_plat_err_t ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
 			struct stream_sink *sink, uint32_t inter_chunk_timeout_ms,
 			uint32_t requesting_period_ms)
 {
 	if (NULL == resource_id || 0 == resource_id_length || NULL == sink || NULL == sink->write) {
-		return -IPC_STREAMER_EINVAL;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	lock_image_request_state();
@@ -413,19 +415,19 @@ int ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
 					     inter_chunk_timeout_ms, requesting_period_ms);
 	if (NULL == irs) {
 		unlock_image_request_state();
-		return -IPC_STREAMER_ENORESOURCES;
+		return SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
-	int err = data_loop(irs);
+	suit_plat_err_t err = data_loop(irs);
 	unlock_image_request_state();
 
 	return err;
 }
 
-int ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id, uint32_t offset,
-			       uint8_t *address, uint32_t size, bool last_chunk)
+suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id,
+			uint32_t offset, uint8_t *address, uint32_t size, bool last_chunk)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	if (NULL != address && 0 != size) {
 
 		/* TODO!!!
@@ -440,27 +442,27 @@ int ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id, ui
 		 */
 
 	} else {
-		err = -IPC_STREAMER_EINVAL;
+		err = SUIT_PLAT_ERR_INVAL;
 	}
 
 	lock_image_request_state();
 
 	image_request_state_t *irs = &image_request_state;
-	if (0 == err) {
+	if (SUIT_PLAT_SUCCESS == err) {
 		if (STAGE_IDLE == irs->stage || irs->stream_session_id != stream_session_id) {
-			err = -IPC_STREAMER_EWRONGSESSION;
+			err = SUIT_PLAT_ERR_INCORRECT_STATE;
 		}
 	}
 
-	if (0 == err) {
+	if (SUIT_PLAT_SUCCESS == err) {
 		if (STAGE_CLOSING == irs->stage || 0 != irs->last_chunk_arrival_number) {
 			/* connection is closing, no new chunks will be accepted
 			 */
-			err = -IPC_STREAMER_ESESSIONCLOSING;
+			err = SUIT_PLAT_ERR_INCORRECT_STATE;
 		}
 	}
 
-	if (0 == err) {
+	if (SUIT_PLAT_SUCCESS == err) {
 
 		if (STAGE_PENDING_FIRST_RESPONSE == irs->stage) {
 			irs->stage = STAGE_IN_PROGRESS;
@@ -472,7 +474,7 @@ int ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id, ui
 		if (NULL == cps) {
 			/* not enough space to store chunk info. Try again later
 			 */
-			err = -IPC_STREAMER_ENOSPACE;
+			err = SUIT_PLAT_ERR_BUSY;
 		} else {
 			cps->status = CHUNK_PENDING;
 			cps->chunk_id = chunk_id;
@@ -496,33 +498,33 @@ int ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id, ui
 	return err;
 }
 
-int ipc_streamer_chunk_status_req(uint32_t stream_session_id, ipc_streamer_chunk_info_t *chunk_info,
-				  size_t *chunk_info_count)
+suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
+				  ipc_streamer_chunk_info_t *chunk_info, size_t *chunk_info_count)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	if (NULL == chunk_info || NULL == chunk_info_count) {
-		err = -IPC_STREAMER_EINVAL;
+		err = SUIT_PLAT_ERR_INVAL;
 	}
 
 	lock_image_request_state();
 
 	image_request_state_t *irs = &image_request_state;
 
-	if (0 == err) {
+	if (SUIT_PLAT_SUCCESS == err) {
 		if (STAGE_IDLE == irs->stage || irs->stream_session_id != stream_session_id) {
-			err = -IPC_STREAMER_EWRONGSESSION;
+			err = SUIT_PLAT_ERR_INCORRECT_STATE;
 		}
 	}
 
 	uint32_t count = 0;
 
-	if (0 == err) {
+	if (SUIT_PLAT_SUCCESS == err) {
 
 		uint32_t min_arrival_number = 1;
 
 		count = get_non_empty_chunk_slot_count(irs);
 		if (count > *chunk_info_count) {
-			err = -IPC_STREAMER_ENOSPACE;
+			err = SUIT_PLAT_ERR_BUSY;
 		}
 
 		count = 0;
@@ -534,7 +536,7 @@ int ipc_streamer_chunk_status_req(uint32_t stream_session_id, ipc_streamer_chunk
 
 				min_arrival_number = cps->arrival_number + 1;
 
-				if (0 == err) {
+				if (SUIT_PLAT_SUCCESS == err) {
 					ipc_streamer_chunk_info_t *entry = &chunk_info[count];
 					*chunk_info_count = count + 1;
 					entry->chunk_id = cps->chunk_id;
@@ -566,10 +568,11 @@ int ipc_streamer_chunk_status_req(uint32_t stream_session_id, ipc_streamer_chunk
 	return err;
 }
 
-int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fn notify_fn,
+suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
+					    ipc_streamer_chunk_status_notify_fn notify_fn,
 					    void *context)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
 	lock_image_request_state();
 
@@ -577,7 +580,7 @@ int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fn 
 		chunk_status_notify_fn = notify_fn;
 		chunk_status_notify_context = context;
 	} else {
-		err = -IPC_STREAMER_ENOSPACE;
+		err = SUIT_PLAT_ERR_NO_MEM;
 	}
 
 	unlock_image_request_state();
@@ -593,10 +596,11 @@ void ipc_streamer_chunk_status_evt_unsubscribe(void)
 	unlock_image_request_state();
 }
 
-int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_fn notify_fn,
+suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
+					     ipc_streamer_missing_image_notify_fn notify_fn,
 					     void *context)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
 	lock_image_request_state();
 
@@ -604,7 +608,7 @@ int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_f
 		missing_image_notify_fn = notify_fn;
 		missing_image_notify_context = context;
 	} else {
-		err = -IPC_STREAMER_ENOSPACE;
+		err = SUIT_PLAT_ERR_NO_MEM;
 	}
 
 	unlock_image_request_state();
@@ -620,7 +624,7 @@ void ipc_streamer_missing_image_evt_unsubscribe(void)
 	unlock_image_request_state();
 }
 
-int ipc_streamer_requestor_init(void)
+suit_plat_err_t ipc_streamer_requestor_init(void)
 {
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }

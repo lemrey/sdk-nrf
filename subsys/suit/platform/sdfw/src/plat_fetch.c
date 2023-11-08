@@ -159,7 +159,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	}
 
 	/* If cache is disabled, act as thou uri was not found in cache */
-	ret = SOURCE_NOT_FOUND;
+	ret = SUIT_PLAT_ERR_NOT_FOUND;
 
 #ifdef CONFIG_SUIT_STREAM_SOURCE_CACHE
 	/* Check if requested uri exists in cache and get streamer */

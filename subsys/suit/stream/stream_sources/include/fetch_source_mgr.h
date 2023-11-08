@@ -30,9 +30,9 @@
  *processing element. Non-'null' write_ptr is always required. Non-'null' seek_ptr may be required
  *by selected fetch sources.
  *
- * @return 0 on success, negative value otherwise
+ * @return SUIT_PLAT_SUCCESS on success, error code otherwise
  */
-typedef int (*fetch_source_mgr_fetch_request_fn)(const uint8_t *uri, size_t uri_length,
+typedef suit_plat_err_t (*fetch_source_mgr_fetch_request_fn)(const uint8_t *uri, size_t uri_length,
 						 struct stream_sink *sink);
 
 /**
@@ -43,10 +43,10 @@ typedef int (*fetch_source_mgr_fetch_request_fn)(const uint8_t *uri, size_t uri_
  *of execution of callback functions is not guaranteed!
  *
  *
- * @return 0 on success, negative value otherwise
+ * @return SUIT_PLAT_SUCCESS on success, error code otherwise
  */
 
-int fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn);
+suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn);
 
 /**
  * @brief Streams an image from source to sink
@@ -59,9 +59,9 @@ int fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn);
  *processing element. Non-'null' write_ptr is always required. Non-'null' seek_ptr may be required
  *by selected fetch sources
  *
- * @return 0 on success, negative value otherwise
+ * @return SUIT_PLAT_SUCCESS on success, error code otherwise
  */
-int fetch_source_stream(const uint8_t *resource_id, size_t resource_id_length,
+suit_plat_err_t fetch_source_stream(const uint8_t *resource_id, size_t resource_id_length,
 			struct stream_sink *sink);
 
 #endif /* FETCH_SOURCE_MGR_H__ */

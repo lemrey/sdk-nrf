@@ -27,17 +27,6 @@
  */
 #include <sink.h>
 
-#define IPC_STREAMER_EINVAL	     200 /**< Invalid parameter value */
-#define IPC_STREAMER_ESIZE	     201 /**< Invalid size */
-#define IPC_STREAMER_ENOSPACE	     202 /**< Not Enough space */
-#define IPC_STREAMER_ESESSIONCLOSING 203 /**< Session is closing */
-#define IPC_STREAMER_EWRONGSESSION   204 /**< Unrecognized session id */
-#define IPC_STREAMER_ENORESOURCES    205 /**< Not enough resources */
-#define IPC_STREAMER_ETIMEOUT	     206 /**< Timeout */
-#define IPC_STREAMER_ESINK	     207 /**< Sink operation failed */
-#define IPC_STREAMER_ECONCURRENCY    208 /**< Data structure incoherent */
-#define IPC_STREAMER_EIPC	     209 /**< IPC error */
-
 /**
  * @brief Provided by streamer requestor to its clients, i.e. SUIT fetch directive implementation.
  * Streams an image from source to sink
@@ -59,13 +48,13 @@
  *periodically about pending image request. It will do this till first response from streamer
  *provider or till inter-chunk timeout is triggered.
  *
- * @return 0 on success
- *		-IPC_STREAMER_ENORESOURCES not enough resources to open new session
- *		-IPC_STREAMER_ESINK one of sink operations, i.e. write, seek, failed
- *		-IPC_STREAMER_ETIMEOUT timeout error. streamer provider did not respond or stopped
+ * @return SUIT_PLAT_SUCCESS on success
+ *		SUIT_PLAT_ERR_NO_MEM not enough resources to open new session
+ *		SUIT_PLAT_ERR_CRASH one of sink operations, i.e. write, seek, failed
+ *		SUIT_PLAT_ERR_TIME timeout error. streamer provider did not respond or stopped
  *to respond
  */
-int ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
+suit_plat_err_t ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
 			struct stream_sink *sink, uint32_t inter_chunk_timeout_ms,
 			uint32_t requesting_period_ms);
 
@@ -74,16 +63,16 @@ int ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
  * requestor proxy (when executed on local Domain MCU). In case of execution on local Domain MCU -
  * It is called directly from ipc_streamer_provider_init implementation.
  *
- * @return 0 on success, negative value in case of failure
+ * @return SUIT_PLAT_SUCCESS on success, error code in case of failure
  */
-int ipc_streamer_requestor_init(void);
+suit_plat_err_t ipc_streamer_requestor_init(void);
 
 /**
  * @brief Initialization function for streamer provider.
  *
- * @return 0 on success, negative value in case of failure
+ * @return SUIT_PLAT_SUCCESS on success, error code in case of failure
  */
-int ipc_streamer_provider_init(void);
+suit_plat_err_t ipc_streamer_provider_init(void);
 
 typedef enum {
 	PENDING = 0,
@@ -99,7 +88,7 @@ typedef struct {
 
 /**
  * @brief Enqueues image chunk for future processing. Implemented by streamer requestor and exposed
- *as streamer requestor proxy to local Domain MCU. Attention! Return code -IPC_STREAMER_ENOSPACE
+ *as streamer requestor proxy to local Domain MCU. Attention! Return code SUIT_PLAT_ERR_BUSY
  *does not mean irrecoverable failure. One of chunks will eventually be processed by streamer
  *requestor and necessary space will be reclaimed
  *
@@ -127,19 +116,19 @@ typedef struct {
  *signalized - streamer requestor will not accept any new chunks. It will process remaining enqueued
  *chunks and close session
  *
- * @return 0 on success
- *		-IPC_STREAMER_EINVAL invalid parameter
- *		-IPC_STREAMER_EWRONGSESSION there is no open session identified by stream_session_id
- *		-IPC_STREAMER_ESESSIONCLOSING session is closing, and another chunk cannot be
- *accepted -IPC_STREAMER_ENOSPACE not enough space to enqueue this chunk. Try again later
+ * @return SUIT_PLAT_SUCCESS on success
+ *		SUIT_PLAT_ERR_INVAL invalid parameter
+ *		SUIT_PLAT_ERR_INCORRECT_STATE there is no open session identified by
+ *		stream_session_id or session is closing, and another chunk cannot be accepted
+ *		SUIT_PLAT_ERR_BUSY not enough space to enqueue this chunk. Try again later
  */
-int ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id, uint32_t offset,
-			       uint8_t *address, uint32_t size, bool last_chunk);
+suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id,
+			       uint32_t offset, uint8_t *address, uint32_t size, bool last_chunk);
 
 /**
  * @brief Returns information about chunks enqueued by streamer requestor. Implemented by streamer
  *requestor and exposed as streamer requestor proxy to local Domain MCU. Attention! Return code
- *-IPC_STREAMER_ENOSPACE does not mean irrecoverable failure. Every execution of this function
+ *SUIT_PLAT_ERR_BUSY does not mean irrecoverable failure. Every execution of this function
  *causes that streamer requestor releases information about 'PROCESSED' or 'REFUSED' chunks, so
  *function will succeed eventually.
  *
@@ -157,14 +146,14 @@ int ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id, ui
  *can hold, as output - amount of stored elements
  *
  *
- * @return 0 on success
- *		-IPC_STREAMER_EINVAL invalid parameter, i.e. null pointer
- *		-IPC_STREAMER_EWRONGSESSION there is no open session identified by stream_session_id
- *		-IPC_STREAMER_ENOSPACE chunk_info array is too small
+ * @return SUIT_PLAT_SUCCESS on success
+ *		SUIT_PLAT_ERR_INVAL invalid parameter, i.e. null pointer
+ *		SUIT_PLAT_ERR_INCORRECT_STATE there is no open session identified by stream_session_id
+ *		SUIT_PLAT_ERR_BUSY chunk_info array is too small
  *
  */
-int ipc_streamer_chunk_status_req(uint32_t stream_session_id, ipc_streamer_chunk_info_t *chunk_info,
-				  size_t *chunk_info_count);
+suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
+				  ipc_streamer_chunk_info_t *chunk_info, size_t *chunk_info_count);
 
 /**
  * @brief Chunk status update notification function prototype
@@ -175,9 +164,10 @@ int ipc_streamer_chunk_status_req(uint32_t stream_session_id, ipc_streamer_chunk
  * @param[in]   context			parameter of ipc_streamer_chunk_status_evt_subscribe
  *provided by streamer requestor or streamer requestor proxy
  *
- * @return 0 on success, negative value in case of failure
+ * @return SUIT_PLAT_ERR_INCORRECT_STATE on success, error code in case of failure
  */
-typedef int (*ipc_streamer_chunk_status_notify_fn)(uint32_t stream_session_id, void *context);
+typedef suit_plat_err_t (*ipc_streamer_chunk_status_notify_fn)(uint32_t stream_session_id,
+			 void *context);
 
 /**
  * @brief Registers chunk status update notification function. Implemented individually by streamer
@@ -188,11 +178,12 @@ typedef int (*ipc_streamer_chunk_status_notify_fn)(uint32_t stream_session_id, v
  * @param[in]   context			parameter not interpreted by streamer requestor or streamer
  *requestor proxy, provided back to ipc_streamer_chunk_status_notify_fn
  *
- * @return 0 on success,
- *		-IPC_STREAMER_ENOSPACE not enough space to register another notification function
+ * @return SUIT_PLAT_SUCCESS on success,
+ *		SUIT_PLAT_ERR_NO_MEM not enough space to register another notification function
  *
  */
-int ipc_streamer_chunk_status_evt_subscribe(ipc_streamer_chunk_status_notify_fn notify_fn,
+suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
+					    ipc_streamer_chunk_status_notify_fn notify_fn,
 					    void *context);
 
 /**
@@ -216,11 +207,12 @@ void ipc_streamer_chunk_status_evt_unsubscribe(void);
  * @param[in]   context			parameter of ipc_streamer_missing_image_evt_subscribe
  *provided by streamer requestor or streamer requestor proxy
  *
- * @return 0 on success, negative value in case of failure
+ * @return SUIT_PLAT_SUCCESS on success, error code in case of failure
  */
-typedef int (*ipc_streamer_missing_image_notify_fn)(const uint8_t *resource_id,
-						    size_t resource_id_length,
-						    uint32_t stream_session_id, void *context);
+typedef suit_plat_err_t (*ipc_streamer_missing_image_notify_fn)(const uint8_t *resource_id,
+								size_t resource_id_length,
+								uint32_t stream_session_id,
+								void *context);
 
 /**
  * @brief Registers missing image notification function. Implemented individually by streamer
@@ -231,11 +223,12 @@ typedef int (*ipc_streamer_missing_image_notify_fn)(const uint8_t *resource_id,
  * @param[in]   context			parameter not interpreted by streamer requestor or streamer
  *requestor proxy, provided back to ipc_streamer_missing_image_notify_fn
  *
- * @return 0 on success,
- *		-IPC_STREAMER_ENOSPACE not enough space to register another notification function
+ * @return SUIT_PLAT_SUCCESS on success,
+ *		SUIT_PLAT_ERR_NO_MEM not enough space to register another notification function
  *
  */
-int ipc_streamer_missing_image_evt_subscribe(ipc_streamer_missing_image_notify_fn notify_fn,
+suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
+					     ipc_streamer_missing_image_notify_fn notify_fn,
 					     void *context);
 
 /**

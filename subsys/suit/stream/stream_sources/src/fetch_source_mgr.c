@@ -87,7 +87,7 @@ static stream_session_t *find_session(uint32_t session_id)
 	return session;
 }
 
-static int write_proxy(void *ctx, uint8_t *buf, size_t *size)
+static suit_plat_err_t write_proxy(void *ctx, uint8_t *buf, size_t *size)
 {
 	uint32_t session_id = (uintptr_t)ctx;
 
@@ -96,23 +96,24 @@ static int write_proxy(void *ctx, uint8_t *buf, size_t *size)
 
 	if (NULL == session) {
 		component_unlock();
-		return -1;
+		return SUIT_PLAT_ERR_INCORRECT_STATE;
 	}
 
 	if (STAGE_PENDING_FIRST_RESPONSE == session->stage) {
 		session->stage = STAGE_IN_PROGRESS;
 	}
 
-	int (*client_write_fn)(void *ctx, uint8_t *buf, size_t *size) = session->client_sink.write;
+	suit_plat_err_t (*client_write_fn)(void *ctx, uint8_t *buf, size_t *size) 
+			= session->client_sink.write;
 	void *client_ctx = session->client_sink.ctx;
 
-	int err = client_write_fn(client_ctx, buf, size);
+	suit_plat_err_t err = client_write_fn(client_ctx, buf, size);
 
 	component_unlock();
 	return err;
 }
 
-static int seek_proxy(void *ctx, size_t offset)
+static suit_plat_err_t seek_proxy(void *ctx, size_t offset)
 {
 	uint32_t session_id = (uintptr_t)ctx;
 
@@ -121,7 +122,7 @@ static int seek_proxy(void *ctx, size_t offset)
 
 	if (NULL == session) {
 		component_unlock();
-		return -1;
+		return SUIT_PLAT_ERR_INCORRECT_STATE;
 	}
 
 	if (STAGE_PENDING_FIRST_RESPONSE == session->stage) {
@@ -132,13 +133,13 @@ static int seek_proxy(void *ctx, size_t offset)
 				= session->client_sink.seek;
 	void *client_ctx = session->client_sink.ctx;
 
-	int err = client_seek_fn(client_ctx, offset);
+	suit_plat_err_t err = client_seek_fn(client_ctx, offset);
 
 	component_unlock();
 	return err;
 }
 
-int fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn)
+suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn)
 {
 	component_lock();
 
@@ -147,24 +148,24 @@ int fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn)
 		if (NULL == source->request_fn) {
 			source->request_fn = request_fn;
 			component_unlock();
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		}
 	}
 
 	component_unlock();
-	return -1;
+	return SUIT_PLAT_ERR_NO_MEM;
 }
 
-int fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sink *sink)
+suit_plat_err_t fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sink *sink)
 {
 
 	if (NULL == uri || 0 == uri_length || NULL == sink || NULL == sink->write) {
-		return -1;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	stream_session_t *session = open_session(uri, uri_length, sink);
 	if (NULL == session) {
-		return -1;
+		return SUIT_PLAT_ERR_INCORRECT_STATE;
 	}
 
 	struct stream_sink session_sink = {.write = write_proxy,
@@ -196,17 +197,17 @@ int fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sin
 
 		if (NULL != request_fn) {
 
-			int err = request_fn(uri, uri_length, &session_sink);
+			suit_plat_err_t err = request_fn(uri, uri_length, &session_sink);
 
-			if (0 == err) {
+			if (SUIT_PLAT_SUCCESS == err) {
 				close_session(session);
-				return 0;
+				return SUIT_PLAT_SUCCESS;
 
 			} else if (STAGE_PENDING_FIRST_RESPONSE != session->stage) {
 				/* error while transfer has arleady started, unrecoverable
 				 */
 				close_session(session);
-				return -1;
+				return SUIT_PLAT_ERR_INCORRECT_STATE;
 			} else {
 				/* fetch source signalized an error immediately, means it does not
 				 * support fetching from provided URI, let's try next fetch source
@@ -216,5 +217,5 @@ int fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sin
 	}
 
 	close_session(session);
-	return -1;
+	return SUIT_PLAT_ERR_CRASH;
 }

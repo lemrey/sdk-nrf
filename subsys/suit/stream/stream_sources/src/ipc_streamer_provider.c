@@ -49,21 +49,21 @@ static image_request_info_t request_info = {
 
 static K_SEM_DEFINE(chunk_status_changed_sem, 0, 1);
 
-static int wait_for_buffer_state_change(image_request_info_t *ri)
+static suit_plat_err_t wait_for_buffer_state_change(image_request_info_t *ri)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	ipc_streamer_chunk_info_t injected_chunks[CONFIG_SUIT_STREAM_IPC_PROVIDER_BUFFERS];
 	size_t chunk_info_count = CONFIG_SUIT_STREAM_IPC_PROVIDER_BUFFERS;
 
 	while (true) {
 		err = ipc_streamer_chunk_status_req(ri->stream_session_id, injected_chunks,
 						    &chunk_info_count);
-		if (-IPC_STREAMER_ENOSPACE == err) {
+		if (SUIT_PLAT_ERR_NO_MEM == err) {
 			/* not enough space in injected_chunks. This is not a problem,
 			 *  stream requestor most probably just released its space and
 			 *  one of next calls will be successful.
 			 */
-		} else if (err < 0) {
+		} else if (err != SUIT_PLAT_SUCCESS) {
 			return err;
 		} else {
 
@@ -90,7 +90,7 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 			}
 
 			if (chunk_released) {
-				return 0;
+				return SUIT_PLAT_SUCCESS;
 			}
 		}
 
@@ -104,10 +104,10 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 	return err;
 }
 
-static int find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t **bm,
+static suit_plat_err_t find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t **bm,
 				   uint8_t **buffer)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	*bm = NULL;
 	*buffer = NULL;
 
@@ -118,7 +118,7 @@ static int find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t *
 			 */
 			*bm = current;
 			*buffer = ri->buffer_info.buffer[i];
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		}
 	}
 
@@ -134,7 +134,7 @@ static int find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t *
 
 		if (NULL == *bm) {
 			err = wait_for_buffer_state_change(ri);
-			if (err < 0) {
+			if (err != SUIT_PLAT_SUCCESS) {
 				return err;
 			}
 		}
@@ -143,36 +143,38 @@ static int find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t *
 	return err;
 }
 
-static int chunk_enqueue(image_request_info_t *ri, buffer_metadata_t *bm, uint8_t *buffer_address,
-			 bool last_chunk)
+static suit_plat_err_t chunk_enqueue(image_request_info_t *ri, buffer_metadata_t *bm,
+			 uint8_t *buffer_address, bool last_chunk)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
 	while (true) {
 		err = ipc_streamer_chunk_enqueue(ri->stream_session_id, bm->chunk_id,
 						 bm->offset_in_image, buffer_address,
 						 bm->chunk_size, last_chunk);
-		if (-IPC_STREAMER_ENOSPACE == err) {
+		if (SUIT_PLAT_ERR_NO_MEM == err) {
 			/* Not enough space in requestor, try again later
 			 */
 			err = wait_for_buffer_state_change(ri);
-			if (err < 0) {
+			if (err != SUIT_PLAT_SUCCESS) {
 				return err;
 			}
 		} else {
 			return err;
 		}
 	}
+
+	// UNREACHABLE
 }
 
-static int end_of_stream(image_request_info_t *ri)
+static suit_plat_err_t end_of_stream(image_request_info_t *ri)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
 	buffer_metadata_t *bm = NULL;
 	uint8_t *buffer = NULL;
 	err = find_buffer_for_enqueue(ri, &bm, &buffer);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
@@ -186,11 +188,11 @@ static int end_of_stream(image_request_info_t *ri)
 	if (READY_TO_ENQUEUE != bm->buffer_state) {
 		/* This shall not happen. There must be a flaw in design. concurrency issue?
 		 */
-		return -IPC_STREAMER_ECONCURRENCY;
+		return SUIT_PLAT_ERR_UNREACHABLE_PATH;
 	}
 
 	err = chunk_enqueue(ri, bm, buffer, true);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 	ri->requested_image_offset = bm->offset_in_image + bm->chunk_size;
@@ -210,22 +212,22 @@ static int end_of_stream(image_request_info_t *ri)
 		}
 
 		if (NULL == bm) {
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 		}
 
 		err = wait_for_buffer_state_change(ri);
-		if (err < 0) {
-			return 0;
+		if (err != SUIT_PLAT_SUCCESS) {
+			return SUIT_PLAT_SUCCESS;
 		}
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int write_proxy(void *ctx, uint8_t *source_bufer, size_t *size)
+static suit_plat_err_t write_proxy(void *ctx, uint8_t *source_bufer, size_t *size)
 {
 
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	uint32_t stream_session_id = (uintptr_t)ctx;
 	image_request_info_t *ri = &request_info;
 
@@ -235,13 +237,13 @@ static int write_proxy(void *ctx, uint8_t *source_bufer, size_t *size)
 	while (source_remaining) {
 
 		if (ri->stream_session_id != stream_session_id) {
-			return -1;
+			return SUIT_PLAT_ERR_INCORRECT_STATE;
 		}
 
 		buffer_metadata_t *bm = NULL;
 		uint8_t *buffer = NULL;
 		err = find_buffer_for_enqueue(ri, &bm, &buffer);
-		if (err) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			return err;
 		}
 
@@ -255,7 +257,7 @@ static int write_proxy(void *ctx, uint8_t *source_bufer, size_t *size)
 		if (READY_TO_ENQUEUE != bm->buffer_state) {
 			/* This shall not happen. There must be a flaw in design. concurrency issue?
 			 */
-			return -IPC_STREAMER_ECONCURRENCY;
+			return SUIT_PLAT_ERR_UNREACHABLE_PATH;
 		}
 
 		size_t to_be_copied = CONFIG_SUIT_STREAM_IPC_PROVIDER_BUFFER_SIZE - bm->chunk_size;
@@ -272,7 +274,7 @@ static int write_proxy(void *ctx, uint8_t *source_bufer, size_t *size)
 			/* buffer full, it is time to enqueue
 			 */
 			err = chunk_enqueue(ri, bm, buffer, false);
-			if (err) {
+			if (err != SUIT_PLAT_SUCCESS) {
 				return err;
 			}
 			ri->requested_image_offset = bm->offset_in_image + bm->chunk_size;
@@ -280,24 +282,24 @@ static int write_proxy(void *ctx, uint8_t *source_bufer, size_t *size)
 		}
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int seek_proxy(void *ctx, size_t offset)
+static suit_plat_err_t seek_proxy(void *ctx, size_t offset)
 {
 
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	uint32_t stream_session_id = (uintptr_t)ctx;
 	image_request_info_t *ri = &request_info;
 
 	if (ri->stream_session_id != stream_session_id) {
-		return -1;
+		return SUIT_PLAT_ERR_INCORRECT_STATE;
 	}
 
 	buffer_metadata_t *bm = NULL;
 	uint8_t *buffer = NULL;
 	err = find_buffer_for_enqueue(ri, &bm, &buffer);
-	if (err) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
@@ -307,11 +309,11 @@ static int seek_proxy(void *ctx, size_t offset)
 			/* this operation moves write pointer exactly to location next to
 			 *  last byte of this chunk, so there is no need to do anything
 			 */
-			return 0;
+			return SUIT_PLAT_SUCCESS;
 
 		} else {
 			err = chunk_enqueue(ri, bm, buffer, false);
-			if (err) {
+			if (err != SUIT_PLAT_SUCCESS) {
 				return err;
 			}
 			ri->requested_image_offset = bm->offset_in_image + bm->chunk_size;
@@ -321,7 +323,7 @@ static int seek_proxy(void *ctx, size_t offset)
 
 	if (ri->requested_image_offset != offset) {
 		err = find_buffer_for_enqueue(ri, &bm, &buffer);
-		if (err) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			return err;
 		}
 
@@ -329,7 +331,7 @@ static int seek_proxy(void *ctx, size_t offset)
 			/* This shall not happen. There must be a flaw in design. concurrency issue?
 			 *  as max one buffer can be READY_TO_ENQUEUE
 			 */
-			return -IPC_STREAMER_ECONCURRENCY;
+			return SUIT_PLAT_ERR_UNREACHABLE_PATH;
 		}
 
 		bm->offset_in_image = offset;
@@ -338,7 +340,7 @@ static int seek_proxy(void *ctx, size_t offset)
 		bm->buffer_state = READY_TO_ENQUEUE;
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static void image_request_worker(struct k_work *item)
@@ -353,16 +355,16 @@ static void image_request_worker(struct k_work *item)
 				   .ctx = (void *)(uintptr_t)ri->stream_session_id};
 
 	uint8_t *resource_id = ri->buffer_info.buffer[0];
-	int err = fetch_source_stream(resource_id, strlen(resource_id), &sink);
+	suit_plat_err_t err = fetch_source_stream(resource_id, strlen(resource_id), &sink);
 
-	if (0 == err) {
+	if (SUIT_PLAT_SUCCESS == err) {
 		err = end_of_stream(ri);
 	}
 
 	ri->stream_session_id = 0;
 }
 
-static int missing_image_notify_fct(const uint8_t *resource_id, size_t resource_id_length,
+static suit_plat_err_t missing_image_notify_fct(const uint8_t *resource_id, size_t resource_id_length,
 				    uint32_t stream_session_id, void *context)
 {
 	image_request_info_t *ri = &request_info;
@@ -383,19 +385,19 @@ static int missing_image_notify_fct(const uint8_t *resource_id, size_t resource_
 
 		ri->stream_session_id = stream_session_id;
 		k_work_submit_to_queue(&img_request_work_q, &ri->work);
-		return 0;
+		return SUIT_PLAT_SUCCESS;
 	}
 
-	return -1;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
-static int chunk_status_notify_fct(uint32_t stream_session_id, void *context)
+static suit_plat_err_t chunk_status_notify_fct(uint32_t stream_session_id, void *context)
 {
 	k_sem_give(&chunk_status_changed_sem);
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int ipc_streamer_provider_init()
+suit_plat_err_t ipc_streamer_provider_init()
 {
 
 	k_work_queue_init(&img_request_work_q);
@@ -406,20 +408,20 @@ int ipc_streamer_provider_init()
 	image_request_info_t *ri = &request_info;
 	k_work_init(&ri->work, image_request_worker);
 
-	int err = ipc_streamer_requestor_init();
-	if (err != 0) {
+	suit_plat_err_t err = ipc_streamer_requestor_init();
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
 	err = ipc_streamer_chunk_status_evt_subscribe(chunk_status_notify_fct, (void *)NULL);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
 	err = ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fct, (void *)NULL);
-	if (err != 0) {
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }

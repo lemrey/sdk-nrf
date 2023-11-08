@@ -11,15 +11,12 @@
 #include <stdint.h>
 #include <suit_plat_err.h>
 
-#define SOURCE_NOT_FOUND 15 // TODO: delete this after streamers are refactored
-
 typedef suit_plat_err_t (*erase_ptr)(void *ctx);
 typedef suit_plat_err_t (*write_ptr)(void *ctx, uint8_t *buf, size_t *size);
 typedef suit_plat_err_t (*seek_ptr)(void *ctx, size_t offset);
 typedef suit_plat_err_t (*flush_ptr)(void *ctx);
 typedef suit_plat_err_t (*used_storage_ptr)(void *ctx, size_t *size);
 typedef suit_plat_err_t (*release_ptr)(void *ctx);
-
 
 /**
  * @brief Structure represents node that is a target for data.
