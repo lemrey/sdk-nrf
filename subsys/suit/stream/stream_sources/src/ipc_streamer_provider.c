@@ -58,7 +58,7 @@ static suit_plat_err_t wait_for_buffer_state_change(image_request_info_t *ri)
 	while (true) {
 		err = ipc_streamer_chunk_status_req(ri->stream_session_id, injected_chunks,
 						    &chunk_info_count);
-		if (SUIT_PLAT_ERR_NO_MEM == err) {
+		if (SUIT_PLAT_ERR_BUSY == err) {
 			/* not enough space in injected_chunks. This is not a problem,
 			 *  stream requestor most probably just released its space and
 			 *  one of next calls will be successful.
@@ -152,7 +152,7 @@ static suit_plat_err_t chunk_enqueue(image_request_info_t *ri, buffer_metadata_t
 		err = ipc_streamer_chunk_enqueue(ri->stream_session_id, bm->chunk_id,
 						 bm->offset_in_image, buffer_address,
 						 bm->chunk_size, last_chunk);
-		if (SUIT_PLAT_ERR_NO_MEM == err) {
+		if (SUIT_PLAT_ERR_BUSY == err) {
 			/* Not enough space in requestor, try again later
 			 */
 			err = wait_for_buffer_state_change(ri);

@@ -12,14 +12,13 @@ suit_plat_err_t cache_streamer(const uint8_t *uri, size_t uri_size,
 							   struct stream_sink *sink)
 {
 	if ((uri != NULL) && (sink != NULL) && (sink->write != NULL) && (uri_size > 0)) {
-		int err = 0;
+		suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 		struct zcbor_string payload;
 		struct zcbor_string uri_tmp = {
 			.value = uri,
 			.len = uri_size,
 		};
 
-		// TODO: convert error code when err codes in cache are refactored
 		err = suit_cache_search(&uri_tmp, &payload);
 
 		if (err == SUIT_PLAT_SUCCESS) {

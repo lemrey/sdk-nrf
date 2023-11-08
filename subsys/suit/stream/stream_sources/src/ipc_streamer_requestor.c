@@ -580,7 +580,7 @@ suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
 		chunk_status_notify_fn = notify_fn;
 		chunk_status_notify_context = context;
 	} else {
-		err = SUIT_PLAT_ERR_NO_MEM;
+		err = SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
 	unlock_image_request_state();
@@ -608,7 +608,7 @@ suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
 		missing_image_notify_fn = notify_fn;
 		missing_image_notify_context = context;
 	} else {
-		err = SUIT_PLAT_ERR_NO_MEM;
+		err = SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
 	unlock_image_request_state();

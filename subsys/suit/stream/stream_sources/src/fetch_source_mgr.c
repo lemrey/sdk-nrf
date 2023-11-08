@@ -153,7 +153,7 @@ suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_
 	}
 
 	component_unlock();
-	return SUIT_PLAT_ERR_NO_MEM;
+	return SUIT_PLAT_ERR_NO_RESOURCES;
 }
 
 suit_plat_err_t fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sink *sink)

@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <zcbor_decode.h>
 #include <zephyr/storage/flash_map.h>
+#include <suit_plat_err.h>
 
 /* This header has no restrictions on the context in which it can be used.
  * Contains functions allowing searching and reading from cache.
@@ -99,9 +100,9 @@ struct suit_cache {
  *
  * @param cache  Pointer to the SUIT cache structure.
  *
- * @return int 0 in case of success, otherwise error code
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_cache_initialize(struct suit_cache *cache);
+suit_plat_err_t suit_cache_initialize(struct suit_cache *cache);
 
 /**
  * @brief Deinitialize SUIT cache
@@ -125,9 +126,9 @@ void suit_cache_clear(struct suit_cache *cache);
  * @param dst_cache  Destination cache to be aligned.
  * @param src_cache  Source cache to be copied.
  *
- * @return int Error code or 0 in case of success
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_cache_copy(struct suit_cache *dst_cache, const struct suit_cache *src_cache);
+suit_plat_err_t suit_cache_copy(struct suit_cache *dst_cache, const struct suit_cache *src_cache);
 
 /**
  * @brief Search registered caches for data with equal uri key.
@@ -135,8 +136,8 @@ int suit_cache_copy(struct suit_cache *dst_cache, const struct suit_cache *src_c
  * @param uri      Uri key value to look for.
  * @param payload  Return pointer to data object if found.
  *
- * @return int Error code or 0 in case of success
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_cache_search(const struct zcbor_string *uri, struct zcbor_string *payload);
+suit_plat_err_t suit_cache_search(const struct zcbor_string *uri, struct zcbor_string *payload);
 
 #endif /* SUIT_CACHE_H__ */

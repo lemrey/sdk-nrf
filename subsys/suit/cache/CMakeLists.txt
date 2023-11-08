@@ -6,6 +6,7 @@
 
 zephyr_interface_library_named(suit_cache_interface)
 target_include_directories(suit_cache_interface INTERFACE include)
+target_link_libraries(suit_cache_interface INTERFACE suit_platform_err)
 
 zephyr_library()
 zephyr_library_sources(src/suit_cache.c)

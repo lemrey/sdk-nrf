@@ -38,7 +38,6 @@ suit_plat_err_t dfu_get_cache_sink(struct stream_sink *sink, uint8_t cache_parti
 			return SUIT_PLAT_ERR_BUSY;
 		}
 
-		// TODO: during cache refactor - verify that no conversion is needed.
 		suit_plat_err_t ret = dfu_create_cache_slot(cache_partition_id, &ctx.slot,
 							    uri, uri_size);
 
@@ -152,7 +151,6 @@ static suit_plat_err_t release(void *ctx)
 			LOG_INF("Changes were not committed and will be dropped");
 			cache_ctx->write_enabled = false;
 
-			// TODO: during cache refactor - verify that no conversion is needed.
 			ret = dfu_drop_cache_slot(&cache_ctx->slot, cache_ctx->offset);
 
 			if (ret != SUIT_PLAT_SUCCESS) {
@@ -172,7 +170,6 @@ suit_plat_err_t suit_cache_sink_commit(void *ctx)
 {
 	if (ctx != NULL) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;
-		// TODO: during cache refactor - verify that no conversion is needed.
 		suit_plat_err_t ret = dfu_close_cache_slot(&cache_ctx->slot, cache_ctx->offset);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
@@ -191,7 +188,6 @@ suit_plat_err_t suit_cache_sink_drop(void *ctx)
 {
 	if (ctx != NULL) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;
-		// TODO: during cache refactor - verify that no conversion is needed.
 		suit_plat_err_t ret = dfu_drop_cache_slot(&cache_ctx->slot, cache_ctx->offset);
 
 		if (ret != SUIT_PLAT_SUCCESS) {

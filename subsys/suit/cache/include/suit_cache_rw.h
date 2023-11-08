@@ -35,9 +35,9 @@ struct suit_cache_slot {
  * @param addr  DFU partition address
  * @param size  DFU partition size
  *
- * @return int 0 in case of success, otherwise error code
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int suit_cache_initialize_rw(void *addr, size_t size);
+suit_plat_err_t suit_cache_initialize_rw(void *addr, size_t size);
 
 /**
  * @brief Deinitialize SUIT cache
@@ -52,10 +52,10 @@ void suit_cache_deinitialize_rw(void);
  * @param uri URI that will be used as a key in cache cbor map
  * @param uri_size URI size
  *
- * @return int 0 in case of success, otherwise error code
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_cache_slot *slot,
-			  const uint8_t *uri, size_t uri_size);
+suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_cache_slot *slot,
+			  	      const uint8_t *uri, size_t uri_size);
 
 /**
  * @brief Closes slot by updating bstring header with size of data that was written
@@ -64,9 +64,9 @@ int dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_cache_slot *sl
  * @param slot Structure containing info about opened slot
  * @param data_end_offset Offset pointing to the end of data written in slot
  *
- * @return int Error code or 0 in case of success
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int dfu_commit_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
+suit_plat_err_t dfu_commit_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
 
 /**
  * @brief Commits changes written to slot by updating cbor header for the cache slot
@@ -74,9 +74,9 @@ int dfu_commit_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
  * @param slot Pointer to opened cache slot
  * @param data_end_offset Offset of where written data ends
  *
- * @return int 0 in case of success, otherwise error code
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
+suit_plat_err_t dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
 
 /**
  * @brief Drop data written to slot and revert slot allocation
@@ -84,8 +84,8 @@ int dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
  * @param slot Pointer to slot that should be dropped
  * @param data_end_offset Offset after the last data written
  *
- * @return int int 0 in case of success, otherwise error code
+ * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-int dfu_drop_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
+suit_plat_err_t dfu_drop_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
 
 #endif /* SUIT_CACHE_RW_H__ */

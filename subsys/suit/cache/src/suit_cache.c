@@ -5,7 +5,6 @@
  */
 
 #include <string.h>
-#include <errno.h>
 #include <suit_cache.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/logging/log.h>
@@ -79,20 +78,20 @@ static bool search_partition(struct suit_cache_partition *cache_partition,
 	return false;
 }
 
-int suit_cache_search(const struct zcbor_string *uri, struct zcbor_string *payload)
+suit_plat_err_t suit_cache_search(const struct zcbor_string *uri, struct zcbor_string *payload)
 {
 	LOG_INF("suit_cache.partitions_count: %u", suit_cache.partitions_count);
 	if ((uri != NULL) && (payload != NULL)) {
 		for (size_t i = 0; i < suit_cache.partitions_count; i++) {
 			if (search_partition(&suit_cache.partitions[i], uri, payload)) {
-				return SUCCESS;
+				return SUIT_PLAT_SUCCESS;
 			}
 		}
 
-		return -ENXIO;
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
-	return -EFAULT;
+	return SUIT_PLAT_ERR_INVAL;
 }
 
 void suit_cache_clear(struct suit_cache *cache)
@@ -107,31 +106,31 @@ void suit_cache_clear(struct suit_cache *cache)
 	}
 }
 
-int suit_cache_copy(struct suit_cache *dst_cache, const struct suit_cache *src_cache)
+suit_plat_err_t suit_cache_copy(struct suit_cache *dst_cache, const struct suit_cache *src_cache)
 {
 	if (src_cache->partitions_count > CONFIG_SUIT_CACHE_MAX_CACHES) {
-		return -E2BIG;
+		return SUIT_PLAT_ERR_NOMEM;
 	}
 
 	dst_cache->partitions_count = src_cache->partitions_count;
 	memcpy(&(dst_cache->partitions), src_cache->partitions,
 	       src_cache->partitions_count * sizeof(struct suit_cache_partition));
 
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-int suit_cache_initialize(struct suit_cache *cache)
+suit_plat_err_t suit_cache_initialize(struct suit_cache *cache)
 {
-	int ret = suit_cache_copy(&suit_cache, cache);
+	suit_plat_err_t ret = suit_cache_copy(&suit_cache, cache);
 
-	if (ret != 0) {
+	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Copying cache from storage, failed: %i", ret);
 		return ret;
 	}
 
 	init_done = true;
 
-	return SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 void suit_cache_deinitialize(void)

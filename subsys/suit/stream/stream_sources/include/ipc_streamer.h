@@ -49,7 +49,7 @@
  *provider or till inter-chunk timeout is triggered.
  *
  * @return SUIT_PLAT_SUCCESS on success
- *		SUIT_PLAT_ERR_NO_MEM not enough resources to open new session
+ *		SUIT_PLAT_ERR_NOMEM not enough resources to open new session
  *		SUIT_PLAT_ERR_CRASH one of sink operations, i.e. write, seek, failed
  *		SUIT_PLAT_ERR_TIME timeout error. streamer provider did not respond or stopped
  *to respond
@@ -179,7 +179,7 @@ typedef suit_plat_err_t (*ipc_streamer_chunk_status_notify_fn)(uint32_t stream_s
  *requestor proxy, provided back to ipc_streamer_chunk_status_notify_fn
  *
  * @return SUIT_PLAT_SUCCESS on success,
- *		SUIT_PLAT_ERR_NO_MEM not enough space to register another notification function
+ *		SUIT_PLAT_ERR_NOMEM not enough space to register another notification function
  *
  */
 suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
@@ -224,7 +224,7 @@ typedef suit_plat_err_t (*ipc_streamer_missing_image_notify_fn)(const uint8_t *r
  *requestor proxy, provided back to ipc_streamer_missing_image_notify_fn
  *
  * @return SUIT_PLAT_SUCCESS on success,
- *		SUIT_PLAT_ERR_NO_MEM not enough space to register another notification function
+ *		SUIT_PLAT_ERR_NOMEM not enough space to register another notification function
  *
  */
 suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
