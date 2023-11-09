@@ -205,6 +205,10 @@ Other samples
   * :ref:`event_manager_proxy` sample
   * :ref:`caf_sensor_manager_sample` sample
 
+* :ref:`radio_test` sample:
+
+  * Added two radio modes with 4 Mbit/s rate.
+
 Devicetree configuration
 ========================
 

@@ -555,6 +555,12 @@ static void radio_modulated_tx_carrier(uint8_t mode, int16_t txpower, uint8_t ch
 #if defined(RADIO_MODE_MODE_Nrf_250Kbit)
 	case NRF_RADIO_MODE_NRF_250KBIT:
 #endif /* defined(RADIO_MODE_MODE_Nrf_250Kbit) */
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_5)
+	case NRF_RADIO_MODE_NRF_4MBIT_H_0_5:
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_5) */
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_25)
+	case NRF_RADIO_MODE_NRF_4MBIT_H_0_25:
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_25) */
 		nrf_radio_shorts_enable(NRF_RADIO,
 					NRF_RADIO_SHORT_READY_START_MASK |
 					NRF_RADIO_SHORT_END_START_MASK);

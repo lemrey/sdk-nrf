@@ -423,8 +423,24 @@ static int cmd_print(const struct shell *shell, size_t argc, char **argv)
 			    "Data rate: %s",
 			    STRINGIFY(NRF_RADIO_MODE_NRF_250KBIT));
 		break;
-
 #endif /* defined(RADIO_MODE_MODE_Nrf_250Kbit) */
+
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_5)
+	case NRF_RADIO_MODE_NRF_4MBIT_H_0_5:
+		shell_print(shell,
+			    "Data rate: %s",
+			    STRINGIFY(NRF_RADIO_MODE_NRF_4MBIT_H_0_5));
+		break;
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_5) */
+
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_25)
+	case NRF_RADIO_MODE_NRF_4MBIT_H_0_25:
+		shell_print(shell,
+			    "Data rate: %s",
+			    STRINGIFY(NRF_RADIO_MODE_NRF_4MBIT_H_0_25));
+		break;
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_25) */
+
 	case NRF_RADIO_MODE_NRF_1MBIT:
 		shell_print(shell,
 			    "Data rate: %s",
@@ -982,6 +998,30 @@ static int cmd_nrf_250kbit(const struct shell *shell, size_t argc,
 }
 #endif /* defined(RADIO_MODE_MODE_Nrf_250Kbit) */
 
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_5)
+static int cmd_nrf_4mbit_h_0_5(const struct shell *shell, size_t argc,
+			       char **argv)
+{
+	config.mode = NRF_RADIO_MODE_NRF_4MBIT_H_0_5;
+	shell_print(shell, "Data rate: %s",
+		    STRINGIFY(NRF_RADIO_MODE_NRF_4MBIT_H_0_5));
+
+	return 0;
+}
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_5) */
+
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_25)
+static int cmd_nrf_4mbit_h_0_25(const struct shell *shell, size_t argc,
+				char **argv)
+{
+	config.mode = NRF_RADIO_MODE_NRF_4MBIT_H_0_25;
+	shell_print(shell, "Data rate: %s",
+		    STRINGIFY(NRF_RADIO_MODE_NRF_4MBIT_H_0_25));
+
+	return 0;
+}
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_25) */
+
 static int cmd_ble_1mbit(const struct shell *shell, size_t argc, char **argv)
 {
 	config.mode = NRF_RADIO_MODE_BLE_1MBIT;
@@ -1077,6 +1117,18 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_data_rate,
 		  "250 kbit/s Nordic proprietary radio mode",
 		  cmd_nrf_250kbit),
 #endif /* defined(RADIO_MODE_MODE_Nrf_250Kbit) */
+
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_5)
+	SHELL_CMD(nrf_4Mbit0_5, NULL,
+		  "4 Mbit/s Nordic proprietary radio mode (BT=0.5/h=0.5)",
+		  cmd_nrf_4mbit_h_0_5),
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_5) */
+
+#if defined(RADIO_MODE_MODE_Nrf_4Mbit0_25)
+	SHELL_CMD(nrf_4Mbit0_25, NULL,
+		  "4 Mbit/s Nordic proprietary radio mode (BT=0.5/h=0.25)",
+		  cmd_nrf_4mbit_h_0_25),
+#endif /* defined(RADIO_MODE_MODE_Nrf_4Mbit0_25) */
 
 	SHELL_CMD(ble_1Mbit, NULL, "1 Mbit/s Bluetooth Low Energy",
 		  cmd_ble_1mbit),
