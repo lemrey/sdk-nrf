@@ -60,7 +60,8 @@ int suit_plat_release_component_handle(suit_component_t handle)
 
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
-	if (!suit_plat_decode_component_type(&component->component_id, &component_type)) {
+	if (suit_plat_decode_component_type(&component->component_id, &component_type)
+	    != SUIT_PLAT_SUCCESS) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
@@ -107,7 +108,7 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Error decoding component type");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -125,7 +126,8 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 		/* Get address and size of the component from its id */
 		intptr_t address = (intptr_t)NULL;
 		size_t size = 0;
-		if (!suit_plat_decode_address_size(&component->component_id, &address, &size)) {
+		if (suit_plat_decode_address_size(&component->component_id, &address, &size)
+		    != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to decode address and size");
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
@@ -197,7 +199,7 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 	}
 
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		return SUIT_ERR_DECODING;
 	}
 
@@ -238,7 +240,7 @@ int suit_plat_component_type_get(suit_component_t handle, suit_component_type_t 
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, component_type)) {
+	if (suit_plat_decode_component_type(component_id, component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_type failed");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}

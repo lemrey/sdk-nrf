@@ -29,14 +29,16 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &type)) {
+	if (suit_plat_decode_component_type(component_id, &type) != SUIT_PLAT_SUCCESS) {
 		return SUIT_ERR_DECODING;
 	}
 
 	switch (type) {
 	case SUIT_COMPONENT_TYPE_MEM:
 		/* Decode component_id */
-		if (!suit_plat_decode_component_id(component_id, &cpu_id, &address, &size)) {
+		if (suit_plat_decode_component_id(component_id, &cpu_id, &address, &size)
+		    != SUIT_PLAT_SUCCESS)
+		{
 			return SUIT_ERR_DECODING;
 		}
 
@@ -51,7 +53,7 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 		}
 		break;
 	case SUIT_COMPONENT_TYPE_SOC_SPEC:
-		if (!suit_plat_decode_component_number(component_id, &number)) {
+		if (suit_plat_decode_component_number(component_id, &number) != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_DECODING;
 		}
 
@@ -63,14 +65,15 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 	case SUIT_COMPONENT_TYPE_CAND_MFST:
 	case SUIT_COMPONENT_TYPE_CAND_IMG:
 	case SUIT_COMPONENT_TYPE_CACHE_POOL:
-		if (!suit_plat_decode_component_number(component_id, &number)) {
+		if (suit_plat_decode_component_number(component_id, &number) != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_DECODING;
 		}
 		break;
 
 	case SUIT_COMPONENT_TYPE_INSTLD_MFST:
 		/* Decode manifest class id */
-		if (!suit_plat_decode_manifest_class_id(component_id, &decoded_class_id)) {
+		if (suit_plat_decode_manifest_class_id(component_id, &decoded_class_id)
+		    != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
 

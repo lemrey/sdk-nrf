@@ -40,7 +40,8 @@ int suit_plat_authenticate_manifest(struct zcbor_string *manifest_component_id,
 	}
 
 	/* Check if component ID is a manifest class */
-	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+	if (suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Component ID is not a manifest class");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -53,8 +54,7 @@ int suit_plat_authenticate_manifest(struct zcbor_string *manifest_component_id,
 	}
 
 	/* Try to get uint32_t key_id from zcbor_string */
-	bool res = suit_plat_decode_key_id(key_id, &public_key_id);
-	if (!res) {
+	if (suit_plat_decode_key_id(key_id, &public_key_id) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Decoding key ID failed");
 		return SUIT_ERR_UNSUPPORTED_PARAMETER;
 	}
@@ -86,7 +86,8 @@ int suit_plat_authorize_unsigned_manifest(struct zcbor_string *manifest_componen
 	}
 
 	/* Check if component ID is a manifest class */
-	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+	if (suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Component ID is not a manifest class");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -120,7 +121,8 @@ int suit_plat_authorize_component_id(struct zcbor_string *manifest_component_id,
 	}
 
 	/* Check if component ID is a manifest class */
-	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+	if (suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Component ID is not a manifest class");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}

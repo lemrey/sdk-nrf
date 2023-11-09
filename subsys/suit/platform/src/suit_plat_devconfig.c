@@ -26,7 +26,8 @@ int suit_plat_sequence_completed(enum suit_command_sequence seq_name,
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+	if (suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to decode manifest class ID");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -66,7 +67,8 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)) {
+	if (suit_plat_decode_manifest_class_id(manifest_component_id, &class_id)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to decode manifest class ID");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}

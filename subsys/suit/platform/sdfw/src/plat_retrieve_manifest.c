@@ -38,7 +38,7 @@ int suit_plat_retrieve_manifest(suit_component_t component_handle, uint8_t **env
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Error decoding component type");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -48,7 +48,8 @@ int suit_plat_retrieve_manifest(suit_component_t component_handle, uint8_t **env
 	case SUIT_COMPONENT_TYPE_INSTLD_MFST: {
 		suit_manifest_class_id_t *class_id;
 
-		if (!suit_plat_decode_manifest_class_id(component_id, &class_id)) {
+		if (suit_plat_decode_manifest_class_id(component_id, &class_id)
+		    != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Unable to decode manifest class ID");
 			ret = SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 			break;

@@ -121,7 +121,7 @@ static int suit_plat_check_image_match_soc_spec(struct zcbor_string *component_i
 {
 	uint32_t number = 0;
 
-	if (!suit_plat_decode_component_number(component_id, &number)) {
+	if (suit_plat_decode_component_number(component_id, &number) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Missing component id number");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -156,7 +156,7 @@ int suit_plat_check_image_match(suit_component_t component, enum suit_cose_alg a
 		return err;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to decode component type");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}

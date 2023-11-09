@@ -55,7 +55,7 @@ static int verify_and_get_sink(suit_component_t dst_handle, struct stream_sink *
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, component_type)) {
+	if (suit_plat_decode_component_type(component_id, component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_type failed");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -64,7 +64,7 @@ static int verify_and_get_sink(suit_component_t dst_handle, struct stream_sink *
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_number(component_id, &number)) {
+	if (suit_plat_decode_component_number(component_id, &number) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Missing component id number in candidate image component");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}

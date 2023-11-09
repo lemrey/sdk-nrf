@@ -9,9 +9,13 @@
 #include <suit_plat_mem_util.h>
 #include <string.h>
 
-bool suit_plat_decode_component_id(struct zcbor_string *component_id, uint8_t *cpu_id,
-				   intptr_t *run_address, size_t *size)
+suit_plat_err_t suit_plat_decode_component_id(struct zcbor_string *component_id, uint8_t *cpu_id,
+					      intptr_t *run_address, size_t *size)
 {
+	if ((component_id == NULL) || (cpu_id == NULL) || (run_address == NULL)) {
+		return SUIT_PLAT_ERR_INVAL;
+	}
+
 	ZCBOR_STATE_D(state, 2, component_id->value, component_id->len,
 		      SUIT_PLAT_MAX_NUM_COMPONENT_ID_PARTS);
 	struct zcbor_string component_type;
@@ -32,14 +36,20 @@ bool suit_plat_decode_component_id(struct zcbor_string *component_id, uint8_t *c
 
 	if (res) {
 		*run_address = (intptr_t)suit_plat_get_mem_ptr(*run_address);
+		return SUIT_PLAT_SUCCESS;
 	}
 
-	return res;
+	return SUIT_PLAT_ERR_CBOR_DECODING;
 }
 
 #ifdef CONFIG_SUIT_PLATFORM
-bool suit_plat_decode_component_type(struct zcbor_string *component_id, suit_component_type_t *type)
+suit_plat_err_t suit_plat_decode_component_type(struct zcbor_string *component_id,
+						suit_component_type_t *type)
 {
+	if ((type == NULL) || (component_id == NULL)) {
+		return SUIT_PLAT_ERR_INVAL;
+	}
+
 	ZCBOR_STATE_D(state, 2, component_id->value, component_id->len,
 		      SUIT_PLAT_MAX_NUM_COMPONENT_ID_PARTS);
 	struct zcbor_string tmp;
@@ -50,8 +60,9 @@ bool suit_plat_decode_component_type(struct zcbor_string *component_id, suit_com
 	res = res && zcbor_tstr_decode(state, &tmp);
 	res = res && zcbor_bstr_end_decode(state);
 
-	if ((type == NULL) || (!res)) {
-		return false;
+	if (!res)
+	{
+		return SUIT_PLAT_ERR_CBOR_DECODING;
 	}
 
 	if ((tmp.len == strlen("MEM")) && (memcmp(tmp.value, "MEM", tmp.len) == 0)) {
@@ -73,16 +84,20 @@ bool suit_plat_decode_component_type(struct zcbor_string *component_id, suit_com
 		*type = SUIT_COMPONENT_TYPE_CACHE_POOL;
 	} else {
 		*type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
-		return false;
+		return SUIT_PLAT_ERR_CBOR_DECODING;
 	}
 
-	return res;
+	return SUIT_PLAT_SUCCESS;
 }
 #endif /* CONFIG_SUIT_PLATFORM */
 
-bool suit_plat_decode_address_size(struct zcbor_string *component_id, intptr_t *run_address,
-				   size_t *size)
+suit_plat_err_t suit_plat_decode_address_size(struct zcbor_string *component_id,
+					      intptr_t *run_address, size_t *size)
 {
+	if ((component_id == NULL) || (size == NULL) || (run_address == NULL)) {
+		return SUIT_PLAT_ERR_INVAL;
+	}
+
 	ZCBOR_STATE_D(state, 2, component_id->value, component_id->len,
 		      SUIT_PLAT_MAX_NUM_COMPONENT_ID_PARTS);
 	struct zcbor_string component_type;
@@ -104,13 +119,19 @@ bool suit_plat_decode_address_size(struct zcbor_string *component_id, intptr_t *
 
 	if (res) {
 		*run_address = (intptr_t)suit_plat_get_mem_ptr(*run_address);
+		return SUIT_PLAT_SUCCESS;
 	}
 
-	return res;
+	return SUIT_PLAT_ERR_CBOR_DECODING;
 }
 
-bool suit_plat_decode_component_number(struct zcbor_string *component_id, uint32_t *number)
+suit_plat_err_t suit_plat_decode_component_number(struct zcbor_string *component_id,
+						  uint32_t *number)
 {
+	if ((component_id == NULL) || (number == NULL)) {
+		return SUIT_PLAT_ERR_INVAL;
+	}
+
 	ZCBOR_STATE_D(state, 2, component_id->value, component_id->len,
 		      SUIT_PLAT_MAX_NUM_COMPONENT_ID_PARTS);
 	struct zcbor_string component_type;
@@ -122,31 +143,39 @@ bool suit_plat_decode_component_number(struct zcbor_string *component_id, uint32
 	res = res && zcbor_bstr_end_decode(state);
 	res = res && zcbor_list_end_decode(state);
 
-	return res;
+	if (res) {
+		return SUIT_PLAT_SUCCESS;
+	}
+
+	return SUIT_PLAT_ERR_CBOR_DECODING;
 }
 
-bool suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *integer_key_id)
+suit_plat_err_t suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *integer_key_id)
 {
 	if ((key_id == NULL) || (key_id->value == NULL) || (key_id->len == 0) ||
 	    (integer_key_id == NULL)) {
-		return false;
+		return SUIT_PLAT_SUCCESS;
 	}
 
 	ZCBOR_STATE_D(state, 2, key_id->value, key_id->len, 1);
 
-	return zcbor_uint32_decode(state, integer_key_id);
+	if(zcbor_uint32_decode(state, integer_key_id)) {
+		return SUIT_PLAT_SUCCESS;
+	}
+
+	return SUIT_PLAT_ERR_CBOR_DECODING;
 }
 
 #ifdef CONFIG_SUIT_MCI
-bool suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
-					suit_manifest_class_id_t **class_id)
+suit_plat_err_t suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
+						   suit_manifest_class_id_t **class_id)
 {
 	struct zcbor_string component_type;
 	struct zcbor_string class_id_bstr;
 	bool res;
 
 	if ((component_id == NULL) || (class_id == NULL)) {
-		return false;
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	ZCBOR_STATE_D(state, 2, component_id->value, component_id->len,
@@ -173,6 +202,11 @@ bool suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
 			*class_id = (suit_uuid_t *)class_id_bstr.value;
 		}
 	}
-	return res;
+
+	if (res) {
+		return SUIT_PLAT_SUCCESS;
+	}
+
+	return SUIT_PLAT_ERR_CBOR_DECODING;
 }
 #endif /* CONFIG_SUIT_MCI */

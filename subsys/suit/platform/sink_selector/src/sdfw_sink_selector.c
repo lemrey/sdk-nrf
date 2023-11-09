@@ -41,7 +41,7 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_type failed");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -54,7 +54,7 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 		uint32_t number;
 		memptr_storage_handle handle;
 
-		if (!suit_plat_decode_component_number(component_id, &number)) {
+		if (suit_plat_decode_component_number(component_id, &number) != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Missing component id number in candidate image component");
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
@@ -77,12 +77,13 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 		size_t size;
 
 		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
-		if (ret != 0) {
+		if (ret != SUIT_SUCCESS) {
 			LOG_ERR("Unable to get component data for candidate image (err: %d)", ret);
 			return ret;
 		}
 
-		if (!suit_plat_decode_address_size(component_id, &run_address, &size)) {
+		if (suit_plat_decode_address_size(component_id, &run_address, &size)
+		    != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("suit_plat_decode_address_size failed");
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
@@ -112,7 +113,7 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 	case SUIT_COMPONENT_TYPE_SOC_SPEC: { /* sdfw_sink */
 		uint32_t number;
 
-		if (!suit_plat_decode_component_number(component_id, &number)) {
+		if (suit_plat_decode_component_number(component_id, &number) != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Missing component id number");
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}

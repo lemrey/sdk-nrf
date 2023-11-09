@@ -68,7 +68,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_type failed");
 		release_sink(&dst_sink);
 
@@ -132,7 +132,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_type failed");
 		release_sink(&dst_sink);
 

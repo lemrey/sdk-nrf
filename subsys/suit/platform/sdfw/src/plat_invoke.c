@@ -26,12 +26,13 @@ int suit_plat_check_invoke(suit_component_t image_handle, struct zcbor_string *i
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_id(component_id, &cpu_id, &run_address, &size)) {
+	if (suit_plat_decode_component_id(component_id, &cpu_id, &run_address, &size)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_id failed");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_type failed");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -62,12 +63,13 @@ int suit_plat_invoke(suit_component_t image_handle, struct zcbor_string *invoke_
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_id(component_id, &cpu_id, &run_address, &size)) {
+	if (suit_plat_decode_component_id(component_id, &cpu_id, &run_address, &size)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_id failed");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	if (!suit_plat_decode_component_type(component_id, &component_type)) {
+	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("suit_plat_decode_component_type failed");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}

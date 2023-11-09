@@ -435,7 +435,8 @@ suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id
 		return err;
 	}
 
-	if (!suit_plat_decode_manifest_class_id(&envelope.suit_manifest_component_id, &class_id)) {
+	if (suit_plat_decode_manifest_class_id(&envelope.suit_manifest_component_id, &class_id)
+	    != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to install envelope: class ID not decoded");
 		return SUIT_PLAT_ERR_INVAL;
 	}
