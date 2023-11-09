@@ -227,7 +227,7 @@ static int get_memptr_ptr_no_data_fake_func(memptr_storage_handle handle, uint8_
 	zassert_not_equal(payload_size, NULL,
 			  "API must provide valid address to get installed manifest size value");
 
-	return INVALID_RECORD;
+	return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
 }
 
 static int get_memptr_ptr_invalid_addr_fake_func(memptr_storage_handle handle,

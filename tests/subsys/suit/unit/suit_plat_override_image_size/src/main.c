@@ -45,13 +45,13 @@ static bool suit_plat_decode_address_size_fake_ok(struct zcbor_string *component
 static int get_memptr_ptr_fake_invalid_record(memptr_storage_handle handle, uint8_t **payload_ptr,
 					      size_t *payload_size)
 {
-	return INVALID_RECORD;
+	return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
 }
 
 static int store_memptr_ptr_fake_unallocated_record(memptr_storage_handle handle,
 						    uint8_t *payload_ptr, size_t payload_size)
 {
-	return UNALLOCATED_RECORD;
+	return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
 }
 
 static void test_before(void *data)
@@ -138,7 +138,7 @@ ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_siz
 	/* WHEN size override is called */
 	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
 	/* THEN appropriate error code is returned */
-	int expected_error = INVALID_RECORD;
+	int expected_error = SUIT_ERR_CRASH;
 	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
 		      expected_error);
 }
@@ -151,7 +151,7 @@ ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_siz
 	/* WHEN size override is called */
 	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
 	/* THEN appropriate error code is returned */
-	int expected_error = UNALLOCATED_RECORD;
+	int expected_error = SUIT_ERR_CRASH;
 	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
 		      expected_error);
 }

@@ -16,4 +16,5 @@ target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_PLATFORM)
 target_sources(testbinary PRIVATE
   src/main.c
   ${SUIT_SUBSYS_DIR}/platform/src/suit_plat_components.c
+  ${SUIT_SUBSYS_DIR}/platform/src/suit_plat_error_convert.c
 )
