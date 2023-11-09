@@ -209,7 +209,7 @@ static int mci_validate_platform_specific_component_rights_invalid_fake_func(
 	zassert_equal(valid_component_number, platform_specific_component_number,
 		      "Invalid component number value");
 
-	return -MCI_ENOACCESS;
+	return MCI_ERR_NOACCESS;
 }
 
 static int mci_validate_platform_specific_component_rights_correct_fake_func(
@@ -229,7 +229,7 @@ mci_validate_processor_start_rights_invalid_fake_func(const suit_manifest_class_
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
 	zassert_equal(valid_cpu_id, processor_id, "Invalid processor_id value");
 
-	return -MCI_ENOACCESS;
+	return MCI_ERR_NOACCESS;
 }
 
 int mci_validate_processor_start_rights_correct_fake_func(const suit_manifest_class_id_t *class_id,
@@ -250,7 +250,7 @@ mci_validate_memory_access_rights_invalid_fake_func(const suit_manifest_class_id
 		      valid_address, address);
 	zassert_equal(valid_size, mem_size, "Invalid processor_id value");
 
-	return -MCI_ENOACCESS;
+	return MCI_ERR_NOACCESS;
 }
 
 static int

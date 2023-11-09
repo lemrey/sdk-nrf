@@ -205,7 +205,7 @@ ZTEST(suit_platform_devconfig_seq_tests, test_unsupported_class_id)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is not supported */
-	mci_validate_manifest_class_id_fake.return_val = -MCI_EMANIFESTCLASSID;
+	mci_validate_manifest_class_id_fake.return_val = MCI_ERR_MANIFESTCLASSID;
 
 	/* WHEN platform is asked for authorization of INSTALL sequence from manifest with sequence
 	 * number 1 */
@@ -408,7 +408,7 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_no_downgrade_poli
 	suit_processor_get_manifest_metadata_fake.custom_fake =
 		suit_processor_get_manifest_metadata_seq_one_fake_func;
 	/* ... and the downgrade prevention policy is unknown */
-	mci_get_downgrade_prevention_policy_fake.return_val = -MCI_EMANIFESTCLASSID;
+	mci_get_downgrade_prevention_policy_fake.return_val = MCI_ERR_MANIFESTCLASSID;
 
 	/* WHEN platform is asked for authorization of INSTALL sequence from manifest with sequence
 	 * number 1 */
@@ -850,14 +850,14 @@ ZTEST(suit_platform_devconfig_completed_tests, test_unsupported_class_id)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is not supported */
-	mci_validate_manifest_class_id_fake.return_val = -MCI_EMANIFESTCLASSID;
+	mci_validate_manifest_class_id_fake.return_val = MCI_ERR_MANIFESTCLASSID;
 
 	/* WHEN sequence is completed */
 	int ret =
 		suit_plat_sequence_completed(SUIT_SEQ_PARSE, &valid_manifest_component_id, NULL, 0);
 
 	/* THEN manifest is not accepted... */
-	zassert_equal(-MCI_EMANIFESTCLASSID, ret, "Manifest accepted with unauthorized class ID");
+	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Manifest accepted with unauthorized class ID");
 
 	/* ... and manifest class ID is decoded from the manifest component ID */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,

@@ -118,7 +118,7 @@ static int mci_validate_signing_key_id_invalid_fake_func(const suit_manifest_cla
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 	zassert_equal(key_id, sample_integer_key_id, "Invalid key ID value");
 
-	return -MCI_EMANIFESTCLASSID;
+	return MCI_ERR_MANIFESTCLASSID;
 }
 
 static int psa_verify_message_correct_fake_func(mbedtls_svc_key_id_t key, psa_algorithm_t alg,
@@ -505,7 +505,7 @@ static int mci_validate_signing_key_id_0_invalid_fake_func(const suit_manifest_c
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 	zassert_equal(key_id, 0, "Invalid key ID value");
 
-	return -MCI_EMANIFESTCLASSID;
+	return MCI_ERR_MANIFESTCLASSID;
 }
 
 ZTEST(suit_platform_authenticate_unsigned_tests, test_null_manifest_component_id)

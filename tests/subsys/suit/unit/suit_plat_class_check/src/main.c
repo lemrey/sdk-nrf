@@ -70,7 +70,7 @@ int mci_get_supported_manifest_class_ids_invalid_fake_func(
 	zassert_not_null(size, "The API must provide a valid size pointer");
 	zassert_not_equal(*size, 0, "Invalid size value. Must be > 0");
 
-	return -MCI_ESIZE;
+	return SUIT_PLAT_ERR_SIZE;
 }
 
 static int
@@ -100,7 +100,7 @@ int mci_compare_suit_uuid_invalid_fake_func(const suit_uuid_t *uuid1, const suit
 	zassert_not_null(uuid1, "The API must provide a valid uuid1 pointer");
 	zassert_not_null(uuid2, "The API must provide a valid uuid2 pointer");
 
-	return -MCI_EMANIFESTCLASSID;
+	return MCI_ERR_MANIFESTCLASSID;
 }
 
 int mci_compare_suit_uuid_correct_fake_func(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
@@ -117,7 +117,7 @@ int mci_get_vendor_id_for_manifest_class_id_invalid_fake_func(
 	zassert_not_null(class_id, "The API must provide a valid class_id pointer");
 	zassert_not_null(vendor_id, "The API must provide a valid vendor_id pointer");
 
-	return -MCI_EMANIFESTCLASSID;
+	return MCI_ERR_MANIFESTCLASSID;
 }
 
 int mci_get_vendor_id_for_manifest_class_id_correct_fake_func(
