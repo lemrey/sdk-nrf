@@ -78,7 +78,7 @@ static int suit_processor_get_manifest_metadata_decoder_busy_fake_func(
 	return SUIT_ERR_WAIT;
 }
 
-static int
+static mci_err_t
 mci_get_downgrade_prevention_policy_enabled_fake_func(const suit_manifest_class_id_t *class_id,
 						      downgrade_prevention_policy_t *policy)
 {
@@ -88,10 +88,10 @@ mci_get_downgrade_prevention_policy_enabled_fake_func(const suit_manifest_class_
 		"The API must provide a valid pointer, to read the downgrade prevention policy");
 	*policy = DOWNGRADE_PREVENTION_ENABLED;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int
+static mci_err_t
 mci_get_downgrade_prevention_policy_disabled_fake_func(const suit_manifest_class_id_t *class_id,
 						       downgrade_prevention_policy_t *policy)
 {
@@ -101,10 +101,10 @@ mci_get_downgrade_prevention_policy_disabled_fake_func(const suit_manifest_class
 		"The API must provide a valid pointer, to read the downgrade prevention policy");
 	*policy = DOWNGRADE_PREVENTION_DISABLED;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int
+static mci_err_t
 mci_get_downgrade_prevention_policy_unsupported_fake_func(const suit_manifest_class_id_t *class_id,
 							  downgrade_prevention_policy_t *policy)
 {
@@ -114,7 +114,7 @@ mci_get_downgrade_prevention_policy_unsupported_fake_func(const suit_manifest_cl
 		"The API must provide a valid pointer, to read the downgrade prevention policy");
 	*policy = (downgrade_prevention_policy_t)0x1234;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 ZTEST(suit_platform_devconfig_seq_tests, test_null_arg)
@@ -925,7 +925,7 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_failed)
 					       0);
 
 	/* THEN manifest is accepted... */
-	zassert_equal(-ENOENT, ret, "Manifest accepted but not installed");
+	zassert_equal(SUIT_ERR_CRASH, ret, "Manifest accepted but not installed");
 
 	/* ... and manifest class ID is decoded from the manifest component ID */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
