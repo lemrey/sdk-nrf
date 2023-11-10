@@ -213,7 +213,18 @@ void nrf_flash_sync_get_timestamp_begin(void)
 
 bool nrf_flash_sync_check_time_limit(uint32_t iteration)
 {
+#ifdef CONFIG_BOARD_NRF54L15DK_NRF54L15_CPUAPP
+	/* The time taken in a previous write is not a predictor of the time taken for the next write.
+	 * Writing the same value as is already stored is much faster than writing a different value.
+	 * If the first few writes are fast and the later ones are slow we may get an overstay assert.
+	 * The configured event length is only guaranteed to fit one write block.
+	 */
+
+	(void)get_timeslot_time_us;
+	return true;
+#else
 	uint32_t now_us = get_timeslot_time_us();
 	uint32_t time_per_iteration_us = now_us / iteration;
 	return now_us + time_per_iteration_us >= _context.request_length_us;
+#endif
 }
