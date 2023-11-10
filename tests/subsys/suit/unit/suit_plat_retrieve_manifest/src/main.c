@@ -49,16 +49,18 @@ static int suit_plat_component_id_get_valid_component_fake_func(suit_component_t
 	return SUIT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_type_unknown_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_unknown_fake_func(struct zcbor_string *component_id,
 							      suit_component_type_t *type)
 {
 	zassert_equal(component_id, TEST_COMPONENT_ID, "Unexpected component ID value");
 	zassert_not_equal(type, NULL, "API must provide valid address to get component type value");
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
-static bool suit_plat_decode_component_type_unsupported_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_unsupported_fake_func(struct zcbor_string *component_id,
 								  suit_component_type_t *type)
 {
 	zassert_equal(component_id, TEST_COMPONENT_ID, "Unexpected component ID value");
@@ -66,10 +68,11 @@ static bool suit_plat_decode_component_type_unsupported_fake_func(struct zcbor_s
 
 	*type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_type_mem_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_mem_fake_func(struct zcbor_string *component_id,
 							  suit_component_type_t *type)
 {
 	zassert_equal(component_id, TEST_COMPONENT_ID, "Unexpected component ID value");
@@ -77,10 +80,11 @@ static bool suit_plat_decode_component_type_mem_fake_func(struct zcbor_string *c
 
 	*type = SUIT_COMPONENT_TYPE_MEM;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_type_cand_img_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_cand_img_fake_func(struct zcbor_string *component_id,
 							       suit_component_type_t *type)
 {
 	zassert_equal(component_id, TEST_COMPONENT_ID, "Unexpected component ID value");
@@ -88,10 +92,11 @@ static bool suit_plat_decode_component_type_cand_img_fake_func(struct zcbor_stri
 
 	*type = SUIT_COMPONENT_TYPE_CAND_IMG;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_type_instld_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_instld_fake_func(struct zcbor_string *component_id,
 							     suit_component_type_t *type)
 {
 	zassert_equal(component_id, TEST_COMPONENT_ID, "Unexpected component ID value");
@@ -99,10 +104,11 @@ static bool suit_plat_decode_component_type_instld_fake_func(struct zcbor_string
 
 	*type = SUIT_COMPONENT_TYPE_INSTLD_MFST;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_type_cand_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_cand_fake_func(struct zcbor_string *component_id,
 							   suit_component_type_t *type)
 {
 	zassert_equal(component_id, TEST_COMPONENT_ID, "Unexpected component ID value");
@@ -110,10 +116,10 @@ static bool suit_plat_decode_component_type_cand_fake_func(struct zcbor_string *
 
 	*type = SUIT_COMPONENT_TYPE_CAND_MFST;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -121,10 +127,11 @@ suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *compon
 	zassert_not_equal(class_id, NULL,
 			  "API must provide valid address to get manifest class ID value");
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
-static bool suit_plat_decode_manifest_class_id_valid_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_manifest_class_id_valid_fake_func(struct zcbor_string *component_id,
 							       suit_manifest_class_id_t **class_id)
 {
 	zassert_equal(component_id, TEST_COMPONENT_ID, "Unexpected component ID value");
@@ -133,7 +140,7 @@ static bool suit_plat_decode_manifest_class_id_valid_fake_func(struct zcbor_stri
 
 	*class_id = TEST_CLASS_ID;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int

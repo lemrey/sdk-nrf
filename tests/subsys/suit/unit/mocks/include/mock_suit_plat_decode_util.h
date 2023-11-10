@@ -12,19 +12,21 @@
 #include <suit_plat_decode_util.h>
 
 /* suit_plat_decode_util.c */
-FAKE_VALUE_FUNC(bool, suit_plat_decode_component_id, struct zcbor_string *, uint8_t *, intptr_t *,
+FAKE_VALUE_FUNC(suit_plat_err_t, suit_plat_decode_component_id, struct zcbor_string *, uint8_t *,
+		intptr_t *, size_t *);
+FAKE_VALUE_FUNC(suit_plat_err_t, suit_plat_decode_address_size, struct zcbor_string *, intptr_t *,
 		size_t *);
-FAKE_VALUE_FUNC(bool, suit_plat_decode_address_size, struct zcbor_string *, intptr_t *, size_t *);
-FAKE_VALUE_FUNC(bool, suit_plat_decode_component_number, struct zcbor_string *, uint32_t *);
-FAKE_VALUE_FUNC(bool, suit_plat_decode_key_id, struct zcbor_string *, uint32_t *);
+FAKE_VALUE_FUNC(suit_plat_err_t, suit_plat_decode_component_number, struct zcbor_string *,
+		uint32_t *);
+FAKE_VALUE_FUNC(suit_plat_err_t, suit_plat_decode_key_id, struct zcbor_string *, uint32_t *);
 
 #ifdef CONFIG_SUIT_PLATFORM
-FAKE_VALUE_FUNC(bool, suit_plat_decode_component_type, struct zcbor_string *,
+FAKE_VALUE_FUNC(suit_plat_err_t, suit_plat_decode_component_type, struct zcbor_string *,
 		suit_component_type_t *);
 #endif /* CONFIG_SUIT_PLATFORM */
 
 #ifdef CONFIG_SUIT_MCI
-FAKE_VALUE_FUNC(bool, suit_plat_decode_manifest_class_id, struct zcbor_string *,
+FAKE_VALUE_FUNC(suit_plat_err_t, suit_plat_decode_manifest_class_id, struct zcbor_string *,
 		suit_manifest_class_id_t **);
 #endif /* CONFIG_SUIT_MCI */
 

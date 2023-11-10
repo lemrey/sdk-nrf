@@ -27,7 +27,7 @@ static void test_before(void *data)
 
 ZTEST_SUITE(suit_platform_devconfig_seq_tests, NULL, NULL, test_before, NULL, NULL);
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -37,10 +37,10 @@ suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = &sample_class_id;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -50,7 +50,7 @@ suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = NULL;
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
 static int suit_processor_get_manifest_metadata_seq_one_fake_func(

@@ -39,7 +39,7 @@ static void test_before(void *data)
 
 ZTEST_SUITE(suit_platform_crypto_psa_authenticate_tests, NULL, NULL, test_before, NULL, NULL);
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -49,10 +49,10 @@ suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = &sample_class_id;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -62,7 +62,7 @@ suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = NULL;
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
 static int
@@ -81,7 +81,7 @@ mci_validate_manifest_class_id_invalid_fake_func(const suit_manifest_class_id_t 
 	return SUIT_FAIL_CONDITION;
 }
 
-static bool suit_plat_decode_key_id_correct_fake_func(struct zcbor_string *key_id,
+static suit_plat_err_t suit_plat_decode_key_id_correct_fake_func(struct zcbor_string *key_id,
 						      uint32_t *integer_key_id)
 {
 	zassert_equal(&valid_key_id, key_id, "Invalid key ID value");
@@ -89,10 +89,10 @@ static bool suit_plat_decode_key_id_correct_fake_func(struct zcbor_string *key_i
 			  "The API must provide a valid pointer, to decode key ID");
 	*integer_key_id = sample_integer_key_id;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_key_id_invalid_fake_func(struct zcbor_string *key_id,
+static suit_plat_err_t suit_plat_decode_key_id_invalid_fake_func(struct zcbor_string *key_id,
 						      uint32_t *integer_key_id)
 {
 	zassert_equal(&valid_key_id, key_id, "Invalid key ID value");
@@ -100,7 +100,7 @@ static bool suit_plat_decode_key_id_invalid_fake_func(struct zcbor_string *key_i
 			  "The API must provide a valid pointer, to decode key ID");
 	*integer_key_id = 0;
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
 static int mci_validate_signing_key_id_correct_fake_func(const suit_manifest_class_id_t *class_id,
@@ -496,7 +496,7 @@ static int mci_validate_signing_key_id_0_correct_fake_func(const suit_manifest_c
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 	zassert_equal(key_id, 0, "Invalid key ID value");
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int mci_validate_signing_key_id_0_invalid_fake_func(const suit_manifest_class_id_t *class_id,

@@ -21,25 +21,25 @@ static struct zcbor_string component_id = {
 
 static suit_component_t component;
 
-static bool suit_plat_decode_component_type_fake_mem_ok(struct zcbor_string *component_id,
-							suit_component_type_t *type)
+static suit_plat_err_t suit_plat_decode_component_type_fake_mem_ok(struct zcbor_string *component_id,
+								   suit_component_type_t *type)
 {
 	*type = SUIT_COMPONENT_TYPE_MEM;
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_type_fake_false(struct zcbor_string *component_id,
-						       suit_component_type_t *type)
+static suit_plat_err_t suit_plat_decode_component_type_fake_false(struct zcbor_string *component_id,
+								  suit_component_type_t *type)
 {
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
-static bool suit_plat_decode_address_size_fake_ok(struct zcbor_string *component_id,
-						  intptr_t *run_address, size_t *size)
+static suit_plat_err_t suit_plat_decode_address_size_fake_ok(struct zcbor_string *component_id,
+							     intptr_t *run_address, size_t *size)
 {
 	*run_address = TEST_FAKE_ADDRESS;
 	*size = TEST_FAKE_SIZE;
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int get_memptr_ptr_fake_invalid_record(memptr_storage_handle handle, uint8_t **payload_ptr,

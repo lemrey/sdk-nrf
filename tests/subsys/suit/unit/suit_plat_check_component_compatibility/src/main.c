@@ -30,7 +30,7 @@ static void test_before(void *data)
 	FFF_RESET_HISTORY();
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -39,10 +39,10 @@ suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = &sample_class_id;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -51,7 +51,7 @@ suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = NULL;
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
 static int
@@ -70,7 +70,8 @@ mci_validate_manifest_class_id_invalid_fake_func(const suit_manifest_class_id_t 
 	return SUIT_FAIL_CONDITION;
 }
 
-static bool suit_plat_decode_component_id_invalid_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_id_invalid_fake_func(struct zcbor_string *component_id,
 							    uint8_t *cpu_id, intptr_t *run_address,
 							    size_t *size)
 {
@@ -83,10 +84,11 @@ static bool suit_plat_decode_component_id_invalid_fake_func(struct zcbor_string 
 	zassert_not_equal(size, NULL,
 			  "The API must provide a valid size pointer, to decode component ID");
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
-static bool suit_plat_decode_component_id_correct_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_id_correct_fake_func(struct zcbor_string *component_id,
 							    uint8_t *cpu_id, intptr_t *run_address,
 							    size_t *size)
 {
@@ -103,20 +105,22 @@ static bool suit_plat_decode_component_id_correct_fake_func(struct zcbor_string 
 	*run_address = valid_address;
 	*size = valid_size;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_type_invalid_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_invalid_fake_func(struct zcbor_string *component_id,
 							      suit_component_type_t *type)
 {
 	zassert_equal(&valid_component_id, component_id, "Invalid component ID value");
 
 	*type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
-static bool suit_plat_decode_component_type_mem_correct_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_type_mem_correct_fake_func(struct zcbor_string *component_id,
 								  suit_component_type_t *type)
 {
 	zassert_equal(&valid_component_id, component_id, "Invalid component ID value");
@@ -125,10 +129,10 @@ static bool suit_plat_decode_component_type_mem_correct_fake_func(struct zcbor_s
 
 	*type = SUIT_COMPONENT_TYPE_MEM;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_component_type_special_correct_fake_func(struct zcbor_string *component_id,
 							  suit_component_type_t *type)
 {
@@ -138,10 +142,10 @@ suit_plat_decode_component_type_special_correct_fake_func(struct zcbor_string *c
 
 	*type = SUIT_COMPONENT_TYPE_SOC_SPEC;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_component_type_unsupported_correct_fake_func(struct zcbor_string *component_id,
 							      suit_component_type_t *type)
 {
@@ -151,10 +155,10 @@ suit_plat_decode_component_type_unsupported_correct_fake_func(struct zcbor_strin
 
 	*type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_component_type_cand_mfst_correct_fake_func(struct zcbor_string *component_id,
 							    suit_component_type_t *type)
 {
@@ -164,10 +168,10 @@ suit_plat_decode_component_type_cand_mfst_correct_fake_func(struct zcbor_string 
 
 	*type = SUIT_COMPONENT_TYPE_CAND_MFST;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_component_type_instld_mfst_correct_fake_func(struct zcbor_string *component_id,
 							      suit_component_type_t *type)
 {
@@ -177,20 +181,22 @@ suit_plat_decode_component_type_instld_mfst_correct_fake_func(struct zcbor_strin
 
 	*type = SUIT_COMPONENT_TYPE_INSTLD_MFST;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool suit_plat_decode_component_number_invalid_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_number_invalid_fake_func(struct zcbor_string *component_id,
 								uint32_t *number)
 {
 	zassert_equal(&valid_component_id, component_id, "Invalid component ID value");
 	zassert_not_equal(number, NULL,
 			  "The API must provide a valid number pointer, to decode component ID");
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
-static bool suit_plat_decode_component_number_correct_fake_func(struct zcbor_string *component_id,
+static suit_plat_err_t
+suit_plat_decode_component_number_correct_fake_func(struct zcbor_string *component_id,
 								uint32_t *number)
 {
 	zassert_equal(&valid_component_id, component_id, "Invalid component ID value");
@@ -199,7 +205,7 @@ static bool suit_plat_decode_component_number_correct_fake_func(struct zcbor_str
 
 	*number = valid_component_number;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int mci_validate_platform_specific_component_rights_invalid_fake_func(

@@ -54,7 +54,7 @@ suit_plat_check_component_compatibility_correct_fake_func(const suit_manifest_cl
 	return SUIT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -64,10 +64,10 @@ suit_plat_decode_manifest_class_id_correct_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = &sample_class_id;
 
-	return true;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static bool
+static suit_plat_err_t
 suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *component_id,
 						     suit_manifest_class_id_t **class_id)
 {
@@ -77,7 +77,7 @@ suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *compon
 			  "The API must provide a valid pointer, to decode manifest class ID");
 	*class_id = NULL;
 
-	return false;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
 ZTEST_SUITE(suit_platform_authorize_component_id_tests, NULL, NULL, test_before, NULL, NULL);
