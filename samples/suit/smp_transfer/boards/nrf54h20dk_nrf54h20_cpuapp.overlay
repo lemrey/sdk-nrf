@@ -79,10 +79,10 @@
 };
 
 &mram_controller {
-	/delete-node/ mram@e1f4000;
+	/delete-node/ mram@e1e3000;
 	mram1: mram@e13a000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
-		reg = < 0xe13a000 DT_SIZE_K(720) >;
+		reg = < 0xe13a000 DT_SIZE_K(700) >;
 		erase-block-size = < 128 >;
 		/* Hardcoded inside the soc_flash_nrf_mram.c (MRAM_WORD_SIZE) */
 		write-block-size = < 0x10 >;
@@ -100,16 +100,12 @@
 			 */
 			dfu_partition: partition@13a000 {
 				label = "dfu_partition";
-				reg = < 0x13a000 DT_SIZE_K(696) >;
+				reg = < 0x13a000 DT_SIZE_K(676) >;
 			};
 
-			/* The SDFW configuration area ends at 0xe1f3000 and contains SUIT storage.
-			 * The SUIT storage reserves 17kB and starts at 0xe1eec00.
-			 * The last 0xc00 bytes remains unused right now.
-			 */
-			 storage_partition: partition@1e8000 {
+			storage_partition: partition@1e3000 {
 				label = "storage";
-				reg = < 0x1e8000 DT_SIZE_K(24) >;
+				reg = < 0x1e3000 DT_SIZE_K(24) >;
 			};
 		};
 	};

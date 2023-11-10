@@ -14,24 +14,16 @@
 	status = "okay";
 };
 
-&mram_controller {
-	mram@e1eec00 {
-		compatible = "soc-nv-flash";
-		reg = <0xe1eec00 DT_SIZE_K(17)>;
-		erase-block-size = <128>;
-		/* Hardcoded inside the soc_flash_nrf_mram.c (MRAM_WORD_SIZE) */
-		write-block-size = < 0x10 >;
+&secdom_nvs {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			/* Use last 17 kB of SecDom NVM storage. */
-			suit_storage: partition@1eec00 {
-				label = "suit_storage";
-				reg = <0x1eec00 DT_SIZE_K(17)>;
-			};
+		/* Use the last 32 kB of SecDom NVM storage. */
+		suit_storage: partition@1eb000 {
+			label = "suit_storage";
+			reg = <0x1eb000 DT_SIZE_K(32)>;
 		};
 	};
 };

@@ -42,7 +42,7 @@
 
     mram1: mram@e186000 {
         compatible = "nordic,allocatable-mram", "soc-nv-flash";
-        reg = <0xe186000 DT_SIZE_K(419)>;
+        reg = <0xe186000 DT_SIZE_K(396)>;
         erase-block-size = <128>;
         write-block-size = <0x10>;
         perm-read;
@@ -51,13 +51,13 @@
             compatible = "fixed-partitions";
             #address-cells = <0x1>;
             #size-cells = <0x1>;
-            storage_partition: partition@1ea000 {
+            storage_partition: partition@1e4400 {
                 label = "storage";
-                reg = <0x1ea000 DT_SIZE_K(16)>;
+                reg = <0x1e4400 DT_SIZE_K(16)>;
             };
-            factory_data: partition@1ee000 {
+            factory_data: partition@1e8400 {
                 label = "factory_data";
-                reg = <0x1ee000 DT_SIZE_K(3)>;
+                reg = <0x1e8400 DT_SIZE_K(3)>;
             };
         };
     };

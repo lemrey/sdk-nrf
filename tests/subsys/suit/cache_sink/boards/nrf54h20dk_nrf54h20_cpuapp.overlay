@@ -60,10 +60,10 @@
 };
 
 &mram_controller {
-	/delete-node/ mram@e1f4000;
-	mram1: mram@e1b4000 {
+	/delete-node/ mram@e1e3000;
+	mram1: mram@e19d000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
-		reg = < 0xe1b4000 DT_SIZE_K(304) >;
+		reg = < 0xe19d000 DT_SIZE_K(304) >;
 		erase-block-size = < 0x400 >;
 		/* Hardcoded inside the soc_flash_nrf_mram.c (MRAM_WORD_SIZE) */
 		write-block-size = < 0x10 >;
@@ -76,17 +76,17 @@
 			#address-cells = < 0x1 >;
 			#size-cells = < 0x1 >;
 
-			dfu_partition: partition@1b4000 {
+			dfu_partition: partition@19d000 {
 				label = "dfu_partition";
-				reg = < 0x1b4000 DT_SIZE_K(1) >;
+				reg = < 0x19d000 DT_SIZE_K(1) >;
 			};
 
-			suit_cache_1: partition@1b4400 {
-				reg = <0x1b4400 DT_SIZE_K(1)>;
+			suit_cache_1: partition@19d400 {
+				reg = <0x19d400 DT_SIZE_K(1)>;
 			};
 			
-			suit_cache_3: partition@1b4800 {
-				reg = <0x1b4800 DT_SIZE_K(1)>;
+			suit_cache_3: partition@19d800 {
+				reg = <0x19d800 DT_SIZE_K(1)>;
 			};
 		};
 	};
