@@ -157,6 +157,12 @@ Bluetooth mesh samples
 
 No changes since the latest nRF Connect SDK release.
 
+DFU samples
+-----------
+
+* Updated the :ref:`nrf54h_suit_sample` sample to have support for UART.
+  The documentation is renamed from SUIT DFU: Update over Bluetooth® Low Energy to :ref:`nrf54h_suit_sample`.
+
 nRF9160 samples
 ---------------
 
