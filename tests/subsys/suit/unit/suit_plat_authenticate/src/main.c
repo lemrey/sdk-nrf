@@ -70,7 +70,7 @@ mci_validate_manifest_class_id_correct_fake_func(const suit_manifest_class_id_t 
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int
@@ -109,7 +109,7 @@ static int mci_validate_signing_key_id_correct_fake_func(const suit_manifest_cla
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 	zassert_equal(key_id, sample_integer_key_id, "Invalid key ID value");
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int mci_validate_signing_key_id_invalid_fake_func(const suit_manifest_class_id_t *class_id,

@@ -23,6 +23,11 @@ static inline void mock_suit_memptr_storage_reset(void)
 	RESET_FAKE(release_memptr_storage);
 	RESET_FAKE(store_memptr_ptr);
 	RESET_FAKE(get_memptr_ptr);
+
+	get_memptr_storage_fake.return_val = SUIT_PLAT_SUCCESS;
+	release_memptr_storage_fake.return_val = SUIT_PLAT_SUCCESS;
+	store_memptr_ptr_fake.return_val = SUIT_PLAT_SUCCESS;
+	get_memptr_ptr_fake.return_val = SUIT_PLAT_SUCCESS;
 }
 
 #endif /* MOCK_SUIT_MEMPTR_STORAGE_H__ */

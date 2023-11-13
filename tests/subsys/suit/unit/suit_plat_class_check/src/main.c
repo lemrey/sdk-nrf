@@ -60,7 +60,7 @@ int mci_get_supported_manifest_class_ids_correct_fake_func(
 	*size = 1;
 	class_id[0] = &sample_class_id;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 int mci_get_supported_manifest_class_ids_invalid_fake_func(
@@ -108,7 +108,7 @@ int mci_compare_suit_uuid_correct_fake_func(const suit_uuid_t *uuid1, const suit
 	zassert_not_null(uuid1, "The API must provide a valid uuid1 pointer");
 	zassert_not_null(uuid2, "The API must provide a valid uuid2 pointer");
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 int mci_get_vendor_id_for_manifest_class_id_invalid_fake_func(
@@ -128,7 +128,7 @@ int mci_get_vendor_id_for_manifest_class_id_correct_fake_func(
 
 	*vendor_id = &nordic_vendor_id;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 ZTEST_SUITE(suit_plat_class_check_cid_tests, NULL, NULL, test_before, NULL, NULL);

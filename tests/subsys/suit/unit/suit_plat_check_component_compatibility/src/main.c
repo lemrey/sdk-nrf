@@ -59,7 +59,7 @@ mci_validate_manifest_class_id_correct_fake_func(const suit_manifest_class_id_t 
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int
@@ -67,7 +67,7 @@ mci_validate_manifest_class_id_invalid_fake_func(const suit_manifest_class_id_t 
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 
-	return SUIT_FAIL_CONDITION;
+	return SUIT_PLAT_ERR_CRASH;
 }
 
 static suit_plat_err_t
@@ -225,7 +225,7 @@ static int mci_validate_platform_specific_component_rights_correct_fake_func(
 	zassert_equal(valid_component_number, platform_specific_component_number,
 		      "Invalid component number value");
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int
@@ -244,7 +244,7 @@ int mci_validate_processor_start_rights_correct_fake_func(const suit_manifest_cl
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
 	zassert_equal(valid_cpu_id, processor_id, "Invalid processor_id value");
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int
@@ -268,7 +268,7 @@ mci_validate_memory_access_rights_correct_fake_func(const suit_manifest_class_id
 		      valid_address, address);
 	zassert_equal(valid_size, mem_size, "Invalid processor_id value");
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 ZTEST_SUITE(suit_plat_check_component_compatibility_tests, NULL, NULL, test_before, NULL, NULL);

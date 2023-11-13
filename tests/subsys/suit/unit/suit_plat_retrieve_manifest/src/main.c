@@ -153,7 +153,7 @@ suit_storage_installed_envelope_get_not_found_fake_func(const suit_manifest_clas
 	zassert_not_equal(size, NULL,
 			  "API must provide valid address to get installed manifest size value");
 
-	return -ENOENT;
+	return SUIT_PLAT_ERR_NOT_FOUND;
 }
 
 static int
@@ -200,7 +200,7 @@ static int suit_storage_installed_envelope_get_found_fake_func(const suit_manife
 	*addr = TEST_ENVELOPE_ADDRESS;
 	*size = TEST_ENVELOPE_SIZE;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int suit_plat_component_impl_data_get_no_data_fake_func(suit_component_t handle,
@@ -249,7 +249,7 @@ static int get_memptr_ptr_invalid_addr_fake_func(memptr_storage_handle handle,
 	*payload_ptr = NULL;
 	*payload_size = TEST_ENVELOPE_SIZE;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int get_memptr_ptr_invalid_size_fake_func(memptr_storage_handle handle,
@@ -264,7 +264,7 @@ static int get_memptr_ptr_invalid_size_fake_func(memptr_storage_handle handle,
 	*payload_ptr = TEST_ENVELOPE_ADDRESS;
 	*payload_size = 0;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 static int get_memptr_ptr_valid_fake_func(memptr_storage_handle handle, uint8_t **payload_ptr,
@@ -279,7 +279,7 @@ static int get_memptr_ptr_valid_fake_func(memptr_storage_handle handle, uint8_t 
 	*payload_ptr = TEST_ENVELOPE_ADDRESS;
 	*payload_size = TEST_ENVELOPE_SIZE;
 
-	return SUIT_SUCCESS;
+	return SUIT_PLAT_SUCCESS;
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_handle_null_args)

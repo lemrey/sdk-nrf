@@ -250,9 +250,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_no_installed_envelope)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = 0;
+		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the SUIT storage contains a valid envelope with given class ID */
-		suit_storage_installed_envelope_get_fake.return_val = -ENOENT;
+		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_ERR_NOT_FOUND;
 		/* ... and the envelope from SUIT storage is decodeable */
 		suit_processor_get_manifest_metadata_fake.custom_fake =
 			suit_processor_get_manifest_metadata_seq_one_fake_func;
@@ -304,9 +304,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_no_installed_envelope)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = 0;
+		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the SUIT storage contains a valid envelope with given class ID */
-		suit_storage_installed_envelope_get_fake.return_val = -ENOENT;
+		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_ERR_NOT_FOUND;
 		/* ... and the envelope from SUIT storage is decodeable */
 		suit_processor_get_manifest_metadata_fake.custom_fake =
 			suit_processor_get_manifest_metadata_seq_one_fake_func;
@@ -358,9 +358,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_decode_busy)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = 0;
+		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the SUIT storage contains a valid envelope with given class ID */
-		suit_storage_installed_envelope_get_fake.return_val = 0;
+		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the envelope from SUIT storage is decodeable, but the decoder is busy */
 		suit_processor_get_manifest_metadata_fake.custom_fake =
 			suit_processor_get_manifest_metadata_decoder_busy_fake_func;
@@ -401,9 +401,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_no_downgrade_poli
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = 0;
+	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage contains a valid envelope with given class ID */
-	suit_storage_installed_envelope_get_fake.return_val = 0;
+	suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the envelope from SUIT storage is decodeable */
 	suit_processor_get_manifest_metadata_fake.custom_fake =
 		suit_processor_get_manifest_metadata_seq_one_fake_func;
@@ -444,9 +444,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_unsupported_downg
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = 0;
+	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage contains a valid envelope with given class ID */
-	suit_storage_installed_envelope_get_fake.return_val = 0;
+	suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the envelope from SUIT storage is decodeable */
 	suit_processor_get_manifest_metadata_fake.custom_fake =
 		suit_processor_get_manifest_metadata_seq_one_fake_func;
@@ -501,9 +501,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_disabled_d
 			suit_plat_decode_manifest_class_id_fake.custom_fake =
 				suit_plat_decode_manifest_class_id_correct_fake_func;
 			/* ... and the manifest class ID is supported */
-			mci_validate_manifest_class_id_fake.return_val = 0;
+			mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the SUIT storage contains a valid envelope with given class ID */
-			suit_storage_installed_envelope_get_fake.return_val = 0;
+			suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the envelope from SUIT storage is decodeable */
 			suit_processor_get_manifest_metadata_fake.custom_fake =
 				suit_processor_get_manifest_metadata_seq_one_fake_func;
@@ -568,9 +568,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_manifest_present_disabled_dow
 			suit_plat_decode_manifest_class_id_fake.custom_fake =
 				suit_plat_decode_manifest_class_id_correct_fake_func;
 			/* ... and the manifest class ID is supported */
-			mci_validate_manifest_class_id_fake.return_val = 0;
+			mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the SUIT storage contains a valid envelope with given class ID */
-			suit_storage_installed_envelope_get_fake.return_val = 0;
+			suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the envelope from SUIT storage is decodeable */
 			suit_processor_get_manifest_metadata_fake.custom_fake =
 				suit_processor_get_manifest_metadata_seq_one_fake_func;
@@ -682,9 +682,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_enabled_do
 			suit_plat_decode_manifest_class_id_fake.custom_fake =
 				suit_plat_decode_manifest_class_id_correct_fake_func;
 			/* ... and the manifest class ID is supported */
-			mci_validate_manifest_class_id_fake.return_val = 0;
+			mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the SUIT storage contains a valid envelope with given class ID */
-			suit_storage_installed_envelope_get_fake.return_val = 0;
+			suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the envelope from SUIT storage is decodeable */
 			suit_processor_get_manifest_metadata_fake.custom_fake =
 				suit_processor_get_manifest_metadata_seq_one_fake_func;
@@ -888,7 +888,7 @@ ZTEST(suit_platform_devconfig_completed_tests, test_non_install_seq)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = 0;
+		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 
 		/* WHEN sequence is completed */
 		int ret = suit_plat_sequence_completed(suit_seq[i], &valid_manifest_component_id,
@@ -916,9 +916,9 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_failed)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = 0;
+	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage is unable to handle the manifest */
-	suit_storage_install_envelope_fake.return_val = -ENOENT;
+	suit_storage_install_envelope_fake.return_val = SUIT_PLAT_ERR_NOT_FOUND;
 
 	/* WHEN sequence is completed */
 	int ret = suit_plat_sequence_completed(SUIT_SEQ_INSTALL, &valid_manifest_component_id, NULL,
@@ -944,9 +944,9 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_succeed)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = 0;
+	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage is able to handle the manifest */
-	suit_storage_install_envelope_fake.return_val = 0;
+	suit_storage_install_envelope_fake.return_val = SUIT_PLAT_SUCCESS;
 
 	/* WHEN sequence is completed */
 	int ret = suit_plat_sequence_completed(SUIT_SEQ_INSTALL, &valid_manifest_component_id, NULL,
