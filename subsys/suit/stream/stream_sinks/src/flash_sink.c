@@ -44,6 +44,8 @@
 /* Set to more than one to allow multiple contexts in case of parallel execution */
 #define SUIT_MAX_FLASH_COMPONENTS 1
 
+#define IS_COND_TRUE(c)  ((c) ? "True" : "False")
+
 LOG_MODULE_REGISTER(suit_flash_sink, CONFIG_SUIT_LOG_LEVEL);
 
 static suit_plat_err_t erase(void *ctx);
@@ -150,7 +152,7 @@ static const struct nvm_area *nvm_area_get(uint8_t *address)
 	size_t target_offset = suit_plat_get_nvm_offset(address);
 
 	for (size_t i = 0; i < nvm_area_map_size; i++) {
-		LOG_ERR("nvm_area: start_address: 0x%lX,  size: 0x%X,  target offset: 0x%X", nvm_area_map[i].na_start, nvm_area_map[i].na_size, target_offset);
+		LOG_DBG("nvm_area: start_address: 0x%lX,  size: 0x%X,  target offset: 0x%X", nvm_area_map[i].na_start, nvm_area_map[i].na_size, target_offset);
 
 		if ((target_offset >= nvm_area_map[i].na_start) &&
 			(target_offset < (nvm_area_map[i].na_start + nvm_area_map[i].na_size))) {
@@ -158,6 +160,7 @@ static const struct nvm_area *nvm_area_get(uint8_t *address)
 			}
 	}
 
+	LOG_DBG("nvm_area: Not found");
 	return NULL;
 }
 
@@ -201,7 +204,7 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 		struct flash_ctx *ctx = new_ctx_get();
 
 		if (ctx != NULL) {
-			LOG_ERR("flash_sink requested area: offset: 0x%lX; size: 0x%X", suit_plat_get_nvm_offset(dst), size);
+			LOG_DBG("flash_sink requested area: offset: 0x%lX; size: 0x%X", suit_plat_get_nvm_offset(dst), size);
 
 			const struct nvm_area *nvm_area = nvm_area_get(dst);
 
@@ -275,7 +278,11 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 		return SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
-	LOG_ERR("Invalid arguments.");
+	LOG_ERR("%s: Invalid arguments: %s, %s, %s, %s", __func__,
+	IS_COND_TRUE(dst != NULL),
+	IS_COND_TRUE(size > 0),
+	IS_COND_TRUE(sink != NULL),
+	IS_COND_TRUE(handle != NULL));
 	return SUIT_PLAT_ERR_INVAL;
 }
 
@@ -398,8 +405,13 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 	if ((ctx != NULL) && (buf != NULL) && (size_left > 0)) {
 		struct flash_ctx *flash_ctx = (struct flash_ctx *)ctx;
 
+		if (!flash_ctx->in_use) {
+			LOG_ERR("flash_sink not initialized.");
+			return SUIT_PLAT_ERR_INVAL;
+		}
+
 		if (flash_ctx->fdev == NULL) {
-			LOG_ERR("Invalid arguments.");
+			LOG_ERR("%s: fdev is NULL.", __func__);
 			return SUIT_PLAT_ERR_INVAL;
 		}
 
@@ -461,7 +473,10 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 		}
 	}
 
-	LOG_ERR("Invalid arguments.");
+	LOG_ERR("%s: Invalid arguments. %s, %s, %s", __func__,
+	IS_COND_TRUE(ctx != NULL),
+	IS_COND_TRUE(buf != NULL),
+	IS_COND_TRUE(size_left > 0));
 	return SUIT_PLAT_ERR_INVAL;
 }
 
@@ -474,9 +489,12 @@ static suit_plat_err_t seek(void *ctx, size_t offset)
 			flash_ctx->offset = offset;
 			return SUIT_PLAT_SUCCESS;
 		}
+
+		LOG_ERR("Invalid argument - offset value out of range");
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
-	LOG_ERR("Invalid argument.");
+	LOG_ERR("%s: Invalid arguments - ctx is NULL", __func__);
 	return SUIT_PLAT_ERR_INVAL;
 }
 
@@ -495,7 +513,9 @@ static suit_plat_err_t used_storage(void *ctx, size_t *size)
 		return SUIT_PLAT_SUCCESS;
 	}
 
-	LOG_ERR("Invalid arguments.");
+	LOG_ERR("%s: Invalid arguments. %s, %s", __func__,
+	IS_COND_TRUE(ctx != NULL),
+	IS_COND_TRUE(size != NULL));
 	return SUIT_PLAT_ERR_INVAL;
 }
 
@@ -514,6 +534,6 @@ static suit_plat_err_t release(void *ctx)
 		return SUIT_PLAT_SUCCESS;
 	}
 
-	LOG_ERR("Invalid arguments.");
+	LOG_ERR("%s: Invalid arguments - ctx is NULL", __func__);
 	return SUIT_PLAT_ERR_INVAL;
 }
