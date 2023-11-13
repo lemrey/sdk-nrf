@@ -287,7 +287,7 @@ static suit_plat_err_t data_loop(image_request_state_t *irs)
 
 					irs->last_processed_number = cps->arrival_number;
 
-					// Let's check if it is time to transit to STAGE_CLOSING
+					/* Let's check if it is time to transit to STAGE_CLOSING */
 					if (irs->last_chunk_arrival_number == cps->arrival_number) {
 						irs->stage = STAGE_CLOSING;
 					}

@@ -17,7 +17,7 @@
 #include <suit_plat_err.h>
 
 #define SUIT_PLAT_MAX_NUM_COMPONENT_ID_PARTS                                                       \
-	5 ///! The maximum number of bytestrings in a component ID.
+	5 /**< The maximum number of bytestrings in a component ID. */
 
 /**
  * @brief Decode params from component_id

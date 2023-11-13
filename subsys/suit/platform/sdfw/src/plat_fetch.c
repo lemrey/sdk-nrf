@@ -132,7 +132,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
 
-	// Invalidate the cache entry of the digest for the destination.
+	/* Invalidate the cache entry of the digest for the destination. */
 #if CONFIG_SUIT_DIGEST_CACHE
 	suit_plat_digest_cache_unlock();
 	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
@@ -272,13 +272,14 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 
 	if (dst_sink.erase != NULL) {
 		ret = dst_sink.erase(dst_sink.ctx);
-		if (ret) {
-			LOG_ERR("Sink mem erase failed: %i", ret);
-			return ret;
+
+		if (ret != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("Sink mem erase failed, err code: %d", ret);
+			return suit_plat_err_to_proccessor_err_convert(ret);
 		}
 	}
 
-	// Invalidate the cache entry of the digest for the destination.
+	/* Invalidate the cache entry of the digest for the destination. */
 #if CONFIG_SUIT_DIGEST_CACHE
 	suit_plat_digest_cache_unlock();
 	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);

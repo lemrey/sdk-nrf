@@ -135,8 +135,8 @@ suit_plat_err_t suit_storage_decode_envelope_header(const uint8_t *buf, size_t l
 suit_plat_err_t suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelope, uint8_t *buf, size_t *len)
 {
 	const uint8_t envelope_tag[SUIT_STORAGE_ENCODED_ENVELOPE_TAG_LEN] = {
-		0xD8, 0x6B, // SUIT envelope tag (107)
-		0xA2,	    // map with 2 elements
+		0xD8, 0x6B, /* SUIT envelope tag (107) */
+		0xA2,	    /* map with 2 elements */
 	};
 	bool ok = false;
 	zcbor_state_t states[3];

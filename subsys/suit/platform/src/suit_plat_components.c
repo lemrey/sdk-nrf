@@ -13,9 +13,10 @@
 LOG_MODULE_REGISTER(plat_components, CONFIG_SUIT_LOG_LEVEL);
 
 struct suit_plat_component {
-	void *impl_data; ///! Slot to store the implementation-specific private data.
-	struct zcbor_string component_id; ///! Slot to store the component ID. The implementation
-					  /// may use it instead of building full internal context.
+	void *impl_data; /** Slot to store the implementation-specific private data. */
+	struct zcbor_string component_id; /** Slot to store the component ID. The implementation
+					    * may use it instead of building full
+					    * internal context. */
 	bool in_use;
 };
 

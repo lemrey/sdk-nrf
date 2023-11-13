@@ -164,7 +164,7 @@ static suit_plat_err_t chunk_enqueue(image_request_info_t *ri, buffer_metadata_t
 		}
 	}
 
-	// UNREACHABLE
+	/* UNREACHABLE */
 }
 
 static suit_plat_err_t end_of_stream(image_request_info_t *ri)
