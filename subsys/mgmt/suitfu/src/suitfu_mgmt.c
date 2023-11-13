@@ -19,6 +19,7 @@
 
 #include <zephyr/mgmt/mcumgr/mgmt/mgmt.h>
 #include <zephyr/mgmt/mcumgr/smp/smp.h>
+#include <zephyr/mgmt/mcumgr/mgmt/handlers.h>
 #include "suitfu_mgmt_priv.h"
 #include <suit_plat_mem_util.h>
 
@@ -394,3 +395,7 @@ void img_mgmt_unregister_group(void)
 {
 	mgmt_unregister_group(&img_mgmt_group);
 }
+
+#ifdef CONFIG_MGMT_SUITFU_AUTO_REGISTER_HANDLERS
+MCUMGR_HANDLER_DEFINE(suitfu_mgmt, img_mgmt_register_group);
+#endif

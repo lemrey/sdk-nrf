@@ -25,6 +25,13 @@ config MGMT_SUITFU_TRIGGER_UPDATE_RESET_DELAY_MS
 	help
 	  The delay allows the application to send the SMP response before the update is triggered.
 
+config MGMT_SUITFU_AUTO_REGISTER_HANDLERS
+	bool "Automatically register SUIT Firmware Update handlers during boot"
+	default y
+	help
+	  Use MCUMGR_HANDLER_DEFINE to automatically register SUIT Firmware
+	  Update handlers during boot.
+
 module=MGMT_SUITFU
 module-dep=LOG
 module-str=SUIT-based Firmware Update Management

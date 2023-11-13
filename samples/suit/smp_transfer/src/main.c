@@ -47,8 +47,6 @@ int main(void)
 		int ret = suit_trigger_update(update_candidate, ARRAY_SIZE(update_candidate));
 		printk("DFU triggered with status: %d\r\n", ret);
 	}
-#elif CONFIG_MGMT_SUITFU
-	img_mgmt_register_group();
 #endif
 
 #ifdef CONFIG_MCUMGR_TRANSPORT_BT

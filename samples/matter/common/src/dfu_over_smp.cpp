@@ -96,9 +96,7 @@ void DFUOverSMP::Init()
 		}
 	};
 
-#ifdef CONFIG_SUIT
-	img_mgmt_register_group();
-#else
+#ifndef CONFIG_SUIT
 	mgmt_callback_register(&sUploadCallback);
 	mgmt_callback_register(&sCommandCallback);
 #endif
