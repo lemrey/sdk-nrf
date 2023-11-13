@@ -80,7 +80,4 @@ void start_smp_bluetooth(void)
 		LOG_ERR("Bluetooth init failed (err %d)", rc);
 		return;
 	}
-
-	/* Initialize the Bluetooth mcumgr transport. */
-	smp_bt_register();
 }
