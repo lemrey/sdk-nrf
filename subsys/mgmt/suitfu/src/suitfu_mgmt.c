@@ -27,7 +27,7 @@
 #include <zephyr/storage/flash_map.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(siutfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
+LOG_MODULE_REGISTER(suitfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
 
 #if (!(DT_NODE_EXISTS(DT_NODELABEL(dfu_partition))))
 #error DFU Partition not defined in devicetree
