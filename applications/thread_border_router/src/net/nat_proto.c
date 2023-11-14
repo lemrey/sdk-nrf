@@ -23,7 +23,6 @@ LOG_MODULE_REGISTER(nat_proto, CONFIG_NRF_TBR_NAT_LOG_LEVEL);
 /* Communication Administratively Prohibited */
 #define NET_ICMPV4_DST_UNREACH_COMM_PROHIBITED  13
 
-#define WELL_KNOWN_PORTS_MAX 1023U
 #define ICMPV4_HDR_UNUSED_SIZE (4 * sizeof(uint8_t))
 
 #if CONFIG_NRF_TBR_NAT_LOG_LEVEL >= LOG_LEVEL_DBG
@@ -140,22 +139,6 @@ static void modify_ipv4_hdr(struct net_ipv4_hdr *hdr, const struct in_addr *new_
 
 	LOG_DBG("to %s",
 		net_addr_ntop(AF_INET, new_addr, addr_buff, sizeof(addr_buff)));
-}
-
-static uint16_t port_no_generate()
-{
-	uint16_t port;
-
-	do {
-		sys_rand_get(&port, sizeof(port));
-	} while (port == 0U);
-
-	if (port > WELL_KNOWN_PORTS_MAX) {
-		return port;
-	}
-
-	port += ((port << 10) & 0xFFFF);
-	return port;
 }
 
 static enum nat_proto nat_proto_get(const struct net_ipv4_hdr *hdr)
@@ -294,7 +277,7 @@ static bool addr_cmp(const struct nataddr_in *addr1, const struct nataddr_in *ad
 	return false;
 }
 
-static bool tp_rx_conn_handle(struct nat_tuple *tuple)
+static bool mapping_find(struct nat_tuple *tuple)
 {
 	struct nat_node *_node, *tmp_node;
 	struct nat_node *prev = NULL;
@@ -302,109 +285,71 @@ static bool tp_rx_conn_handle(struct nat_tuple *tuple)
 
 	__ASSERT(tuple != NULL, "Null pointer");
 
-	LOG_DBG("Search record: %s:%u",
-		net_addr_ntop(AF_INET, &tuple->src.addr, addr, sizeof(addr)),
-		ntohs(tuple->src.all));
+	PRINT_TUPLE("Search", tuple);
 
 	k_mutex_lock(&lock_mtx, K_FOREVER);
 
 	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&nat_records[tuple->proto], _node, tmp_node, node){
-		LOG_DBG("Record: %s:%u",
-			net_addr_ntop(AF_INET, &_node->tuple.dst.addr, addr, sizeof(addr)),
-			ntohs(_node->tuple.new.query_id));
+		PRINT_TUPLE("Record", &_node->tuple);
 
-		if (addr_cmp(&tuple->src, &_node->tuple.dst)) {
-			if ((tuple->proto == ICMP) &&
-			    (tuple->src.query_id == _node->tuple.new.query_id)) {
+		if (addr_cmp(&tuple->dst, &_node->tuple.dst)) {
+			switch (tuple->proto) {
+			case ICMP:
 				/* Restore original addr & query ID. */
-				net_ipaddr_copy(&tuple->new.addr, &_node->tuple.orig.addr);
-				tuple->new.query_id = _node->tuple.orig.query_id;
+				memcpy(&tuple->orig, &_node->tuple.orig, sizeof(struct nataddr_in));
 
 				sys_slist_remove(&nat_records[tuple->proto],
 						 prev ? &prev->node : NULL,
 						 &_node->node);
 				timeout_cancel(_node);
 				k_mem_slab_free(&records_pool, (void **)&_node);
-			} else if (tuple->dst.port == _node->tuple.port) {
-				/* Restore original addr & port number. */
-				memcpy(&tuple->dst, &_node->tuple.orig, sizeof(struct nataddr_in));
-				timeout_restart(_node);
+				goto found;
+				break;
+
+#if defined(CONFIG_NET_UDP)
+			case UDP:
+				if (tuple->port == _node->tuple.port) {
+					/* Restore original addr & port number. */
+					memcpy(&tuple->orig, &_node->tuple.orig,
+					       sizeof(struct nataddr_in));
+					timeout_restart(_node);
+					goto found;
+				}
+				break;
+#endif /* CONFIG_NET_UDP */
+
+#if defined(CONFIG_NET_TCP)
+			case TCP:
+				if (tuple->port == _node->tuple.port) {
+					/* Restore original addr & port number. */
+					memcpy(&tuple->orig, &_node->tuple.orig,
+					       sizeof(struct nataddr_in));
+					timeout_restart(_node);
+					goto found;
+				}
+				break;
+#endif /* CONFIG_NET_TCP */
+
+			default:
+				goto exit;
 			}
-
-			k_mutex_unlock(&lock_mtx);
-
-			LOG_DBG("Found, restored sender original addr %s and %s %u",
-				net_addr_ntop(AF_INET, &tuple->new.addr, addr, sizeof(addr)),
-				tuple->proto == ICMP ? "query_id" : "port",
-				ntohs(tuple->new.all));
-
-			return true;
 		}
 		prev = _node;
 	}
 
+exit:
 	k_mutex_unlock(&lock_mtx);
 	return false;
-}
 
-static bool tp_tx_conn_handle(struct nat_tuple *tuple)
-{
-	struct nat_node *_node;
-
-	__ASSERT(tuple != NULL, "Null pointer");
-
-	k_mutex_lock(&lock_mtx, K_FOREVER);
-	SYS_SLIST_FOR_EACH_CONTAINER(&nat_records[tuple->proto], _node, node){
-		if (addr_cmp(&tuple->dst, &_node->tuple.dst) &&
-		    addr_cmp(&tuple->orig, &_node->tuple.orig)) {
-			/* Set proper port number. */
-			tuple->port = _node->tuple.port;
-			timeout_restart(_node);
-			k_mutex_unlock(&lock_mtx);
-			return true;
-		}
-	}
+found:
 	k_mutex_unlock(&lock_mtx);
 
-	return false;
-}
+	LOG_DBG("Found, restored sender original addr %s and %s %u",
+		net_addr_ntop(AF_INET, &tuple->orig.addr, addr, sizeof(addr)),
+		tuple->proto == ICMP ? "query_id" : "port",
+		ntohs(tuple->orig.all));
 
-static bool is_src_port_used(const struct nat_tuple *tuple)
-{
-	struct nat_node *_node;
-
-	__ASSERT(tuple != NULL, "Null pointer");
-
-	k_mutex_lock(&lock_mtx, K_FOREVER);
-	SYS_SLIST_FOR_EACH_CONTAINER(&nat_records[tuple->proto], _node, node){
-		if (_node->tuple.src.port == tuple->src.port) {
-			LOG_DBG("Port %d found", _node->tuple.src.port);
-			k_mutex_unlock(&lock_mtx);
-			return true;
-		}
-	}
-	k_mutex_unlock(&lock_mtx);
-
-	return false;
-}
-
-static bool is_ext_port_used(const struct nat_tuple *tuple)
-{
-	struct nat_node *_node;
-
-	__ASSERT(tuple != NULL, "Null pointer");
-
-	k_mutex_lock(&lock_mtx, K_FOREVER);
-	SYS_SLIST_FOR_EACH_CONTAINER(&nat_records[tuple->proto], _node, node){
-		if (_node->tuple.port == tuple->port) {
-			LOG_DBG("Port %d found", _node->tuple.port);
-			k_mutex_unlock(&lock_mtx);
-			return true;
-		}
-	}
-	k_mutex_unlock(&lock_mtx);
-
-	return false;
+	return true;
 }
 
 static bool tp_hairpinning(const struct nat_tuple *tuple)
@@ -437,7 +382,8 @@ static enum net_verdict icmp_error_handle(struct net_pkt *pkt, struct nat_tuple 
 					  struct net_icmp_hdr *main_icmp_hdr)
 {
 	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_hdr_access, struct net_icmp_hdr);
-	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_echo_req_access, struct net_icmpv4_echo_req);
+	NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_echo_req_access,
+					      struct net_icmpv4_echo_req);
 	struct net_pkt_cursor icmp_hdr_pos;
 	struct net_icmpv4_echo_req *echo_req;
 	struct net_icmp_hdr *icmp_hdr = NULL;
@@ -459,10 +405,10 @@ static enum net_verdict icmp_error_handle(struct net_pkt *pkt, struct nat_tuple 
 	if (icmp_hdr->type == NET_ICMPV4_ECHO_REQUEST) {
 		echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
 									  &icmp_echo_req_access);
-		tuple->src.query_id = echo_req->identifier;
+		tuple->dst.query_id = echo_req->identifier;
 
-		if (tp_rx_conn_handle(tuple)) {
-			echo_req->identifier = tuple->new.query_id;
+		if (mapping_find(tuple)) {
+			echo_req->identifier = tuple->orig.query_id;
 		} else {
 			/* rfc5508: REQ-4 & REQ-5: If a NAT device receives an ICMP Error packet
 			 * from an external (the private) realm, and the NAT device does not have
@@ -478,14 +424,14 @@ static enum net_verdict icmp_error_handle(struct net_pkt *pkt, struct nat_tuple 
 	net_pkt_cursor_restore(pkt, &icmp_hdr_pos);
 
 	icmp_hdr->chksum = update_chksum(icmp_hdr->chksum,
-					 (uint8_t *)&tuple->orig.query_id,
 					 (uint8_t *)&tuple->new.query_id,
+					 (uint8_t *)&tuple->orig.query_id,
 					 sizeof(uint16_t));
 
 	/* Update checksum in main ICMP header as well. */
 	main_icmp_hdr->chksum = update_chksum(main_icmp_hdr->chksum,
-					      (uint8_t *)&tuple->orig.query_id,
 					      (uint8_t *)&tuple->new.query_id,
+					      (uint8_t *)&tuple->orig.query_id,
 					      sizeof(uint16_t));
 
 	return NET_OK;
@@ -535,33 +481,39 @@ enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx)
 		NET_PKT_DATA_ACCESS_CONTIGUOUS_DEFINE(icmp_echo_req_access,
 						      struct net_icmpv4_echo_req);
 		struct net_icmpv4_echo_req *echo_req;
+		uint16_t old_q_id;
+		uint16_t new_q_id;
 
 		if (icmp_hdr->type == NET_ICMPV4_ECHO_REQUEST) {
 			if (tx) {
-				echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
-											  &icmp_echo_req_access);
-				tuple.orig.query_id = echo_req->identifier;
-				tuple.new.query_id = echo_req->identifier = htons(sys_rand32_get());
+				echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(
+					pkt,
+					&icmp_echo_req_access);
+				old_q_id = tuple.orig.query_id = echo_req->identifier;
+				new_q_id = tuple.new.query_id = echo_req->identifier = htons(
+					sys_rand32_get());
 				if (!tp_hairpinning(&tuple)) {
 					send_icmp_error(pkt);
 					goto drop;
 				}
 				net_ipaddr_copy(&new_addr, net_if_ipv4_select_src_addr(
 							net_pkt_iface(pkt),
-							(struct in_addr *)NET_IPV4_HDR(pkt)->
-							dst));
+							(struct in_addr *)NET_IPV4_HDR(pkt)->dst));
 			} else {
 				/* Incoming echo request is routed to net stack. */
 				goto exit;
 			}
 		} else if (icmp_hdr->type == NET_ICMPV4_ECHO_REPLY) {
 			if (!tx) {
-				echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(pkt,
-											  &icmp_echo_req_access);
-				tuple.src.query_id = echo_req->identifier;
-				if (tp_rx_conn_handle(&tuple)) {
-					echo_req->identifier = tuple.new.query_id;
-					net_ipaddr_copy(&new_addr, &tuple.new.addr);
+				echo_req = (struct net_icmpv4_echo_req *)net_pkt_get_data(
+					pkt,
+					&icmp_echo_req_access);
+				old_q_id = tuple.src.query_id = echo_req->identifier;
+				tuple_invert(&tuple);
+
+				if (mapping_find(&tuple)) {
+					new_q_id = echo_req->identifier = tuple.orig.query_id;
+					net_ipaddr_copy(&new_addr, &tuple.orig.addr);
 				}
 			} else {
 				/* Echo response for outgoing request don't need to be handled. */
@@ -571,8 +523,8 @@ enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx)
 
 		net_pkt_cursor_restore(pkt, &icmp_hdr_pos);
 		icmp_hdr->chksum = update_chksum(icmp_hdr->chksum,
-						 (uint8_t *)&tuple.orig.query_id,
-						 (uint8_t *)&tuple.new.query_id,
+						 (uint8_t *)&old_q_id,
+						 (uint8_t *)&new_q_id,
 						 sizeof(uint16_t));
 	}
 	break;
@@ -580,8 +532,7 @@ enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx)
 	case NET_ICMPV4_TIME_EXCEEDED:
 	case NET_ICMPV4_BAD_IP_HEADER:
 		/* rfc5508: REQ-3: When an ICMP Error packet is received, if the ICMP checksum
-		 * fails to validate, the NAT SHOULD silently drop the ICMP Error
-		 * packet.
+		 * fails to validate, the NAT SHOULD silently drop the ICMP Error packet.
 		 * So, we can do it here for for each supported ICMP error packet.
 		 */
 		if (net_calc_chksum(pkt, IPPROTO_ICMP) != 0U) {
@@ -630,7 +581,6 @@ enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx)
 				}
 
 				if (ip_hdr->proto == IPPROTO_ICMP) {
-					tuple_invert(&icmp_tuple);
 					icmp_error_handle(pkt, &icmp_tuple, icmp_hdr);
 				}
 
@@ -640,13 +590,13 @@ enum net_verdict nat_icmp(struct net_pkt *pkt, bool tx)
 				 */
 				icmp_hdr->chksum = update_chksum(icmp_hdr->chksum,
 								 (uint8_t *)&ip_hdr->src,
-								 (uint8_t *)&icmp_tuple.new.addr,
+								 (uint8_t *)&icmp_tuple.orig.addr,
 								 sizeof(uint16_t));
 				net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
-				modify_ipv4_hdr(ip_hdr, &icmp_tuple.new.addr, true);
+				modify_ipv4_hdr(ip_hdr, &icmp_tuple.orig.addr, true);
 
 				/* And copy original address. */
-				net_ipaddr_copy(&new_addr, &icmp_tuple.new.addr);
+				net_ipaddr_copy(&new_addr, &icmp_tuple.orig.addr);
 				net_pkt_cursor_restore(pkt, &msg_body);
 
 				goto exit;
@@ -722,95 +672,46 @@ enum net_verdict nat_udp(struct net_pkt *pkt, bool tx)
 	if (tx) {
 		/* Store previous IP address. */
 		net_ipaddr_copy(&prev_addr, &tuple.src.addr);
-
-		if (!tp_tx_conn_handle(&tuple)) {
-			LOG_DBG("New mapping");
-
-			if (is_src_port_used(&tuple)) {
-				/* If port number is already reserved, generate a new port
-				 * number.
-				 */
-				do {
-					tuple.port = udp_hdr->src_port = htons(port_no_generate());
-				} while (is_ext_port_used(&tuple));
-
-				LOG_DBG("New port number: %d", ntohs(udp_hdr->src_port));
-				udp_hdr->chksum = update_chksum(udp_hdr->chksum,
-								(uint8_t *)&tuple.orig.port,
-								(uint8_t *)&udp_hdr->src_port,
-								sizeof(uint16_t));
-			} else {
-				/* Otherwise left the same port number. */
-				tuple.port = udp_hdr->src_port;
-			}
-
-			if (!tp_hairpinning(&tuple)) {
-				send_icmp_error(pkt);
-				goto drop;
-			}
-		} else {
-			LOG_DBG("Mapping exists");
-
-			/* Recompute checksum only when ports are different. */
-			if (tuple.orig.port != tuple.port) {
-				udp_hdr->chksum = update_chksum(udp_hdr->chksum,
-								(uint8_t *)&tuple.orig.port,
-								(uint8_t *)&tuple.port,
-								sizeof(uint16_t));
-			}
-		}
+		tuple.port = udp_hdr->src_port;
 	} else {
 		/* Store previous IP address. */
 		net_ipaddr_copy(&prev_addr, &tuple.dst.addr);
+		tuple.port = udp_hdr->dst_port;
 
-		if (tp_rx_conn_handle(&tuple)) {
-			LOG_DBG("Mapping exists");
-			/* Checksum must be recomputed before data will be overwritten. */
-			udp_hdr->chksum = update_chksum(udp_hdr->chksum,
-							(uint8_t *)&udp_hdr->dst_port,
-							(uint8_t *)&tuple.orig.port,
-							sizeof(uint16_t));
+		tuple_invert(&tuple);
+	}
 
-			new_addr = &tuple.dst.addr;
-			udp_hdr->dst_port = tuple.dst.port;
-		} else {
-			LOG_DBG("New mapping");
-			/* Left the port number, because it may already has
-			 * been binded.
-			 */
-			tuple.port = udp_hdr->dst_port;
+	if (mapping_find(&tuple)) {
+		LOG_DBG("Mapping exists");
 
-			/* In order to make this code more generic, invert tuple and
-			 * add it to NAT records.
-			 */
-			tuple_invert(&tuple);
-			if (!tp_hairpinning(&tuple)) {
-				send_icmp_error(pkt);
+		if (tx) {
+			if (!net_ipv4_addr_cmp(&tuple.src.addr, &prev_addr)) {
+				LOG_DBG("Src address does not match");
+				/* Port conflict, drop packet for current implementation. */
 				goto drop;
 			}
-
-			/* And now throw in packet to the net stack
-			 * without any additional modification.
-			 */
-			new_addr = net_ipv4_unspecified_address();
+		} else {
+			new_addr = &tuple.orig.addr;
+		}
+	} else {
+		LOG_DBG("New mapping");
+		if (!tp_hairpinning(&tuple)) {
+			send_icmp_error(pkt);
+			goto drop;
 		}
 	}
 
-	if (!net_ipv4_is_addr_unspecified(new_addr)) {
-		/* rfc768: "Checksum is the 16-bit one's complement of the one's complement
-		 * sum of a pseudo header of information from the IP header, the UDP header..."
-		 * The UDP checksum must include IP address as well.
-		 */
-		udp_hdr->chksum = update_chksum(udp_hdr->chksum,
-						(uint8_t *)&prev_addr,
-						(uint8_t *)new_addr,
-						sizeof(struct in_addr));
+	/* rfc768: "Checksum is the 16-bit one's complement of the one's complement
+	 * sum of a pseudo header of information from the IP header, the UDP header..."
+	 * The UDP checksum must include IP address as well.
+	 */
+	udp_hdr->chksum = update_chksum(udp_hdr->chksum,
+					(uint8_t *)&prev_addr,
+					(uint8_t *)new_addr,
+					sizeof(struct in_addr));
 
-		net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
-		modify_ipv4_hdr(NET_IPV4_HDR(pkt), new_addr, tx);
-	} else {
-		net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
-	}
+	net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
+	modify_ipv4_hdr(NET_IPV4_HDR(pkt), new_addr, tx);
 
 	net_pkt_set_overwrite(pkt, overwrite);
 
@@ -864,96 +765,47 @@ enum net_verdict nat_tcp(struct net_pkt *pkt, bool tx)
 	if (tx) {
 		/* Store previous IP address. */
 		net_ipaddr_copy(&prev_addr, &tuple.src.addr);
-
-		if (!tp_tx_conn_handle(&tuple)) {
-			LOG_DBG("New mapping");
-
-			if (is_src_port_used(&tuple)) {
-				/* If port number is already reserved, generate a new port
-				 * number.
-				 */
-				do {
-					tuple.port = tcp_hdr->th_sport = htons(port_no_generate());
-				} while (is_ext_port_used(&tuple));
-
-				LOG_DBG("New port number: %d", ntohs(tcp_hdr->th_sport));
-				tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
-								(uint8_t *)&tuple.orig.port,
-								(uint8_t *)&tuple.port,
-								sizeof(uint16_t));
-			} else {
-				/* Otherwise left the same port number. */
-				tuple.port = tcp_hdr->th_sport;
-			}
-
-			if (!tp_hairpinning(&tuple)) {
-				send_icmp_error(pkt);
-				goto drop;
-			}
-		} else {
-			LOG_DBG("Mapping exists");
-
-			/* Recompute checksum only when ports are different. */
-			if (tuple.orig.port != tuple.port) {
-				tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
-								(uint8_t *)&tuple.orig.port,
-								(uint8_t *)&tuple.port,
-								sizeof(uint16_t));
-			}
-		}
+		tuple.port = tcp_hdr->th_sport;
 	} else {
 		/* Store previous IP address. */
 		net_ipaddr_copy(&prev_addr, &tuple.dst.addr);
+		tuple.port = tcp_hdr->th_dport;
 
-		if (tp_rx_conn_handle(&tuple)) {
-			LOG_DBG("Mapping exists");
-			/* Checksum must be recomputed before data will be overwritten. */
-			tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
-							(uint8_t *)&tcp_hdr->th_dport,
-							(uint8_t *)&tuple.orig.port,
-							sizeof(uint16_t));
+		tuple_invert(&tuple);
+	}
 
-			new_addr = &tuple.dst.addr;
-			tcp_hdr->th_dport = tuple.dst.port;
-		} else {
-			LOG_DBG("New mapping");
-			/* Left the port number, because it may already has
-			 * been binded.
-			 */
-			tuple.port = tcp_hdr->th_dport;
+	if (mapping_find(&tuple)) {
+		LOG_DBG("Mapping exists");
 
-			/* In order to make this code more generic, invert tuple and
-			 * add it to NAT records.
-			 */
-			tuple_invert(&tuple);
-			if (!tp_hairpinning(&tuple)) {
-				send_icmp_error(pkt);
+		if (tx) {
+			if (!net_ipv4_addr_cmp(&tuple.src.addr, &prev_addr)) {
+				LOG_DBG("Src address does not match");
+				/* Port conflict, drop packet for current implementation. */
 				goto drop;
 			}
-
-			/* And now throw in packet to the net stack
-			 * without any additional modification.
-			 */
-			new_addr = net_ipv4_unspecified_address();
+		} else {
+			new_addr = &tuple.orig.addr;
+		}
+	} else {
+		LOG_DBG("New mapping");
+		if (!tp_hairpinning(&tuple)) {
+			send_icmp_error(pkt);
+			goto drop;
 		}
 	}
 
-	if (!net_ipv4_is_addr_unspecified(new_addr)) {
-		/* rfc793: "The checksum also covers a 96 bit pseudo header conceptually
-		 * prefixed to the TCP header.  This pseudo header contains the Source Address,
-		 * the Destination Address, the Protocol, and TCP length."
-		 * The TCP checksum must include IP address as well.
-		 */
-		tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
-						(uint8_t *)&prev_addr,
-						(uint8_t *)new_addr,
-						sizeof(struct in_addr));
+	/* rfc793: "The checksum also covers a 96 bit pseudo header conceptually
+	 * prefixed to the TCP header.  This pseudo header contains the Source Address,
+	 * the Destination Address, the Protocol, and TCP length."
+	 * The TCP checksum must include IP address as well.
+	 */
+	tcp_hdr->th_sum = update_chksum(tcp_hdr->th_sum,
+					(uint8_t *)&prev_addr,
+					(uint8_t *)new_addr,
+					sizeof(struct in_addr));
 
-		net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
-		modify_ipv4_hdr(NET_IPV4_HDR(pkt), new_addr, tx);
-	} else {
-		net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
-	}
+	net_pkt_cursor_restore(pkt, &ipv4_hdr_pos);
+	modify_ipv4_hdr(NET_IPV4_HDR(pkt), new_addr, tx);
 
 	net_pkt_set_overwrite(pkt, overwrite);
 
