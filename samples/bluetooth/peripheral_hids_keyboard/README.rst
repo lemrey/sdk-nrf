@@ -81,11 +81,9 @@ LED 4:
    Indicates if an NFC field is present.
 
 .. note::
-   * |moonlight_led1_issue|
+   |moonlight_button3_4_issue|
 
-   * |moonlight_button3_4_issue|
-
-     |moonlight_button3_4_workaround_active|
+   |moonlight_button3_4_workaround_active|
 
 Configuration
 *************

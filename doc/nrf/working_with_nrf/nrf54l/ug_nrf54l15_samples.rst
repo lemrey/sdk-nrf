@@ -12,11 +12,9 @@ It includes the nRF Connect SDK samples that showcase how to implement typical u
 Additionally, the page lists the available Zephyr samples that are compatible with the nRF54L15. You can also find them in Zephyr's Samples and Demos documentation.
 
 .. note::
-   * |moonlight_led1_issue|
+   |moonlight_button3_4_issue|
 
-   * |moonlight_button3_4_issue|
-
-     |moonlight_button3_4_workaround|
+   |moonlight_button3_4_workaround|
 
 |NCS| samples
 *************

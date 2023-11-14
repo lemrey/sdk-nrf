@@ -65,11 +65,9 @@ LED 2:
    Lit when the system is on.
 
 .. note::
-   * |moonlight_led1_issue|
+   |moonlight_button3_4_issue|
 
-   * |moonlight_button3_4_issue|
-
-     |moonlight_button3_4_workaround|
+   |moonlight_button3_4_workaround|
 
 Building and running
 ********************

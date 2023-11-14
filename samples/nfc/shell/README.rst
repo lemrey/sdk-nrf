@@ -46,11 +46,9 @@ LED 2:
    Lits or dims when user issues the shell commands that control the LED.
 
 .. note::
-   * |moonlight_led1_issue|
+   |moonlight_button3_4_issue|
 
-   * |moonlight_button3_4_issue|
-
-     |moonlight_button3_4_workaround|
+   |moonlight_button3_4_workaround|
 
 Building and running
 ********************

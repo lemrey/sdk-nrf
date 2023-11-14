@@ -54,9 +54,6 @@ Complete the following steps to test if the PDK works correctly:
 
 If something does not work as expected, contact Nordic Semiconductor support.
 
-.. note::
-   |moonlight_led1_issue|
-
 .. _nrf54l15_gs_installing_software:
 
 Installing the required software

@@ -47,11 +47,9 @@ Button 1:
    Press during startup to restore the default NDEF message.
 
 .. note::
-   * |moonlight_led1_issue|
+   |moonlight_button3_4_issue|
 
-   * |moonlight_button3_4_issue|
-
-     |moonlight_button3_4_workaround|
+   |moonlight_button3_4_workaround|
 
 Building and running
 ********************

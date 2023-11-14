@@ -138,11 +138,9 @@ User interface
        This value includes SoC output power and front-end module gain.
 
 .. note::
-   * |moonlight_led1_issue|
+  |moonlight_button3_4_issue|
 
-   * |moonlight_button3_4_issue|
-
-     |moonlight_button3_4_workaround|
+  |moonlight_button3_4_workaround|
 
 Tx output power
 ===============
