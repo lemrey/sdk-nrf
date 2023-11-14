@@ -280,6 +280,6 @@ Documentation
 * Added the following documentation sections:
 
   * :ref:`ug_nrf54l`
-  * :ref:`ug_suit_dfu_procedure`
+  * :ref:`ug_nrf54h20_suit_dfu`
   * :ref:`ug_nrf54h20_matter_thread`
   * :ref:`ug_nrf54h20_custom_pcb`

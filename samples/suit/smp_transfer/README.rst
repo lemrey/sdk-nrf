@@ -35,7 +35,7 @@ The sample uses Bluetooth® Low Energy and the nRF Connect Device Manager app to
 The sample demonstrates how to perform a DFU of the Application and Radio firmware.
 
 SUIT is the only DFU procedure supported for the nRF54H20 SoCs.
-To read more about the SUIT procedure, see :ref:`ug_suit_dfu_procedure`.
+To read more about the SUIT procedure, see :ref:`ug_nrf54h20_suit_intro`.
 
 |NCS|-specific SUIT limitations
 ===============================
