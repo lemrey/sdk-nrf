@@ -1,15 +1,21 @@
 tests:
   suit-processor.integration.suit_mci:
-    platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1 native_posix native_posix_64
+    platform_allow: native_posix native_posix_64
+    tags: suit-mci
+    integration_platforms:
+      - native_posix
+
+  suit-processor.integration.suit_mci.nrf54h20:
+    platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1
     tags: suit-mci
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpusec@soc1
-      - native_posix
+    extra_args: DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpusec.overlay;serial_cpusec.overlay;systick.overlay
 
   suit-processor.integration.suit_mci.fpga:
     platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1
     tags: suit-mci fpga
     timeout: 240
-    extra_args: DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpusec.overlay;systick.overlay
+    extra_args: DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpusec.overlay;serial_cpusec.overlay;systick.overlay
     extra_configs:
       - CONFIG_EMULATOR_FPGA=y
