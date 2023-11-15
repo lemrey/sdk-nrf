@@ -69,7 +69,7 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 	while (true) {
 		err = ipc_streamer_chunk_status_req(ri->stream_session_id, injected_chunks,
 						    &chunk_info_count);
-		if (-IPC_STREAMER_ENOSPACE == err) {
+		if (SUIT_PLAT_ERR_BUSY == err) {
 			/* not enough space in injected_chunks. This is not a problem,
 			 *  stream requestor most probably just released its space and
 			 *  one of next calls will be successful.
@@ -151,7 +151,7 @@ static int chunk_enqueue(image_request_info_t *ri, uint32_t chunk_id, uint32_t o
 	while (true) {
 		err = ipc_streamer_chunk_enqueue(ri->stream_session_id, chunk_id, offset, address,
 						 size, last_chunk);
-		if (-IPC_STREAMER_ENOSPACE == err) {
+		if (SUIT_PLAT_ERR_BUSY == err) {
 			/* Not enough space in requestor, try again later
 			 */
 			err = wait_for_buffer_state_change(ri);

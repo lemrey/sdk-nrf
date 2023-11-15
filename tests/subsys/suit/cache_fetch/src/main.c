@@ -109,16 +109,16 @@ ZTEST(cache_streamer_tests, test_cache_streamer_nok)
 	zassert_equal(ret, 0, "memptr_sink_get failed - error %i", ret);
 
 	ret = cache_streamer(NULL, ok_uri_len, &memptr_sink);
-	zassert_equal(ret, INVALID_ARGUMENT, "cache_streamer should have failed - uri == NULL");
+	zassert_equal(ret, SUIT_PLAT_ERR_INVAL, "cache_streamer should have failed - uri == NULL");
 
 	ret = cache_streamer(ok_uri, 0, &memptr_sink);
-	zassert_equal(ret, INVALID_ARGUMENT, "cache_streamer should have failed - uri_len == 0");
+	zassert_equal(ret, SUIT_PLAT_ERR_INVAL, "cache_streamer should have failed - uri_len == 0");
 
 	ret = cache_streamer(ok_uri, ok_uri_len, NULL);
-	zassert_equal(ret, INVALID_ARGUMENT, "cache_streamer should have failed - sink == NULL");
+	zassert_equal(ret, SUIT_PLAT_ERR_INVAL, "cache_streamer should have failed - sink == NULL");
 
 	ret = cache_streamer(nok_uri, nok_uri_len, &memptr_sink);
-	zassert_equal(ret, SOURCE_NOT_FOUND, "cache_streamer failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_ERR_NOT_FOUND, "cache_streamer failed - error %i", ret);
 
 	ret = release_memptr_storage(handle);
 	zassert_equal(ret, 0, "memptr_storage.release failed - error %i", ret);
