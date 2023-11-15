@@ -113,6 +113,7 @@ int lwm2m_rai_no_data(void)
 {
 	int ret;
 	struct lwm2m_ctx *ctx;
+	int rai;
 
 	if (rrc_connected) {
 		ctx = lwm2m_rd_client_ctx();
@@ -122,10 +123,10 @@ int lwm2m_rai_no_data(void)
 		}
 
 		if (ctx->sock_fd >= 0) {
-			int dummy = 1;
+			int rai = RAI_NO_DATA;
 			LOG_DBG("Set socket option SO_RAI_NO_DATA");
-			ret = setsockopt(ctx->sock_fd, SOL_SOCKET, SO_RAI_NO_DATA, &dummy,
-					 sizeof(dummy));
+			ret = setsockopt(ctx->sock_fd, SOL_SOCKET, SO_RAI, &rai,
+					 sizeof(rai));
 
 			if (ret < 0) {
 				ret = -errno;
@@ -151,10 +152,10 @@ int lwm2m_rai_last(void)
 		}
 
 		if (ctx->sock_fd >= 0) {
-			int dummy = 1;
+			int rai = RAI_LAST;
 			LOG_DBG("Set socket option SO_RAI_LAST");
-			ret = setsockopt(ctx->sock_fd, SOL_SOCKET, SO_RAI_LAST, &dummy,
-					 sizeof(dummy));
+			ret = setsockopt(ctx->sock_fd, SOL_SOCKET, SO_RAI, &rai,
+					 sizeof(rai));
 
 			if (ret < 0) {
 				ret = -errno;

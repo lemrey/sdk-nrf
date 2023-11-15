@@ -213,6 +213,8 @@ static int z_to_nrf_optname(int z_in_level, int z_in_optname,
 		case SO_REUSEADDR:
 			*nrf_out_optname = NRF_SO_REUSEADDR;
 			break;
+
+		/* SO_RAI_* and NRF_SO_RAI_* are deprecated */
 		case SO_RAI_LAST:
 			*nrf_out_optname = NRF_SO_RAI_LAST;
 			break;
@@ -227,6 +229,9 @@ static int z_to_nrf_optname(int z_in_level, int z_in_optname,
 			break;
 		case SO_RAI_WAIT_MORE:
 			*nrf_out_optname = NRF_SO_RAI_WAIT_MORE;
+
+		case SO_RAI:
+			*nrf_out_optname = NRF_SO_RAI;
 			break;
 		default:
 			retval = -1;

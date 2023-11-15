@@ -303,7 +303,7 @@ enum lwm2m_rai_mode {
 int lwm2m_init_rai(void);
 
 /**
- * @brief Set socket option SO_RAI_NO_DATA to bypass
+ * @brief Set socket option @ref SO_RAI with value @ref RAI_NO_DATA to bypass
  * RRC Inactivity period and immediately switch to Idle mode.
  *
  * @return Zero if success, negative error code otherwise.
@@ -311,7 +311,7 @@ int lwm2m_init_rai(void);
 int lwm2m_rai_no_data(void);
 
 /**
- * @brief Set socket option SO_RAI_LAST and send dummy packet to bypass
+ * @brief Set socket option @ref SO_RAI with value @ref RAI_LAST and send dummy packet to bypass
  * RRC Inactivity period and immediately switch to Idle mode.
  *
  * @return Zero if success, negative error code otherwise.
