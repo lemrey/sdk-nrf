@@ -48,6 +48,30 @@ LOG_MODULE_DECLARE(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
 #define OT_INSTANCE openthread_get_default_instance()
 
+#define TIMESTAMP_TICKS_POS     1
+#define TIMESTAMP_SEC_POS       16
+
+/* For ot-br-posix compatibility:
+ *   -----------------------------------
+ *   | bits  | flag                    |
+ *   |---------------------------------|
+ *   | 0 - 2 | connection mode         |
+ *   | 3 - 4 | thread interface status |
+ *   | 5 - 6 | availability            |
+ *   |   7   | is BBR active           |
+ *   |   8   | is BBR primary          |
+ *   -----------------------------------
+ */
+#define CONNECTION_MODE_POS     0
+#define IFACE_STATUS_POS        3
+#define AVAILABILITY_POS        5
+#define BBR_ACTIVE_POS          7
+#define BBR_PRIMARY_POS         8
+
+#define FLAG_SET_CONNECTION_MODE(_f, _m)     (_f |= ((_m & BIT_MASK(3)) << CONNECTION_MODE_POS))
+#define FLAG_SET_IFACE_STATUS(_f, _s)        (_f |= ((_s & BIT_MASK(2)) << IFACE_STATUS_POS))
+#define FLAG_SET_AVAILABILITY(_f, _a)        (_f |= ((_a & BIT_MASK(2)) << AVAILABILITY_POS))
+
 static int service_fd;
 static struct mdns_publisher_rec *service_rec;
 
@@ -62,9 +86,9 @@ enum {
 };
 
 enum {
-	INTERFACE_STATIS_NOT_INITIALIZED        = 0,
-	INTERFACE_STATIS_INITIALIZED            = 1,
-	INTERFACE_STATIS_ACTIVE                 = 2,
+	INTERFACE_STATUS_NOT_INITIALIZED        = 0,
+	INTERFACE_STATUS_INITIALIZED            = 1,
+	INTERFACE_STATUS_ACTIVE                 = 2,
 };
 
 enum {
@@ -197,38 +221,26 @@ static int encode_state(char *buffer, size_t max)
 	otBackboneRouterState bbr_state = otBackboneRouterGetState(OT_INSTANCE);
 #endif
 
-	/* For ot-br-posix compatibility:
-	 *   -----------------------------------
-	 *   | bits  | flag                    |
-	 *   |---------------------------------|
-	 *   | 0 - 2 | connection mode         |
-	 *   | 3 - 4 | thread interface status |
-	 *   | 5 - 6 | availability            |
-	 *   |   7   | is BBR active           |
-	 *   |   8   | is BBR primary          |
-	 *   -----------------------------------
-	 */
-
-	flags |= CONNECTION_MODE_PSKC & 0b111;
-	flags |= (AVAILABILITY_HIGH & 0b11) << 3;
-
 	switch (otThreadGetDeviceRole(OT_INSTANCE)) {
 	case OT_DEVICE_ROLE_DISABLED:
-		if_status = INTERFACE_STATIS_NOT_INITIALIZED;
+		if_status = INTERFACE_STATUS_NOT_INITIALIZED;
 		break;
 	case OT_DEVICE_ROLE_DETACHED:
-		if_status = INTERFACE_STATIS_INITIALIZED;
+		if_status = INTERFACE_STATUS_INITIALIZED;
 		break;
 	default:
-		if_status = INTERFACE_STATIS_ACTIVE;
+		if_status = INTERFACE_STATUS_ACTIVE;
 	}
 
-	flags |= (if_status & 0b11) << 5;
+	FLAG_SET_CONNECTION_MODE(flags, CONNECTION_MODE_PSKC);
+	FLAG_SET_IFACE_STATUS(flags, if_status);
+	FLAG_SET_AVAILABILITY(flags, AVAILABILITY_HIGH);
+
 #if OPENTHREAD_CONFIG_BACKBONE_ROUTER_ENABLE
-	flags |= (if_status == INTERFACE_STATIS_ACTIVE &&
-		  bbr_state != OT_BACKBONE_ROUTER_STATE_DISABLED) << 7;
-	flags |= (if_status == INTERFACE_STATIS_ACTIVE &&
-		  bbr_state == OT_BACKBONE_ROUTER_STATE_PRIMARY) << 8;
+	flags |= (if_status == INTERFACE_STATUS_ACTIVE &&
+		  bbr_state != OT_BACKBONE_ROUTER_STATE_DISABLED) << BBR_ACTIVE_POS;
+	flags |= (if_status == INTERFACE_STATUS_ACTIVE &&
+		  bbr_state == OT_BACKBONE_ROUTER_STATE_PRIMARY) << BBR_PRIMARY_POS;
 #endif
 
 	flags = sys_cpu_to_be32(flags);
@@ -250,8 +262,8 @@ static int encode_active_timestamp(char *buffer, size_t max)
 	 * -----48 bits------//-----15 bits-----//-------1 bit-------//
 	 *      Seconds      //      Ticks      //  Authoritative    //
 	 */
-	active_ts = (dataset.mActiveTimestamp.mSeconds << 16) |
-		    (uint64_t)(dataset.mActiveTimestamp.mTicks << 1) |
+	active_ts = (dataset.mActiveTimestamp.mSeconds << TIMESTAMP_SEC_POS) |
+		    (uint64_t)(dataset.mActiveTimestamp.mTicks << TIMESTAMP_TICKS_POS) |
 		    (uint64_t)(dataset.mActiveTimestamp.mAuthoritative);
 
 	active_ts = sys_cpu_to_be64(active_ts);
