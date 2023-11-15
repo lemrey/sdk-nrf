@@ -326,16 +326,9 @@ static int do_socketopt_set(int option, int value)
 	case SO_TCP_SRV_SESSTIMEO:
 		ret = setsockopt(sock.fd, IPPROTO_TCP, option, &value, sizeof(int));
 		break;
-
-	/* RAI-related */
-	case SO_RAI_LAST:
-	case SO_RAI_NO_DATA:
-	case SO_RAI_ONE_RESP:
-	case SO_RAI_ONGOING:
-	case SO_RAI_WAIT_MORE:
-		ret = setsockopt(sock.fd, SOL_SOCKET, option, NULL, 0);
+	case SO_RAI:
+		ret = setsockopt(sock.fd, SOL_SOCKET, option, &value, sizeof(int));
 		break;
-
 	default:
 		ret = -ENOTSUP;
 		LOG_WRN("Unsupported option: %d", option);

@@ -716,6 +716,22 @@ Modem libraries
 
     * A mention about enabling TF-M logging while using modem traces in the :ref:`modem_trace_module`.
     * The :kconfig:option:`CONFIG_NRF_MODEM_LIB_NET_IF_DOWN_DEFAULT_LTE_DISCONNECT` option, allowing the user to change the behavior of the driver's :c:func:`net_if_down` implementation at build time.
+    * The :c:macro:`SO_RAI` socket option for Release Assistance Indication (RAI).
+      This socket option substitutes the deprecated :c:macro:`SO_RAI_*` socket options.
+      To specify the indication, use the :c:macro:`RAI_*` values.
+    * The :c:macro:`SO_RAI` socket option values :c:macro:`RAI_NO_DATA`, :c:macro:`RAI_LAST`, :c:macro:`RAI_ONE_RESP`, :c:macro:`RAI_ONGOING`, or :c:macro:`RAI_WAIT_MORE` to specify the desired indication.
+  
+  * Updated:
+
+    * The following socket options have been deprecated:
+         
+       * :c:macro:`SO_RAI_NO_DATA` 
+       * :c:macro:`SO_RAI_LAST`
+       * :c:macro:`SO_RAI_ONE_RESP`
+       * :c:macro:`SO_RAI_ONGOING`
+       * :c:macro:`SO_RAI_WAIT_MORE`
+     
+      Use the :c:macro:`SO_RAI` socket option instead.
 
   * Updated by renaming ``lte_connectivity`` module to ``lte_net_if``.
     All related Kconfig options have been renamed accordingly.
