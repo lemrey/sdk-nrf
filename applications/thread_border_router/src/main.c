@@ -26,10 +26,6 @@
 
 LOG_MODULE_REGISTER(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
-#if !defined(CONFIG_NET_IPV6_DAD)
-#error "Duplicate address detection (DAD) must be enabled!"
-#endif
-
 K_SEM_DEFINE(ll_addr_wait, 0, 1);
 
 static struct net_mgmt_event_callback net_event_cb;
