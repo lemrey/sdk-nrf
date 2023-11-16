@@ -36,7 +36,6 @@ static void mpc_configure_override(NRF_MPC_Type *mpc, struct mpc_region_override
 	nrf_mpc_override_startaddr_set(mpc, override->index, override->start_address);
 	nrf_mpc_override_endaddr_set(mpc, override->index,
 				     override->start_address + override->size);
-	nrf_mpc_override_offset_set(mpc, override->index, override->offset);
 	nrf_mpc_override_perm_set(mpc, override->index, override->perm);
 	nrf_mpc_override_permmask_set(mpc, override->index, override->permmask);
 	nrf_mpc_override_ownerid_set(mpc, override->index, override->owner_id);
