@@ -17,7 +17,7 @@
 #include <suit_plat_digest_cache.h>
 #include "suit_plat_err.h"
 
-LOG_MODULE_REGISTER(suit, CONFIG_SUIT_LOG_LEVEL);
+LOG_MODULE_REGISTER(suit_orchestrator, CONFIG_SUIT_LOG_LEVEL);
 
 #define SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err) ((err) == SUIT_SUCCESS ? 0 : -EACCES)
 

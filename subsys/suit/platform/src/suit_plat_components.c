@@ -196,19 +196,37 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 
 	int err = suit_plat_component_id_get(handle, &component_id);
 	if (err != SUIT_SUCCESS) {
+		LOG_ERR("Failed to get component id: %i", err);
 		return err;
 	}
 
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 	if (suit_plat_decode_component_type(component_id, &component_type) != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Failed to decode component type: %i", err);
 		return SUIT_ERR_DECODING;
 	}
 
-	/* Size override is done for components that use memptr_storage */
-	if (is_mem_mapped(component_type)) {
+	/* Size override is done only for MEM type component */
+	if (component_type == SUIT_COMPONENT_TYPE_MEM) {
+		intptr_t run_address;
+		size_t component_size;
+
+		if (suit_plat_decode_address_size(component_id, &run_address, &component_size) != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("suit_plat_decode_address_size failed");
+			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+		}
+
+		LOG_ERR("%s, component size: %u, input size %u", __func__, component_size, size);
+
+		if (size > component_size) {
+			LOG_ERR("Input size exceeds component size");
+			return SUIT_ERR_UNSUPPORTED_PARAMETER;
+		}
+
 		void *impl_data = NULL;
 		err = suit_plat_component_impl_data_get(handle, &impl_data);
 		if (err != SUIT_SUCCESS) {
+			LOG_ERR("Failed to get implementation data: %i", err);
 			return err;
 		}
 
@@ -216,18 +234,23 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 		size_t payload_size = 0;
 
 		err = get_memptr_ptr(impl_data, &payload_ptr, &payload_size);
-		if (err != SUIT_PLAT_SUCCESS) {
+		if (err != SUIT_PLAT_SUCCESS) {			
+			LOG_ERR("Failed to get memptr: %i", err);
 			return SUIT_ERR_CRASH;
 		}
 
 		payload_size = size;
 		err = store_memptr_ptr(impl_data, payload_ptr, payload_size);
 		if (err != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("Failed to update memptr: %i", err);
 			return SUIT_ERR_CRASH;
 		}
+
+		return SUIT_SUCCESS;
 	}
 
-	return SUIT_SUCCESS;
+	LOG_ERR("%s does not support component type %d", __func__, component_type);
+	return SUIT_ERR_UNSUPPORTED_COMMAND;
 }
 
 int suit_plat_component_type_get(suit_component_t handle, suit_component_type_t *component_type)

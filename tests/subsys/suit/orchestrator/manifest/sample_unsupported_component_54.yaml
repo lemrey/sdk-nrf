@@ -23,8 +23,6 @@ SUIT_Envelope_Tagged:
             suit-digest-algorithm-id: cose-alg-sha-256
             suit-digest-bytes:
               file: file.bin
-          suit-parameter-image-size:
-            file: file.bin
       - suit-condition-vendor-identifier:
         - suit-send-record-success
         - suit-send-record-failure

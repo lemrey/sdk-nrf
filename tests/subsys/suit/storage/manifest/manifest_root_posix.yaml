@@ -73,8 +73,6 @@ SUIT_Envelope_Tagged:
           suit-digest-algorithm-id: cose-alg-sha-256
           suit-digest-bytes:
             file: app_posix.suit
-        suit-parameter-image-size:
-          file: app_posix.suit
     - suit-directive-fetch:
       - suit-send-record-failure
     - suit-condition-image-match:
