@@ -44,8 +44,8 @@ future==0.18.3            # via junitparser
 gcovr==6.0                # via -r zephyr/scripts/requirements-build-test.txt
 gitdb==4.0.11             # via gitpython
 gitlint==0.18.0           # via -r nrf/scripts/requirements-ci.txt, -r zephyr/scripts/requirements-extras.txt
-gitlint-core==0.18.0      # via gitlint
-gitpython==3.1.35         # via -r nrf/scripts/requirements-ci.txt
+gitlint-core==0.18.0      # via gitlint, gitlint-core
+gitpython==3.1.37         # via -r nrf/scripts/requirements-ci.txt
 graphviz==0.20.1          # via -r zephyr/scripts/requirements-extras.txt
 grpcio==1.59.2            # via grpcio-tools
 grpcio-tools==1.59.2      # via -r zephyr/scripts/requirements-extras.txt
@@ -100,7 +100,7 @@ pyelftools==0.30          # via -r zephyr/scripts/requirements-base.txt, pyocd
 pygit2==1.10.0            # via -r nrf/scripts/requirements-extra.txt
 pygithub==2.1.1           # via -r nrf/scripts/requirements-extra.txt, -r zephyr/scripts/requirements-extras.txt
 pygments==2.16.1          # via -r zephyr/scripts/requirements-doc.txt, gcovr, sphinx, sphinx-tabs
-pyjwt==2.8.0              # via pygithub
+pyjwt==2.8.0              # via pygithub, pyjwt
 pykwalify==1.8.0          # via -r zephyr/scripts/requirements-base.txt, -r zephyr/scripts/requirements-doc.txt, west
 pylink-square==1.2.0      # via -r zephyr/scripts/requirements-base.txt, pyocd
 pylint==3.0.2             # via -r nrf/scripts/requirements-build.txt, -r zephyr/scripts/requirements-compliance.txt
@@ -125,7 +125,7 @@ requests==2.31.0          # via -r zephyr/scripts/requirements-base.txt, azure-c
 rpds-py==0.12.0           # via jsonschema, referencing
 ruamel-yaml==0.18.5       # via pykwalify
 ruamel-yaml-clib==0.2.8   # via ruamel-yaml
-setuptools-scm==8.0.4     # via svada
+setuptools-scm==8.0.4     # via setuptools-scm, svada
 sh==1.14.2                # via gitlint-core
 six==1.16.0               # via anytree, azure-core, ecdsa, isodate, pylink-square, pyocd, python-dateutil
 smmap==5.0.1              # via gitdb
@@ -150,7 +150,7 @@ sphinxcontrib-qthelp==1.0.3  # via sphinx
 sphinxcontrib-serializinghtml==1.1.5  # via sphinx
 sphinxcontrib-svg2pdfconverter==1.2.2  # via -r zephyr/scripts/requirements-doc.txt
 stringcase==1.2.0         # via -r nrf/scripts/requirements-ci.txt
-svada==1.0.1              # via -r nrf/scripts/requirements-ci.txt
+svada==2.0.2              # via -r nrf/scripts/requirements-ci.txt
 tabulate==0.9.0           # via -r zephyr/scripts/requirements-run-test.txt
 toml==0.10.2              # via -r nrf/scripts/requirements-ci.txt
 tomli==2.0.1              # via mypy, pylint, pytest, setuptools-scm
@@ -166,3 +166,6 @@ wrapt==1.16.0             # via deprecated, python-can
 yamllint==1.33.0          # via -r zephyr/scripts/requirements-compliance.txt
 zcbor==0.7.0              # via -r nrf/scripts/requirements-build.txt, -r nrf/scripts/requirements-extra.txt, -r zephyr/scripts/requirements-extras.txt
 zipp==3.17.0              # via importlib-metadata, importlib-resources
+
+# The following packages are considered to be unsafe in a requirements file:
+setuptools==68.2.2        # via grpcio-tools, python-can, setuptools-scm, sphinx-togglebutton, west
