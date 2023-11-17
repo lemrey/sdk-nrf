@@ -31,16 +31,18 @@
  *    in the zephyr errno.h then if possible the value of the error should be equal to the negative value
  *    of the corresponding error in errno.h if possible to make integration easier.
  *    For example SUIT_PLAT_ERR_INVAL should have the value of -EINVAL.
- * 2) The suit_plat_err.h file defines the pool of common error codes, which must be understood
+ * 2) Values of error codes which do not have their equivalent in errno.h should start with -2000
+ *    (__ELASTERROR)
+ * 3) The suit_plat_err.h file defines the pool of common error codes, which must be understood
  *    by all modules in the SUIT platform.
- * 3) Any function that is called by the SUIT processor MUST convert the platform error codes
+ * 4) Any function that is called by the SUIT processor MUST convert the platform error codes
  *    to error codes which are defined by the SUIT processor in suit_types.h. All other public
  *    functions defined in the platform directory should also do this. They can use
  *    the suit_plat_err_to_proccessor_err_convert function to do so, however they can also choose
  *    to convert the error differently.
- * 4) Specific modules can extend the error codes pool. Error codes for a module must be positive
+ * 5) Specific modules can extend the error codes pool. Error codes for a module must be positive
  *    integers. Note that error codes for modules might overlap.
- * 5) If a module extends the error code pool it should define a type <module_name>_err_t which
+ * 6) If a module extends the error code pool it should define a type <module_name>_err_t which
  *    is resolved to int and should use it as a return type. This does not have a functional
  *    value, however it indicates the meaning of the error codes.
  * 7) A module dependent on a module which extends the common error code pool must understand
@@ -69,26 +71,28 @@ typedef int suit_plat_err_t;
  * It is recommended to avoid extending it unless really necessary.
  */
 #define SUIT_PLAT_SUCCESS                0
-#define SUIT_PLAT_ERR_CRASH             -1  /**< Execution crashed */
-#define SUIT_PLAT_ERR_SIZE              -2  /**< Invalid parameter size */
-#define SUIT_PLAT_ERR_OUT_OF_BOUNDS     -3  /**< Out of bounds */
-#define SUIT_PLAT_ERR_NOT_FOUND         -4  /**< Entity not found */
-#define SUIT_PLAT_ERR_IO                -5  /**< I/O error */
-#define SUIT_PLAT_ERR_INCORRECT_STATE   -6  /**< The module is not in a correct state
-				                  to perform the operation */
-#define SUIT_PLAT_ERR_HW_NOT_READY      -7  /**< Hardware is not ready */
-#define SUIT_PLAT_ERR_AUTHENTICATION    -8  /**< Authentication failed */
-#define SUIT_PLAT_ERR_UNREACHABLE_PATH  -9  /**< Firmware executed a path which
-				                 should be unreachable */
-#define SUIT_PLAT_ERR_CBOR_DECODING     -10  /**< CBOR string decoding error */
-#define SUIT_PLAT_ERR_UNSUPPORTED       -11  /**< Attempt to perform an unsupported operation */
+#define SUIT_PLAT_ERR_IO                -5   /**< I/O error */
 #define SUIT_PLAT_ERR_NOMEM             -12  /**< Not enough space */
-#define SUIT_PLAT_ERR_IPC               -13  /**< IPC error */
-#define SUIT_PLAT_ERR_NO_RESOURCES      -14  /**< Not enough resources */
+#define SUIT_PLAT_ERR_ACCESS            -13  /**< Permission denied */
 #define SUIT_PLAT_ERR_BUSY              -16  /**< Resource is busy */
 #define SUIT_PLAT_ERR_EXISTS            -17  /**< Element already exists */
 #define SUIT_PLAT_ERR_INVAL             -22  /**< Invalid parameter value */
 #define SUIT_PLAT_ERR_TIME              -62  /**< Timeout */
+
+#define SUIT_PLAT_ERR_CRASH             -2001  /**< Execution crashed */
+#define SUIT_PLAT_ERR_SIZE              -2002  /**< Invalid parameter size */
+#define SUIT_PLAT_ERR_OUT_OF_BOUNDS     -2003  /**< Out of bounds */
+#define SUIT_PLAT_ERR_NOT_FOUND         -2004  /**< Entity not found */
+#define SUIT_PLAT_ERR_INCORRECT_STATE   -2005  /**< The module is not in a correct state
+				                    to perform the operation */
+#define SUIT_PLAT_ERR_HW_NOT_READY      -2006  /**< Hardware is not ready */
+#define SUIT_PLAT_ERR_AUTHENTICATION    -2007  /**< Authentication failed */
+#define SUIT_PLAT_ERR_UNREACHABLE_PATH  -2008  /**< Firmware executed a path which
+				                    should be unreachable */
+#define SUIT_PLAT_ERR_CBOR_DECODING     -2009  /**< CBOR string decoding error */
+#define SUIT_PLAT_ERR_UNSUPPORTED       -2010  /**< Attempt to perform an unsupported operation */
+#define SUIT_PLAT_ERR_IPC               -2011  /**< IPC error */
+#define SUIT_PLAT_ERR_NO_RESOURCES      -2012  /**< Not enough resources */
 
 /**
  * If the error code is a common platform error code return it.
