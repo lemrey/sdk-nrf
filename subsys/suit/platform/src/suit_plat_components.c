@@ -21,7 +21,7 @@ struct suit_plat_component {
 };
 
 /** Platform component list, populated as a result of successful SUIT manifest validation. */
-static struct suit_plat_component components[SUIT_MAX_NUM_COMPONENTS];
+static struct suit_plat_component components[SUIT_MAX_NUM_COMPONENT_PARAMS];
 
 /** Resolve pointer to the component structure into component handle.
  */
@@ -42,7 +42,7 @@ static struct suit_plat_component *component_from_handle(suit_component_t handle
 	struct suit_plat_component *component = (struct suit_plat_component *)handle;
 
 	if ((handle < (intptr_t)&components[0]) ||
-	    (handle > (intptr_t)&components[SUIT_MAX_NUM_COMPONENTS - 1]) ||
+	    (handle > (intptr_t)&components[SUIT_MAX_NUM_COMPONENT_PARAMS - 1]) ||
 	    ((handle - first_component) % (sizeof(struct suit_plat_component)) != 0) ||
 	    (!component->in_use)) {
 		return NULL;
@@ -87,7 +87,7 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 	suit_memptr_storage_err_t err;
 	struct suit_plat_component *component = NULL;
 
-	for (size_t i = 0; i < SUIT_MAX_NUM_COMPONENTS; i++) {
+	for (size_t i = 0; i < SUIT_MAX_NUM_COMPONENT_PARAMS; i++) {
 		if (components[i].in_use == false) {
 			component = &components[i];
 			break;
