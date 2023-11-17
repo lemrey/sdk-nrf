@@ -64,6 +64,9 @@ target_sources_ifdef(CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_ENABLE
 target_sources_ifdef(CONFIG_DESKTOP_DFU_MCUMGR_ENABLE
 		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dfu_mcumgr.c)
 
+target_sources_ifdef(CONFIG_DESKTOP_DFU_MCUMGR_SUIT_ENABLE
+		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dfu_mcumgr_suit.c)
+
 target_sources_ifdef(CONFIG_DESKTOP_FN_KEYS_ENABLE
 		     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/fn_keys.c)
 

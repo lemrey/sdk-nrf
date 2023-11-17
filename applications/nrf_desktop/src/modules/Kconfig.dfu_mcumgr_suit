@@ -1,0 +1,32 @@
+#
+# Copyright (c) 2023 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menuconfig DESKTOP_DFU_MCUMGR_SUIT_ENABLE
+	bool "Enable SUIT DFU using MCUmgr [EXPERIMENTAL]"
+	select EXPERIMENTAL
+	select CAF_BLE_SMP_TRANSFER_EVENTS if MCUMGR_TRANSPORT_BT
+	select MCUMGR
+	select MCUMGR_MGMT_NOTIFICATION_HOOKS
+	select MCUMGR_SMP_COMMAND_STATUS_HOOKS
+	select MCUMGR_SMP_LEGACY_RC_BEHAVIOUR
+	select MGMT_SUITFU
+	select NET_BUF
+	select ZCBOR
+	select CRC
+	select FLASH_MAP
+	select FLASH
+	depends on SUIT
+	help
+	  This option enables an alternative method of performing SUIT DFU using the
+	  MCUmgr module.
+
+if DESKTOP_DFU_MCUMGR_SUIT_ENABLE
+
+module = DESKTOP_DFU_MCUMGR_SUIT
+module-str = SUIT DFU MCUmgr
+source "subsys/logging/Kconfig.template.log_config"
+
+endif
