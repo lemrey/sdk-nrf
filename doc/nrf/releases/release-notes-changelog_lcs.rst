@@ -89,7 +89,8 @@ See `Zigbee samples`_ for the list of changes for the Zigbee samples.
 ESB
 ---
 
-No changes since the latest nRF Connect SDK release.
+  * The :ref:`ESB module <esb_readme>` was ported to nRF54H20.
+  * Added radio mode with 4 Mbit/s rate.
 
 nRF IEEE 802.15.4 radio driver
 ------------------------------
@@ -216,6 +217,10 @@ Other samples
 * :ref:`radio_test` sample:
 
   * Added two radio modes with 4 Mbit/s rate.
+
+* :ref:`esb_prx_ptx` sample:
+
+  * Added support for nRF54H20.
 
 Devicetree configuration
 ========================
