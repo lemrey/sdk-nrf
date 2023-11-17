@@ -70,7 +70,7 @@ ZTEST(check_image_match_tests, test_mem_valid)
 	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
 
 	/* WHEN a check image match function is called */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN calculated digest matches valid digest value */
 	zassert_equal(SUIT_SUCCESS, err, "unexpected error code: %d", err);
@@ -105,7 +105,7 @@ ZTEST(check_image_match_tests, test_mem_wrong_size)
 	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
 
 	/* WHEN a check image match function is called */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN appropriate error code is returned */
 	zassert_equal(SUIT_FAIL_CONDITION, err, "unexpected error code: %d", err);
@@ -139,8 +139,7 @@ ZTEST(check_image_match_tests, test_mem_wrong_digest)
 	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
 
 	/* WHEN a check image match function is called with invalid digest */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &invalid_digest,
-					  sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &invalid_digest);
 
 	/* THEN appropriate error is returned */
 	zassert_equal(SUIT_FAIL_CONDITION, err, "unexpected error code: %d", err);
@@ -189,7 +188,7 @@ ZTEST(check_image_match_tests, test_cand_img_match)
 	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr failed: %d", err);
 
 	/* WHEN a check image match function is called */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN calculated digest matches valid digest value */
 	zassert_equal(SUIT_SUCCESS, err, "unexpected error code: %d", err);
@@ -216,8 +215,7 @@ ZTEST(check_image_match_tests, test_cand_img_mismatch)
 	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr failed: %d", err);
 
 	/* WHEN a check image match function is called with invalid digest */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &invalid_digest,
-					  sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &invalid_digest);
 
 	/* THEN appropriate error code is returned */
 	zassert_equal(SUIT_FAIL_CONDITION, err, "unexpected error code: %d", err);
@@ -249,7 +247,7 @@ ZTEST(check_image_match_tests, test_soc_spec_1)
 		      "test error - suit_plat_component_impl_data_get failed: %d", err);
 
 	/* WHEN a check image match function is called on a a non-nrf54h20 platform */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN appropriate error code is returned */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, err, "unexpected error code: %d", err);
@@ -280,7 +278,7 @@ ZTEST(check_image_match_tests, test_soc_spec_2)
 		      "test error - suit_plat_component_impl_data_get failed: %d", err);
 
 	/* WHEN a check image match function is called on a a non-nrf54h20 platform*/
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN appropriate error code is returned */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, err, "unexpected error code: %d", err);
@@ -311,7 +309,7 @@ ZTEST(check_image_match_tests, test_soc_spec_3)
 		      "test error - suit_plat_component_impl_data_get failed: %d", err);
 
 	/* WHEN a check image match function is called on a a non-nrf54h20 platform*/
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN appropriate error code is returned */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, err, "unexpected error code: %d", err);
@@ -341,7 +339,7 @@ ZTEST(check_image_match_tests, test_soc_spec_none)
 		      "test error - suit_plat_component_impl_data_get failed: %d", err);
 
 	/* WHEN a check image match function is called on a a non-nrf54h20 platform*/
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN appropriate error code is returned */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, err, "unexpected error code: %d", err);
@@ -373,7 +371,7 @@ ZTEST(check_image_match_tests, test_unhandled_component)
 	zassert_equal(SUIT_SUCCESS, err, "test error - create_component_handle failed: %d", err);
 
 	/* WHEN a check image match function is called */
-	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest, sizeof(data));
+	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
 
 	/* THEN appropriate error code is returned */
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, err, "unexpected error code: %d", err);

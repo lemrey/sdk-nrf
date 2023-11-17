@@ -145,7 +145,7 @@ static int suit_plat_check_image_match_soc_spec(struct zcbor_string *component_i
 }
 
 int suit_plat_check_image_match(suit_component_t component, enum suit_cose_alg alg_id,
-				struct zcbor_string *digest, size_t image_size)
+				struct zcbor_string *digest)
 {
 	struct zcbor_string *component_id = NULL;
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
