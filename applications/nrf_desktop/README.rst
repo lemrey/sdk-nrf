@@ -1319,8 +1319,7 @@ Sample gaming mouse (nrf54h20dk_nrf54h20_cpuapp\@soc1)
       * The application is configured to act as a gaming mouse.
       * Both Bluetooth LE and USB transports are enabled.
       * USB uses High-Speed mode to achieve better HID report rate (up to 8000 HID reports per second).
-      * Bluetooth LE is configured to use Nordic's SoftDevice Link Layer without LLPM.
-        The LLPM is currently not supported for this SoC.
+      * Bluetooth LE is configured to use Nordic's SoftDevice Link Layer and LLPM.
       * Inputs are simulated based on the hardware button presses.
         By default, the device generates ``1000`` motion per second of pressing a button.
         This is done to limit the speed of the mouse cursor, but it could also lead to motion set to ``0`` in some of the HID reports for USB High-Speed use case.
