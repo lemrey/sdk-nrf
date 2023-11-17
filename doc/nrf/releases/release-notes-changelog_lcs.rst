@@ -351,4 +351,7 @@ Documentation
 Added:
 
 * List and description of :ref:`directives <ug_suit_dfu_suit_directives>` used in the SUIT DFU procedure.
+
 * A page on :ref:`ug_nrf54h20_suit_components` in the :ref:`ug_nrf54h20_suit_dfu` user guide.
+
+* A page on :ref:`ug_nrf54h20_suit_hierarchical_manifests` in the :ref:`ug_nrf54h20_suit_dfu` user guide.
