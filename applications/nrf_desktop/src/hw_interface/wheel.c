@@ -13,6 +13,7 @@
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/pm/device_runtime.h>
 #ifdef CONFIG_PINCTRL
 #include <pinctrl_soc.h>
 #endif
@@ -218,9 +219,13 @@ static int enable_qdec(enum state next_state)
 
 	int err = 0;
 
-	/* QDEC device driver starts in PM_DEVICE_STATE_ACTIVE state. */
-	if (state != STATE_DISABLED) {
-		err = pm_device_action_run(qdec_dev, PM_DEVICE_ACTION_RESUME);
+	if (pm_device_runtime_is_enabled(qdec_dev)) {
+		err = pm_device_runtime_get(qdec_dev);
+	} else {
+		/* QDEC device driver starts in PM_DEVICE_STATE_ACTIVE state. */
+		if (state != STATE_DISABLED) {
+			err = pm_device_action_run(qdec_dev, PM_DEVICE_ACTION_RESUME);
+		}
 	}
 
 	if (err) {
@@ -260,7 +265,11 @@ static int disable_qdec(enum state next_state)
 		return err;
 	}
 
-	err = pm_device_action_run(qdec_dev, PM_DEVICE_ACTION_SUSPEND);
+	if (pm_device_runtime_is_enabled(qdec_dev)) {
+		err = pm_device_runtime_put(qdec_dev);
+	} else {
+		err = pm_device_action_run(qdec_dev, PM_DEVICE_ACTION_SUSPEND);
+	}
 	if (err) {
 		LOG_ERR("Cannot suspend QDEC");
 	} else {
@@ -319,6 +328,10 @@ static int init(void)
 	BUILD_ASSERT(ARRAY_SIZE(qdec_pin) == ARRAY_SIZE(gpio_cbs),
 		      "Invalid array size");
 	int err = 0;
+
+	if (IS_ENABLED(CONFIG_PM_DEVICE_RUNTIME)) {
+		pm_device_runtime_enable(qdec_dev);
+	}
 
 	for (size_t i = 0; (i < ARRAY_SIZE(qdec_pin)) && !err; i++) {
 		gpio_init_callback(&gpio_cbs[i], wakeup_cb, BIT(qdec_pin[i]));
