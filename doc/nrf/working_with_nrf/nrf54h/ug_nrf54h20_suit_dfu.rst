@@ -29,5 +29,5 @@ Components contain information such as ...
    ug_nrf54h20_suit_intro
    ug_nrf54h20_suit_manifest_overview.rst
    ug_nrf54h20_suit_hierarchical_manifests.rst
-   ug_nrf54h20_suit_create_manifest.rst
+   ug_nrf54h20_suit_customize_dfu.rst
    ug_nrf54h20_suit_components.rst

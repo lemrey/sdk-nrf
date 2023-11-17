@@ -15,7 +15,7 @@ This includes the following:
 
 * Manifests for the SecDom, which are controlled by Nordic Semiconductor and cannot be modified.
 
-You can read more about manifest topology in the :ref:`ug_nrf54h20_suit_create_manifest` page.
+You can read more about manifest topology in the :ref:`ug_nrf54h20_suit_customize_dfu` page.
 
 .. _ug_how_suit_manifest_works:
 

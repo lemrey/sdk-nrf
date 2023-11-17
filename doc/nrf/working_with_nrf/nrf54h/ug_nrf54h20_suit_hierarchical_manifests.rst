@@ -19,7 +19,7 @@ The hierarchical manifest system, which entails multiple manifests, allows for p
 
 To perform a DFU procedure on the nRF54H20 SoC, you must use either the manifest templates provided by Nordic Semiconductor or the manifest generator to create your own.
 Additionally, there may be some use cases where you will have to modify the manifests or the topology for your specific use case.
-See the :ref:`ug_nrf54h20_suit_create_manifest` page for instructions on how to modify values in the manifest.
+See the :ref:`ug_nrf54h20_suit_customize_dfu` page for instructions on how to modify values in the manifest.
 
 Default manifest topology
 *************************
@@ -58,7 +58,7 @@ An example of how this would be implemented includes:
 
    Detailed view of hierarchical manifest topology for the nRF54H20 SoC
 
-Read the :ref:`ug_nrf54h20_suit_create_manifest` user guide for instructions.
+Read the :ref:`ug_nrf54h20_suit_customize_dfu` user guide for instructions.
 
 Important considerations
 ************************
@@ -88,4 +88,4 @@ Therefore, specifying the correct UUID allows for a targeted DFU approach, where
 
 .. note::
    UUIDs for the SecDom, which is controlled by Nordic Semiconductor, may not be altered as they are already provisioned into the device.
-   For instructions on how to modify and generate UUIDs, see the :ref:`ug_nrf54h20_suit_create_manifest` page.
+   For instructions on how to modify and generate UUIDs, see the :ref:`ug_nrf54h20_suit_customize_dfu` page.
