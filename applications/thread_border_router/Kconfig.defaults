@@ -72,3 +72,9 @@ config OPENTHREAD_PLATFORM_UDP
 
 config OPENTHREAD_MESSAGE_BUFFER_SIZE
     default 256
+
+config OPENTHREAD_DUA
+    default y
+
+config OPENTHREAD_BACKBONE_ROUTER_DUA_NDPROXYING
+    default y

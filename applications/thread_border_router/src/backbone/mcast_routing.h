@@ -23,9 +23,8 @@ void mcast_routing_init(void);
 /**
  * @brief Handle changes in OpenThread's state
  *
- * @param instance  OT instance
- * @param flags     Flags that have changed
+ * @param enabled  Set to true or false to enable or disable Multicast Routing
  */
-void mcast_routing_handle_ot_state(struct otInstance *instance, otChangedFlags flags);
+void mcast_routing_set_enabled(bool enabled);
 
 #endif /* TBR_INCLUDE_MCAST_ROUTING_H_ */

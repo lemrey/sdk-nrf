@@ -20,23 +20,6 @@ LOG_MODULE_DECLARE(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
 #define MCAST_ROUTE_PREFIX_LEN 128
 
-static void set_enabled(bool enabled)
-{
-	struct tbr_context *ctx = tbr_get_context();
-
-	if (IS_ENABLED(CONFIG_NET_ROUTE_MCAST)) {
-		LOG_INF("Enabling multicast routing");
-
-		if (enabled) {
-			net_if_flag_set(ctx->backbone_iface, NET_IF_FORWARD_MULTICASTS);
-			net_if_flag_set(ctx->ot->iface, NET_IF_FORWARD_MULTICASTS);
-		} else {
-			net_if_flag_clear(ctx->backbone_iface, NET_IF_FORWARD_MULTICASTS);
-			net_if_flag_clear(ctx->ot->iface, NET_IF_FORWARD_MULTICASTS);
-		}
-	}
-}
-
 static void add_listener(const struct otIp6Address *address)
 {
 	struct in6_addr addr;
@@ -101,19 +84,19 @@ void mcast_routing_init(void)
 	otBackboneRouterSetMulticastListenerCallback(ctx->ot->instance, handle_event, NULL);
 }
 
-void mcast_routing_handle_ot_state(struct otInstance *instance,
-				   otChangedFlags flags)
+void mcast_routing_set_enabled(bool enabled)
 {
-	otBackboneRouterState state = otBackboneRouterGetState(instance);
+	struct tbr_context *ctx = tbr_get_context();
 
-	switch (state)
-	{
-	case OT_BACKBONE_ROUTER_STATE_DISABLED:
-	case OT_BACKBONE_ROUTER_STATE_SECONDARY:
-		set_enabled(false);
-		break;
-	case OT_BACKBONE_ROUTER_STATE_PRIMARY:
-		set_enabled(true);
-		break;
+	if (IS_ENABLED(CONFIG_NET_ROUTE_MCAST)) {
+		LOG_INF("Enabling multicast routing");
+
+		if (enabled) {
+			net_if_flag_set(ctx->backbone_iface, NET_IF_FORWARD_MULTICASTS);
+			net_if_flag_set(ctx->ot->iface, NET_IF_FORWARD_MULTICASTS);
+		} else {
+			net_if_flag_clear(ctx->backbone_iface, NET_IF_FORWARD_MULTICASTS);
+			net_if_flag_clear(ctx->ot->iface, NET_IF_FORWARD_MULTICASTS);
+		}
 	}
 }

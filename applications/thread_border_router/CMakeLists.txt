@@ -39,6 +39,8 @@ target_sources(app PRIVATE
 	src/shell.c
 	src/api_extensions/ip6_ext.cpp
 	src/backbone/mcast_routing.c
+	src/backbone/backbone_agent.c
+	src/backbone/nd_proxy.c
 	src/platform/infra_if.c
 	src/platform/udp.c
 	src/utils/utils.c

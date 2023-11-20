@@ -10,7 +10,7 @@
 
 #include "border_agent.h"
 #include "tbr.h"
-#include "backbone/mcast_routing.h"
+#include "backbone/backbone_agent.h"
 #include "platform/infra_if.h"
 
 #include <ipv6.h>
@@ -195,7 +195,7 @@ static int init_application(void)
 	context->ot = openthread_get_default_context();
 
 	infra_if_init();
-	mcast_routing_init();
+	backbone_agent_init();
 
 	net_mgmt_init_event_callback(&net_event_cb,
 				net_ev_cb_handler,
@@ -242,10 +242,6 @@ static void on_thread_state_changed(otChangedFlags flags, struct openthread_cont
 
 	if (flags & OT_CHANGED_THREAD_ROLE) {
 		handle_role_change(ot_context->instance, flags);
-	}
-
-	if (flags & OT_CHANGED_THREAD_BACKBONE_ROUTER_STATE) {
-		mcast_routing_handle_ot_state(ot_context->instance, flags);
 	}
 }
 

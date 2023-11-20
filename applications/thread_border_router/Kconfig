@@ -69,6 +69,12 @@ config NRF_TBR_MAX_UDP_DGRAM_SIZE
     help
       Maximum size of UDP datagrams that can be sent using OpenThread's API
 
+config NRF_TBR_ND_PROXY_ENTRY_COUNT
+    int "ND Proxy table entries"
+    default 8
+    help
+      Maximum number of addresses that can be handled by ND Proxy module
+
 menu "Zephyr Kernel"
 source "Kconfig.zephyr"
 endmenu
