@@ -31,7 +31,7 @@
 /applications/asset_tracker_v2/           @simensrostad @jtguggedal @jhn-nordic @coderbyheart
 /applications/connectivity_bridge/        @jtguggedal @nordic-auko
 /applications/machine_learning/           @pdunaj
-/applications/matter_weather_station/     @Damian-Nordic @kkasperczyk-no
+/applications/matter_weather_station/     @ArekBalysNordic
 /applications/nrf_desktop/                @MarekPieta
 /applications/nrf5340_audio/              @koffes @alexsven @erikrobstad @rick1082 @gWacey
 /applications/peripheral_sensor_node/     @nvlsianpu
@@ -139,7 +139,7 @@ Kconfig*                                  @tejlmand
 /samples/bluetooth/direction_finding_connectionless_tx/ @ppryga-nordic @alwa-nordic
 /samples/bluetooth/peripheral_fast_pair/  @MarekPieta @kapi-no @KAGA164
 /samples/bootloader/                      @hakonfam @oyvindronningstad
-/samples/matter/                          @Damian-Nordic @kkasperczyk-no
+/samples/matter/                          @ArekBalysNordic
 /samples/crypto/                          @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /samples/debug/ppi_trace/                 @nordic-krch @anangl
 /samples/hw_id/                           @maxd-nordic
