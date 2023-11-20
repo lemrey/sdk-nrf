@@ -63,7 +63,7 @@ bool suit_plat_digest_cache_is_unlocked(void);
  * @param[in] component_id CBOR string containing the Component ID data.
  * @param[in] digest       CBOR string containing the digest for the given Component ID.
  *
- * @retval SUIT_SUCCESS                   Entry added or updated succesfully
+ * @retval SUIT_SUCCESS                   Entry added or updated successfully
  * @retval SUIT_ERR_UNSUPPORTED_COMMAND   The cache is locked
  * @retval SUIT_ERR_UNSUPPORTED_PARAMETER One of the parameters is not a valid pointer
  * @retval SUIT_ERR_OVERFLOW              The cache is full

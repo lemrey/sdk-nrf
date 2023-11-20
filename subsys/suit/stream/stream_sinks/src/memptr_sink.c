@@ -37,7 +37,7 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 		err = store_memptr_ptr(ctx, buf, *size);
 		if (err != SUIT_PLAT_SUCCESS)
 		{
-			/* In the current condtions store_memptr_ptr will only
+			/* In the current conditions store_memptr_ptr will only
 			   fail with SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD */
 			return SUIT_PLAT_ERR_NOT_FOUND;
 		}
