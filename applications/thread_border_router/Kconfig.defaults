@@ -67,5 +67,8 @@ config OPENTHREAD_DNS_CLIENT
 config OPENTHREAD_MLR
     default y
 
+config OPENTHREAD_PLATFORM_UDP
+    default y
+
 config OPENTHREAD_MESSAGE_BUFFER_SIZE
     default 256
