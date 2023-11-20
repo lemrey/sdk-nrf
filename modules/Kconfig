@@ -5,4 +5,3 @@
 #
 
 osource "$(NCS_MEMFAULT_FIRMWARE_SDK_KCONFIG)"
-rsource "tfm/zephyr/Kconfig"
