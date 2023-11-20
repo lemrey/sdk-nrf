@@ -277,16 +277,3 @@
     - nrf52820dongle_nrf52820
     - nrf52833dk_nrf52820
   comment: "https://nordicsemi.atlassian.net/browse/NCSDK-23674"
-
-- scenarios:
-    - net.lib.nrf_cloud.cloud
-    - net.lib.download_client
-  platforms:
-    - native_posix
-  comment: "Regression introduced at https://github.com/nrfconnect/sdk-nrf-next/pull/1888"
-
-- scenarios:
-    - bluetooth.gatt_dm
-  platforms:
-    - native_posix
-  comment: "Regression introduced at https://github.com/nrfconnect/sdk-nrf-next/pull/1888"
