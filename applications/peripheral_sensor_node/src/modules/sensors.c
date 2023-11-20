@@ -117,7 +117,6 @@ static int bmi270_configure(const struct device *dev)
 		return ret;
 	}
 
-
 	return ret;
 }
 
@@ -418,33 +417,6 @@ static void init(void)
 }
 
 /**
- * @brief Process the wake_up_event.
- *
- * @param[in] event	Wake up event.
- * @return true		Consume the event.
- * @return false	Do not consume the event.
- */
-static bool handle_wake_up_event(const struct wake_up_event *event)
-{
-	struct sensor_start_event *start_env = new_sensor_start_event();
-
-	start_env->descr = "env";
-	start_env->delay = 0;
-	start_env->period = 2000;
-
-	struct sensor_start_event *start_bmi = new_sensor_start_event();
-
-	start_bmi->descr = "imu";
-	start_bmi->delay = 0;
-	start_bmi->period = 2000;
-
-	APP_EVENT_SUBMIT(start_bmi);
-	APP_EVENT_SUBMIT(start_env);
-
-	return false;
-}
-
-/**
  * @brief Process the power_down_event.
  *
  * @param[in] event	Power down event.
@@ -453,15 +425,6 @@ static bool handle_wake_up_event(const struct wake_up_event *event)
  */
 static bool handle_power_down_event(const struct power_down_event *event)
 {
-	struct sensor_stop_event *stop_env = new_sensor_stop_event();
-	struct sensor_stop_event *stop_imu = new_sensor_stop_event();
-
-	stop_env->descr = "env";
-	stop_imu->descr = "imu";
-
-	APP_EVENT_SUBMIT(stop_env);
-	APP_EVENT_SUBMIT(stop_imu);
-
 	const struct sensor_config *sc = get_sensor_config("wu_imu");
 
 	if (sc) {
@@ -556,10 +519,6 @@ static bool handle_sensor_event(const struct sensor_event *event)
  */
 static bool app_event_handler(const struct app_event_header *aeh)
 {
-	if (is_wake_up_event(aeh)) {
-		return handle_wake_up_event(cast_wake_up_event(aeh));
-	}
-
 	if (is_power_down_event(aeh)) {
 		return handle_power_down_event(cast_power_down_event(aeh));
 	}
@@ -598,7 +557,6 @@ static bool app_event_handler(const struct app_event_header *aeh)
 
 APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE(MODULE, module_state_event);
-APP_EVENT_SUBSCRIBE(MODULE, wake_up_event);
 APP_EVENT_SUBSCRIBE(MODULE, power_down_event);
 APP_EVENT_SUBSCRIBE_FIRST(MODULE, sensor_start_event);
 APP_EVENT_SUBSCRIBE_FINAL(MODULE, sensor_stop_event);

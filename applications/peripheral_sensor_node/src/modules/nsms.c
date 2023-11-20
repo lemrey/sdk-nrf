@@ -51,15 +51,7 @@ static bool handle_sensor_event(const struct sensor_event *event)
 	LOG_INF("%s", buf);
 
 	if (!strcmp(event->descr, "env")) {
-		static size_t cnt;
-
 		bt_nsms_set_status(&nsms_env, buf);
-
-		if (++cnt == 10) {
-			cnt = 0;
-
-			APP_EVENT_SUBMIT(new_power_down_event());
-		}
 	} else if (!strcmp(event->descr, "imu")) {
 		bt_nsms_set_status(&nsms_imu, buf);
 	}

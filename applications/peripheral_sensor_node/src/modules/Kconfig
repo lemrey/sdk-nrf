@@ -6,6 +6,7 @@
 
 menu "Application modules"
 
+rsource "Kconfig.app_control"
 rsource "Kconfig.sensors"
 
 endmenu
