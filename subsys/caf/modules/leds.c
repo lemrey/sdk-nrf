@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/led.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/pm/device_runtime.h>
 
 #include <caf/events/power_event.h>
 #include <caf/events/led_event.h>
@@ -174,29 +175,6 @@ static void led_update(struct led *led)
 	}
 }
 
-static int leds_init(void)
-{
-	int err = 0;
-
-	BUILD_ASSERT(DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) > 0, "No LEDs defined");
-
-	for (size_t i = 0; (i < ARRAY_SIZE(leds)) && !err; i++) {
-		struct led *led = &leds[i];
-
-		__ASSERT_NO_MSG((led->color_count == 1) || (led->color_count == 3));
-
-		if (!device_is_ready(led->dev)) {
-			LOG_ERR("Device %s is not ready", led->dev->name);
-			err = -ENODEV;
-		} else {
-			k_work_init_delayable(&led->work, work_handler);
-			led_update(led);
-		}
-	}
-
-	return err;
-}
-
 static void leds_start(void)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(leds); i++) {
@@ -204,9 +182,15 @@ static void leds_start(void)
 		/* Zephyr power management API is not implemented for GPIO LEDs.
 		 * LEDs are turned off by CAF LEDs module.
 		 */
-		int err = pm_device_action_run(leds[i].dev, PM_DEVICE_ACTION_RESUME);
+		int err;
 
-		if (err) {
+		if (pm_device_runtime_is_enabled(leds[i].dev)) {
+			err = pm_device_runtime_get(leds[i].dev);
+		} else {
+			err = pm_device_action_run(leds[i].dev, PM_DEVICE_ACTION_RESUME);
+		}
+
+		if (err && (err != -EALREADY)) {
 			LOG_ERR("Failed to set LED driver into active state (err: %d)", err);
 		}
 #endif
@@ -225,13 +209,46 @@ static void leds_stop(void)
 		/* Zephyr power management API is not implemented for GPIO LEDs.
 		 * LEDs are turned off by CAF LEDs module.
 		 */
-		int err = pm_device_action_run(leds[i].dev, PM_DEVICE_ACTION_SUSPEND);
+		int err;
 
-		if (err) {
+		if (pm_device_runtime_is_enabled(leds[i].dev)) {
+			err = pm_device_runtime_put(leds[i].dev);
+		} else {
+			err = pm_device_action_run(leds[i].dev, PM_DEVICE_ACTION_SUSPEND);
+		}
+
+		if (err && (err != -EALREADY)) {
 			LOG_ERR("Failed to set LED driver into suspend state (err: %d)", err);
 		}
 #endif
 	}
+}
+
+static int leds_init(void)
+{
+	int err = 0;
+
+	BUILD_ASSERT(DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) > 0, "No LEDs defined");
+
+	for (size_t i = 0; (i < ARRAY_SIZE(leds)) && !err; i++) {
+		struct led *led = &leds[i];
+
+		__ASSERT_NO_MSG((led->color_count == 1) || (led->color_count == 3));
+
+		if (!device_is_ready(led->dev)) {
+			LOG_ERR("Device %s is not ready", led->dev->name);
+			err = -ENODEV;
+		} else {
+			k_work_init_delayable(&led->work, work_handler);
+			if (IS_ENABLED(CONFIG_PM_DEVICE_RUNTIME)) {
+				pm_device_runtime_enable(led->dev);
+			}
+		}
+	}
+
+	leds_start();
+
+	return err;
 }
 
 static bool app_event_handler(const struct app_event_header *aeh)
