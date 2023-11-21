@@ -118,6 +118,30 @@ Configuration
 
 |config|
 
+.. _nrf_tbr_app_configuration:
+
+nRF TBR configuration files
+===========================
+
+The nRF TBR application provides predefined configuration files for different build types, and they are located in the :file:`applications/thread_border_router` directory.
+
+The following configuration files are provided:
+
+* :file:`prj.conf` - This file contains the standard configuration for the nRF TBR application and represents a ``debug`` build type.
+
+* :file:`prj_release.conf` - This configuration file represents a ``release`` build type of the application.
+  You can use this version to enable only the necessary application functionalities to optimize its performance and size.
+  This configuration file can be included by adding ``-DCONF_FILE=prj_release.conf`` to your build command. See :ref:`cmake_options`.
+
+* :file:`overlay-nat64.conf` - The overlay file that adds NAT64 and all necessary features required to access resources in IPv4 networks from Thread network.
+  You can include it by adding ``-DOVERLAY_CONFIG=overlay-nat64.conf`` to your build command.
+
+See :ref:`app_build_system` for more information on the |NCS| configuration system.
+
+.. note::
+    :ref:`nrf_tbr_app_select_configuration` is optional.
+    The :file:`prj.conf` build type is used by default if no build type is explicitly selected.
+
 Building and running
 ********************
 
@@ -125,6 +149,39 @@ Building and running
 .. |build command| replace:: west build -p -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
 .. include:: /includes/application_build_and_run_54h.txt
+
+.. _nrf_tbr_app_select_configuration:
+
+Selecting a configuration type
+==============================
+
+Before you start testing the application, you can select one of the :ref:`nrf_tbr_app_configuration`, depending on your building method.
+
+Selecting a build type in |VSC|
+-------------------------------
+
+.. include:: /getting_started/modifying.rst
+   :start-after: build_types_selection_vsc_start
+   :end-before: build_types_selection_vsc_end
+
+Selecting a build type from command line
+----------------------------------------
+
+.. include:: /getting_started/modifying.rst
+   :start-after: build_types_selection_cmd_start
+   :end-before: For example, you can replace the
+
+For example, you can replace the *selected_build_type* variable to build the ``release`` firmware for ``nrf54h20dk_nrf54h20_cpuapp`` by running the following command in the project directory:
+
+.. code-block:: console
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_release.conf
+
+Also, you can enable specific feature for ``nrf54h20dk_nrf54h20_cpuapp`` by running the following command in the project directory:
+
+.. code-block:: console
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=overlay-nat64.conf
 
 Thread CLI device building
 ==========================
