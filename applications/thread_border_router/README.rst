@@ -22,7 +22,7 @@ The Thread Border Router also provides services for devices within the IEEE 802.
 
 The nRF TBR application is Nordic Semiconductor's implementation of the Thread Border Router.
 
-The current version of the application only supports IPv6 connectivity between Thread and non-Thread devices over the external network link.
+It supports IPv4 and IPv6 connectivity between Thread and non-Thread devices over the external network link.
 
 Architecture
 ============
@@ -55,6 +55,18 @@ DHCPv6 and prefix delegation
 Border Agent
   A function that relays MeshCoP messages between the Thread Network and an external Thread Commissioner.
 
+IPv4 support (NAT64/DNS64)
+  Description
+
+Multicast forwarding
+  Description
+
+ND Proxy
+  Description
+
+Backbone Agent
+  Description
+
 Requirements
 ************
 
@@ -66,8 +78,8 @@ The application supports the following preview development kit (PDK):
 
 In addition to the PDK, the application needs the following hardware modules:
 
-* The `PHYTEC link board ETH`_ extension board as an external interface for Internet connection.
-* An nRF54-Style-DK IO adapter board (PCA64161) as a SHIM (Shove Hardware in the Middle), connecting the `PHYTEC link board ETH`_ extension board to the nRF54H20 PDK.
+* The `PHYTEC link board ETH`_ extension board or Wi-Fi `nRF7002 EB`_ (Wi-Fi connection) as an external interface for Internet connection.
+* An nRF54-Style-DK IO adapter board (PCA64161) as a SHIM (Shove Hardware in the Middle), connecting the `PHYTEC link board ETH`_ extension board or Wi-Fi `nRF7002 EB`_ to the nRF54H20 PDK.
 
 .. figure:: /images/nrf_tbr_app_hardware.svg
     :alt: Hardware connection
@@ -76,7 +88,10 @@ In addition to the PDK, the application needs the following hardware modules:
 
 To perform testing, the following additional devices are required:
 
-* A router, with IPv6 connectivity through Ethernet, or a network switch
+* One of the following networking devices depending on the connection:
+
+  * A router with IPv6 or IPv4 (if the NAT feature is enabled) connectivity for Ethernet or Wi-Fi connection.
+  * A network switch for Ethernet connection only.
 
    .. note::
       nRF TBR uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with other devices.

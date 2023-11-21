@@ -364,6 +364,8 @@
 .. _`Dictionary-based Logging`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/services/logging/index.html#dictionary-based-logging
 .. _`Run-time Filtering`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/services/logging/index.html#run-time-filtering
 
+.. _`nRF7002 EB`: https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/device_guides/working_with_nrf/nrf70/gs.html#nrf7002-eb
+
 .. ### Source: www.nordicsemi.com
 
 .. _`Nordic Semiconductor website`: https://www.nordicsemi.com/
