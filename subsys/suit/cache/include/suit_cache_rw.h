@@ -13,6 +13,10 @@
 #include <zephyr/storage/flash_map.h>
 #include <suit_cache.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This header is meant to be used only from APP core context.
  * It extends suit_cache by adding to cache write and erase capabilities.
  */
@@ -87,5 +91,9 @@ suit_plat_err_t dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_e
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
 suit_plat_err_t dfu_drop_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_CACHE_RW_H__ */

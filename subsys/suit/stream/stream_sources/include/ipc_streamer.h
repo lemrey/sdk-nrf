@@ -27,6 +27,10 @@
  */
 #include <sink.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Provided by streamer requestor to its clients, i.e. SUIT fetch directive implementation.
  * Streams an image from source to sink
@@ -237,5 +241,9 @@ suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
  *
  */
 void ipc_streamer_missing_image_evt_unsubscribe(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* IPC_STREAMER_H__ */

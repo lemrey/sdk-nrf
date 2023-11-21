@@ -11,6 +11,10 @@
 #include <zcbor_common.h>
 #include <suit_plat_mem_util.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SUIT_STORAGE_ADDRESS	suit_plat_get_nvm_ptr(SUIT_STORAGE_OFFSET)
 #define SUIT_STORAGE_OFFSET	FIXED_PARTITION_OFFSET(suit_storage)
 #define SUIT_STORAGE_SIZE	FIXED_PARTITION_SIZE(suit_storage)
@@ -176,5 +180,9 @@ suit_plat_err_t suit_storage_encode_envelope_header(suit_envelope_hdr_t *envelop
 suit_plat_err_t suit_storage_decode_suit_envelope_severed(const uint8_t *buf, size_t len,
 							  struct SUIT_Envelope_severed *envelope,
 							  size_t *envelope_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_STORAGE_INTERNAL_H__ */

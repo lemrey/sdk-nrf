@@ -49,6 +49,10 @@
 #include <zephyr/types.h>
 #include <suit_plat_err.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 	uint8_t raw[16];
 } suit_uuid_t;
@@ -264,5 +268,9 @@ mci_err_t mci_compare_suit_uuid(const suit_uuid_t *uuid1, const suit_uuid_t *uui
  *
  */
 mci_err_t mci_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_MCI_H__ */

@@ -9,6 +9,10 @@
 
 #include <sink.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Fetch source manager allows for registration of multiple data sources. When fetch_source_stream
  * is called, fetch source manager iterates over registered fetch sources, calling respective
@@ -63,5 +67,9 @@ suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_
  */
 suit_plat_err_t fetch_source_stream(const uint8_t *resource_id, size_t resource_id_length,
 			struct stream_sink *sink);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FETCH_SOURCE_MGR_H__ */

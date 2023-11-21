@@ -10,6 +10,10 @@
 #include <sink.h>
 #include <suit_memptr_storage.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Get the flash_sink object
  *
@@ -20,5 +24,9 @@
  * @return SUIT_PLAT_SUCCESS if success otherwise error code.
  */
 suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FLASH_SINK_H__ */

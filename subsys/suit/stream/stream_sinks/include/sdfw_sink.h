@@ -9,6 +9,10 @@
 
 #include <sink.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Get the sdfw_sink object
  *
@@ -16,5 +20,9 @@
  * @return SUIT_PLAT_SUCCESS if success, error code otherwise
  */
 suit_plat_err_t sdfw_sink_get(struct stream_sink *sink);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDFW_SINK_H__ */

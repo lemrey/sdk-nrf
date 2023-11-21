@@ -10,6 +10,10 @@
 #include <sink.h>
 #include <psa/crypto.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef int digest_sink_err_t;
 
  /**< The compared digests do not match */
@@ -48,5 +52,9 @@ suit_plat_err_t digest_sink_get(struct stream_sink *sink, psa_algorithm_t algori
  * using digest_sink_get function
  */
 digest_sink_err_t digest_sink_digest_match(void *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DIGEST_SINK_H__ */

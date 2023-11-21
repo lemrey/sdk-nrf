@@ -9,6 +9,10 @@
 
 #include <sink.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Stream payload from cache to sink
  *
@@ -20,5 +24,9 @@
  */
 suit_plat_err_t cache_streamer(const uint8_t *uri, size_t uri_size,
                                struct stream_sink *sink);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CACHE_FETCH_H__ */

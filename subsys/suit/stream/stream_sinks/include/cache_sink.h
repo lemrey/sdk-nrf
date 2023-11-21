@@ -9,6 +9,10 @@
 
 #include <sink.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Get cache sink object
  *
@@ -36,6 +40,10 @@ suit_plat_err_t suit_cache_sink_commit(void *ctx);
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
 suit_plat_err_t suit_cache_sink_drop(void *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* No release for cache */
 #endif /* CACHE_SINK_H__ */

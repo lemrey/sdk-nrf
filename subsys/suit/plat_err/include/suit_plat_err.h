@@ -7,6 +7,10 @@
 #ifndef SUIT_PLAT_ERR_H__
 #define SUIT_PLAT_ERR_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This file contains the definitions needed for error codes handling
  * by the SUIT platform.
  *
@@ -98,5 +102,9 @@ typedef int suit_plat_err_t;
  * If the error code is a common platform error code return it.
  */
 #define SUIT_RETURN_IF_SUIT_PLAT_COMMON_ERR_CODE(err) if ((err) < 0) {return err;}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLAT_ERR_H__ */

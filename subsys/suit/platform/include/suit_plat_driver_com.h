@@ -9,6 +9,10 @@
 
 #include <suit_types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Validate component vid against expected value
  *
@@ -26,5 +30,9 @@ int plat_com_check_vid(suit_component_t handle, struct zcbor_string *vid_uuid);
  * @return int Error code
  */
 int plat_com_check_cid(suit_component_t handle, struct zcbor_string *cid_uuid);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLAT_DRIVER_COM_H__ */

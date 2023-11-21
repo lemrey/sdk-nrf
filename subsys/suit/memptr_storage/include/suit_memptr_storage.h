@@ -12,6 +12,10 @@
 #include <stdbool.h>
 #include <suit_plat_err.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef int suit_memptr_storage_err_t;
 
 /**< Invalid record */
@@ -69,5 +73,9 @@ suit_memptr_storage_err_t store_memptr_ptr(memptr_storage_handle handle, uint8_t
  */
 suit_memptr_storage_err_t get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr,
 					 size_t *payload_size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_MEMPTR_STORAGE_H__ */

@@ -13,6 +13,10 @@
 #include <zephyr/storage/flash_map.h>
 #include <suit_plat_err.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This header has no restrictions on the context in which it can be used.
  * Contains functions allowing searching and reading from cache.
  *
@@ -139,5 +143,9 @@ suit_plat_err_t suit_cache_copy(struct suit_cache *dst_cache, const struct suit_
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
 suit_plat_err_t suit_cache_search(const struct zcbor_string *uri, struct zcbor_string *payload);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_CACHE_H__ */

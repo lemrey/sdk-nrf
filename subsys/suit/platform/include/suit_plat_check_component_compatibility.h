@@ -10,6 +10,10 @@
 #include <suit_mci.h>
 #include <zcbor_common.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Check component ID and manifest class ID against supported manifests
  *
@@ -19,5 +23,9 @@
  */
 int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *class_id,
 					    struct zcbor_string *component_id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY_H__ */

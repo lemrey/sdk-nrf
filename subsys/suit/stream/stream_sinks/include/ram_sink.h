@@ -9,6 +9,10 @@
 
 #include <sink.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Get the ram_sink object
  *
@@ -18,5 +22,9 @@
  * @return SUIT_PLAT_SUCCESS if success otherwise error code.
  */
 suit_plat_err_t ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* RAM_SINK_H__ */

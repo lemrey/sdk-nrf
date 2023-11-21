@@ -10,6 +10,10 @@
 #include <stdint.h>
 #include <suit_types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief SUIT component type.
  *
  * @details To provide a better flexibility in the component ID definitions,
@@ -59,5 +63,9 @@ int suit_plat_component_id_get(suit_component_t handle, struct zcbor_string **co
 
 /** Return component type based on component handle */
 int suit_plat_component_type_get(suit_component_t handle, suit_component_type_t *component_type);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLATFORM_INTERNAL_H__ */

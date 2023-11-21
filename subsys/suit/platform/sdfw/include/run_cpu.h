@@ -9,6 +9,10 @@
 
 #include <suit_platform.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Run specified CPU.
  * @note Implementation depends on SoC on which it's built.
@@ -18,5 +22,9 @@
  * @return int 0 in case of success, otherwise error code
  */
 int plat_run_cpu(uint8_t cpu_id, intptr_t run_address);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLAT_RUN_CPU_H__ */

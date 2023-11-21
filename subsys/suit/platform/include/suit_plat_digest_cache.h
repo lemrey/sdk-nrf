@@ -28,6 +28,10 @@
 #include <suit_types.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Enable modifications of the the cache.
  *
@@ -114,5 +118,9 @@ int suit_plat_digest_cache_remove_all(void);
  * @retval SUIT_ERR_UNSUPPORTED_COMMAND      The cache is locked
  */
 int suit_plat_digest_cache_remove_by_handle(suit_component_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLAT_DIGEST_CACHE_H__ */

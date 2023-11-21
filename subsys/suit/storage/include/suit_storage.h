@@ -14,6 +14,10 @@
 #include <suit_mreg.h>
 #include <suit_plat_err.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Initialize the SUIT storage driver.
  *
@@ -72,5 +76,9 @@ suit_plat_err_t suit_storage_installed_envelope_get(const suit_manifest_class_id
  */
 suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *addr,
 											  size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_STORAGE_H__ */

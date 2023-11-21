@@ -10,6 +10,10 @@
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define FLASH_AREA_ERASE_BLOCK_SIZE(label)                                                         \
 	DT_PROP(DT_GPARENT(DT_NODELABEL(label)), erase_block_size)
 #define FLASH_AREA_WRITE_BLOCK_SIZE(label)                                                         \
@@ -70,5 +74,9 @@ uintptr_t suit_plat_get_nvm_offset(uint8_t *ptr);
  * @returns Pointer to the memory.
  */
 uint8_t *suit_plat_get_nvm_ptr(uintptr_t offset);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLAT_MEM_UTIL_H__ */

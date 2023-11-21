@@ -11,6 +11,10 @@
 #include <stdint.h>
 #include <suit_plat_err.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef suit_plat_err_t (*erase_ptr)(void *ctx);
 typedef suit_plat_err_t (*write_ptr)(void *ctx, uint8_t *buf, size_t *size);
 typedef suit_plat_err_t (*seek_ptr)(void *ctx, size_t offset);
@@ -35,5 +39,9 @@ struct stream_sink {
 
 	void *ctx; /* context used by specific sink implementation */
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SINK_H__ */

@@ -10,6 +10,10 @@
 #include <sink.h>
 #include <suit_types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Get sink based on component handle
  * 
@@ -18,5 +22,9 @@
  * @return int 0 in case of success, otherwise error code
  */
 int select_sink(suit_component_t dst_handle, struct stream_sink *sink);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SINK_SELECTOR_H__ */

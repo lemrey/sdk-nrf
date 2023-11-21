@@ -16,6 +16,10 @@
 #endif /* CONFIG_SUIT_PLATFORM*/
 #include <suit_plat_err.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SUIT_PLAT_MAX_NUM_COMPONENT_ID_PARTS                                                       \
 	5 /**< The maximum number of bytestrings in a component ID. */
 
@@ -93,5 +97,9 @@ suit_plat_err_t suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *i
 suit_plat_err_t suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
 						   suit_manifest_class_id_t **class_id);
 #endif /* CONFIG_SUIT_MCI */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_PLAT_DECODE_UTIL_H__ */

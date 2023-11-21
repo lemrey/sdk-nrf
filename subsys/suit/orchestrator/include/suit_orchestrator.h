@@ -7,6 +7,10 @@
 #ifndef SUIT_ORCHESTRATOR_H__
 #define SUIT_ORCHESTRATOR_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Initialize the SUIT orchestrator before it can be used.
  *
@@ -20,5 +24,9 @@ int suit_orchestrator_init(void);
  * @return 0 on success, negative value otherwise.
  */
 int suit_orchestrator_entry(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SUIT_ORCHESTRATOR_H__ */

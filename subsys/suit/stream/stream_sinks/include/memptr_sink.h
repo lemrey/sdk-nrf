@@ -10,6 +10,10 @@
 #include <sink.h>
 #include <suit_memptr_storage.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Get the memptr sink object
  *
@@ -18,5 +22,9 @@
  * @return SUIT_PLAT_SUCCESS if success otherwise error code.
  */
 suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MEMPTR_SINK_H__ */
