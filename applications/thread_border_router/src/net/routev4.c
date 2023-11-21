@@ -156,12 +156,10 @@ static void pkt_clone_and_send(struct net_pkt *pkt, struct net_if *iface)
 	net_pkt_set_orig_iface(pkt_c, net_pkt_iface(pkt));
 	net_pkt_set_iface(pkt_c, iface);
 
-	if (CONFIG_NRF_TBR_ROUTEV4_LOG_LEVEL >= LOG_LEVEL_DBG) {
-		LOG_DBG("pkt %p has been cloned %p and routed from %s to %s",
-			pkt, pkt_c,
-			iface2str(net_pkt_iface(pkt)),
-			iface2str(net_pkt_iface(pkt_c)));
-	}
+	LOG_DBG("pkt %p has been cloned %p and routed from %s to %s",
+		pkt, pkt_c,
+		iface2str(net_pkt_iface(pkt)),
+		iface2str(net_pkt_iface(pkt_c)));
 
 	if (net_send_data(pkt_c) < 0) {
 		LOG_ERR("net_send_data failed");

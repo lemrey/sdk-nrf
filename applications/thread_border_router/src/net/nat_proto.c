@@ -204,7 +204,7 @@ static void timeout_cb(struct k_work *work)
 {
 	struct nat_node *_node = CONTAINER_OF(work, struct nat_node, timeout);
 
-	print_tuple(__FUNCTION__, "Remove", &_node->tuple);
+	PRINT_TUPLE("Remove", &_node->tuple);
 
 	k_mutex_lock(&lock_mtx, K_FOREVER);
 	sys_slist_find_and_remove(&nat_records[_node->tuple.proto], &_node->node);
