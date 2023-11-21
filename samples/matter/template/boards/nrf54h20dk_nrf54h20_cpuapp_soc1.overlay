@@ -27,9 +27,9 @@ ipc0: &ipc_cpurad {};
 /delete-node/ &mram1;
 
 &mram_controller {
-    mram0: mram@e086000 {
+    mram0: mram@e098000 {
         compatible = "nordic,allocatable-mram", "soc-nv-flash";
-        reg = <0xe086000 DT_SIZE_K(1000)>;
+        reg = <0xe098000 DT_SIZE_K(1000)>;
         #address-cells = <0x1>;
         #size-cells = <0x1>;
         erase-block-size = <128>;
@@ -42,16 +42,16 @@ ipc0: &ipc_cpurad {};
             compatible = "fixed-partitions";
             #address-cells = <0x1>;
             #size-cells = <0x1>;
-            slot0_partition: partition@86000 {
+            slot0_partition: partition@98000  {
                 label = "image-0";
-                reg = <0x86000 DT_SIZE_K(1000)>;
+                reg = <0x98000 DT_SIZE_K(1000)>;
             };
         };
     };
 
-    mram1: mram@e186000 {
+    mram1: mram@e198000 {
         compatible = "nordic,allocatable-mram", "soc-nv-flash";
-        reg = <0xe186000 DT_SIZE_K(396)>;
+        reg = <0xe198000 DT_SIZE_K(36)>;
         erase-block-size = <128>;
         write-block-size = <0x10>;
         perm-read;
@@ -60,14 +60,14 @@ ipc0: &ipc_cpurad {};
             compatible = "fixed-partitions";
             #address-cells = <0x1>;
             #size-cells = <0x1>;
-            storage_partition: partition@1e4400 {
+            storage_partition: partition@198000 {
                 label = "storage";
-                reg = <0x1e4400 DT_SIZE_K(16)>;
+                reg = <0x198000 DT_SIZE_K(32)>;
             };
-            factory_data: partition@1e8400 {
+            factory_data: partition@1a0000 {
                 label = "factory_data";
-                reg = <0x1e8400 DT_SIZE_K(3)>;
+                reg = <0x1a0000 DT_SIZE_K(4)>;
             };
         };
     };
-};   
+};
