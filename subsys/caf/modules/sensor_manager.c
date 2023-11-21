@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/pm/device_runtime.h>
 
 #include <caf/events/sensor_event.h>
 #include <caf/sensor_manager.h>
@@ -387,6 +388,21 @@ static size_t sensor_init(void)
 			LOG_ERR("%s sensor not ready", sc->dev->name);
 			continue;
 		}
+
+		if (IS_ENABLED(CONFIG_PM_DEVICE_RUNTIME)) {
+			pm_device_runtime_enable(sc->dev);
+		}
+		if (pm_device_runtime_is_enabled(sc->dev)) {
+			int err;
+
+			err = pm_device_runtime_get(sc->dev);
+			if (err) {
+				update_sensor_state(sc, sd, SENSOR_STATE_ERROR);
+				LOG_ERR("%s sensor cannot resume the sensor", sc->dev->name);
+				continue;
+			}
+		}
+
 		sd->sampling_period = sc->sampling_period_ms;
 		sd->sample_timeout = cur_uptime + sc->sampling_period_ms;
 
@@ -396,6 +412,10 @@ static size_t sensor_init(void)
 			if (err) {
 				update_sensor_state(sc, sd, SENSOR_STATE_ERROR);
 				LOG_ERR("%s sensor cannot initialize trigger", sc->dev->name);
+				/* Release the device in case of error */
+				if (pm_device_runtime_is_enabled(sc->dev)) {
+					(void)pm_device_runtime_put(sc->dev);
+				}
 				continue;
 			}
 		}
@@ -456,11 +476,15 @@ static bool handle_power_down_event(const struct app_event_header *aeh)
 			int ret = 0;
 
 			if (sc->suspend) {
-				ret = pm_device_action_run(sc->dev,
-							   PM_DEVICE_ACTION_SUSPEND);
+				if (pm_device_runtime_is_enabled(sc->dev)) {
+					ret = pm_device_runtime_put(sc->dev);
+				} else {
+					ret = pm_device_action_run(sc->dev,
+								   PM_DEVICE_ACTION_SUSPEND);
+				}
 			}
 
-			if (ret) {
+			if (ret & (ret != -EALREADY)) {
 				LOG_ERR("Sensor %s cannot be suspended (%d)",
 					sc->dev->name, ret);
 				update_sensor_state(sc, sd, SENSOR_STATE_ERROR);
@@ -497,9 +521,14 @@ static bool handle_wake_up_event(const struct app_event_header *aeh)
 			int ret = 0;
 
 			if (sc->suspend) {
-				ret = pm_device_action_run(sc->dev, PM_DEVICE_ACTION_RESUME);
+				if (pm_device_runtime_is_enabled(sc->dev)) {
+					ret = pm_device_runtime_get(sc->dev);
+				} else {
+					ret = pm_device_action_run(sc->dev,
+								   PM_DEVICE_ACTION_RESUME);
+				}
 			}
-			if (ret) {
+			if (ret & (ret != -EALREADY)) {
 				LOG_ERR("Sensor %s cannot be resumed (%d)",
 					sc->dev->name, ret);
 				update_sensor_state(sc, sd, SENSOR_STATE_ERROR);
