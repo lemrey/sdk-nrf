@@ -605,6 +605,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
    Now you can send message to your Linux host:
 
    .. code-block:: console
+
       uart:~$ ot tcp send hello
       Done
 
@@ -643,6 +644,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
    And now send message to your Linux host:
 
    .. code-block:: console
+
       uart:~$ ot udp send hello
       Done
 
