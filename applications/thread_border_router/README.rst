@@ -445,6 +445,60 @@ For example, to discover the service, use the `Avahi`_ open-source tool and run 
       port = [52861]
       txt = ["omr=@\253\023J\150\155Y\000\001" "at=\000\000\000\000\000\000\000\000" "sb=\000\000\000I" "xa=~P\2085m0\195\180" "tv=1.3.0" "xp=\222\173\000\190\239\000\202\254" "nn=OpenThread" "mn=tbr" "vn=nordicsemi"]
 
+Multicast Forwarding
+--------------------
+
+After performing all steps from `Testing communication with Thread Border Router`_ you can optionally verify bidirectional communication using multicast messages between a Thread Router or End Device and a non-Thread device.
+
+#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Thread CLI device building`_).
+   .. note::
+         In order to perform Multicast Listener Registration the CLI sample must be built with enabled CONFIG_OPENTHREAD_MLR option.
+
+#. Turn on the DK.
+#. |connect_terminal_ANSI|
+
+   .. note::
+        |thread_hwfc_enabled|
+
+#. .. include:: /includes/thread_configure_network.txt
+#. .. include:: /includes/thread_enable_network.txt
+#. Wait until the device joins to Thread network created by nRF TBR in `Testing communication with Thread Border Router`_.
+   To verify whether the device joined to Thread network, use the ``ot state`` command.
+   Device should become either a ``child`` or ``router``:
+
+   .. code-block:: console
+
+      uart:~$ ot state
+      router
+      Done
+
+#. Add new IPv6 multicast address with "Admin-Local" scope or higher. In the following example End Device subscribes to the ``ff05::abcd`` address:
+
+   .. code-block:: console
+
+      uart:~$ ot ipmaddr add ff05::abcd
+      Done
+
+#. Open an UDP port and subscribe to the multicast address on the Linux host.
+   For example, use the socat open-source tool and run the ``socat -u UDP6-RECV:<port>,ipv6-join-group='[<address>]':<interface>: -`` command where the ``<port>`` has to be changed to a given UDP port number, the ``<address>`` has to be changed to a given IPv6 multicast address, and the ``<interface>`` has to be changed to a network interface name or its index. Then, it will wait for incoming UDP datagrams and print their payload to the standard output:
+
+   .. code-block:: console
+      user@host:~$ socat -u UDP6-RECVFROM:55555,ipv6-join-group='[ff05::abcd]':2: -
+
+#. Open an UDP socket on the End Device using the ``ot udp open`` command:
+
+   .. code-block:: console
+      uart:~$ ot udp open
+      Done
+
+#. Send an UDP datagram with a given payload using the ``ot udp send <address> <port> <text payload>`` command where the ``<address>`` and the ``<port>`` have to match values provided to the socat command:
+
+   .. code-block:: console
+      uart:~$ ot udp send ff05::abcd 55555 foobar
+      Done
+
+#. Verfy that the given payload is printed to the standard output of the Linux Host.
+
 Related samples
 ===============
 
