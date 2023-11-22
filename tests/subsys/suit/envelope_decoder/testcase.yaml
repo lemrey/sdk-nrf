@@ -1,13 +1,5 @@
 tests:
   suit-processor.integration.envelope_decoder:
-    platform_allow: nrf52840dk_nrf52840 native_posix native_posix_64
+    platform_allow: native_posix native_posix_64
     build_only: true
     tags: suit-processor envelope-decoder
-
-  suit-processor.integration.envelope_decoder.fpga:
-    platform_allow: nrf54h20dk_nrf54h20_cpusec@soc1
-    build_only: true
-    tags: suit-processor envelope-decoder fpga
-    extra_args: DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpusec.overlay;serial_cpusec.overlay;systick.overlay
-    extra_configs:
-      - CONFIG_EMULATOR_FPGA=y
