@@ -56,7 +56,9 @@ Border Agent
   A function that relays MeshCoP messages between the Thread Network and an external Thread Commissioner.
 
 IPv4 support (NAT64/DNS64)
-  Description
+  NAT64 enables IPv6-only Thread network devices to communicate with IPv4-only network servers and devices.
+  DNS64 allows IPv6-only client to receive special IPv6 representation of the IPv4 address.
+  The NAT64 and DNS64 together allow an IPv6-only Thread client to initiate communications by name to an IPv4-only server.
 
 Multicast forwarding
   Multicast Forwarding offers reaching devices on the Thread and Wi-Fi or Ethernet network in the same multicast group from both directions.
