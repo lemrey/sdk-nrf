@@ -59,13 +59,10 @@ IPv4 support (NAT64/DNS64)
   Description
 
 Multicast forwarding
-  Description
+  Multicast Forwarding offers reaching devices on the Thread and Wi-Fi or Ethernet network in the same multicast group from both directions.
 
 ND Proxy
-  Description
-
-Backbone Agent
-  Description
+  A handling of Neighbor Solicitation messages to provide information about IPv6 addresses of Thread Nodes with active Domain Unicast Addresses.
 
 Requirements
 ************
@@ -451,6 +448,7 @@ Multicast Forwarding
 After performing all steps from `Testing communication with Thread Border Router`_ you can optionally verify bidirectional communication using multicast messages between a Thread Router or End Device and a non-Thread device.
 
 #. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Thread CLI device building`_).
+
    .. note::
       In order to perform Multicast Listener Registration the CLI sample must be built with enabled CONFIG_OPENTHREAD_MLR option.
 
