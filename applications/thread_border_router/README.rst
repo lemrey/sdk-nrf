@@ -452,7 +452,7 @@ After performing all steps from `Testing communication with Thread Border Router
 
 #. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Thread CLI device building`_).
    .. note::
-         In order to perform Multicast Listener Registration the CLI sample must be built with enabled CONFIG_OPENTHREAD_MLR option.
+      In order to perform Multicast Listener Registration the CLI sample must be built with enabled CONFIG_OPENTHREAD_MLR option.
 
 #. Turn on the DK.
 #. |connect_terminal_ANSI|
@@ -485,7 +485,7 @@ After performing all steps from `Testing communication with Thread Border Router
    .. code-block:: console
       user@host:~$ socat -u UDP6-RECVFROM:55555,ipv6-join-group='[ff05::abcd]':2: -
 
-#. Open an UDP socket on the End Device using the ``ot udp open`` command:
+#. Open an UDP socket with the ``ot udp open`` command:
 
    .. code-block:: console
       uart:~$ ot udp open
@@ -498,6 +498,23 @@ After performing all steps from `Testing communication with Thread Border Router
       Done
 
 #. Verfy that the given payload is printed to the standard output of the Linux Host.
+
+#. Bind an UDP port with the ``ot bind :: <port>`` command where ``<port>`` should be changed to a chosen value.
+
+   .. code-block:: console
+      uart:~$ ot udp bind :: 55555
+      Done
+
+#. The socat tool can also be used to send UDP datagrams from the Linux Host to the End Device.
+   For example, use the ``echo "<payload>" | socat -u - UDP6-SENDTO:[<address>]:<port>,so-bindtodevice=<interface>`` command where ``<payload>`` specifies the text message, ``<address>`` and the ``<port>`` have to match values provided to the End Device, and the ``<interface>`` has to be changed to a given Linux Host's network interface's name:
+
+   .. code-block:: console
+      user@host:~$ echo " foobar" | socat -u  - UDP6-SENDTO:[ff05::abcd]:55555,so-bindtodevice=enx00133bb15706
+
+#. Verify that the given payload is printed to the End Device's serial:
+
+   .. code-block:: console
+      8 bytes from fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b foobar
 
 Related samples
 ===============
