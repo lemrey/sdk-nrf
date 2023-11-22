@@ -522,6 +522,145 @@ After performing all steps from `Testing communication with Thread Border Router
 
       8 bytes from fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b foobar
 
+nRF TBR IPv4 communication
+--------------------------
+
+To test IPv4 communication from the nRF TBR or Thread node , complete the following steps:
+
+#. Rebuild the nRF TBR application with :file:`overlay-nat64.conf` file.
+   See the :ref:`nrf_tbr_app_select_configuration` section to learn how to select the configuration.
+
+#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Thread CLI device building`_).
+
+   .. note::
+      In order to test IPv4 connection the CLI sample must be built with enabled CONFIG_OPENTHREAD_NAT64_TRANSLATOR option.
+
+#. Turn on the DK.
+#. |connect_terminal_both_ANSI|
+
+   .. note::
+        |thread_hwfc_enabled|
+
+#. .. include:: /includes/thread_configure_network.txt
+#. .. include:: /includes/thread_enable_network.txt
+
+#. Enable NAT64:
+
+   .. code-block:: console
+
+      uart:~$ ot nat64 enable
+      Done
+
+   Use following command to check state of NAT64:
+
+   .. code-block:: console
+
+      uart:~$ ot nat64 state
+      PrefixManager: Active
+      Translator: Active
+      Done
+
+#. Send ICMP echo request to any IPv4 host, in following example Google DNS server is used:
+
+   .. code-block:: console
+
+      uart:~$ ot ping 8.8.8.8
+      Pinging synthesized IPv6 address: fdb7:aace:3897:2:0:0:808:808
+      16 bytes from fdb7:aace:3897:2:0:0:808:808: icmp_seq=1 hlim=116 time=23ms
+      1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 23/23.0/23 ms.
+      Done
+
+   Repeat command from Thread node, the console output should be the same.
+
+#. Resolve a hostname on the IPv4 network. DNS server address can also be provided as an IPv4 address:
+
+   .. code-block:: console
+
+      uart:~$ ot dns resolve4 example.com 8.8.8.8
+      Synthesized IPv6 DNS server address: fdb7:aace:3897:2:0:0:808:808
+      DNS response for example.com. - fdb7:aace:3897:2:0:0:5db8:d822 TTL:7491
+      Done
+
+   The command can be also repeated from Thread node.
+
+#. Test TCP connection.
+
+   On your Linux IPv4 host, use ``nc`` to listen for TCP connection:
+
+   .. code-block:: console
+
+      user@host:~$ nc -l 3000
+
+   Establish a TCP connection from the nRF TBR or your Thread node:
+
+   .. code-block:: console
+
+      uart:~$ ot tcp init
+      Done
+      uart:~$ ot tcp connect 192.168.0.100 3000
+      Connecting to synthesized IPv6 address: fdb7:aace:3897:2:0:0:c0a8:64
+      Done
+      TCP: Connection established
+
+   Now you can send message to your Linux host:
+
+   .. code-block:: console
+      uart:~$ ot tcp send hello
+      Done
+
+   Output from Linux host:
+
+   .. code-block:: console
+
+      user@host:~$ nc -l 3000
+      hello
+
+   You can also send message from Linux host to the nRF TBR or Thread node.
+   Just type a word and press ``Enter`` on shell running ``nc`` and check output on Thread device:
+
+   .. code-block:: console
+
+      TCP: Received 8 bytes: nRF TBR
+
+#. Test UDP connection.
+
+   On your Linux IPv4 host, use ``nc`` to listen for UDP connection:
+
+   .. code-block:: console
+
+      user@host:~$ nc -u -l 3000
+
+   Establish a UDP connection from the nRF TBR or your Thread node:
+
+   .. code-block:: console
+
+      uart:~$ ot udp open
+      Done
+      uart:~$ ot udp connect 192.168.0.100 3000
+      Connecting to synthesized IPv6 address: fdb7:aace:3897:2:0:0:c0a8:64
+      Done
+
+   And now send message to your Linux host:
+
+   .. code-block:: console
+      uart:~$ ot udp send hello
+      Done
+
+   Linux host output:
+
+   .. code-block:: console
+
+      user@host:~$ nc -u -l 3000
+      hello
+
+   You can also send message from Linux host to the nRF TBR or Thread node.
+   Just type a word and press ``Enter`` on shell running ``nc`` and check output on Thread device:
+
+   .. code-block:: console
+
+      4 bytes from fdb7:aace:3897:2:0:0:c0a8:64 3000 UDP
+
+
 Related samples
 ===============
 
