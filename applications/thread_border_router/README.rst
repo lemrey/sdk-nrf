@@ -481,17 +481,20 @@ After performing all steps from `Testing communication with Thread Border Router
    For example, use the socat open-source tool and run the ``socat -u UDP6-RECV:<port>,ipv6-join-group='[<address>]':<interface>: -`` command where the ``<port>`` has to be changed to a given UDP port number, the ``<address>`` has to be changed to a given IPv6 multicast address, and the ``<interface>`` has to be changed to a network interface name or its index. Then, it will wait for incoming UDP datagrams and print their payload to the standard output:
 
    .. code-block:: console
+
       user@host:~$ socat -u UDP6-RECVFROM:55555,ipv6-join-group='[ff05::abcd]':2: -
 
 #. Open an UDP socket with the ``ot udp open`` command:
 
    .. code-block:: console
+
       uart:~$ ot udp open
       Done
 
 #. Send an UDP datagram with a given payload using the ``ot udp send <address> <port> <text payload>`` command where the ``<address>`` and the ``<port>`` have to match values provided to the socat command:
 
    .. code-block:: console
+
       uart:~$ ot udp send ff05::abcd 55555 foobar
       Done
 
@@ -500,6 +503,7 @@ After performing all steps from `Testing communication with Thread Border Router
 #. Bind an UDP port with the ``ot bind :: <port>`` command where ``<port>`` should be changed to a chosen value.
 
    .. code-block:: console
+
       uart:~$ ot udp bind :: 55555
       Done
 
@@ -507,11 +511,13 @@ After performing all steps from `Testing communication with Thread Border Router
    For example, use the ``echo "<payload>" | socat -u - UDP6-SENDTO:[<address>]:<port>,so-bindtodevice=<interface>`` command where ``<payload>`` specifies the text message, ``<address>`` and the ``<port>`` have to match values provided to the End Device, and the ``<interface>`` has to be changed to a given Linux Host's network interface's name:
 
    .. code-block:: console
+
       user@host:~$ echo " foobar" | socat -u  - UDP6-SENDTO:[ff05::abcd]:55555,so-bindtodevice=enx00133bb15706
 
 #. Verify that the given payload is printed to the End Device's serial:
 
    .. code-block:: console
+
       8 bytes from fdde:ad00:beef:cafe:5569:2ae8:30b6:b25b foobar
 
 Related samples
