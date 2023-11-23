@@ -84,7 +84,7 @@ SUIT_Envelope_Tagged:
         namespace: nordicsemi.com
         name: nRF54H20_sample_rad
   suit-text:
-    '["MEM", 3, 235225088, 350208]':
+    '["MEM", {{ multiprotocol_rpmsg_subimage['dt'].label2node['cpu'].unit_addr }}, {{ get_absolute_address(multiprotocol_rpmsg_subimage['dt'].chosen_nodes['zephyr,code-partition']) }}, {{ multiprotocol_rpmsg_subimage['dt'].chosen_nodes['zephyr,code-partition'].regs[0].size }}]':
       suit-text-vendor-name: Nordic Semiconductor ASA
       suit-text-model-name: nRF54H20_cpurad
       suit-text-vendor-domain: nordicsemi.com
