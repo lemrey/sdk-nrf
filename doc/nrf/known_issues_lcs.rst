@@ -106,6 +106,18 @@ The initial production batches of the nRF54L15 PDK have **Button 3** and **Butto
 
 .. rst-class:: v2-4-99-cs2
 
+When using the SAADC driver on the nRF54L15 PDK, it returns incorrect values for the gain setting different from ``1``.
+  The fix for this issue will be introduced in the next release.
+
+.. rst-class:: v2-4-99-cs2
+
+The UART output from the nRF54L15 PDK v0.2.1 and later version is corrupted when using the ``2.4.99-cs2`` release
+  **Workaround:** The peripheral calibration data in FICR is not used by default in the ``2.4.99-cs2`` release.
+  You can change this by defining NRF_APPLY_FICR_TRIMS in the :file:`modules/hal/nordic_haltium/nrfx/mdk/system_nrf54l.c` file.
+  This solution resolves the UART baudrate issue.
+
+.. rst-class:: v2-4-99-cs2
+
 NCSDK-22925: Sampling in the Machine Learning application does not work in multicore configuration on the nRF54H20
   No workaround for this issue at this point.
 
