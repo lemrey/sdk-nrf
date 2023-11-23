@@ -77,28 +77,54 @@ The application supports the following preview development kit (PDK):
 
 In addition to the PDK, the application needs the following hardware modules:
 
-* The `PHYTEC link board ETH`_ extension board or Wi-Fi `nRF7002 EB`_ (Wi-Fi connection) as an external interface for Internet connection.
 * An nRF54-Style-DK IO adapter board (PCA64161) as a SHIM (Shove Hardware in the Middle), connecting the `PHYTEC link board ETH`_ extension board or Wi-Fi `nRF7002 EB`_ to the nRF54H20 PDK.
+* Depends on the selected backbone network connection type:
 
-.. figure:: /images/nrf_tbr_app_hardware.svg
-    :alt: Hardware connection
+   .. tabs::
 
-    Hardware setup connection
+      .. tab:: Wi-Fi
 
-To perform testing, the following additional devices are required:
+         The `nRF7002 EB`_ as an external interface for Internet connection.
 
-* One of the following networking devices depending on the connection:
 
-  * A router with IPv6 or IPv4 (if the NAT feature is enabled) connectivity for Ethernet or Wi-Fi connection.
-  * A network switch for Ethernet connection only.
+         .. figure:: /images/nrf_tbr_app_hardware.svg
+            :alt: Hardware connection
 
-   .. note::
-      nRF TBR uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with other devices.
-      If non-Thread network nodes are connected through a router, make sure that IPv6 Router Advertisement Guard feature on the router is disabled.
-      Otherwise, communication between the networks may be disrupted.
+            Hardware Wi-Fi setup connection
 
-* A Linux host machine.
-* Optionally, you can also use the :ref:`Thread CLI device <ot_cli_sample>` running on, for example, the nRF52840 DK.
+         To perform testing, the following additional devices are required:
+
+         * A router with IPv6 or IPv4 (if the NAT feature is enabled) connectivity with enabled Wi-Fi connection.
+
+            .. note::
+               nRF TBR uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with other devices.
+               If non-Thread network nodes are connected through a router, make sure that IPv6 Router Advertisement Guard feature on the router is disabled.
+               Otherwise, communication between the networks may be disrupted.
+
+         * A Linux host machine.
+
+      .. tab:: Ethernet
+
+         The `PHYTEC link board ETH`_ extension board as an external interface for Internet connection.
+
+
+         .. figure:: /images/nrf_tbr_app_hardware.svg
+            :alt: Hardware connection
+
+            Hardware Ethernet setup connection
+
+         To perform testing, the following additional devices are required:
+
+         * A router with IPv6 or IPv4 (if the NAT feature is enabled) connectivity or a network switch.
+
+            .. note::
+               nRF TBR uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with other devices.
+               If non-Thread network nodes are connected through a router, make sure that IPv6 Router Advertisement Guard feature on the router is disabled.
+               Otherwise, communication between the networks may be disrupted.
+
+         * A Linux host machine.
+
+Optionally, you can also use the :ref:`Thread CLI device <ot_cli_sample>` running on, for example, the nRF52840 DK.
 
 
 User interface
