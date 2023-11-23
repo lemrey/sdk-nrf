@@ -19,6 +19,7 @@ Additionally, the page lists the available Zephyr samples that are compatible wi
 |NCS| samples
 *************
 
+* :ref:`central_and_peripheral_hrs`
 * :ref:`bluetooth_central_hids`
 * :ref:`central_uart`
 * :ref:`peripheral_hids_keyboard`
@@ -51,5 +52,7 @@ Zephyr samples
 **************
 
 * :ref:`zephyr:blinky-sample`
+* :ref:`zephyr:peripheral_hr`
+* :ref:`zephyr:bluetooth_central_hr`
 * :ref:`zephyr:hello_world`
 * :ref:`zephyr:settings_subsys_sample`

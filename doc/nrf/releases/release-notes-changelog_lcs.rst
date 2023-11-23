@@ -150,7 +150,9 @@ For lists of protocol-specific changes, see `Protocols`_.
 Bluetooth samples
 -----------------
 
-No changes since the latest nRF Connect SDK release.
+* :ref:`central_and_peripheral_hrs` sample:
+
+  * Added support for nRF54L15.
 
 Bluetooth mesh samples
 ----------------------
