@@ -23,7 +23,8 @@ nRF54 customer sampling release notes
    :maxdepth: 1
    :caption: Subpages:
 
-   releases/release-notes-changelog_lcs
+   releases/release-notes-2.4.99-cs3
+   migration/migration_guide_cs2_to_cs3
    releases/release-notes-2.4.99-cs2
    releases/release-notes-2.2.99-cs1
 
@@ -38,7 +39,6 @@ Regular nRF Connect SDK release notes
    :maxdepth: 1
    :caption: Subpages:
 
-   releases/release-notes-changelog
    releases/release-notes-2.4.0
    releases/release-notes-2.3.0
    releases/release-notes-2.2.0

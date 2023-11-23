@@ -1,9 +1,9 @@
 .. _migration_cs2_to_cs3:
 
-Migration guide for |NCS| for the nRF54 customer sampling release v2.4.99-cs3
+Migration notes for |NCS| for the nRF54 customer sampling release v2.4.99-cs3
 #############################################################################
 
-This document describes the changes required or recommended when migrating your application from |NCS| v2.4.99-cs2 to |NCS| v2.4.99-cs3.
+This document describes the changes required or recommended when migrating your applications from |NCS| v2.4.99-cs2 to |NCS| v2.4.99-cs3.
 
 nRF54L15 revision and compatibility
 ***********************************
@@ -20,12 +20,25 @@ Check the version number on your PDK's sticker and refer to the following compat
 | ``2.4.99-cs3``       | * PCA10056, v0.2.1 AB0-ES5   |
 +----------------------+------------------------------+
 
+Updated tools
+*************
+
+The following tools have been updated for the release of the |NCS| v2.4.99-cs3:
+
+* nRF Command Line Tools to version 10.22.3
+* The |NCS| toolchain
+
+To install the new tools, refer to the getting started guides for your PDK:
+
+* :ref:`ug_nrf54h20_gs`
+* :ref:`ug_nrf54l15_gs`
+
 Required changes
 ****************
 
 The following changes are mandatory to make your application work correctly after the migration.
 
-* nrfx API
+* nrfx API:
   If your application directly uses the nrfx API, update your code to take into account the following changes:
 
   * Changed all the functions' parameters in the GPIOTE driver.

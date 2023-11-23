@@ -1,3 +1,5 @@
+:orphan:
+
 .. _known_issues_lcs:
 
 Known issues and limitations for the limited sampling
@@ -10,7 +12,7 @@ Known issues and limitations for the limited sampling
 Known issues and limitations listed on this page *and* tagged with the :ref:`latest customer sampling release version <release_notes>` are valid for the current state of development.
 
 This page only lists the known issues and limitations that are related to the customer sampling (CS) of the nRF54H20 and nRF54L15 SoCs.
-``v2.4.99-cs2`` indicates the latest limited sampling release based on |NCS| v2.4.99.
+``v2.4.99-cs3`` indicates the latest limited sampling release based on |NCS| v2.4.99.
 
 .. raw:: html
    :file: includes/filter.js
@@ -21,7 +23,8 @@ This page only lists the known issues and limitations that are related to the cu
 
    <select name="versions" id="versions-select">
      <option value="all">All versions</option>
-     <option value="v2-4-99-cs2" selected>v2.4.99-cs2</option>
+     <option value="v2-4-99-cs3" selected>v2.4.99-cs3</option>
+     <option value="v2-4-99-cs2">v2.4.99-cs2</option>
    </select>
 
 
@@ -45,6 +48,57 @@ This page only lists the known issues and limitations that are related to the cu
 Known issues
 ************
 
+.. rst-class:: v2-4-99-cs3
+
+NCSDK-24846: The nRF54H20 PDK can behave like a bricked device in specific instances.
+  In specific instances, after a cold boot, the nRF54H20 PDK can behave like a bricked device (being unreachable via debugger, or non-booting).
+
+  **Workaround**: Briefly tap (for less than 0.5 seconds) the Reset button on the PDK.
+
+.. rst-class:: v2-4-99-cs3
+
+NCSDK-24884: MacOS toolchain installation script for Apple silicon installs libraries for Intel silicon.
+  The toolchain installation script for MacOS installs on Apple CPUs libraries for Intel CPUs.
+
+  **Workaround**: After the activation of the toolchain environment, run the following commands:
+
+  .. code-block::
+
+     pip uninstall -y lxml
+     pip install lxml
+
+.. rst-class:: v2-4-99-cs3
+
+DRGN-20961: Possible assert when starting the scanner/initiator due to a late and unexpected HFCLK ramp-up when requesting a radio event.
+  No workaround for this issue is currently available.
+
+.. rst-class:: v2-4-99-cs3
+
+CVE-2023-2626: OpenThread KeyID Mode 2 Security Vulnerability
+  This vulnerability impacts all Thread devices using OpenThread and allows an attacker in physical proximity to compromise non-router-capable devices and the entire Thread network in the case of router-capable devices.
+  The vulnerability allows an attacker in physical proximity to inject arbitrary IPv6 packets into the Thread network via IEEE 802.15.4 frame transmissions.
+  Because the Thread Management Framework (TMF) protocol does not have any additional layer of security, the attacker could exploit this vulnerability to update the Thread Network Key and gain full access to the Thread network.
+  There is no known exploitation of vulnerability.
+  Due to this issue, the Thread certifications for OpenThread libraries in all |NCS| releases up to v2.4.0, which the limited customer sampling is based on, are deprecated.
+
+.. rst-class:: v2-4-99-cs3
+
+The PCA10156 v0.2.0 AA0-ES3 and earlier versions of the nRF54L15 PDK do not work with the ``v2-4-99-cs3`` release
+  To make sure your device works correctly, use the customer sampling release version compatible with your PDK.
+  For details, refer to the compatibility matrix in :ref:`migration_guides`.
+
+.. rst-class:: v2-4-99-cs3
+
+KRKNWK-18160: The :ref:`nrf_tbr_app` could send multiple PING responses during IPv6 multicast forwarding
+  When using Wi-Fi, the Wi-Fi interface of the :ref:`nrf_tbr_app` loops back multicast packets to itself, resulting in flooding the network with packets
+  No workaround for this issue is currently available.
+
+.. rst-class:: v2-4-99-cs3
+
+KRKNWK-18183: The :ref:`nrf_tbr_app` in debug configuration with Wi-Fi and NAT64 enabled does not build due to a FLASH overflow
+  When building the :ref:`nrf_tbr_app` application in debug configuration with WiFi and NAT64 enabled, the build fails due to a FLASH overflow.
+  No workaround for this issue is currently available.
+
 .. rst-class:: v2-4-99-cs2
 
 NRFX-2444: The ``ecall`` instruction cannot be executed on the VPR cores when in a trap handler
@@ -66,7 +120,7 @@ NRFX-3222: STM logging backend without ETR data decoding hangs randomly
 HM-20886: The radio receiver sensitivity is too low when the radio PHY is set to the LE Coded ``S=2`` coding scheme
   When using the ``S=2`` coding scheme, the value of the packet error rate is higher than expected.
 
-.. rst-class:: v2-4-99-cs2
+.. rst-class:: v2-4-99-cs3 v2-4-99-cs2
 
 NCSDK-20616: The LE Secure Connection pairing with MITM protection does not work between nRF54H20 devices
   The nRF54H20 devices generate the same public key due to pseudo-random generator being used, which causes pairing to be rejected to protect devices against an attack where the attacker responds with the same public key.
@@ -131,12 +185,12 @@ NRFX-4563: Shell does not work when running a sample that uses the UARTE SHIM an
 NRFX-3886: UARTE async API may be unstable at high throughput on the nRF54L15
   No workaround for this issue at this point.
 
-.. rst-class:: v2-4-99-cs2
+.. rst-class:: v2-4-99-cs3 v2-4-99-cs2
 
 NRFX-4567: UARTE API does not implement power management on the nRF54L15
   No workaround for this issue at this point.
 
-.. rst-class:: v2-4-99-cs2
+.. rst-class:: v2-4-99-cs3 v2-4-99-cs2
 
 NRFX-4568: DMA RX events might not arrive on the nRF54L15.
   **Workaround:** Enable ``CONFIG_SOC_NRF_FORCE_CONSTLAT`` and force constant latency mode.
@@ -169,9 +223,10 @@ Limitations
   * Isochronous transfers (transactions) are not yet supported (for example, there is no support for the USB audio).
   * Handling of the ``connect``, ``disconnect``, ``suspend``, and ``resume`` bus events is not yet supported due to the design of the driver and the nRF54H20 hardware.
   * Driver and controller can only be initialized and used after the application initialization level.
+  * The number of user-usable endpoints is limited to 4 IN and 3 OUT.
 
-* The Bluetooth LE Controller on the nRF54L15 PDK currently uses the test PRNG module as its source for entropy (see the :kconfig:option:`CONFIG_ENTROPY_TEST_PRNG` Kconfig option).
-* For Matter and Thread limitations, see :ref:`ug_nrf54h20_matter_thread_limitations`.
+* The Bluetooth LE Controller on the nRF54L15 PDK and nRF54H20 PDK currently uses the test PRNG module as its source for entropy (see the :kconfig:option:`CONFIG_ENTROPY_TEST_PRNG` Kconfig option).
+* For Matter and Thread limitations, see :ref:`Matter and Thread limitations on nRF54H20 <ug_nrf54h20_matter_thread_limitations>` and :ref:`Matter and Thread limitations on nRF54L15 <ug_nRF54l15_matter_thread_limitations>`.
 * Cryptography limitations:
 
   * Hardware-accelerated cryptography through CRACEN is not supported in this release.

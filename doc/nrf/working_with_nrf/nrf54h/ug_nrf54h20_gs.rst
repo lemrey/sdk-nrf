@@ -252,7 +252,7 @@ Installing the |NCS|
 
 After you have installed nRF Command Line Tools and the toolchain, complete the following steps to get the limited sampling version of the |NCS|:
 
-1. In the terminal window opened as part of :ref:`installing the toolchain <nrf54h20_install_toolchain>`, initialize west with the revision of the nRF Connect SDK from the initial limited sampling by running the following command:
+1. In the terminal window opened during the toolchain installation, initialize west with the revision of the |NCS| from the limited sampling by running the following command:
 
    .. parsed-literal::
       :class: highlight

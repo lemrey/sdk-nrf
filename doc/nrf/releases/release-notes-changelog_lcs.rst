@@ -1,3 +1,5 @@
+:orphan:
+
 .. _ncs_release_notes_changelog_lcs:
 
 Changelog for the nRF54 customer sampling
@@ -24,7 +26,7 @@ Known issues
 ************
 
 Known issues are only tracked for the latest official release.
-See `known issues for nRF54 customer sampling v2.4.99-cs2`_ for the list of issues valid for the latest release.
+See `known issues for nRF54 customer sampling v2.4.99-cs3`_ for the list of issues valid for the latest release.
 
 Changelog
 *********
@@ -89,9 +91,6 @@ See `Zigbee samples`_ for the list of changes for the Zigbee samples.
 ESB
 ---
 
-  * The :ref:`ESB module <esb_readme>` was ported to nRF54H20 and nRF54L15.
-  * Added radio mode with 4 Mbit/s rate.
-
 nRF IEEE 802.15.4 radio driver
 ------------------------------
 
@@ -145,15 +144,12 @@ No changes since the latest nRF Connect SDK release.
 Samples
 =======
 
-This section provides detailed lists of changes by :ref:`sample <sample>`, including protocol-related samples.
-For lists of protocol-specific changes, see `Protocols`_.
+No changes since the latest nRF Connect SDK release.
 
 Bluetooth samples
 -----------------
 
-* :ref:`central_and_peripheral_hrs` sample:
-
-  * Added support for nRF54L15.
+No changes since the latest nRF Connect SDK release.
 
 Bluetooth mesh samples
 ----------------------
@@ -163,8 +159,7 @@ No changes since the latest nRF Connect SDK release.
 DFU samples
 -----------
 
-* Updated the :ref:`nrf54h_suit_sample` sample to have support for UART.
-  The documentation is renamed from SUIT DFU: Update over Bluetooth® Low Energy to :ref:`nrf54h_suit_sample`.
+No changes since the latest nRF Connect SDK release.
 
 nRF9160 samples
 ---------------
@@ -179,9 +174,7 @@ No changes since the latest nRF Connect SDK release.
 Matter samples
 --------------
 
-* :ref:`matter_lock_sample` sample:
-
-  * Fixed an issue that prevented nRF Toolbox for iOS in version 5.0.9 from controlling the sample using the :ref:`nus_service_readme`.
+No changes since the latest nRF Connect SDK release.
 
 NFC samples
 -----------
@@ -213,14 +206,6 @@ Other samples
   * :ref:`ipc_service` sample
   * :ref:`event_manager_proxy` sample
   * :ref:`caf_sensor_manager_sample` sample
-
-* :ref:`radio_test` sample:
-
-  * Added two radio modes with 4 Mbit/s rate.
-
-* :ref:`esb_prx_ptx` sample:
-
-  * Added support for nRF54H20 and nRF54L15.
 
 Devicetree configuration
 ========================
@@ -324,23 +309,31 @@ The following list summarizes both the main changes inherited from upstream MCUb
 Zephyr
 ======
 
-.. NOTE TO MAINTAINERS: All the Zephyr commits in the below git commands must be handled specially after each upmerge and each NCS release.
+.. NOTE TO MAINTAINERS: All the Zephyr commits in the below git commands must be handled specially after each upmerge and each nRF Connect SDK release.
 
-The Zephyr fork in the limited sampling version of the |NCS| (``fb802fb6c0af80dbd383e744065bcf1745ecbc66``) contains all commits from the |NCS| fork of the Zephyr repository (``sdk-zephyr`` sha ``eff20cfb43eb888511eb13b37cc131150cf5919c``), which is based on the upstream Zephyr Project sha ``e1e06d05fa8d1b6ac1b0dffb1712e94e308861f8``.
+The Zephyr fork in |NCS| (``sdk-zephyr``) contains all commits from the upstream Zephyr repository up to and including ``4bbd91a9083a588002d4397577863e0c54ba7038``, with some |NCS| specific additions.
+
+For the list of upstream Zephyr commits (not including cherry-picked commits) incorporated into |NCS| since the most recent release, run the following command from the :file:`ncs/zephyr` repository (after running ``west update``):
+
+.. code-block:: none
+
+   git log --oneline a768a05e62 ^4bbd91a908
 
 For the list of |NCS| specific commits, including commits cherry-picked from upstream, run:
 
 .. code-block:: none
 
-   git log --oneline manifest-rev  ^e1e06d05fa8d1b6ac1b0dffb1712e94e308861f8
+   git log --oneline manifest-rev ^a768a05e62
+
+The current |NCS| main branch is based on revision ``a768a05e62`` of Zephyr.
+
+.. note::
+   For possible breaking changes and changes between the latest Zephyr release and the current Zephyr version, refer to the :ref:`Zephyr release notes <zephyr_release_notes>`.
 
 zcbor
 =====
 
-The `zcbor`_ module has been updated from version 0.4.0 to 0.5.1.
-Release notes for 0.5.0 and 0.5.1 can be found in :file:`ncs/nrf/modules/lib/zcbor/RELEASE_NOTES.md`.
-:ref:`lib_fmfu_fdev` code has been regenerated using zcbor 0.5.1.
-
+No changes since the latest nRF Connect SDK release.
 
 Trusted Firmware-M
 ==================
@@ -355,10 +348,4 @@ No changes since the latest nRF Connect SDK release.
 Documentation
 =============
 
-Added:
-
-* List and description of :ref:`directives <ug_suit_dfu_suit_directives>` used in the SUIT DFU procedure.
-
-* A page on :ref:`ug_nrf54h20_suit_components` in the :ref:`ug_nrf54h20_suit_dfu` user guide.
-
-* A page on :ref:`ug_nrf54h20_suit_hierarchical_manifests` in the :ref:`ug_nrf54h20_suit_dfu` user guide.
+No changes since the latest nRF Connect SDK release.

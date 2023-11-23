@@ -122,6 +122,10 @@ Building and running
 
 This sample can be found under |sample path| in the |NCS| folder structure.
 
+.. caution::
+   In specific instances, after a cold boot, the nRF54H20 PDK can behave like a bricked device (being unreachable via debugger, or non-booting).
+   To fix the issue, briefly tap (for less than 0.5 seconds) the Reset button on the PDK.
+
 Building and programming using the command line
 ===============================================
 

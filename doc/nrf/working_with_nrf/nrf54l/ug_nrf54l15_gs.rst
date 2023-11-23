@@ -247,7 +247,7 @@ Installing the |NCS|
 
 After you have installed nRF Command Line Tools 10.22.2 and the toolchain, you need to install the |NCS|:
 
-1. In the terminal window opened during toolchain installation, initialize west with the revision of the |NCS| from the limited sampling by running the following command:
+1. In the terminal window opened during the toolchain installation, initialize west with the revision of the |NCS| from the limited sampling by running the following command:
 
    .. parsed-literal::
       :class: highlight

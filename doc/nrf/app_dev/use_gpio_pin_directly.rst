@@ -1,4 +1,4 @@
-.. _config_gpio_pin:
+.. _ug_gpio_pin:
 
 Driving a GPIO pin directly
 ###########################
@@ -82,7 +82,7 @@ To let your application access the declared pins, use the following devicetree m
 
 The snippets above show an easy way of generating a square wave that reflects your software execution timings and state.
 Such a plot can be observed using a logic analyzer or an oscilloscope.
-Additionally, the code rendered through the snippets is dependent on the binding existence ``if (pin_dbg.port)``. 
+Additionally, the code rendered through the snippets is dependent on the binding existence ``if (pin_dbg.port)``.
 This means the snippets will be inactive when you build your application without declaring ``user-dbg-pin``.
 This is an easy way to disable this debugging infrastructure.
 
