@@ -15,6 +15,7 @@ You can also run them on different hardware like a generic development kit, but 
    :glob:
    :caption: Subpages:
 
+   ../../applications/peripheral_sensor_node/README
    ../../applications/connectivity_bridge/README
    ../../applications/asset_tracker_v2/README
    ../../applications/serial_lte_modem/README
