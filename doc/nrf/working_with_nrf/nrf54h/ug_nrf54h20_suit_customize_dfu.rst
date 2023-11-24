@@ -7,15 +7,14 @@ How to customize the SUIT DFU process
    :local:
    :depth: 2
 
-Nordic Semiconductor provides samples in which the build system uses predefined configuration (Kconfig options) by default.
-These Kconfig options can be updated to change the artifacts produced by the build system, customize the DFU process, and integrate the DFU solution with external build systems.
+Nordic Semiconductor provides a SUIT sample (:ref:`nrf54h_suit_sample`) in which the build system uses predefined configuration.
+The specified Kconfig options in the sample can be used to modify the artifacts produced by the build system, customize the DFU process, and integrate the DFU solution with external build systems.
 
 .. note::
     In order to customize the SUIT DFU process, we strongly recommend that you modify the values in the manifest that are associated with the ID values that are configured into the device.
     This includes both the ``class-identifier`` and ``vendor-identifier`` values found in manifest(s).
 
-    For more advanced use cases, you can modify values in the manifest using component types.
-    See the :ref:`ug_nrf54h20_suit_components` page for more information.
+    For additional modifications mentioned in this guide, see the :ref:`ug_nrf54h20_suit_components` page.
 
 This guide provides a range of instructions and details for how to modify values in the SUIT manifest.
 See the :ref:`ug_suit_customize_manifest_quick` section of this document for brief instructions on how to make modifications.
@@ -56,7 +55,7 @@ Let us assume that you would like to store the editable manifest templates in th
 
       .. code-block:: console
 
-         west build -d C:\ncs-lcs\west_working_dir\build\ -b nrf54h20dk_nrf54h20_cpuapp@soc1 -p -- -DCONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATES_LOCATION="C:/my_templates"
+         west build -d C:/ncs-lcs/work_dir/build/ -b nrf54h20dk_nrf54h20_cpuapp@soc1 -p -- -DCONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATES_LOCATION="C:/my_templates"
 
    .. group-tab:: Linux
 
@@ -83,7 +82,7 @@ How to use your own manifest
 
 Let us analyze the case where you would like to:
 
-* Use your own created manifest, as the default by the build system
+* Use your own created manifest template
 
 * Store editable manifest templates in a custom directory
 
@@ -92,12 +91,12 @@ Let us analyze the case where you would like to:
     .. group-tab:: Windows
 
         The provided manifest templates are stored in ``C:\my_default_templates``.
-        Edit manifests should be stored in ``C:\my_templates``.
+        Editable manifests should be stored in ``C:\my_templates``.
 
     .. group-tab:: Linux
 
         The provided manifest templates are stored in ``/home/my_user/my_default_templates``.
-        Edit manifests should be stored in ``/home/my_user/my_templates``.
+        Editable manifests should be stored in ``/home/my_user/my_templates``.
 
 The following files should be used to create DFU envelope:
 
@@ -122,7 +121,7 @@ To build the described example with the provided manifest templates taken from y
 
         .. code-block:: console
 
-            west build -d C:\ncs-lcs\west_working_dir\build\ -b nrf54h20dk_nrf54h20_cpuapp@soc1 -p -- -DCONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATES_LOCATION="c:/my_templates" -DCONFIG_SUIT_ENVELOPE_ROOT_TEMPLATE="c:/my_default_templates/root.yaml.jinja2" -DCONFIG_SUIT_ENVELOPE_APP_TEMPLATE="c:/my_default_templates/app.yaml.jinja2" -DCONFIG_SUIT_ENVELOPE_HCI_RPMSG_SUBIMAGE_TEMPLATE="c:/my_default_templates/radio.yaml.jinja2"
+            west build -d C:/ncs-lcs/work_dir/build/ -b nrf54h20dk_nrf54h20_cpuapp@soc1 -p -- -DCONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATES_LOCATION="c:/my_templates" -DCONFIG_SUIT_ENVELOPE_ROOT_TEMPLATE="c:/my_default_templates/root.yaml.jinja2" -DCONFIG_SUIT_ENVELOPE_APP_TEMPLATE="c:/my_default_templates/app.yaml.jinja2" -DCONFIG_SUIT_ENVELOPE_HCI_RPMSG_SUBIMAGE_TEMPLATE="c:/my_default_templates/radio.yaml.jinja2"
 
     .. group-tab:: Linux
 
@@ -186,7 +185,7 @@ An example of a YAML representation for a basic installation and invoke-process 
                    suit-parameter-class-identifier:
                     RFC4122_UUID:                                    # Class identifier values
                         namespace: nordicsemi.com
-                            name: nRF54H20_sample_app
+                        name: nRF54H20_sample_app
                    suit-parameter-image-digest:
                     suit-digest-algorithm-id: cose-alg-sha-256
                     suit-digest-bytes:
@@ -231,25 +230,54 @@ Modify ``class-identifier`` and ``vendor-identifier``
 
 To update the ``class-identifier`` and ``vendor-identifier`` values in the :file:`app_envelope_yam.jinja2` file, edit the following lines as shown in this example:
 
+Before modification:
+
 .. code-block::
 
   - suit-directive-override-parameters:
       suit-parameter-vendor-identifier:
-         RFC4122_UUID: ACME Corp              # Change the vendor-identifier
+         RFC4122_UUID: nordicsemi.com         # Original vendor-identifier value
       suit-parameter-class-identifier:
-         RFC4122_UUID:                        # Change the values for the class-identifier
+         RFC4122_UUID:
+           namespace: nordicsemi.com          # Original class-identifier values
+           name: nrf54H20_sample_app
+
+
+After modification:
+
+.. code-block::
+
+  - suit-directive-override-parameters:
+      suit-parameter-vendor-identifier:
+         RFC4122_UUID: ACME Corp              # Changed vendor-identifier value
+      suit-parameter-class-identifier:
+         RFC4122_UUID:                        # Changed class-identifier values
            namespace: ACME Corp
            name: Light bulb
 
+
 Alternatively, you can also define raw values like so:
+
+Before modification:
 
 .. code-block::
 
   - suit-directive-override-parameters:
       suit-parameter-vendor-identifier:
-         raw: bf42bd2ea9895f22933b352cda1730d3
+         raw: 7617daa571fd5a858f94e28d735ce9f4     # Original raw value
       suit-parameter-class-identifier:
-         raw: e0f94076c46a5a1e80a18d3e674bdfe0
+         raw: 08c1b59955e85fbc9e767bc29ce1b04d     # Original raw value
+
+
+After modification:
+
+.. code-block::
+
+  - suit-directive-override-parameters:
+      suit-parameter-vendor-identifier:
+         raw: bf42bd2ea9895f22933b352cda1730d3     # Changed raw value
+      suit-parameter-class-identifier:
+         raw: e0f94076c46a5a1e80a18d3e674bdfe0     # Changed raw value
 
 Python to generate UUIDs
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -266,7 +294,7 @@ Note that the UUID raw values in the previous example have been calculated using
 
 
 .. note::
-    For the development releases (CS 2.0 and 3.0) only the predefined, presented values are supported.
+    For the development releases (CS 0.2.0 and 0.3.0) only the predefined, presented values are supported.
 
 .. _ug_suit_var_methods_in_manifest:
 
@@ -342,28 +370,35 @@ Root manifest template
 ----------------------
 
 The :file:`root_hierarchical_envelope.yaml.jinja2` (found `here <https://github.com/nrfconnect/suit-generator/blob/main/ncs/root_hierarchical_envelope.yaml.jinja2>`__) contains content that is dynamically created, depending on how many targets are built.
-The following example only shows a selected portion of the root manifest.
-For more information, see the file available in the sample and Jinja2 documentation):
+The following example only shows a selected portion of the root manifest file.
+For more information, see the file available in the sample and `Jinja <https://jinja.palletsprojects.com/en/3.1.x/>`__ documentation:
 
 .. code-block::
 
-   {%- set component_index = 0 %}
-   {%- set component_list = [] %}
+   {%- set component_index = 0 %}                                                  # Initialize the `component_index variable`.
+                                                                                   # This variable will be used to assign component indexes dynamically depending on
+                                                                                   # how many cores have been built.
+
+
+   {%- set component_list = [] %}                                                  # Initialize the `component_list variable`.
+                                                                                   # This variable will be used to execute `suit-directive-set-component-index` over
+                                                                                   # all components, except the first one with index 0.
+
    SUIT_Envelope_Tagged:
       suit-authentication-wrapper:
          SuitDigest:
            suit-digest-algorithm-id: cose-alg-sha-256
       suit-manifest:
          suit-manifest-version: 1
-         suit-manifest-sequence-number: {{ version }}
+         suit-manifest-sequence-number: {{ version }}                              # Assign value defined in the `CONFIG_APP_VERSION` Kconfig option.
          suit-common:
             suit-components:
             - - CAND_MFST
             - 0
-   {%- if hci_rpmsg_subimage is defined %}
-      {%- set component_index = component_index + 1 %}
-      {%- set hci_rpmsg_subimage_component_index = component_index %}
-      {{- component_list.append( hci_rpmsg_subimage_component_index ) or ""}}
+   {%- if hci_rpmsg_subimage is defined %}                                         # Add section below only, in case the Radio Core has been already been built.
+      {%- set component_index = component_index + 1 %}                             # Increment `component_index`.
+      {%- set hci_rpmsg_subimage_component_index = component_index %}              # Store the current component index for further use.
+      {{- component_list.append( hci_rpmsg_subimage_component_index ) or ""}}      # Append the current component index to the common list.
         - - INSTLD_MFST
           - RFC4122_UUID:
               namespace: nordicsemi.com

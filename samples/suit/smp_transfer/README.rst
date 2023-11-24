@@ -139,7 +139,7 @@ To build and program the sample to the nRF54H20 PDK, complete the following step
 
             .. code-block:: console
 
-               west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:\ncs-lcs\west_working_dir\build\ -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=1
+               west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:/ncs-lcs/work-dir -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=1
 
          If you want to further configure your sample, see :ref:`configure_application` for additional information.
 
@@ -168,7 +168,7 @@ To build and program the sample to the nRF54H20 PDK, complete the following step
 
             .. code-block:: console
 
-               west flash -d C:\ncs-lcs\west_working_dir\build\
+               west flash -d C:/ncs-lcs/work-dir
 
    .. group-tab:: Over UART
 
@@ -213,7 +213,7 @@ To build and program the sample to the nRF54H20 PDK, complete the following step
 
             .. code-block:: console
 
-               west flash -d C:\ncs-lcs\west_working_dir\build\
+               west flash -d C:/ncs-lcs/work-dir
 
 Building and programming using |nRFVSC|
 =======================================
@@ -244,7 +244,7 @@ After programming the sample to your development kit, complete the following ste
 
             .. code-block:: console
 
-               west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:\ncs-lcs\west_working_dir\build\ -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=2
+               west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:/ncs-lcs/work-dir -- -DOVERLAY_CONFIG=overlay-bt.conf -DCONFIG_APP_VERSION=2
 
          Another :file:`root.suit` file is created after running this command, that contains the updated firmware.
 
@@ -316,7 +316,7 @@ After programming the sample to your development kit, complete the following ste
 
             .. code-block:: console
 
-               west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:\ncs-lcs\west_working_dir\build\ -- -DCONFIG_APP_VERSION=2
+               west build -p -b nrf54h20dk_nrf54h20_cpuapp@soc1 -d C:/ncs-lcs/work-dir -- -DCONFIG_APP_VERSION=2
 
          Another :file:`root.suit` file is created after running this command, that contains the updated firmware.
 
