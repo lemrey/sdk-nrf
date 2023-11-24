@@ -2065,6 +2065,46 @@ For an example of bootloader Kconfig configuration file defined by the applicati
   Both mentioned firmware upgrade methods are not used simultaneously by any of the configurations.
   For example, the ``nrf52840dk_nrf52840`` board in ``prj_mcuboot_smp.conf`` uses only the background DFU and does not enable the serial recovery feature.
 
+.. _nrf_desktop_suit:
+
+Software Update for Internet of Things (SUIT)
+=============================================
+
+Software Update for Internet of Things (SUIT) is a metadata format and procedure for performing Device Firmware Update (DFU).
+It allows you to update and boot multiple CPU cores of the supported System on Chip (SoC).
+The SUIT DFU is currently available only for the nRF54H20 SoC.
+The application stores an update image in the dedicated DFU partition and triggers firmware update using the SUIT API.
+The firmware update affects the firmware of both the Application and Radio cores.
+The update candidates are moved directly to the corresponding image slots.
+
+The SUIT can be used for the :ref:`background DFU <nrf_desktop_bootloader_background_dfu>` through:
+
+   * The :ref:`nrf_desktop_config_channel` and :ref:`nrf_desktop_dfu`.
+   * The :ref:`nrf_desktop_dfu_mcumgr_suit`.
+
+For an introduction to SUIT and more detailed information, see the :ref:`ug_nrf54h20_suit_dfu`.
+
+Configuring SUIT
+----------------
+
+To enable SUIT on the supported target, select the :kconfig:option:`CONFIG_SUIT` Kconfig option in the application configuration.
+
+SUIT also requires enabling the following options in the application configuration:
+
+   * :kconfig:option:`CONFIG_SUIT_ENVELOPE` - Required to create the SUIT envelope.
+     The envelope is a container for the manifest and code or data payloads, such as CPU cores update images.
+   * :kconfig:option:`CONFIG_SUIT_ENVELOPE_HIERARCHICAL_MANIFEST` - Required to create a hierarchical root manifest with its dependent sub-manifests.
+     Manifests contain instructions on how to obtain, install, verify, and invoke payloads.
+
+The nRF Desktop application uses the sequence number (:kconfig:option:`CONFIG_SUIT_ENVELOPE_SEQUENCE_NUM`) to define an application version.
+
+.. note::
+   The :kconfig:option:`CONFIG_SUIT_ENVELOPE_SIGN` is disabled, so the generated SUIT envelope is not signed.
+
+Make sure that the dedicated DFU partition called ``dfu_partition`` is defined in the DTS.
+The partition is used to store the incoming SUIT envelope with update candidate.
+For details about defining a memory layout for your target, see the :ref:`nrf_desktop_flash_memory_layout` section.
+
 .. _nrf_desktop_bootloader_background_dfu:
 
 Background Device Firmware Upgrade

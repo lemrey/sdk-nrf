@@ -32,6 +32,7 @@ The module can be used for the following SoC series:
   For more information on how to enable and configure a bootloader, see the :ref:`nrf_desktop_bootloader` section.
 * nRF54H Series - You can use the DFU module for the Software Update for Internet of Things (SUIT) procedure.
   The DFU module acts as a transport for the SUIT envelope used to update device firmware.
+  For more information on how to enable the SUIT procedure, see the :ref:`nrf_desktop_suit` section.
 
 Enable the DFU module using the :ref:`CONFIG_DESKTOP_CONFIG_CHANNEL_DFU_ENABLE <config_desktop_app_options>` option.
 It requires the transport option :ref:`CONFIG_DESKTOP_CONFIG_CHANNEL_ENABLE <config_desktop_app_options>` to be selected, as it uses :ref:`nrf_desktop_config_channel` for the transmission of the update image.
