@@ -47,6 +47,12 @@ Additionally, the page lists the available Zephyr samples that are compatible wi
 * :ref:`crypto_sha256`
 * :ref:`crypto_ecjpake`
 * :ref:`crypto_persistent_key`
+* :ref:`matter_template_sample`
+* :ref:`matter_light_bulb_sample`
+* :ref:`matter_light_switch_sample`
+* :ref:`matter_window_covering_sample`
+* :ref:`ot_cli_sample`
+* :ref:`ot_coprocessor_sample`
 
 |NCS| applications
 ******************

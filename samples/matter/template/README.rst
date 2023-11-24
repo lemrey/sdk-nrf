@@ -32,8 +32,8 @@ IPv6 network support
 
 The development kits for this sample offer the following IPv6 network support for Matter:
 
-* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, ``nrf21540dk_nrf52840``, and ``nrf54h20dk_nrf54h20_cpuapp@soc1``.
-* Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp`` with the ``nrf7002_ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
+* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, ``nrf21540dk_nrf52840``, ``nrf54l15dk_nrf54l15_cpuapp@soc1``, and ``nrf54h20dk_nrf54h20_cpuapp@soc1``.
+* Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp``, and ``nrf54h20dk_nrf54h20_cpuapp@soc1`` with the ``nrf7002_ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
 
 Overview
 ********
@@ -102,25 +102,37 @@ Matter template build types
     :start-after: matter_door_lock_sample_configuration_file_types_start
     :end-before: matter_door_lock_sample_configuration_file_types_end
 
-.. note::
-    For the nRF54H20 PDK, only the ``no_dfu`` target is supported due to the lack of the Device Firmware Upgrade feature support.
-
-Matter template build types for the nRF54H20 PDK
-================================================
+Matter template build types for the nRF54H and nRF54L Series
+============================================================
 
 .. include:: ../lock/README.rst
     :start-after: matter_door_lock_sample_build_types_nrf54h20_start
     :end-before: matter_door_lock_sample_build_types_nrf54h20_end
 
+.. matter_template_sample_build_types_nrf54l15_start
+
+For the nRF54L15 PDK, the following build types are available:
+
+* ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support.
+
+.. matter_template_sample_build_types_nrf54l15_end
+
 Device Firmware Upgrade support
 ===============================
 
 .. note::
-   The Device Firmware Update feature is not yet available on the nRF54H20 PDK.
+   The Device Firmware Update feature is not yet available on the nRF54H20 PDK in this sample.
 
 .. include:: ../lock/README.rst
     :start-after: matter_door_lock_sample_build_with_dfu_start
     :end-before: matter_door_lock_sample_build_with_dfu_end
+
+Wi-Fi support on nRF54H20 PDK
+=============================
+
+.. include:: ../lock/README.rst
+    :start-after: matter_door_lock_sample_wi_fi_support_on_nrf54h20_start
+    :end-before: matter_door_lock_sample_wi_fi_support_on_nrf54h20_end
 
 FEM support
 ===========
@@ -185,12 +197,26 @@ The ``build_nrf52840dk_nrf52840`` parameter specifies the output directory for t
 
       File not found: ./ncs/nrf/samples/matter/template/configuration/nrf52840dk_nrf52840/prj_shell.conf
 
-Building command example for nRF54H20 PDK
------------------------------------------
+Building command example for the nRF54H and nRF54L Series
+---------------------------------------------------------
 
 .. include:: ../lock/README.rst
     :start-after: matter_door_lock_sample_build_nrf54h20_start
     :end-before: matter_door_lock_sample_build_nrf54h20_end
+
+.. matter_template_sample_build_nrf54l15_start
+
+Use the following build commands to select the build type for the nRF54L15 PDK:
+
+   * To build the sample without the Device Firmware Upgrade support:
+      
+      .. code-block:: console
+
+      west build -b nrf54l15dk_nrf54l15_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf
+
+See :ref:`ug_nrf54l15_gs_sample` in the nRF54L15 PDK user guide for more information.
+
+.. matter_template_sample_build_nrf54l15_end
 
 Testing
 =======

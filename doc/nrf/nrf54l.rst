@@ -11,3 +11,4 @@ The |NCS| provides support for developing on the nRF54L System on Chip (SoC).
 
    working_with_nrf/nrf54l/ug_nrf54l15_gs
    working_with_nrf/nrf54l/ug_nrf54l15_samples
+   working_with_nrf/nrf54l/ug_nrf54l15_matter_thread

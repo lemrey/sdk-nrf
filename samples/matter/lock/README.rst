@@ -44,7 +44,7 @@ IPv6 network support
 The development kits for this sample offer the following IPv6 network support for Matter:
 
 * Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, ``nrf21540dk_nrf52840``, and ``nrf54h20dk_nrf54h20_cpuapp@soc1``.
-* Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp`` with the ``nrf7002_ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
+* Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp``, and ``nrf54h20dk_nrf54h20_cpuapp@soc1`` with the ``nrf7002_ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
 * :ref:`Switching of Matter over Thread and Matter over Wi-Fi <matter_lock_sample_wifi_thread_switching>` is supported for ``nrf5340dk_nrf5340_cpuapp`` with the ``nrf7002_ek`` shield attached, using the ``thread_wifi_switched`` build type.
 
 Overview
@@ -77,6 +77,9 @@ For details, see the `Commissioning the device`_ section.
 
 Thread and Wi-Fi switching
 ==========================
+
+.. note::
+   Currently the Thread and Wi-Fi switching feature is not available on the nRF54H20 PDK.
 
 When built using the ``thread_wifi_switched`` build type and programmed to the nRF5340 DK with the nRF7002 EK shield attached, the door lock sample supports a feature that allows you to :ref:`dynamically switch between Matter over Thread and Matter over Wi-Fi <ug_matter_overview_architecture_integration_designs_switchable>` on the device boot.
 Due to internal flash size limitations, only one transport protocol can be used at a time.
@@ -156,7 +159,7 @@ This sample supports the following build types, depending on the selected board:
 * ``debug`` -- Debug version of the application - can be used to enable additional features for verifying the application behavior, such as logs or command-line shell.
 * ``release`` -- Release version of the application - can be used to enable only the necessary application functionalities to optimize its performance.
 * ``thread_wifi_switched`` -- Debug version of the application with the ability to :ref:`switch between Thread and Wi-Fi network support <matter_lock_sample_wifi_thread_switching>` in the field - can be used for the nRF5340 DK with the nRF7002 EK shield attached.
-* ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support - can be used for the nRF52840 DK, nRF5340 DK, nRF7002 DK, and nRF21540 DK.
+* ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support - can be used for the nRF52840 DK, nRF5340 DK, nRF7002 DK, nRF54H20 PDK, and nRF21540 DK.
 
 .. note::
     `Selecting a build type`_ is optional.
@@ -164,14 +167,15 @@ This sample supports the following build types, depending on the selected board:
 
 .. matter_door_lock_sample_configuration_file_types_end
 
-Matter door lock build types for the nRF54H20 PDK
-=================================================
+Matter door lock build types for nRF54H
+=======================================
 
 .. matter_door_lock_sample_build_types_nrf54h20_start
 
 For the nRF54H20 PDK, the following build types are available:
 
-* ``no_dfu`` -- The Device Firmware Upgrade feature is not yet supported on the nRF54H20 PDK.
+* ``debug`` -- Debug version of the application with Bluetooth® Low Energy (LE) SMP Device Firmware Upgrade feature support- can be used to enable additional features for verifying the application behavior.
+* ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support.
 
 .. matter_door_lock_sample_build_types_nrf54h20_end
 
@@ -181,7 +185,9 @@ Device Firmware Upgrade support
 ===============================
 
 .. note::
-   The Device Firmware Update feature is not yet available on the nRF54H20 PDK.
+   Matter OTA update protocol feature is not yet available on the nRF54H20 PDK.
+   You can use Simple Management Protocol (SMP) over Bluetooth LE to perform Device Firmware Update on the nRF54H20 PDK only for Thread network variant.
+   Device Firmware Upgrade for nRF54H20 PDK with Wi-Fi network variant is not available yet.
 
 .. matter_door_lock_sample_build_with_dfu_start
 
@@ -220,6 +226,58 @@ For example:
    west build -b nrf52840dk_nrf52840 -- -DCONFIG_CHIP_DFU_OVER_BT_SMP=y
 
 .. matter_door_lock_sample_build_with_dfu_end
+
+Device Firmware Upgrade support on the nRF54H20 PDK
+---------------------------------------------------
+
+The nRF54H20 device uses the SUIT DFU feature to manage the firmware update process and apply new images.
+To learn more about the SUIT DFU see the :ref:`ug_nrf54h20_suit_dfu` user guide.
+In this sample there are two firmware images that must be updated during the firmware upgrade process - the Application Core image, and the Radio Core image.
+The upgrade is done sequentially, first the Radio Core image, and then the Application Core image.
+You must ensure the compatibility between the new version of the Radio Core and the old version of the Application Core.
+To build the firmware and prepare it to DFU process you must build the example with the higher :kconfig:option:`CONFIG_SUIT_ENVELOPE_SEQUENCE_NUM` than the previous image.
+
+In this sample there are SUIT manifest templates that are prepared to perform the sequential firmware upgrade of the Application and Radio Core images.
+You can find them in the ``configuration/nrf54h20dk_nrf54h20_cpuapp`` directory.
+
+Before editing any of the SUIT manifests templates, read the SUIT :ref:`ug_nrf54h20_suit_customize_dfu` guide carefully .
+
+To build the example with the SUIT DFU feature enabled, run the following command:
+
+.. parsed-literal::
+   :class: highlight
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp
+
+To prepare the new firmware for the DFU process build the example by running the following command with the *number* replaced with the new image number, higher than the previous one:
+
+.. parsed-literal::
+   :class: highlight
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp -- -DCONFIG_SUIT_ENVELOPE_SEQUENCE_NUM=*number*
+
+To read more about SUIT DFU on the nRF54H20 PDK in Matter and learn how to perform firmware update read :ref:`ug_nrf54h20_matter_thread_suit_dfu`.
+
+.. note::
+   If the SUIT generator module has been changed then all ``*.digests`` files become out-of-date.
+   To regenerate them, remove all ``*.digests`` files from the ``configuration/nrf54h20dk_nrf54h20_cpuapp`` directory and build the example as usual.
+   The new one will be generated and up-to-date.
+
+
+Wi-Fi support on nRF54H20 PDK
+=============================
+
+.. matter_door_lock_sample_wi_fi_support_on_nrf54h20_start
+
+Matter over Wi-Fi is supported on the nRF54H20 PDK with the ``nrf7002_ek`` shield attached through the nRF54H20 PDK to nRF7002 EK interposer board.
+
+To build the sample with Matter over Wi-Fi support, run the following command:
+
+.. code-block:: console
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf -DSHIELD=nrf700x_nrf54h20dk -DCONFIG_CHIP_WIFI=y
+
+.. matter_door_lock_sample_wi_fi_support_on_nrf54h20_end
 
 .. _matter_lock_sample_configuration_fem:
 
@@ -381,16 +439,24 @@ The ``build_nrf52840dk_nrf52840`` parameter specifies the output directory for t
 
       File not found: ./ncs/nrf/samples/matter/lock/configuration/nrf52840dk_nrf52840/prj_shell.conf
 
-Building command example for nRF54H20 PDK
------------------------------------------
+Building command example for the nRF54H
+---------------------------------------
 
 .. matter_door_lock_sample_build_nrf54h20_start
 
-Use the following building command to select the build type for the nRF54H20 PDK:
+Use the following build commands to select the build type for the nRF54H20 PDK:
 
-.. code-block:: console
+   * To build the sample without the Device Firmware Upgrade support:
+      
+      .. code-block:: console
 
-   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf
+      west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf
+
+   * To build the sample with the Device Firmware Upgrade support:
+      
+      .. code-block:: console
+
+      west build -b nrf54h20dk_nrf54h20_cpuapp@soc1
 
 See :ref:`ug_nrf54h20_gs_sample` in the nRF54H20 user guide for more information.
 

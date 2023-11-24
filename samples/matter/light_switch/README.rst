@@ -43,7 +43,7 @@ IPv6 network support
 
 The development kits for this sample offer the following IPv6 network support for Matter:
 
-* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, and ``nrf21540dk_nrf52840``.
+* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, ``nrf21540dk_nrf52840``, and ``nrf54l15dk_nrf54l15_cpuapp@soc1``.
 * Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp`` with the ``nrf7002ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
 
 Overview
@@ -111,6 +111,13 @@ Matter light switch build types
     :start-after: matter_door_lock_sample_configuration_file_types_start
     :end-before: matter_door_lock_sample_configuration_file_types_end
 
+Matter light switch build types for the nRF54L Series
+=====================================================
+
+.. include:: ../template/README.rst
+    :start-after: matter_template_sample_build_types_nrf54l15_start
+    :end-before: matter_template_sample_build_types_nrf54l15_end
+
 FEM support
 ===========
 
@@ -165,7 +172,7 @@ Button 2:
          The brightness is changing from 0% to 100% with 1% increments every 300 milliseconds as long as **Button 2** is pressed.
 
 Button 4:
-   * On nRF52840 DK, nRF5340 DK and nRF21540 DK:
+   * On nRF52840 DK, nRF5340 DK, and nRF21540 DK:
      Starts the NFC tag emulation, enables Bluetooth LE advertising for the predefined period of time (15 minutes by default), and makes the device discoverable over Bluetooth LE.
      This button is used during the :ref:`commissioning procedure <matter_light_switch_sample_remote_control_commissioning>`.
 
@@ -294,6 +301,13 @@ The ``build_nrf52840dk_nrf52840`` parameter specifies the output directory for t
    .. code-block:: console
 
       File not found: ./ncs/nrf/samples/matter/light_switch/configuration/nrf52840dk_nrf52840/prj_shell.conf
+
+Building command example for the nRF54 Series
+---------------------------------------------
+
+.. include:: ../template/README.rst
+    :start-after: matter_template_sample_build_nrf54l15_start
+    :end-before: matter_template_sample_build_nrf54l15_end
 
 Testing
 *******
@@ -435,7 +449,7 @@ Before starting the commissioning procedure, the device must be made discoverabl
 By default, the device is not discoverable automatically upon startup.
 Press the following button to enable the Bluetooth LE advertising:
 
-* On nRF52840 DK, nRF5340 DK, and nRF21540 DK: Press **Button 4**.
+* On nRF52840 DK, nRF5340 DK, nRF21540 DK, and nRF54L15 PDK: Press **Button 4**.
 * On nRF7002 DK: Press **Button 2**.
 
 Onboarding information

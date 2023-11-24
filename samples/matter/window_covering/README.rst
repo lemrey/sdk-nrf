@@ -84,6 +84,14 @@ Matter window covering build types
     :start-after: matter_light_bulb_sample_configuration_file_types_start
     :end-before: matter_light_bulb_sample_configuration_file_types_end
 
+Matter window covering build types for the nRF54H and nRF54L Series
+===================================================================
+
+.. include:: ../template/README.rst
+    :start-after: matter_template_sample_build_types_nrf54l15_start
+    :end-before: matter_template_sample_build_types_nrf54l15_end
+
+
 Device Firmware Upgrade support
 ===============================
 
@@ -189,6 +197,13 @@ The ``build_nrf52840dk_nrf52840`` parameter specifies the output directory for t
    .. code-block:: console
 
       File not found: ./ncs/nrf/samples/matter/window_covering/configuration/nrf52840dk_nrf52840/prj_shell.conf
+
+Building command example for the nRF54L Series
+----------------------------------------------
+
+.. include:: ../template/README.rst
+    :start-after: matter_template_sample_build_nrf54l15_start
+    :end-before: matter_template_sample_build_nrf54l15_end
 
 Testing
 =======

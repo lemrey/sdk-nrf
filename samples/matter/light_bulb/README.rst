@@ -36,7 +36,7 @@ IPv6 network support
 
 The development kits for this sample offer the following IPv6 network support for Matter:
 
-* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, and ``nrf21540dk_nrf52840``.
+* Matter over Thread is supported for ``nrf52840dk_nrf52840``, ``nrf5340dk_nrf5340_cpuapp``, ``nrf21540dk_nrf52840``, and ``nrf54l15dk_nrf54l15_cpuapp@soc1``.
 * Matter over Wi-Fi is supported for ``nrf5340dk_nrf5340_cpuapp`` with the ``nrf7002ek`` shield attached or for ``nrf7002dk_nrf5340_cpuapp``.
 
 Overview
@@ -92,13 +92,20 @@ This sample supports the following build types, depending on the selected board:
 
 * ``debug`` -- Debug version of the application - can be used to enable additional features for verifying the application behavior, such as logs or command-line shell.
 * ``release`` -- Release version of the application - can be used to enable only the necessary application functionalities to optimize its performance.
-* ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support - can be used for the nRF52840 DK, nRF5340 DK, nRF7002 DK, and nRF21540 DK.
+* ``no_dfu`` -- Debug version of the application without Device Firmware Upgrade feature support - can be used for the nRF52840 DK, nRF5340 DK, nRF7002 DK, nRF21540 DK, and nRF54L15 PDK.
 
 .. note::
     `Selecting a build type`_ is optional.
     The ``debug`` build type is used by default if no build type is explicitly selected.
 
 .. matter_light_bulb_sample_configuration_file_types_end
+
+Matter light switch build types for the nRF54L Series
+=====================================================
+
+.. include:: ../template/README.rst
+    :start-after: matter_template_sample_build_types_nrf54l15_start
+    :end-before: matter_template_sample_build_types_nrf54l15_end
 
 Device Firmware Upgrade support
 ===============================
@@ -134,7 +141,7 @@ LED 2:
     :end-before: matter_door_lock_sample_button1_end
 
 Button 2:
-    * On nRF52840 DK, nRF5340 DK, and nRF21540 DK: Changes the light bulb state to the opposite one.
+    * On nRF52840 DK, nRF5340 DK, nRF21540 DK, and nRF54L15 PDK: Changes the light bulb state to the opposite one.
     * On nRF7002 DK:
 
       * If pressed for less than three seconds, it changes the lock state to the opposite one.
@@ -197,6 +204,13 @@ The ``build_nrf52840dk_nrf52840`` parameter specifies the output directory for t
    .. code-block:: console
 
       File not found: ./ncs/nrf/samples/matter/light_bulb/configuration/nrf52840dk_nrf52840/prj_shell.conf
+
+Building command example for the nRF54L Series
+----------------------------------------------
+
+.. include:: ../template/README.rst
+    :start-after: matter_template_sample_build_nrf54l15_start
+    :end-before: matter_template_sample_build_nrf54l15_end
 
 Testing
 =======
