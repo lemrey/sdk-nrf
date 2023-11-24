@@ -1,7 +1,7 @@
 .. _nrf54h_suit_sample:
 
-SUIT DFU: Update on the nRF54H20 SoC
-####################################
+SUIT DFU: Firmware update on the nRF54H20 SoC
+#############################################
 
 .. contents::
    :local:
@@ -101,12 +101,14 @@ This is done by modifying the values for the desired location and size of the pa
 
     * ``dfu_partition`` is where the update candidate is stored before the update process begins.
 
-Template manifest file
-======================
+Manifest template files
+=======================
 
-A manifest file is required to create a SUIT envelope to carry out the DFU.
-See the :ref:`Manifest <ug_suit_dfu_suit_concepts>` section of the SUIT documentation to read more about SUIT manifest files.
-The template file is automatically created after the sample is built for the first time.
+Manifest template files are automatically created after the sample is built for the first time.
+These are required to create a SUIT envelope to carry out the DFU.
+
+If you want to make modifications to how the DFU is executed in this sample, you can do so by editing the manifest templates.
+See the :ref:`ug_nrf54h20_suit_customize_dfu` user guide for instructions and examples.
 
 Building and running
 ********************
