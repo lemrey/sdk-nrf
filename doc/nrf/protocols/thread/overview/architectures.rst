@@ -58,7 +58,7 @@ It has the following disadvantages:
 
 * For some use cases, the nRF52 Series and nRF53 Series MCUs can be too slow (for example, when the application does complex data processing).
 * The application and the network share flash and RAM space, which can limit the application functionality.
-* Dual-bank DFU or an external flash is needed to update the firmware.
+* Might require external flash for DFU if the secondary application slot does not fit in the primary memory because of increased application size.
 
 .. figure:: images/thread_platform_design_soc.svg
    :alt: Thread-only architecture (nRF52)
@@ -144,7 +144,6 @@ This design has the following advantages:
 * When choosing an advanced and powerful host processor, applications can be very complex.
 * Only the network stack and a thin application reside on the network processor, which reduces the cost of the chip.
   RAM and flash usage are usually smaller than in a single-chip solution.
-* This design does not require support for dual-bank DFU, because the host can just replace the old image with a new one.
 
 It has the following disadvantages:
 
@@ -236,4 +235,4 @@ The following UART signals are used in the Nordic Semiconductor's solution:
 |Google_CCLicense|
 The source page is available `here <OpenThread system architecture_>`_.
 
-.. |connection_options_limited| replace:: Spinel connections through SPI and USB are not currently available.
+.. |connection_options_limited| replace:: Spinel connections through SPI and USB are not currently available in the |NCS|.

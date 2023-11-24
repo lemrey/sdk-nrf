@@ -7,6 +7,16 @@ Working with nRF54H20 and Matter and Thread
    :local:
    :depth: 2
 
+.. caution::
+
+   The limited customer sampling version of the |NCS| is affected by the OpenThread KeyID Mode 2 Security Vulnerability.
+   This vulnerability impacts all Thread devices using OpenThread and allows an attacker in physical proximity to compromise non-router-capable devices and the entire Thread network in the case of router-capable devices.
+   The vulnerability allows an attacker in physical proximity to inject arbitrary IPv6 packets into the Thread network via IEEE 802.15.4 frame transmissions.
+   Because the Thread Management Framework (TMF) protocol does not have any additional layer of security, the attacker could exploit this vulnerability to update the Thread Network Key and gain full access to the Thread network.
+   There is no known exploitation of vulnerability.
+
+   Due to this issue, the Thread certifications for OpenThread libraries in all |NCS| releases up to v2.4.0, which the limited customer sampling is based on, are deprecated.
+
 Starting with the ``v2.2.99-cs1-dev1`` limited customer sampling tag, the nRF54H20 PDK supports the following Matter and Thread samples:
 
 * :ref:`Matter door lock sample <matter_lock_sample>`
