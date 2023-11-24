@@ -2177,22 +2177,52 @@ The update image can also be transferred in the background through one of the fo
 * :ref:`nrf_desktop_dfu_mcumgr` (supported only with MCUboot bootloader)
   The module uses the :ref:`nrf_desktop_dfu_lock` to synchronize non-volatile memory access with other DFU methods.
   Therefore, this module should be used for configurations that enable multiple DFU transports (for example, if a configuration also enables :ref:`nrf_desktop_dfu`).
+* :ref:`nrf_desktop_dfu_mcumgr_suit` (supported only with SUIT)
 
 The `nRF Connect Device Manager`_ application transfers image update files over the Simple Management Protocol (SMP).
 
 To perform DFU using the `nRF Connect Device Manager`_ mobile app, complete the following steps:
 
-.. include:: /working_with_nrf/nrf52/developing.rst
-   :start-after: fota_upgrades_over_ble_nrfcdm_common_dfu_steps_start
-   :end-before: fota_upgrades_over_ble_nrfcdm_common_dfu_steps_end
+.. tabs::
 
-.. include:: /working_with_nrf/nrf52/developing.rst
-   :start-after: fota_upgrades_over_ble_mcuboot_direct_xip_nrfcdm_note_start
-   :end-before: fota_upgrades_over_ble_mcuboot_direct_xip_nrfcdm_note_end
+   .. tab:: MCUboot
 
-.. note::
-  If the :kconfig:option:`CONFIG_MCUMGR_GRP_IMG_REJECT_DIRECT_XIP_MISMATCHED_SLOT` Kconfig option is enabled in the application configuration, the device rejects update image upload for the invalid slot.
-  It is recommended to enable the option if the application uses MCUboot in the direct-xip mode.
+      .. include:: /working_with_nrf/nrf52/developing.rst
+         :start-after: fota_upgrades_over_ble_nrfcdm_common_dfu_steps_start
+         :end-before: fota_upgrades_over_ble_nrfcdm_common_dfu_steps_end
+
+      .. include:: /working_with_nrf/nrf52/developing.rst
+         :start-after: fota_upgrades_over_ble_mcuboot_direct_xip_nrfcdm_note_start
+         :end-before: fota_upgrades_over_ble_mcuboot_direct_xip_nrfcdm_note_end
+
+      .. note::
+         When the :kconfig:option:`CONFIG_MCUMGR_GRP_IMG_REJECT_DIRECT_XIP_MISMATCHED_SLOT` Kconfig option is enabled in the application configuration, the device rejects the update image upload for the invalid slot.
+         It is recommended to enable the option if the application uses MCUboot in the direct-xip mode.
+
+   .. tab:: SUIT
+
+      1. Generate the SUIT envelope by building your application with the FOTA support over Bluetooth Low Energy.
+         You can find the generated :file:`root.suit` envelope in the :file:`<build_dir>/zephyr` directory.
+      #. Download the :file:`root.suit` envelope to your device.
+
+         .. note::
+            `nRF Connect for Desktop`_ does not currently support the FOTA process.
+
+      #. Use the `nRF Connect Device Manager`_ mobile app to update your device with the new firmware.
+
+         a. Ensure that you can access the :file:`root.suit` envelope from your phone or tablet.
+         #. In the mobile app, scan and select the device to update.
+         #. Switch to the :guilabel:`Image` tab and tap on :guilabel:`ADVANCED` in the upper right corner of the app.
+         #. In the **Firmware Upload** section, tap the :guilabel:`SELECT FILE` button and select the :file:`root.suit` envelope.
+         #. Tap the :guilabel:`START` button.
+         #. Initiate the DFU process of transferring the image to the device by selecting :guilabel:`Application Core (0)` and tapping :guilabel:`OK` button.
+         #. Wait for the DFU to finish and then verify that the application works properly.
+
+      .. note::
+         Support for SUIT updates is available since the following versions of the `nRF Connect Device Manager`_ mobile app:
+
+         * Version ``1.9`` on Android.
+         * Version ``1.5`` on iOS.
 
 Update image verification and application image update
 ------------------------------------------------------
