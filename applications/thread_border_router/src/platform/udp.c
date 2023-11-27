@@ -23,6 +23,10 @@
 
 LOG_MODULE_DECLARE(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
+K_MUTEX_DEFINE(udp_mutex);
+
+static uint8_t dgram_buffer[MAX_UDP_SIZE];
+
 static void udp_sent_cb(struct net_context *context, int status, void *user_data)
 {
 	if (status < 0) {
@@ -165,7 +169,6 @@ otError otPlatUdpSend(otUdpSocket *aUdpSocket, otMessage *aMessage,
 {
 	int res;
 	size_t len;
-	uint8_t buffer[MAX_UDP_SIZE];
 	struct sockaddr addr;
 	socklen_t addrlen;
 
@@ -179,7 +182,10 @@ otError otPlatUdpSend(otUdpSocket *aUdpSocket, otMessage *aMessage,
 		return OT_ERROR_NO_BUFS;
 	}
 
-	if (len != otMessageRead(aMessage, 0, buffer, len)) {
+	k_mutex_lock(&udp_mutex, K_FOREVER);
+
+	if (len != otMessageRead(aMessage, 0, dgram_buffer, len)) {
+		k_mutex_unlock(&udp_mutex);
 		return OT_ERROR_FAILED;
 	}
 
@@ -192,8 +198,10 @@ otError otPlatUdpSend(otUdpSocket *aUdpSocket, otMessage *aMessage,
 	net_ipv6_addr_copy_raw((uint8_t *)&net_sin6(&addr)->sin6_addr,
 			       (uint8_t *)&aMessageInfo->mPeerAddr);
 
-	res = net_context_sendto(aUdpSocket->mHandle, buffer, len, &addr, addrlen,
+	res = net_context_sendto(aUdpSocket->mHandle, dgram_buffer, len, &addr, addrlen,
 				 udp_sent_cb, K_NO_WAIT, aUdpSocket);
+
+	k_mutex_unlock(&udp_mutex);
 
 	if (res < 0) {
 		LOG_ERR("OT socket (%p) - failed to send UDP datagram, error: %d",
