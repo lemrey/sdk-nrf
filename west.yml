@@ -144,7 +144,7 @@ manifest:
       path: modules/ic-next
       revision: 0332b9ffc1d2dba70caef774eba014421866d6a0
     - name: sdk-secdom
-      revision: v2.4.99-cs3-rc1
+      revision: 48365c4efb8d4d3c5a0f39f721e41cf5d728af81
       path: core_fw/secdom
     - name: nrf-regtool
       revision: 1edafc67d00e5199f202175e1159e3ac9cf4d213
@@ -234,7 +234,7 @@ manifest:
           compare-by-default: false
 
     - name: suit-processor
-      revision: 843fc41d5f62695ae66071182d7881d2b7d6e168
+      revision: c90fd2241935cf8246ac105c34dc6ef8d6130e1e
       path: modules/lib/suit-processor
     - name: suit-generator
       revision: cfc0890e7182b19783d6e9941c0d5de4005adde4
