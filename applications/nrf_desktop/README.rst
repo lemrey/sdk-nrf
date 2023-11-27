@@ -1324,9 +1324,13 @@ Sample gaming mouse (nrf54h20dk_nrf54h20_cpuapp\@soc1)
         By default, the device generates ``1000`` motion per second of pressing a button.
         This is done to limit the speed of the mouse cursor, but it could also lead to motion set to ``0`` in some of the HID reports for USB High-Speed use case.
         See the :ref:`nrf_desktop_motion_report_rate` documentation section for details.
-      * The configuration does not use any bootloader.
       * In ``debug`` configuration, logs are provided through the UART.
         For detailed information on working with the nRF54H20 PDK, see the :ref:`ug_nrf54h20_gs` documentation.
+      * All configurations support the Software Update for Internet of Things (SUIT) procedure.
+        The ``debug`` and ``release`` configurations use the :ref:`nrf_desktop_config_channel` for SUIT envelope transfer.
+        The :ref:`nrf_desktop_config_channel_script` script and :ref:`nrf_desktop_dfu` are used to handle the envelope transfer over the configuration channel protocol.
+        The ``smp_suit`` configuration uses the SUITFU (:file:`subsys/mgmt/suitfu`) for the SUIT envelope transfer.
+        The :ref:`nrf_desktop_dfu_mcumgr_suit` is used to ensure a proper SUITFU configuration and to lower the Bluetooth LE connection latency, allowing quick data transfer over SMP.
 
 .. _porting_guide_adding_board:
 
