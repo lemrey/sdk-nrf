@@ -20,7 +20,7 @@ LOG_MODULE_REGISTER(nema_dc_hal, CONFIG_NEMA_LOG_LEVEL);
 
 #define DISPC_IRQn   112
 
-#define NEMADC_REGS_BASE      (uintptr_t)(NRF_GRAPHICS_DISPC_NS_BASE + 0x1000)
+#define NEMADC_REGS_BASE      (uintptr_t)(NRF_DISPC_NS_BASE + 0x1000)
 #define NEMADC_BASE_FREQUENCY 50000000
 
 static K_SEM_DEFINE(nemadc_irq_flag, 0, 1);
@@ -41,7 +41,9 @@ static uint16_t auxpll_freq_calc(uint32_t freq, uint32_t outsel_div)
 	 * predefined output divider (outsel_div)
 	 *
 	 * Dependency is following:
-	 *    freq = (4 MHz + (freq_reg * outsel_div / 2^16)) * 32 MHz
+	 *    freq * outsel_div = (R + (freq_reg / 2^16)) * 32 MHz
+	 *
+	 *    Where R is AUXPLL_RANGE[1:0] value, in our case equals to 4.
 	 */
 
 	uint32_t freq_reg = (freq * outsel_div / 32) - 4000000UL;
@@ -122,10 +124,8 @@ void nemadc_reg_write(uint32_t reg, uint32_t value)
 	sys_write32(value, NEMADC_REGS_BASE + reg);
 }
 
-static int nemagfx_dc_sys_init(const struct device *dev)
+static int nemagfx_dc_sys_init(void)
 {
-	ARG_UNUSED(dev);
-
 	LOG_DBG("NemaDC Init");
 
 	if (nemadc_init() != 0) {

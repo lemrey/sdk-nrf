@@ -20,7 +20,7 @@ LOG_MODULE_REGISTER(nema_hal, CONFIG_NEMA_LOG_LEVEL);
 
 #define GPU_IRQn   115
 
-#define NEMA_REGS_BASE         (uintptr_t)(NRF_GRAPHICS_GPU_NS_BASE + 0x1000)
+#define NEMA_REGS_BASE         (uintptr_t)(NRF_GPU_NS_BASE + 0x1000)
 #define NEMA_HEAP_START_ADDR   DT_REG_ADDR(DT_NODELABEL(graphic_memory))
 #define NEMA_HEAP_SIZE         DT_REG_SIZE(DT_NODELABEL(graphic_memory))
 #define NEMA_RING_SIZE         1024
@@ -252,10 +252,8 @@ int nema_mutex_unlock(int mutex_id)
 	return 0;
 }
 
-static int nemagfx_sys_init(const struct device *dev)
+static int nemagfx_sys_init(void)
 {
-	ARG_UNUSED(dev);
-
 	LOG_DBG("NemaGFX Init");
 
 	if (nema_init() != 0) {
