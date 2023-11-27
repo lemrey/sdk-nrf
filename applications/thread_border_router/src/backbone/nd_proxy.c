@@ -193,6 +193,7 @@ static void handle_nd_proxy_event(void *cb_ctx, otBackboneRouterNdProxyEvent eve
 
 	if (!ctx->backbone_iface) {
 		LOG_DBG("ND Proxy: backbone interface not initialized");
+		return;
 	}
 
 	if (dua) {

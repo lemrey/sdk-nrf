@@ -112,9 +112,17 @@ otError otPlatUdpBindToNetif(otUdpSocket *aUdpSocket, otNetifIdentifier aNetifId
 
 	switch(aNetifIdentifier) {
 	case OT_NETIF_THREAD:
+		if (!ctx->ot->iface) {
+			return OT_ERROR_FAILED;
+		}
+
 		net_context_set_iface(aUdpSocket->mHandle, ctx->ot->iface);
 		break;
 	case OT_NETIF_BACKBONE:
+		if (!ctx->backbone_iface) {
+			return OT_ERROR_FAILED;
+		}
+
 		net_context_set_iface(aUdpSocket->mHandle, ctx->backbone_iface);
 		break;
 	default:
@@ -210,6 +218,10 @@ otError otPlatUdpJoinMulticastGroup(otUdpSocket        *aUdpSocket,
 		return OT_ERROR_INVALID_ARGS;
 	}
 
+	if (!ctx->backbone_iface) {
+		return OT_ERROR_FAILED;
+	}
+
 	net_ipv6_addr_copy_raw((uint8_t *)&maddr, (uint8_t *)aAddress);
 
 	res = net_ipv6_mld_join(ctx->backbone_iface, &maddr);
@@ -237,6 +249,10 @@ otError otPlatUdpLeaveMulticastGroup(otUdpSocket        *aUdpSocket,
 	if (!aUdpSocket || !aUdpSocket->mHandle || !aAddress ||
 	    aNetifIdentifier != OT_NETIF_BACKBONE) {
 		return OT_ERROR_INVALID_ARGS;
+	}
+
+	if (!ctx->backbone_iface) {
+		return OT_ERROR_FAILED;
 	}
 
 	net_ipv6_addr_copy_raw((uint8_t *)&maddr, (uint8_t *)aAddress);

@@ -27,6 +27,10 @@ static void add_listener(const struct otIp6Address *address)
 	struct tbr_context *ctx = tbr_get_context();
 	char addr_str[INET6_ADDRSTRLEN];
 
+	if (!ctx->backbone_iface) {
+		return;
+	}
+
 	/* Avoid unaligned pointer access */
 	net_ipv6_addr_copy_raw(addr.s6_addr, (uint8_t *)address);
 	net_addr_ntop(AF_INET6, &addr.s6_addr, addr_str, sizeof(addr_str));
@@ -87,6 +91,10 @@ void mcast_routing_init(void)
 void mcast_routing_set_enabled(bool enabled)
 {
 	struct tbr_context *ctx = tbr_get_context();
+
+	if (!ctx->backbone_iface || !ctx->ot->iface) {
+		return;
+	}
 
 	if (IS_ENABLED(CONFIG_NET_ROUTE_MCAST)) {
 		LOG_INF("Enabling multicast routing");

@@ -167,6 +167,10 @@ static bool configure_backbone_link(struct net_if *iface)
 {
 	k_sem_take(&run_app, K_FOREVER);
 
+	if (!context->backbone_iface) {
+		return false;
+	}
+
 	net_config_init_app(net_if_get_device(context->backbone_iface),
 			    "Initializing backbone interface");
 
