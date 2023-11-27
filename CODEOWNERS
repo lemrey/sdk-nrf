@@ -37,7 +37,7 @@
 /applications/peripheral_sensor_node/     @nvlsianpu
 /applications/serial_lte_modem/           @SeppoTakalo @VTPeltoketo @MarkusLassila @rlubos
 /applications/zigbee_weather_station/     @sebastiandraus
-/applications/thread_border_router/       @konradderda @annakielar @MarGasiorek
+/applications/thread_border_router/       @konradderda @MarGasiorek
 # Boards
 /boards/                                  @anangl
 # All cmake related files
