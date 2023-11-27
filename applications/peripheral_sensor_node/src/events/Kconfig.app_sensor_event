@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-menuconfig APP_SENSOR_EVENTS
+config APP_SENSOR_EVENTS
 	bool "Enable application sensor events"
 	help
 	  Enable support for application sensor events.
 
-if APP_SENSOR_EVENTS
-
-module = APP_SENSOR_EVENTS
-module-str = app sensor events
-source "subsys/logging/Kconfig.template.log_config"
-
-endif # APP_SENSOR_EVENTS
+config APP_INIT_LOG_SENSOR_EVENTS
+	bool "Log app sensor events"
+	depends on APP_SENSOR_EVENTS
+	depends on LOG
+	default y
+	help
+	  Log app sensor events, used to notify about sensor start/stop.

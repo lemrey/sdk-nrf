@@ -17,9 +17,7 @@ static void log_sensor_start_event(const struct app_event_header *aeh)
 APP_EVENT_TYPE_DEFINE(sensor_start_event,
 		  log_sensor_start_event,
 		  NULL,
-		  APP_EVENT_FLAGS_CREATE(
-			IF_ENABLED(CONFIG_APP_SENSOR_EVENTS_LOG_LEVEL,
-				(APP_EVENT_TYPE_FLAGS_INIT_LOG_ENABLE))));
+		  APP_EVENT_FLAGS_CREATE(APP_EVENT_TYPE_FLAGS_INIT_LOG_ENABLE));
 
 
 static void log_sensor_stop_event(const struct app_event_header *aeh)
@@ -32,6 +30,4 @@ static void log_sensor_stop_event(const struct app_event_header *aeh)
 APP_EVENT_TYPE_DEFINE(sensor_stop_event,
 		  log_sensor_stop_event,
 		  NULL,
-		  APP_EVENT_FLAGS_CREATE(
-			IF_ENABLED(CONFIG_APP_SENSOR_EVENTS_LOG_LEVEL,
-				(APP_EVENT_TYPE_FLAGS_INIT_LOG_ENABLE))));
+		  APP_EVENT_FLAGS_CREATE(APP_EVENT_TYPE_FLAGS_INIT_LOG_ENABLE));

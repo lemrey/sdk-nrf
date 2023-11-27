@@ -32,6 +32,7 @@ static void burst_trigger_fn(struct k_work *w)
 static void init(void)
 {
 	k_work_init_delayable(&burst_trigger, burst_trigger_fn);
+	k_work_schedule(&burst_trigger, K_NO_WAIT);
 	module_set_state(MODULE_STATE_READY);
 };
 
@@ -132,7 +133,7 @@ static bool app_event_handler(const struct app_event_header *aeh)
 	if (is_module_state_event(aeh)) {
 		const struct module_state_event *event = cast_module_state_event(aeh);
 
-		if (check_state(event, MODULE_ID(main), MODULE_STATE_READY)) {
+		if (check_state(event, MODULE_ID(app_sensors), MODULE_STATE_READY)) {
 			static bool initialized;
 
 			__ASSERT_NO_MSG(!initialized);
