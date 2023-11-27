@@ -7,15 +7,13 @@ SUIT components
    :local:
    :depth: 2
 
-:ref:`Components <ug_suit_dfu_suit_concepts>` are the fundamental elements that the SUIT manifest operates, located in :ref:`suit-common <ug_suit_dfu_suit_manifest_elements>` (which is represented as the bstr CBOR value ``suit-common`` within the manifest).
+:ref:`Components <ug_suit_dfu_suit_concepts>` are the fundamental elements that the SUIT manifest operates on and are declared in :ref:`suit-common <ug_suit_dfu_suit_common>` (which is represented as the bstr CBOR value ``suit-common`` within the manifest).
 Using and modifying the component types allows for operational, fine-tuned customization of the DFU procedure.
 
-Components with the same ID may be declared or used by several manifests, affecting component parameters and indicated content.
+See the :ref:`component_ID` section for more information.
 
 Component types
 ***************
-
-There are several different component types that are set by Nordic Semiconductor, which affect the DFU process in different ways.
 
 The current available component types are as follows:
 
@@ -26,16 +24,15 @@ The current available component types are as follows:
 * ``CAND_MFST`` - The candidate manifest component refers to the dependency candidate in the envelope or in the download cache.
   Different values allow you to declare more than one component of that type per manifest.
   It points to the candidate manifest instead of copying the content to a memory location.
-  For example, if an envelope contains all the candidate manifests then you can refer to the manifest in the envelope using the candidate manifest component.
+  For example, if an envelope contains all the candidate manifests, then you can refer to the manifest in the envelope using the candidate manifest component.
 
 * ``CAND_IMG`` - The candidate image component refers to the integrated payload in the candidate envelope or payload in the download cache.
   For example, the ``CAND_IMG`` component allows you to validate the candidate before the installation step is performed.
 
- During the installation process, ``directive fetch`` puts information about the location of the image to component candidate image ``0``.
- ``condition image match`` performs the digest check on the candidate image ``0`` and verifies the digest of the image.
- After the verification, the installation of the image at the final location is done by the ``directive-copy``.
-
- The following example shows the installation procedure, including the checking of the coherency of the image by using the ``CAND_IMG`` component:
+  The following example shows the installation procedure, including the checking of the coherency of the image by using the ``CAND_IMG`` component.
+  During the installation process, ``directive-fetch`` puts information about the location of the image into component candidate image ``0``.
+  ``condition-image-match`` performs the digest check on the candidate image ``0`` and verifies the digest of the image.
+  After the verification, the installation of the image at the final location is done by the ``directive-copy``.
 
  .. code-block:: console
 
@@ -86,17 +83,19 @@ The current available component types are as follows:
   * ``1..n`` -  describes a deployment-specific ``CACHE_POOL`` such as, for example, external flash partitions or other MRAM partitions.
     It defines multiple different cache pools.
 
-  **Benefits of ``CACHE_POOL`` component**
+  **Benefits of the ``CACHE_POOL`` component**
 
   The following are the benefits of the ``CACHE_POOL`` component:
 
   * Memory optimization - ``CACHE_POOL`` component allows you to conditionally pull missing images from the Application Domain or application framework before installation starts.
     It helps in the gradual update process by installing one of the two images in the first installation step and then repeating the process to install another image.
 
-  * Save on data transfer costs -  The manifest and the candidate manifest only pull the missing images, instead of pushing all the images in the update.
+  * Save on data transfer costs -  The manifest and the candidate manifest only pull the missing images instead of pushing all the images in the update.
 
-Reference table
-***************
+.. _component_ID:
+
+Component ID parameters
+***********************
 
 The component types that can be modified at this time are listed in the following table.
 Fields indicate different parameters for component types.

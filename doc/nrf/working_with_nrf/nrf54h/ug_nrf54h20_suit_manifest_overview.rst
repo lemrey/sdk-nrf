@@ -55,6 +55,8 @@ This is a SUIT-specific version number of the software that is contained in this
 It is compared against the existing sequence number to verify that the update is newer than the current software.
 The sequence number does not have to match the official version number of the software, it only needs to increase for each update.
 
+.. _ug_suit_dfu_suit_common:
+
 ``suit-common``
 ---------------
 
