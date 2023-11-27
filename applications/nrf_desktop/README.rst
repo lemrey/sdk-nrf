@@ -1622,6 +1622,10 @@ The option is automatically selected as part of the :ref:`ug_multi_image` featur
 Enabling the :ref:`nrf_desktop_bluetooth_guide_fast_pair` also results in using the Partition Manager.
 To store the Fast Pair Provisioning data, the Fast Pair integration in the |NCS| uses partition defined by the Partition Manager.
 
+.. note::
+   The Partition Manager is disabled for the nRF54H Series.
+   The memory layout for this SoC Series is always defined in the DTS.
+
 Memory layout in DTS
 --------------------
 
@@ -1641,6 +1645,17 @@ For more details, see the `Board configuration`_ section.
     The settings memory partition definition is still used by the firmware even if the :kconfig:option:`CONFIG_USE_DT_CODE_PARTITION` Kconfig option is disabled.
 
 For more information about how to configure the flash memory layout in the DTS files, see :ref:`zephyr:flash_map_api`.
+
+nRF54H memory layout
+~~~~~~~~~~~~~~~~~~~~
+
+Currently, the memory layout is defined separately for each built image.
+Because of that, you are responsible for ensuring consistent memory layout among images.
+You must also take into account memory regions used by firmware provided by Nordic (Secure Domain, System Controller).
+
+For a configuration example, see the DTS configuration defined for an nRF54H DK in the nRF Desktop application (:file:`configuration/nrf54h20dk_nrf54h20_cpuapp@soc1`).
+You can use the configuration as a starting point for your custom memory layout.
+Refer to the :ref:`ug_nrf54h20_architecture_memory` documentation for the memory organization of the nRF54H20 SoC.
 
 Memory layout in Partition Manager
 ----------------------------------
