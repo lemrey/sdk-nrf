@@ -12,11 +12,13 @@
 #include <openthread/ip6.h>
 #include <openthread/border_routing.h>
 #include <openthread/platform/infra_if.h>
+#include <openthread/nat64.h>
 
 #include <zephyr/net/ethernet.h>
 #include <zephyr/net/openthread.h>
 #include <zephyr/net/net_ip.h>
 #include <zephyr/net/net_pkt.h>
+#include <zephyr/posix/netdb.h>
 
 #define ICMPV6_OPTION_SRC_LL_ADDR_TYPE   1
 #define ICMPV6_OPTION_SRC_LL_ADDR_LENGTH 1 /* Per RFC - in units of 8 octets */
