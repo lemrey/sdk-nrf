@@ -53,6 +53,8 @@ SUIT topology
 SUIT features a topology which allows for dependency management between multiple executable images.
 Additionally, the SUIT topology allows you to provide multiple signing authorities that will be required for each dependency.
 
+For information on the SUIT topology used by Nordic Semiconductor's implementation of SUIT, see the :ref:`ug_nrf54h20_suit_hierarchical_manifests` page.
+
 Allocation of components
 ========================
 
@@ -147,7 +149,7 @@ Manifest
 A bundle of metadata describing one or more pieces of code or data payloads.
 This includes instructions on how to obtain those payloads, as well as how to install, verify, and invoke them.
 These instructions are encoded in the manifest in the form of command sequences.
-See the :ref:`ug_how_suit_manifest_works` section for more details on the contents of a manifest.
+See the :ref:`ug_how_suit_manifest_works` for more details about the contents of a manifest.
 Each manifest, either the root or dependency manifest, is encased in its own envelope.
 
 .. note::

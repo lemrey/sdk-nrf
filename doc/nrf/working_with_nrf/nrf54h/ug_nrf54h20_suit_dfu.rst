@@ -11,16 +11,10 @@ The Software Updates for Internet of Things (SUIT) is a metadata format and proc
 SUIT was originally created by the `Internet Engineering Task Force <https://datatracker.ietf.org/wg/suit/about/>`__.
 Nordic Semiconductor has created an implementation of the SUIT procedure that is the newly introduced DFU procedure for the nRF54H Series of System-on-Chip (SoC) and will be the only DFU procedure compatible with the nRF54H Series.
 
-The SUIT DFU procedure features a SUIT envelope structure.
-The SUIT envelope contains a manifest, authentication block, integrated dependencies, and integrated payloads.
-You can read more about SUIT-specific concepts in :ref:`ug_suit_dfu_suit_concepts`.
+This SoC features a Secure Domain, which includes Secure Domain Firmware (SDFW) by default.
+The Secure Domain will use the SUIT procedure to perform a DFU of the whole system.
 
-The logic and instructions for how to carry out the DFU to your devices is described within the SUIT manifest (which is found in the SUIT envelope).
-Originally, the envelope (including the manifest) is presented in a binary form but with Nordic Semiconductor's implementation, the envelope becomes converted into a .YAML file.
-
-Manifests contain components, which is the main element that SUIT operates on.
-Components contain information such as ...
-
+To use Nordic Semiconductor's implementation of the SUIT procedure, see the :ref:`nrf54h_suit_sample` sample.
 
 .. toctree::
    :maxdepth: 2

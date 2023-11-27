@@ -14,8 +14,15 @@ This includes the following:
 * Two local manifests, one for the Application Domain, another for the Radio Domain.
 
 * Manifests for the SecDom, which are controlled by Nordic Semiconductor and cannot be modified.
+  This includes a Nordic "Top" manifest, one specifically for the SecDom firmware (SDFW), and the System Controller.
 
-You can read more about manifest topology in the :ref:`ug_nrf54h20_suit_customize_dfu` page.
+You can read more about manifest topology in the :ref:`ug_nrf54h20_suit_hierarchical_manifests` page.
+
+Manifest templates are provided by Nordic Semiconductor, and automatically generated when you build the :ref:`nrf54h_suit_sample` sample.
+These templates work out-of-the-box for development and testing purposes.
+
+This document describes the contents of a SUIT manifest.
+If you want to modify elements of the manifest template, see the :ref:`ug_nrf54h20_suit_customize_dfu` user guide.
 
 .. _ug_how_suit_manifest_works:
 
@@ -65,6 +72,7 @@ This element contains two subsections:
 * ``suit-components`` - a data field that contains all declared components to be targeted in the manifest.
 
    Components are identified by ``SUIT_Component_Identifier``, which is introduced by Nordic Semiconductor's implementation of the SUIT procedure.
+   For a list of available components, see the :ref:`ug_nrf54h20_suit_components` page.
 
 * ``suit-shared-sequence`` - a sequence that executes before the other sequences.
 
@@ -136,6 +144,11 @@ The SUIT procedure defines the following conditions:
 * ``class-identifier``, ``vendor-identifier``, and ``device-identifier`` - these conditions make sure that the manifest procedure is working with the correct device.
   The correct UUIDs (16 bytes) must be given.
 
+   .. note::
+
+      Although not required, it is strongly recommended to change the values for ``class-identifier`` and ``vendor-identifier`` in the provided manifest templates.
+      Read the :ref:`ug_suit_modify_class_vend_id` section of the :ref:`ug_nrf54h20_suit_customize_dfu` user guide for instructions.
+
 * ``image-match`` -  checks the digest of an image.
   The expected digest and corresponding component are set here.
   It goes into the component and calculates the digest of the component, then checks it against the expected digest.
@@ -150,7 +163,7 @@ The SUIT procedure defines the following conditions:
 * ``check-content`` -  a special case of image matching that matches directly with expected data, not a digest.
   For use with small components where the overhead of digest checking is not wanted. Typically used when you want the manifest to check something other than the firmware.
 
-   As opposed to ``image match``, the specified component is checked against binary data that is embedded in the manifest with what is already installed in another component.
+   As opposed to ``image-match``, the specified component is checked against binary data that is embedded in the manifest with what is already installed in another component.
 
 * ``abort`` - if you want the procedure to fail.
 
