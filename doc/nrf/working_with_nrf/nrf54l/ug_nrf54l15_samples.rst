@@ -64,3 +64,4 @@ Zephyr samples
 * :ref:`zephyr:hello_world`
 * :ref:`zephyr:settings_subsys_sample`
 * :ref:`zephyr:bluetooth-observer-sample`
+* :ref:`zephyr:adc-sample`
