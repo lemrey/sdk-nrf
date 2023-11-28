@@ -33,6 +33,8 @@ enum dfu_target_image_type {
 	DFU_TARGET_IMAGE_TYPE_MODEM_DELTA = 2,
 	/** Full update image for modem */
 	DFU_TARGET_IMAGE_TYPE_FULL_MODEM = 4,
+	/** SUIT Envelope */
+	DFU_TARGET_IMAGE_TYPE_SUIT = 8,
 	/** Any application image type */
 	DFU_TARGET_IMAGE_TYPE_ANY_APPLICATION = DFU_TARGET_IMAGE_TYPE_MCUBOOT,
 	/** Any modem image */

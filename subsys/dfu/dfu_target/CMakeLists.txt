@@ -23,3 +23,10 @@ zephyr_library_sources_ifdef(CONFIG_DFU_TARGET_FULL_MODEM
 zephyr_library_sources_ifdef(CONFIG_DFU_TARGET_MCUBOOT
   src/dfu_target_mcuboot.c
   )
+
+if (CONFIG_DFU_TARGET_SUIT)
+  zephyr_library_sources(src/dfu_target_suit.c)
+  if (CONFIG_SSF_SUIT_SERVICE_ENABLED)
+    zephyr_library_link_libraries(suit_utils)
+  endif()
+endif()

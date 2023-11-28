@@ -30,6 +30,10 @@ DEF_DFU_TARGET(mcuboot);
 #include "dfu/dfu_target_full_modem.h"
 DEF_DFU_TARGET(full_modem);
 #endif
+#ifdef CONFIG_DFU_TARGET_SUIT
+#include "dfu/dfu_target_suit.h"
+DEF_DFU_TARGET(suit);
+#endif
 
 #define MIN_SIZE_IDENTIFY_BUF 32
 
@@ -79,6 +83,11 @@ int dfu_target_init(int img_type, int img_num, size_t file_size, dfu_target_call
 #ifdef CONFIG_DFU_TARGET_FULL_MODEM
 	if (img_type == DFU_TARGET_IMAGE_TYPE_FULL_MODEM) {
 		new_target = &dfu_target_full_modem;
+	}
+#endif
+#ifdef CONFIG_DFU_TARGET_SUIT
+	if (img_type == DFU_TARGET_IMAGE_TYPE_SUIT) {
+		new_target = &dfu_target_suit;
 	}
 #endif
 	if (new_target == NULL) {
