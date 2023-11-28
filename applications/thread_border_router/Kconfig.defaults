@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+config NEWLIB_LIBC_NANO
+    default n
+
 config NET_L2_OPENTHREAD
     default y
 
