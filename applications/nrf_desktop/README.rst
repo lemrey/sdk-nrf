@@ -2115,6 +2115,7 @@ From the application perspective, the update image transfer during the backgroun
 
 * MCUboot
 * Secure Bootloader (B0)
+* SUIT
 
 The firmware update process has three stages, discussed below.
 At the end of these three stages, the nRF Desktop application will be rebooted with the new firmware package installed.
@@ -2127,6 +2128,7 @@ At the end of these three stages, the nRF Desktop application will be rebooted w
   * :ref:`nrf_desktop_dfu_mcumgr` (supported only with MCUboot bootloader)
     The module uses the :ref:`nrf_desktop_dfu_lock` to synchronize non-volatile memory access with other DFU methods.
     Therefore, this module should be used for configurations that enable multiple DFU transports (for example, if a configuration also enables :ref:`nrf_desktop_dfu`).
+  * :ref:`nrf_desktop_dfu_mcumgr_suit` (supported only with SUIT)
 
 Update image generation
 -----------------------
@@ -2143,6 +2145,12 @@ Otherwise, the image is always uploaded to the slot 1 and then moved to slot 0 b
 
 .. note::
   Make sure to properly configure the bootloader to ensure that the build system generates the :file:`zephyr/dfu_application.zip` archive containing all of the required update images.
+
+SUIT
+~~~~
+
+The :file:`zephyr/root.suit` SUIT envelope is used in the SUIT DFU procedure.
+The envelope contains both manifest and update candidates for the Application and Radio cores.
 
 Update image transfer
 ---------------------
@@ -2202,6 +2210,12 @@ After the reboot, the bootloader locates the update image on the update partitio
 The image verification process ensures the integrity of the image and checks if its signature is valid.
 If verification is successful, the bootloader boots the new version of the application.
 Otherwise, the old version is used.
+
+SUIT
+~~~~
+
+For this configuration variant, the :c:func:`suit_trigger_update` function is called to trigger an update.
+Once the update is triggered, the SUIT will install, verify, and boot the new image as specified in the manifest.
 
 .. _nrf_desktop_bootloader_serial_dfu:
 
