@@ -208,6 +208,18 @@ Also, you can enable specific feature for ``nrf54h20dk_nrf54h20_cpuapp`` by runn
 
    west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=overlay-nat64.conf
 
+Enabling the Wi-Fi interface
+============================
+
+To build the application with the support for the `nRF7002 EB`_ ``BACKBONE_WIFI=1`` CMake option has to be added as an argument of the building command:
+
+.. note::
+   At the moment, nRF TBR does not support multiple external links. Hence, enabling the Wi-Fi interface disables Ethernet shield support in the device tree configuration.
+
+.. code-block:: console
+
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DBACKBONE_WIFI=1
+
 Thread CLI device building
 ==========================
 
@@ -226,6 +238,42 @@ The following diagram illustrates a test setup:
 
     Thread BR test setup
 
+Testing Wi-Fi link communication
+--------------------------------
+
+When nRF TBR is built with the Wi-Fi interface as the external link as described in `Enabling the Wi-Fi interface`_ it has to establish a connection to an Access Point before performing any test steps:
+
+#. Retreive a list of available networks with the ``wifi scan`` command:
+
+   .. code-block:: console
+
+      uart:~$ wifi scan
+      Scan requested
+      Num  | SSID                             (len) | Chan | RSSI | Security | BSSID
+      1    | abcdef                           6     | 1    | -37  | WPA/WPA2 | aa:aa:aa:aa:aa:aa
+      2    | pqrst                            5     | 1    | -65  | WPA/WPA2 | xx:xx:xx:xx:xx:xx
+      3    | AZBYCXD                          7     | 1    | -41  | WPA/WPA2 | yy:yy:yy:yy:yy:yy
+      Scan request done
+
+#. For connecting a given network use the ``wifi connect "<SSID>" <password>"`` command:
+
+   .. code-block:: console
+
+      uart:~$ wifi connect "TestNetwork" password.100
+      Connection requested
+      Connected
+
+#. Test the connection with another host in the network with the ``net ping <address>``.
+   In the following example nRF TBR send ICMPv6 Echo Requests to a Linux Host's Link-Local
+
+   .. code-block:: console
+
+      uart:~$ net ping fe80::630d:f707:a3:9ab2
+      PING fe80::630d:f707:a3:9ab2
+      net8 bytes from fe80::630d:f707:a3:9ab2 to fe80::f6ce:36ff:fe00:337a: icmp_seq=1 ttl=64 rssi=0 time=86 ms
+      net8 bytes from fe80::630d:f707:a3:9ab2 to fe80::f6ce:36ff:fe00:337a: icmp_seq=2 ttl=64 rssi=0 time=13 ms
+      net8 bytes from fe80::630d:f707:a3:9ab2 to fe80::f6ce:36ff:fe00:337a: icmp_seq=3 ttl=64 rssi=0 time=10 ms
+
 Linux machine configuration
 ---------------------------
 
@@ -233,7 +281,7 @@ To allow Thread devices to communicate with non-Thread networks, the nRF TBR app
 You must configure a Linux host machine so that it can accept incoming RA messages.
 To do so, perform the following steps:
 
-1. Enable acceptance of RA messages.
+#. Enable acceptance of RA messages.
    Set the ``accept_ra`` parameter to ``2`` by running the following command on Linux host terminal:
 
    .. code-block:: console
