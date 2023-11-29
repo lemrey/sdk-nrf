@@ -15,11 +15,11 @@
 			reg = < 0xf5000 DT_SIZE_K(4) >;
 		};
 
-		suit_cache_1: partition@f6000 {
+		dfu_cache_partition_1: partition@f6000 {
 			reg = <0xf6000 DT_SIZE_K(4)>;
 		};
 
-		suit_cache_3: partition@f7000 {
+		dfu_cache_partition_3: partition@f7000 {
 			reg = <0xf7000 DT_SIZE_K(4)>;
 		};
 

@@ -9,8 +9,31 @@
 #include <zephyr/storage/flash_map.h>
 #include <sink.h>
 #include <cache_sink.h>
-#include <suit_cache_rw.h>
+#include <dfu_cache_rw.h>
 #include <suit_plat_mem_util.h>
+
+static const uint8_t corrupted_cache[] = {
+	0xBF, /* map(*) */
+	0x75, /* text(21) */
+	0x68, 0x74, 0x74, 0x70, 0x3A, 0x2F, 0x2F, 0x64, 0x61, 0x74, 0x61, 0x62,
+	0x75, 0x63, 0x6B, 0x65, 0x74, 0x2E, 0x63, 0x6F, 0x6D, /* "http://databucket.com" */
+	0x5A, 0x00, 0x00, 0x00, 0x17,			      /* bytes(23) */
+	0x43, 0x60, 0x02, 0x11, 0x35, 0x85, 0x37, 0x85, 0x76, 0x44, 0x09, 0x44,
+	0x45, 0x42, 0x66, 0x25, 0x12, 0x36, 0x84, 0x00, 0x08, 0x61, 0x17, /* payload(23) */
+	0x76,								  /* text(22) */
+	0x68, 0x74, 0x74, 0x70, 0x3A, 0x2F, 0x2F, 0x73, 0x74, 0x6F, 0x72, 0x61,
+	0x67, 0x65, 0x68, 0x6F, 0x6C, 0x65, 0x2E, 0x63, 0x6F, 0x6D, /* "http://storagehole.com" */
+	0x5A, 0x00, 0x00, 0x00, 0x18,				    /* bytes(24) */
+	0x05, 0x37, 0x14, 0x51, 0x42, 0x99, 0x99, 0x49, 0x46, 0x54, 0x89, 0x28,
+	0x82, 0x17, 0x68, 0x20, 0x97, 0x60, 0x22, 0x04, 0x51, 0x45, 0x23, 0x04, /* payload(24) */
+	0x69,									/* text(9) */
+	0x23, 0x66, 0x69, 0x6C, 0x65, 0x2E, 0x62, 0x69, 0x6E,			/* "#file.bin" */
+	0x5A, 0xFF, 0xFF, 0xFF, 0xFF, /* not updated, corrupted value */
+	0x12, 0x35, 0x89, 0x02, 0x31, 0x70, 0x49, 0x81, 0x20, 0x91, 0x62, 0x38,
+	0x90, 0x47, 0x60, 0x12, 0x37, 0x84, 0x90, 0x70, 0x18, 0x92, 0x36, 0x51,
+	0x92, 0x83, 0x09, 0x86, 0x70, 0x19, 0x23, /* payload(31) */
+	0xFF};					  /* primitive(*) - end marker */
+static const size_t corrupted_cache_len = sizeof(corrupted_cache);
 
 static uint8_t uri[] = "http://databucket.com";
 static uint8_t data[] = {0x43, 0x60, 0x02, 0x11, 0x35, 0x85, 0x37, 0x85, 0x76,
@@ -65,25 +88,67 @@ static size_t data3_size = sizeof(data3);
 
 void setup_dfu_test_cache(void *f)
 {
-	int ret = suit_cache_initialize_rw(NULL, 0);
+	int ret = suit_dfu_cache_initialize_rw(NULL, 0);
 	zassert_equal(ret, 0, "Failed to initialize cache: %i", ret);
 }
 
-void clear_dfu_test_partitions(void *f)
+void setup_dfu_test_corrupted_cache(void *f)
 {
 	/* Erase the area, to met the preconditions in the next test. */
 	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
 	zassert_not_null(fdev, "Unable to find a driver to erase area");
 
-	int rc = flash_erase(fdev, FIXED_PARTITION_OFFSET(suit_cache_1),
-			     FIXED_PARTITION_SIZE(suit_cache_1));
-	zassert_equal(rc, 0, "Unable to erase suit_cache1 before test execution: %i", rc);
+	int rc = flash_write(fdev, FIXED_PARTITION_OFFSET(dfu_cache_partition_1), corrupted_cache,
+			     corrupted_cache_len);
+	zassert_equal(rc, 0, "Unable to write corrupted_cache before test execution: %i", rc);
 
-	rc = flash_erase(fdev, FIXED_PARTITION_OFFSET(suit_cache_3),
-			 FIXED_PARTITION_SIZE(suit_cache_3));
-	zassert_equal(rc, 0, "Unable to erase suit_cache3 before test execution: %i", rc);
+	printk("dfu_cache_partition_1 address: %p\n",
+	       suit_plat_mem_nvm_ptr_get(FIXED_PARTITION_OFFSET(dfu_cache_partition_1)));
 
-	suit_cache_deinitialize_rw();
+	int res = memcmp(corrupted_cache,
+			 suit_plat_mem_nvm_ptr_get(FIXED_PARTITION_OFFSET(dfu_cache_partition_1)),
+			 corrupted_cache_len);
+	zassert_equal(res, 0, "Mem compare after write failed");
+
+	setup_dfu_test_cache(NULL);
+}
+
+void clear_dfu_test_partitions(void *f)
+{
+	/* Erase the area, to meet the preconditions in the next test. */
+	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+	zassert_not_null(fdev, "Unable to find a driver to erase area");
+
+	int rc = flash_erase(fdev, FIXED_PARTITION_OFFSET(dfu_cache_partition_1),
+			     FIXED_PARTITION_SIZE(dfu_cache_partition_1));
+	zassert_equal(rc, 0, "Unable to erase dfu__cache_partition_1 before test execution: %i",
+		      rc);
+
+	rc = flash_erase(fdev, FIXED_PARTITION_OFFSET(dfu_cache_partition_3),
+			 FIXED_PARTITION_SIZE(dfu_cache_partition_3));
+	zassert_equal(rc, 0, "Unable to erase dfu_cache_partition_3 before test execution: %i", rc);
+
+	suit_dfu_cache_deinitialize_rw();
+}
+
+ZTEST_SUITE(cache_sink_recovery_tests, NULL, NULL, setup_dfu_test_corrupted_cache,
+	    clear_dfu_test_partitions, NULL);
+
+ZTEST(cache_sink_recovery_tests, test_cache_recovery_header_ok_size_nok)
+{
+	struct stream_sink sink;
+
+	int ret = dfu_get_cache_sink(&sink, 1, uri3, sizeof(uri3));
+	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
+
+	ret = sink.write(sink.ctx, data, &data_size);
+	zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
+
+	ret = suit_cache_sink_commit(sink.ctx);
+	zassert_equal(ret, 0, "Failed to commit to cache: %i", ret);
+
+	ret = sink.release(sink.ctx);
+	zassert_equal(ret, 0, "Failed to release sink: %i", ret);
 }
 
 ZTEST_SUITE(cache_sink_tests, NULL, NULL, setup_dfu_test_cache, clear_dfu_test_partitions, NULL);
@@ -116,14 +181,15 @@ ZTEST(cache_sink_tests, test_cache_drop_slot_ok)
 	ret = sink.release(sink.ctx);
 	zassert_equal(ret, 0, "Failed to release sink: %i", ret);
 
-	struct zcbor_string payload;
-	struct zcbor_string ok_uri = {.value = "http://storagehole.com",
-				      .len = sizeof("http://storagehole.com")};
+	uint8_t *payload = NULL;
+	size_t payload_size = 0;
+	const uint8_t ok_uri[] = "http://storagehole.com";
+	size_t uri_size = sizeof("http://storagehole.com");
 
-	ret = suit_cache_search(&ok_uri, &payload);
+	ret = suit_dfu_cache_search(ok_uri, uri_size, &payload, &payload_size);
 	zassert_equal(ret, 0, "\nGet from cache failed: %i", ret);
-	zassert_equal(payload.len, data2_size,
-		      "Invalid data size for retrieved payload. payload(%u) data(%u)", payload.len,
+	zassert_equal(payload_size, data2_size,
+		      "Invalid data size for retrieved payload. payload(%u) data(%u)", payload_size,
 		      data_size);
 }
 
@@ -143,14 +209,15 @@ ZTEST(cache_sink_tests, test_cache_get_slot_ok)
 	ret = sink.release(sink.ctx);
 	zassert_equal(ret, 0, "Failed to release sink: %i", ret);
 
-	struct zcbor_string payload;
-	struct zcbor_string ok_uri = {.value = "http://databucket.com",
-				      .len = sizeof("http://databucket.com")};
+	uint8_t *payload = NULL;
+	size_t payload_size = 0;
+	const uint8_t ok_uri[] = "http://databucket.com";
+	size_t uri_size = sizeof("http://databucket.com");
 
-	ret = suit_cache_search(&ok_uri, &payload);
+	ret = suit_dfu_cache_search(ok_uri, uri_size, &payload, &payload_size);
 	zassert_equal(ret, 0, "\nGet from cache failed: %i", ret);
-	zassert_equal(payload.len, data_size,
-		      "Invalid data size for retrieved payload. payload(%u) data(%u)", payload.len,
+	zassert_equal(payload_size, data_size,
+		      "Invalid data size for retrieved payload. payload(%u) data(%u)", payload_size,
 		      data_size);
 
 	ret = dfu_get_cache_sink(&sink, 3, uri2, sizeof(uri2));
@@ -165,13 +232,13 @@ ZTEST(cache_sink_tests, test_cache_get_slot_ok)
 	ret = sink.release(sink.ctx);
 	zassert_equal(ret, 0, "Failed to release sink: %i", ret);
 
-	ok_uri.value = "http://storagehole.com";
-	ok_uri.len = sizeof("http://storagehole.com");
+	const uint8_t *ok_uri2 = "http://storagehole.com";
+	size_t uri_size2 = sizeof("http://storagehole.com");
 
-	ret = suit_cache_search(&ok_uri, &payload);
+	ret = suit_dfu_cache_search(ok_uri2, uri_size2, &payload, &payload_size);
 	zassert_equal(ret, 0, "\nGet from cache failed: %i", ret);
-	zassert_equal(payload.len, data2_size,
-		      "Invalid data size for retrieved payload. payload(%u) data(%u)", payload.len,
+	zassert_equal(payload_size, data2_size,
+		      "Invalid data size for retrieved payload. payload(%u) data(%u)", payload_size,
 		      data_size);
 }
 
@@ -191,8 +258,9 @@ ZTEST(cache_sink_tests, test_cache_get_slot_nok_uri_exists)
 	ret = sink.release(sink.ctx);
 	zassert_equal(ret, 0, "Failed to release sink: %i", ret);
 
-	/* Request sink for suit_cache_3 but it should fail because suit_cache_1 already has same
-	 * uri written */
+	/* Request sink for dfu_cache_partition_3 but it should fail because dfu_cache_partition_1
+	 *	already has same uri written
+	 */
 	ret = dfu_get_cache_sink(&sink, 3, uri, sizeof(uri));
 	zassert_not_equal(ret, 0,
 			  "Get cache sink should have failed, uri already should be in cache: %i",
@@ -216,8 +284,8 @@ ZTEST(cache_sink_tests, test_cache_get_slot_nok_not_enough_space)
 	int ret = dfu_get_cache_sink(&sink, 1, uri3, sizeof(uri3));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
-	for (size_t i = 0x10 + sizeof(data3); i < FLASH_AREA_ERASE_BLOCK_SIZE(suit_cache_1);
-	     i += sizeof(data3)) {
+	for (size_t i = 0x10 + sizeof(data3);
+	     i < FLASH_AREA_ERASE_BLOCK_SIZE(dfu_cache_partition_1); i += sizeof(data3)) {
 		ret = sink.write(sink.ctx, data3, &data3_size);
 		zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 	}

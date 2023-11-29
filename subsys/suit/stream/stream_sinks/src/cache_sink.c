@@ -6,9 +6,11 @@
 
 #include <zephyr/logging/log.h>
 #include <cache_sink.h>
+#include <flash_sink.h>
 #include <errno.h>
-#include <suit_cache_rw.h>
+#include <dfu_cache_rw.h>
 #include <zephyr/drivers/flash.h>
+#include <suit_plat_mem_util.h>
 
 LOG_MODULE_REGISTER(suit_cache_sink, CONFIG_SUIT_LOG_LEVEL);
 
@@ -59,7 +61,6 @@ suit_plat_err_t dfu_get_cache_sink(struct stream_sink *sink, uint8_t cache_parti
 		sink->release = release;
 		sink->ctx = &ctx;
 
-		LOG_INF("dfu_get_cache_sink success");
 		return SUIT_PLAT_SUCCESS;
 	}
 
@@ -72,27 +73,41 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 {
 	if ((ctx != NULL) && (buf != NULL) && (size != NULL)) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;
+		struct stream_sink sink;
 
 		if (cache_ctx->write_enabled) {
 			/* Check if data will fit */
 			if ((*size + cache_ctx->offset) < cache_ctx->offset_limit) {
-				if (!device_is_ready(cache_ctx->slot.fdev)) {
-					LOG_ERR("Flash device not ready.");
+				suit_plat_err_t ret = flash_sink_get(
+					&sink,
+					suit_plat_mem_nvm_ptr_get(cache_ctx->slot.slot_offset +
+								  cache_ctx->slot.data_offset +
+								  cache_ctx->offset),
+					*size, NULL);
+				if (ret != SUIT_PLAT_SUCCESS) {
+					LOG_ERR("Getting flash_sink failed. %i", ret);
 					return SUIT_PLAT_ERR_IO;
 				}
 
-				int ret = flash_write(cache_ctx->slot.fdev,
-						      cache_ctx->slot.slot_offset +
-							      cache_ctx->slot.data_offset +
-							      cache_ctx->offset,
-						      buf, *size);
-
-				if (ret != 0) {
+				ret = sink.write(sink.ctx, buf, size);
+				if (ret != SUIT_PLAT_SUCCESS) {
 					LOG_ERR("Writing data to cache slot failed, Flash err: %d.", ret);
+
+					if (sink.release(sink.ctx) != SUIT_PLAT_SUCCESS) {
+						LOG_ERR("Sink release failed");
+						return SUIT_PLAT_ERR_INVAL;
+					}
+
 					return SUIT_PLAT_ERR_IO;
 				}
 
 				cache_ctx->offset += *size;
+
+				if (sink.release(sink.ctx) != SUIT_PLAT_SUCCESS) {
+					LOG_ERR("Sink release failed");
+					return SUIT_PLAT_ERR_INVAL;
+				}
+
 				return SUIT_PLAT_SUCCESS;
 			}
 		}
@@ -151,10 +166,9 @@ static suit_plat_err_t release(void *ctx)
 			LOG_INF("Changes were not committed and will be dropped");
 			cache_ctx->write_enabled = false;
 
-			ret = dfu_drop_cache_slot(&cache_ctx->slot, cache_ctx->offset);
+			ret = dfu_drop_cache_slot(&cache_ctx->slot);
 
 			if (ret != SUIT_PLAT_SUCCESS) {
-				LOG_INF("drop_cache_slot success");
 				return ret;
 			}
 		}
@@ -188,7 +202,7 @@ suit_plat_err_t suit_cache_sink_drop(void *ctx)
 {
 	if (ctx != NULL) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;
-		suit_plat_err_t ret = dfu_drop_cache_slot(&cache_ctx->slot, cache_ctx->offset);
+		suit_plat_err_t ret = dfu_drop_cache_slot(&cache_ctx->slot);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Drop changes to cache failed.");

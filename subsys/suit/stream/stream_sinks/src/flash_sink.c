@@ -121,22 +121,24 @@ static suit_plat_err_t register_write(struct flash_ctx *flash_ctx, size_t write_
 		flash_ctx->size_used = flash_ctx->offset;
 	}
 
-	/* Update memptr size */
-	uint8_t *payload_ptr = NULL;
-	size_t payload_size = 0;
+	if (flash_ctx->handle != NULL) {
+		/* Update memptr size */
+		uint8_t *payload_ptr = NULL;
+		size_t payload_size = 0;
 
-	suit_plat_err_t res = suit_memptr_storage_ptr_get(flash_ctx->handle, &payload_ptr,
-							  &payload_size);
-	if (res != SUIT_PLAT_SUCCESS) {
-		LOG_ERR("Failed to retrieve memptr");
-		return res;
-	}
+		suit_plat_err_t res =
+			suit_memptr_storage_ptr_get(flash_ctx->handle, &payload_ptr, &payload_size);
+		if (res != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("Failed to retrieve memptr");
+			return res;
+		}
 
-	payload_size = flash_ctx->size_used;
-	res = suit_memptr_storage_ptr_store(flash_ctx->handle, payload_ptr, payload_size);
-	if (res != SUIT_PLAT_SUCCESS) {
-		LOG_ERR("Failed to update memptr");
-		return res;
+		payload_size = flash_ctx->size_used;
+		res = suit_memptr_storage_ptr_store(flash_ctx->handle, payload_ptr, payload_size);
+		if (res != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("Failed to update memptr");
+			return res;
+		}
 	}
 
 	return SUIT_PLAT_SUCCESS;
@@ -201,7 +203,7 @@ suit_plat_err_t erase(void *ctx)
 
 suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle_t handle)
 {
-	if ((dst != NULL) && (size > 0) && (sink != NULL) && (handle != NULL)) {
+	if ((dst != NULL) && (size > 0) && (sink != NULL)) {
 		struct flash_ctx *ctx = new_ctx_get();
 
 		if (ctx != NULL) {
@@ -246,23 +248,27 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 				return SUIT_PLAT_ERR_INVAL;
 			}
 
-			/* Set memptr size to zero */
-			uint8_t *payload_ptr = NULL;
-			size_t payload_size = 0;
+			if (ctx->handle != NULL) {
+				/* Set memptr size to zero */
+				uint8_t *payload_ptr = NULL;
+				size_t payload_size = 0;
 
-			suit_plat_err_t res = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
-			if (res != SUIT_PLAT_SUCCESS) {
-				memset(ctx, 0, sizeof(*ctx));
-				LOG_ERR("Failed to retrieve memptr");
-				return res;
-			}
+				suit_plat_err_t res = suit_memptr_storage_ptr_get(
+					handle, &payload_ptr, &payload_size);
+				if (res != SUIT_PLAT_SUCCESS) {
+					memset(ctx, 0, sizeof(*ctx));
+					LOG_ERR("Failed to retrieve memptr");
+					return res;
+				}
 
-			payload_size = 0;
-			res = suit_memptr_storage_ptr_store(handle, payload_ptr, payload_size);
-			if (res != SUIT_PLAT_SUCCESS) {
-				memset(ctx, 0, sizeof(*ctx));
-				LOG_ERR("Failed to update memptr");
-				return res;
+				payload_size = 0;
+				res = suit_memptr_storage_ptr_store(handle, payload_ptr,
+								    payload_size);
+				if (res != SUIT_PLAT_SUCCESS) {
+					memset(ctx, 0, sizeof(*ctx));
+					LOG_ERR("Failed to update memptr");
+					return res;
+				}
 			}
 
 			memset(sink, 0, sizeof(*sink));
@@ -281,11 +287,8 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 		return SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
-	LOG_ERR("%s: Invalid arguments: %s, %s, %s, %s", __func__,
-	IS_COND_TRUE(dst != NULL),
-	IS_COND_TRUE(size > 0),
-	IS_COND_TRUE(sink != NULL),
-	IS_COND_TRUE(handle != NULL));
+	LOG_ERR("%s: Invalid arguments: %s, %s, %s", __func__, IS_COND_TRUE(dst != NULL),
+		IS_COND_TRUE(size > 0), IS_COND_TRUE(sink != NULL));
 	return SUIT_PLAT_ERR_INVAL;
 }
 

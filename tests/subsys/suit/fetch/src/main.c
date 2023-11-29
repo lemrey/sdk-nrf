@@ -8,7 +8,7 @@
 #include <suit_platform.h>
 #include <suit_memptr_storage.h>
 #include <suit_platform_internal.h>
-#include <suit_cache.h>
+#include <dfu_cache.h>
 
 #define TEST_DATA_SIZE 64
 #define WRITE_ADDR     0x1A00080000
@@ -53,19 +53,19 @@ static const size_t cache2_len = sizeof(cache2);
 
 static void setup_cache_with_sample_entries(void)
 {
-	struct suit_cache suit_caches;
+	struct dfu_cache dfu_caches;
 
 	zassert_between_inclusive(2, 1, CONFIG_SUIT_CACHE_MAX_CACHES,
 				  "Failed to prepare test fixture: cache istoo small");
 
-	suit_caches.partitions[0].address = (uint8_t *)cache;
-	suit_caches.partitions[0].size = (size_t)cache_len;
+	dfu_caches.pools[0].address = (uint8_t *)cache;
+	dfu_caches.pools[0].size = (size_t)cache_len;
 
-	suit_caches.partitions[1].address = (uint8_t *)cache2;
-	suit_caches.partitions[1].size = (size_t)cache2_len;
-	suit_caches.partitions_count = 2;
+	dfu_caches.pools[1].address = (uint8_t *)cache2;
+	dfu_caches.pools[1].size = (size_t)cache2_len;
+	dfu_caches.pools_count = 2;
 
-	int rc = suit_cache_initialize(&suit_caches);
+	int rc = suit_dfu_cache_initialize(&dfu_caches);
 	zassert_equal(rc, 0, "Failed to initialize cache: %i", rc);
 }
 
@@ -132,7 +132,7 @@ ZTEST(fetch_tests, test_fetch_to_memptr_OK)
 	ret = suit_plat_release_component_handle(component_handle);
 	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
 
-	suit_cache_deinitialize();
+	suit_dfu_cache_deinitialize();
 }
 
 ZTEST(fetch_tests, test_fetch_to_memptr_NOK_uri_not_in_cache)

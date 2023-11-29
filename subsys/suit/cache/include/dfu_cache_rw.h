@@ -4,21 +4,21 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#ifndef SUIT_CACHE_RW_H__
-#define SUIT_CACHE_RW_H__
+#ifndef DFU_CACHE_RW_H__
+#define DFU_CACHE_RW_H__
 
 #include <stddef.h>
 #include <stdint.h>
 #include <zcbor_decode.h>
 #include <zephyr/storage/flash_map.h>
-#include <suit_cache.h>
+#include <dfu_cache.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* This header is meant to be used only from APP core context.
- * It extends suit_cache by adding to cache write and erase capabilities.
+ * It extends dfu_cache by adding to cache write and erase capabilities.
  */
 
 struct suit_cache_slot {
@@ -27,13 +27,12 @@ struct suit_cache_slot {
 	size_t size_offset;
 	size_t data_offset;
 	size_t eb_size;
-	const struct device *fdev;
 };
 
 /**
  * @brief Initialize cache in R/W mode for APP context
  *
- * @note suit_cache structure is initialized based on dfu_partitions_ext which in turn is
+ * @note dfu_cache structure is initialized based on dfu_partitions_ext which in turn is
  *       initialized using SUIT cache partitions information from Device Tree.
  *
  * @param addr  DFU partition address
@@ -41,12 +40,12 @@ struct suit_cache_slot {
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t suit_cache_initialize_rw(void *addr, size_t size);
+suit_plat_err_t suit_dfu_cache_initialize_rw(void *addr, size_t size);
 
 /**
  * @brief Deinitialize SUIT cache
  */
-void suit_cache_deinitialize_rw(void);
+void suit_dfu_cache_deinitialize_rw(void);
 
 /**
  * @brief Function tries to allocate slot in cache pointed by ID
@@ -59,7 +58,7 @@ void suit_cache_deinitialize_rw(void);
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
 suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_cache_slot *slot,
-			  	      const uint8_t *uri, size_t uri_size);
+				      const uint8_t *uri, size_t uri_size);
 
 /**
  * @brief Closes slot by updating bstring header with size of data that was written
@@ -86,14 +85,13 @@ suit_plat_err_t dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_e
  * @brief Drop data written to slot and revert slot allocation
  *
  * @param slot Pointer to slot that should be dropped
- * @param data_end_offset Offset after the last data written
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t dfu_drop_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
+suit_plat_err_t dfu_drop_cache_slot(struct suit_cache_slot *slot);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SUIT_CACHE_RW_H__ */
+#endif /* DFU_CACHE_RW_H__ */

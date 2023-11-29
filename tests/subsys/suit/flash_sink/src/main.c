@@ -69,9 +69,6 @@ ZTEST(flash_sink_tests, test_flash_sink_get_NOK)
 	err = flash_sink_get(&flash_sink, WRITE_ADDR, 0, handle);
 	zassert_not_equal(err, 0, "flash_sink_get should have failed - offset_limit == 0");
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, NULL);
-	zassert_not_equal(err, 0, "flash_sink_get should have failed - handle == NULL");
-
 	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
 }

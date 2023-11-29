@@ -22,8 +22,7 @@ extern "C" {
  * @param sink Pointer to sink that will write payload - target
  * @return SUIT_PLAT_SUCCESS if success otherwise error code
  */
-suit_plat_err_t cache_streamer(const uint8_t *uri, size_t uri_size,
-                               struct stream_sink *sink);
+suit_plat_err_t dfu_cache_streamer(const uint8_t *uri, size_t uri_size, struct stream_sink *sink);
 
 #ifdef __cplusplus
 }

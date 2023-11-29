@@ -15,7 +15,7 @@
 #endif /* CONFIG_SUIT_STREAM */
 
 #ifdef CONFIG_SUIT_STREAM_SOURCE_CACHE
-#include <cache_streamer.h>
+#include <dfu_cache_streamer.h>
 #endif /* CONFIG_SUIT_STREAM_SOURCE_CACHE */
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 #include <memptr_streamer.h>
@@ -163,7 +163,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 #ifdef CONFIG_SUIT_STREAM_SOURCE_CACHE
 	/* Check if requested uri exists in cache and get streamer */
-	ret = cache_streamer(uri->value, uri->len, &dst_sink);
+	ret = dfu_cache_streamer(uri->value, uri->len, &dst_sink);
 #endif /* CONFIG_SUIT_STREAM_SOURCE_CACHE */
 
 #ifdef CONFIG_SUIT_STREAM_IPC_REQUESTOR

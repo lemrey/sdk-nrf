@@ -7,8 +7,8 @@
 #include <zephyr/ztest.h>
 #include <sink.h>
 #include <memptr_sink.h>
-#include <cache_streamer.h>
-#include <suit_cache.h>
+#include <dfu_cache_streamer.h>
+#include <dfu_cache.h>
 
 /*
   {"http://source1.com": h'4235623423462346456234623487723572702975',
@@ -45,25 +45,25 @@ static const size_t cache2_len = sizeof(cache2);
 
 static void test_suite_before(void *f)
 {
-	struct suit_cache suit_caches;
+	struct dfu_cache dfu_caches;
 
 	zassert_between_inclusive(2, 1, CONFIG_SUIT_CACHE_MAX_CACHES,
 				  "Failed to prepare test fixture: cache istoo small");
 
-	suit_caches.partitions[0].address = (uint8_t *)cache;
-	suit_caches.partitions[0].size = (size_t)cache_len;
+	dfu_caches.pools[0].address = (uint8_t *)cache;
+	dfu_caches.pools[0].size = (size_t)cache_len;
 
-	suit_caches.partitions[1].address = (uint8_t *)cache2;
-	suit_caches.partitions[1].size = (size_t)cache2_len;
-	suit_caches.partitions_count = 2;
+	dfu_caches.pools[1].address = (uint8_t *)cache2;
+	dfu_caches.pools[1].size = (size_t)cache2_len;
+	dfu_caches.pools_count = 2;
 
-	int rc = suit_cache_initialize(&suit_caches);
+	int rc = suit_dfu_cache_initialize(&dfu_caches);
 	zassert_equal(rc, 0, "Failed to initialize cache: %i", rc);
 }
 
 static void test_suite_after(void *f)
 {
-	suit_cache_deinitialize();
+	suit_dfu_cache_deinitialize();
 }
 
 ZTEST_SUITE(cache_streamer_tests, NULL, NULL, test_suite_before, test_suite_after, NULL);
@@ -72,7 +72,7 @@ ZTEST(cache_streamer_tests, test_cache_streamer_ok)
 {
 	struct stream_sink memptr_sink;
 	memptr_storage_handle_t handle = NULL;
-	char ok_uri[] = "http://databucket.com";
+	const uint8_t ok_uri[] = "http://databucket.com";
 	size_t ok_uri_len = sizeof("http://databucket.com");
 	uint8_t *payload_ptr;
 	size_t payload_size = 0;
@@ -83,8 +83,8 @@ ZTEST(cache_streamer_tests, test_cache_streamer_ok)
 	ret = memptr_sink_get(&memptr_sink, handle);
 	zassert_equal(ret, 0, "memptr_sink_get failed - error %i", ret);
 
-	ret = cache_streamer(ok_uri, ok_uri_len, &memptr_sink);
-	zassert_equal(ret, 0, "cache_streamer failed - error %i", ret);
+	ret = dfu_cache_streamer(ok_uri, ok_uri_len, &memptr_sink);
+	zassert_equal(ret, 0, "dfu_cache_streamer failed - error %i", ret);
 
 	ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
 	zassert_equal(ret, 0, "memptr_storage.get failed - error %i", ret);
@@ -108,17 +108,20 @@ ZTEST(cache_streamer_tests, test_cache_streamer_nok)
 	ret = memptr_sink_get(&memptr_sink, handle);
 	zassert_equal(ret, 0, "memptr_sink_get failed - error %i", ret);
 
-	ret = cache_streamer(NULL, ok_uri_len, &memptr_sink);
-	zassert_equal(ret, SUIT_PLAT_ERR_INVAL, "cache_streamer should have failed - uri == NULL");
+	ret = dfu_cache_streamer(NULL, ok_uri_len, &memptr_sink);
+	zassert_equal(ret, SUIT_PLAT_ERR_INVAL,
+		      "dfu_cache_streamer should have failed - uri == NULL");
 
-	ret = cache_streamer(ok_uri, 0, &memptr_sink);
-	zassert_equal(ret, SUIT_PLAT_ERR_INVAL, "cache_streamer should have failed - uri_len == 0");
+	ret = dfu_cache_streamer(ok_uri, 0, &memptr_sink);
+	zassert_equal(ret, SUIT_PLAT_ERR_INVAL,
+		      "dfu_cache_streamer should have failed - uri_len == 0");
 
-	ret = cache_streamer(ok_uri, ok_uri_len, NULL);
-	zassert_equal(ret, SUIT_PLAT_ERR_INVAL, "cache_streamer should have failed - sink == NULL");
+	ret = dfu_cache_streamer(ok_uri, ok_uri_len, NULL);
+	zassert_equal(ret, SUIT_PLAT_ERR_INVAL,
+		      "dfu_cache_streamer should have failed - sink == NULL");
 
-	ret = cache_streamer(nok_uri, nok_uri_len, &memptr_sink);
-	zassert_equal(ret, SUIT_PLAT_ERR_NOT_FOUND, "cache_streamer failed - error %i", ret);
+	ret = dfu_cache_streamer(nok_uri, nok_uri_len, &memptr_sink);
+	zassert_equal(ret, SUIT_PLAT_ERR_NOT_FOUND, "dfu_cache_streamer failed - error %i", ret);
 
 	ret = suit_memptr_storage_release(handle);
 	zassert_equal(ret, 0, "memptr_storage.release failed - error %i", ret);

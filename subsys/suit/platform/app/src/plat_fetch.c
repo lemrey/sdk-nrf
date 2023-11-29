@@ -14,7 +14,7 @@
 #endif /* CONFIG_SUIT_STREAM */
 
 #ifdef CONFIG_SUIT_STREAM_SOURCE_CACHE
-#include <cache_streamer.h>
+#include <dfu_cache_streamer.h>
 #endif /* CONFIG_SUIT_STREAM_SOURCE_CACHE */
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 #include <memptr_streamer.h>
@@ -164,7 +164,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 #if defined(CONFIG_SUIT_CACHE_RW) || defined(SUIT_CACHE)
 	case SUIT_COMPONENT_TYPE_CAND_MFST:
 	case SUIT_COMPONENT_TYPE_CAND_IMG: {
-		ret = cache_streamer(uri->value, uri->len, &dst_sink);
+		ret = dfu_cache_streamer(uri->value, uri->len, &dst_sink);
 		ret = suit_plat_err_to_proccessor_err_convert(ret);
 	} break;
 #endif
