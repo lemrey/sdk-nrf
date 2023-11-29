@@ -40,6 +40,10 @@ After the first build, among others, three additional files are created in the :
 
 The destination directory into which the :file:`jinja2` file templates are copied to can be changed from the sample root directory (:file:`nrf/samples/suit/smp_transfer`) to another directory by setting the :kconfig:option:`CONFIG_SUIT_ENVELOPE_EDITABLE_TEMPLATES_LOCATION` Kconfig option.
 
+.. note::
+
+   The Radio Domain manifest template is only available for the Bluetooth® Low Energy version of the :ref:`nrf54h_suit_sample` sample, and not the UART version.
+
 .. _ug_suit_change_manifest_location:
 
 How to change the location of the manifest templates

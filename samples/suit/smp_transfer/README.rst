@@ -104,8 +104,13 @@ This is done by modifying the values for the desired location and size of the pa
 Manifest template files
 =======================
 
-Manifest template files are automatically created after the sample is built for the first time.
-These are required to create a SUIT envelope to carry out the DFU.
+All required manifest template files are automatically created after the sample is built for the first time.
+These are needed to create a SUIT envelope to carry out the DFU.
+
+.. note::
+
+   The Radio Domain manifest template is only created when building the Bluetooth Low Energy version of the sample, and not the UART version.
+   Currently, it is not needed for the UART version.
 
 If you want to make modifications to how the DFU is executed in this sample, you can do so by editing the manifest templates.
 See the :ref:`ug_nrf54h20_suit_customize_dfu` user guide for instructions and examples.
