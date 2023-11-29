@@ -44,7 +44,7 @@ The current version of the nRF TBR application supports the following features:
 
 Bidirectional IPv6 connectivity
   IPv6 communication between Thread and non-Thread (external) networks.
-  It currently supports Ethernet as the external network link.
+  It currently supports both Ethernet or Wi-Fi as the external network link.
 
 mDNS
   A multicast-based discovery of services.
@@ -101,7 +101,7 @@ In addition to the PDK, the application needs the following hardware modules:
                If non-Thread network nodes are connected through a router, make sure that IPv6 Router Advertisement Guard feature on the router is disabled.
                Otherwise, communication between the networks may be disrupted.
 
-         * A Linux host machine.
+         * A Linux host machine connected to a nRF TBR's local network.
 
       .. tab:: Ethernet
 
@@ -211,14 +211,14 @@ Also, you can enable specific feature for ``nrf54h20dk_nrf54h20_cpuapp`` by runn
 Enabling the Wi-Fi interface
 ============================
 
-To build the application with the support for the `nRF7002 EB`_ ``BACKBONE_WIFI=1`` CMake option has to be added as an argument of the building command:
-
-.. note::
-   At the moment, nRF TBR does not support multiple external links. Hence, enabling the Wi-Fi interface disables Ethernet shield support in the device tree configuration.
+To build the nRF TBR application with the support for the `nRF7002 EB`_ ``BACKBONE_WIFI=1`` CMake option has to be added as an argument of the building command:
 
 .. code-block:: console
 
    west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DBACKBONE_WIFI=1
+
+.. note::
+   At the moment, nRF TBR application does not support multiple external links. Hence, enabling the Wi-Fi interface disables Ethernet shield support in the device tree configuration.
 
 Thread CLI device building
 ==========================
@@ -238,10 +238,16 @@ The following diagram illustrates a test setup:
 
     Thread BR test setup
 
-Testing Wi-Fi link communication
---------------------------------
+Setting up a Wi-Fi link connection
+----------------------------------
 
-When nRF TBR is built with the Wi-Fi interface as the external link as described in `Enabling the Wi-Fi interface`_ it has to establish a connection to an Access Point before performing any test steps:
+When the nRF TBR application is built with the Wi-Fi interface as the external link as described in `Enabling the Wi-Fi interface`_, the first step after application is started is to establish a connection to an Access Point before performing any test steps:
+
+#. Connect to the PDK that runs the nRF TBR application with a terminal emulator that supports VT100/ANSI escape characters (for example, PuTTY).
+   See :ref:`putty` for the required settings.
+
+   .. note::
+        |app_thread_hwfc_enabled|
 
 #. Retreive a list of available networks with the ``wifi scan`` command:
 
@@ -250,12 +256,12 @@ When nRF TBR is built with the Wi-Fi interface as the external link as described
       uart:~$ wifi scan
       Scan requested
       Num  | SSID                             (len) | Chan | RSSI | Security | BSSID
-      1    | abcdef                           6     | 1    | -37  | WPA/WPA2 | aa:aa:aa:aa:aa:aa
+      1    | TestNetwork                      11    | 1    | -37  | WPA/WPA2 | aa:aa:aa:aa:aa:aa
       2    | pqrst                            5     | 1    | -65  | WPA/WPA2 | xx:xx:xx:xx:xx:xx
       3    | AZBYCXD                          7     | 1    | -41  | WPA/WPA2 | yy:yy:yy:yy:yy:yy
       Scan request done
 
-#. For connecting a given network use the ``wifi connect "<SSID>" <password>"`` command:
+#. Connect to a selected Wi-Fi network with the ``wifi connect "<SSID>" <password>`` command:
 
    .. code-block:: console
 
@@ -263,7 +269,7 @@ When nRF TBR is built with the Wi-Fi interface as the external link as described
       Connection requested
       Connected
 
-#. Test the connection with another host in the network with the ``net ping <address>``.
+#. Test the connection with another host in the network with the ``net ping <address>`` command.
    In the following example nRF TBR send ICMPv6 Echo Requests to a Linux Host's Link-Local
 
    .. code-block:: console
@@ -298,10 +304,10 @@ To do so, perform the following steps:
 DHCPv6 and prefix delegation
 ----------------------------
 
-During the nRF TBR startup, the application automatically communicates with the DHCPv6 server to receive an address for a non-Thread interface.
+During the nRF TBR startup, the application automatically starts the DHCPv6 client which tries to negotiate an address for a non-Thread interface.
 Moreover, it requests a delegated prefix for subnetting.
 
-Use the ``net iface`` command to display and verify information about the network interface.
+Use the ``net iface`` command to display and verify information about the network interfaces.
 The address assigned by the DHCP server should be listed in `IPv6 Unicast addresses` section for `Ethernet` interface as in the following sample command output:
 
 .. code-block:: console
