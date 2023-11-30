@@ -139,7 +139,6 @@ otError otPlatUdpBindToNetif(otUdpSocket *aUdpSocket, otNetifIdentifier aNetifId
 otError otPlatUdpConnect(otUdpSocket *aUdpSocket)
 {
 	struct sockaddr addr;
-	socklen_t addrlen;
 	int res;
 
 	if (!aUdpSocket || !aUdpSocket->mHandle) {
@@ -149,12 +148,11 @@ otError otPlatUdpConnect(otUdpSocket *aUdpSocket)
 	net_sin6(&addr)->sin6_family = AF_INET6;
 	net_sin6(&addr)->sin6_port = aUdpSocket->mPeerName.mPort;
 
-	addrlen = sizeof(net_sin6(&addr)->sin6_addr);
 	net_ipv6_addr_copy_raw((uint8_t *)&net_sin6(&addr)->sin6_addr,
 			       (uint8_t *)&aUdpSocket->mPeerName.mAddress);
 
-	res = net_context_connect(aUdpSocket->mHandle, &addr, addrlen, /* callback */ NULL,
-			    K_NO_WAIT, aUdpSocket);
+	res = net_context_connect(aUdpSocket->mHandle, &addr, sizeof(struct sockaddr_in6),
+				  /* callback */ NULL, K_NO_WAIT, aUdpSocket);
 
 	if (res < 0) {
 		LOG_ERR("OT socket (%p) - UDP connect failed: %d", aUdpSocket, res);
