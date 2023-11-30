@@ -71,23 +71,23 @@ You need the nRF Command Line Tools 10.22.2 specific to the limited sampling rel
 
 To install the nRF Command Line Tools, you need to download and install the version corresponding to your system:
 
-* `10.22.2_EC 64-bit Windows, executable`_
-* `10.22.2_EC macOS, DMG file`_
+* `10.22.3_cs3 64-bit Windows, executable`_
+* `10.22.3_cs3 macOS, DMG file`_
 * 64-bit Linux:
 
-  * `10.22.2_EC x86 system, deb format`_
-  * `10.22.2_EC x86 system, RPM`_
-  * `10.22.2_EC x86 system, tar archive`_
+  * `10.22.3_cs3 x86 system, deb format`_
+  * `10.22.3_cs3 x86 system, RPM`_
+  * `10.22.3_cs3 x86 system, tar archive`_
 
-  * `10.22.2_EC ARM64 system, deb format`_
-  * `10.22.2_EC ARM64 system, RPM`_
-  * `10.22.2_EC ARM64 system, tar archive`_
+  * `10.22.3_cs3 ARM64 system, deb format`_
+  * `10.22.3_cs3 ARM64 system, RPM`_
+  * `10.22.3_cs3 ARM64 system, tar archive`_
 
 * 32-bit Linux:
 
-  * `10.22.2_EC ARMHF system, deb format`_
-  * `10.22.2_EC ARMHF system, RPM`_
-  * `10.22.2_EC ARMHF system, tar archive`_
+  * `10.22.3_cs3 ARMHF system, deb format`_
+  * `10.22.3_cs3 ARMHF system, RPM`_
+  * `10.22.3_cs3 ARMHF system, tar archive`_
 
 Installing the toolchain
 ========================
@@ -110,7 +110,7 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
+            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs3 sh
 
          Depending on your connection, this might take some time.
          Use your GitHub username and Personal Access Token (PAT) when prompted to.
@@ -119,7 +119,7 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            c:/ncs-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/ncs-lcs/work-dir" --ncs-version v2.4.99-cs2
+            c:/ncs-lcs/nrfutil.exe toolchain-manager launch --terminal --chdir "c:/ncs-lcs/work-dir" --ncs-version v2.4.99-cs3
 
          This opens a new terminal window with the |NCS| toolchain environment, where west and other development tools are available.
          Alternatively, you can run the following command::
@@ -147,7 +147,7 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
+            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs3 sh
 
          Depending on your connection, this might take some time.
          Use your GitHub username and Personal Access Token (PAT) when prompted to.
@@ -156,7 +156,7 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            $HOME/ncs-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/ncs-lcs/work-dir" --ncs-version v2.4.99-cs2
+            $HOME/ncs-lcs/nrfutil toolchain-manager launch --shell --chdir "$HOME/ncs-lcs/work-dir" --ncs-version v2.4.99-cs3
 
          This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
 
@@ -198,7 +198,7 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs2 sh
+            curl --proto '=https' --tlsv1.2 -sSf https://developer.nordicsemi.com/.pc-tools/scripts/bootstrap-toolchain.sh | NCS_TOOLCHAIN_VERSION=v2.4.99-cs3 sh
 
          Depending on your connection, this might take some time.
          Use your GitHub username and Personal Access Token (PAT) when prompted to.
@@ -217,7 +217,7 @@ Ensure that you additionally have Git and curl installed.
          .. parsed-literal::
             :class: highlight
 
-            /Users/*yourusername*/ncs-lcs/nrfutil toolchain-manager launch --shell --chdir "/Users/*yourusername*/ncs-lcs/work-dir" --ncs-version v2.4.99-cs2
+            /Users/*yourusername*/ncs-lcs/nrfutil toolchain-manager launch --shell --chdir "/Users/*yourusername*/ncs-lcs/work-dir" --ncs-version v2.4.99-cs3
 
          This makes west and other development tools in the |NCS| toolchain environment available in the same shell session.
 
@@ -240,7 +240,7 @@ After you have installed nRF Command Line Tools 10.22.2 and the toolchain, you n
    .. parsed-literal::
       :class: highlight
 
-      west init -m https://github.com/nrfconnect/sdk-nrf-next --mr v2.4.99-cs2
+      west init -m https://github.com/nrfconnect/sdk-nrf-next --mr v2.4.99-cs3
 
    A window pops up to ask you to select a credential helper.
    You can use any of the options.

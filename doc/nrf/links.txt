@@ -1286,6 +1286,21 @@
 
 .. _`10.22.2_EC macOS, DMG file`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.2_ec/nrf-command-line-tools-10.22.2-Darwin.dmg
 
+.. _`10.22.3_cs3 64-bit Windows, executable`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nRF-Command-Line-Tools-10.22.3-x64.exe
+
+.. _`10.22.3_cs3 x86 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools_10.22.3_amd64.deb
+.. _`10.22.3_cs3 x86 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools-10.22.3-1.x86_64.rpm
+.. _`10.22.3_cs3 x86 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools-10.22.3_Linux-amd64.tar.gz
+
+.. _`10.22.3_cs3 ARM64 system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools_10.22.3_arm64.deb
+.. _`10.22.3_cs3 ARM64 system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools-10.22.3-1.arm64.rpm
+.. _`10.22.3_cs3 ARM64 system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools-10.22.3_Linux-arm64.tar.gz
+
+.. _`10.22.3_cs3 ARMHF system, deb format`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools_10.22.3_armhf.deb
+.. _`10.22.3_cs3 ARMHF system, RPM`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools-10.22.3-1.armhf.rpm
+.. _`10.22.3_cs3 ARMHF system, tar archive`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools-10.22.3_Linux-armhf.tar.gz
+
+.. _`10.22.3_cs3 macOS, DMG file`: https://res.developer.nordicsemi.com/res/nrf-command-line-tools-10.22.3/nrf-command-line-tools-10.22.3-Darwin.dmg
 
 .. _`WPA Supplicant`: https://w1.fi/wpa_supplicant/
 
