@@ -195,7 +195,7 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 {
 #ifdef CONFIG_SUIT_STREAM
 	struct stream_sink dst_sink;
-	suit_component_type_t component_type;
+	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	/* Get component type based on component handle*/
 	int ret = suit_plat_component_type_get(dst_handle, &component_type);
@@ -242,7 +242,7 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 {
 #ifdef CONFIG_SUIT_STREAM
 	struct stream_sink dst_sink;
-	suit_component_type_t component_type;
+	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	/* Get component type based on component handle*/
 	int ret = suit_plat_component_type_get(dst_handle, &component_type);

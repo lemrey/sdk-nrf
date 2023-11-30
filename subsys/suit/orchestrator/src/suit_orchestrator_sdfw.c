@@ -227,7 +227,7 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 static int boot_path(void)
 {
-	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES];
+	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES] = { NULL };
 	size_t class_ids_to_boot_len = ARRAY_SIZE(class_ids_to_boot);
 	int ret = SUIT_SUCCESS;
 	mci_err_t mci_ret = mci_get_invoke_order((const suit_manifest_class_id_t **)&class_ids_to_boot,
@@ -251,7 +251,7 @@ static int boot_path(void)
 
 int suit_orchestrator_init(void)
 {
-	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
+	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES] = { NULL };
 	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
 
 	suit_plat_err_t plat_err;

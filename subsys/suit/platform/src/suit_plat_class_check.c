@@ -25,7 +25,7 @@ static const suit_uuid_t *validate_and_get_uuid(struct zcbor_string *in_uuid)
 int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *cid_uuid)
 {
 	const suit_manifest_class_id_t
-		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS];
+		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS] = { NULL };
 	size_t size = CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS;
 	struct zcbor_string *component_id;
 	const suit_uuid_t *cid = validate_and_get_uuid(cid_uuid);
@@ -60,7 +60,7 @@ int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *
 int suit_plat_check_vid(suit_component_t component_handle, struct zcbor_string *vid_uuid)
 {
 	const suit_manifest_class_id_t
-		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS];
+		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS] = { NULL };
 	size_t size = CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS;
 	struct zcbor_string *component_id;
 	const suit_uuid_t *vendor_id;
