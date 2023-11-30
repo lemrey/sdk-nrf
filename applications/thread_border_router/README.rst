@@ -44,7 +44,7 @@ The current version of the nRF TBR application supports the following features:
 
 Bidirectional IPv6 connectivity
   IPv6 communication between Thread and non-Thread (external) networks.
-  It currently supports both Ethernet or Wi-Fi as the external network link.
+  It currently supports Wi-Fi or Ethernet as the external network link.
 
 mDNS
   A multicast-based discovery of services.
@@ -53,18 +53,18 @@ DHCPv6 and prefix delegation
   A network protocol for configuring IPv6 hosts with IP addresses, IP prefixes, default route, local segment MTU, and other configuration data required to operate in the IPv6 network.
 
 Border Agent
-  A function that relays MeshCoP messages between the Thread Network and an external Thread Commissioner.
+  A function that relays MeshCoP messages between the Thread network and an external Thread Commissioner.
 
 IPv4 support (NAT64/DNS64)
   NAT64 enables IPv6-only Thread network devices to communicate with IPv4-only network servers and devices.
-  DNS64 allows IPv6-only client to receive special IPv6 representation of the IPv4 address.
-  The NAT64 and DNS64 together allow an IPv6-only Thread client to initiate communications by name to an IPv4-only server.
+  DNS64 allows an IPv6-only client to receive a special IPv6 representation of the IPv4 address.
+  Together, NAT64 and DNS64 together allow an IPv6-only Thread client to initiate communications by name to an IPv4-only server.
 
-Multicast forwarding
-  Multicast Forwarding offers reaching devices on the Thread and Wi-Fi or Ethernet network in the same multicast group from both directions.
+Multicast Forwarding
+  Multicast Forwarding allows offers reaching devices on the Thread and non-Thread (external) networks in the same multicast group from both directions.
 
 ND Proxy
-  A handling of Neighbor Solicitation messages to provide information about IPv6 addresses of Thread Nodes with active Domain Unicast Addresses.
+  Handling of Neighbor Solicitation messages to provides information about IPv6 addresses of Thread nodes with active Domain Unicast Addresses.
 
 Requirements
 ************
@@ -77,7 +77,7 @@ The application supports the following preview development kit (PDK):
 
 In addition to the PDK, the application needs the following hardware modules:
 
-* An nRF54-Style-DK IO adapter board (PCA64161) as a SHIM (Shove Hardware in the Middle), connecting the `PHYTEC link board ETH`_ extension board or Wi-Fi `nRF7002 EB`_ to the nRF54H20 PDK.
+* An nRF54-Style-DK IO adapter board (PCA64161) as a SHIM (Shove Hardware in the Middle), connecting the Wi-Fi `nRF7002 EB`_ or the `PHYTEC link board ETH`_ extension board to the nRF54H20 PDK.
 * Depends on the selected backbone network connection type:
 
    .. tabs::
@@ -94,7 +94,7 @@ In addition to the PDK, the application needs the following hardware modules:
 
          To perform testing, the following additional devices are required:
 
-         * A router with IPv6 or IPv4 (if the NAT feature is enabled) connectivity with enabled Wi-Fi connection.
+         * A Wi-Fi router or an Access Point with IPv6 or/and IPv4 (if the NAT feature is enabled) connectivity.
 
             .. note::
                nRF TBR uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with other devices.
@@ -115,7 +115,7 @@ In addition to the PDK, the application needs the following hardware modules:
 
          To perform testing, the following additional devices are required:
 
-         * A router with IPv6 or IPv4 (if the NAT feature is enabled) connectivity or a network switch.
+         * A router with IPv6 or/and IPv4 (if the NAT feature is enabled) connectivity or a network switch.
 
             .. note::
                nRF TBR uses ICMPv6 Router Advertisement messages to share routing information and its prefixes with other devices.
@@ -130,11 +130,11 @@ Optionally, you can also use the :ref:`Thread CLI device <ot_cli_sample>` runnin
 User interface
 **************
 
-nRF TBR application supports commands listed in the `OpenThread CLI Reference`_.
+The nRF TBR application supports commands listed in the `OpenThread CLI Reference`_.
 The OpenThread CLI is integrated into the system shell accessible over the serial connection.
 To indicate a Thread command, the ``ot`` keyword needs to precede the command.
 
-The application also provides an additional set of commands related to nRF TBR features.
+The application also provides an additional set of commands related to the nRF TBR features.
 To indicate a nRF TBR command, the ``tbr`` keyword needs to precede the command.
 Run the ``tbr`` command without any parameters to list all available commands.
 
@@ -152,7 +152,7 @@ The nRF TBR application provides predefined configuration files for different bu
 
 The following configuration files are provided:
 
-* :file:`prj.conf` - This file contains the standard configuration for the nRF TBR application and represents a ``debug`` build type.
+* :file:`prj.conf` - This file contains the default configuration for the nRF TBR application and represents a ``debug`` build type.
 
 * :file:`prj_release.conf` - This configuration file represents a ``release`` build type of the application.
   You can use this version to enable only the necessary application functionalities to optimize its performance and size.
@@ -211,19 +211,20 @@ Also, you can enable specific feature for ``nrf54h20dk_nrf54h20_cpuapp`` by runn
 Enabling the Wi-Fi interface
 ============================
 
-To build the nRF TBR application with the support for the `nRF7002 EB`_ ``BACKBONE_WIFI=1`` CMake option has to be added as an argument of the building command:
+To build the nRF TBR application with support for the `nRF7002 EB`_, add the ``BACKBONE_WIFI=1`` CMake option as an argument to the building command:
 
 .. code-block:: console
 
    west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DBACKBONE_WIFI=1
 
 .. note::
-   At the moment, nRF TBR application does not support multiple external links. Hence, enabling the Wi-Fi interface disables Ethernet shield support in the device tree configuration.
+   At the moment, the nRF TBR application does not support multiple external links.
+   This means that enabling the Wi-Fi interface disables the Ethernet shield support in the device tree configuration.
 
-Thread CLI device building
-==========================
+Building the Thread CLI device
+==============================
 
-For testing purposes, you can optionally use the :ref:`ot_cli_sample` sample together with nRF TBR application.
+For testing purposes, you can optionally use the :ref:`ot_cli_sample` sample together with the nRF TBR application.
 To do so, follow the instructions from the :ref:`ot_cli_sample_building_and_running` section of the Thread CLI sample.
 
 Testing
@@ -241,7 +242,7 @@ The following diagram illustrates a test setup:
 Setting up a Wi-Fi link connection
 ----------------------------------
 
-When the nRF TBR application is built with the Wi-Fi interface as the external link as described in `Enabling the Wi-Fi interface`_, the first step after application is started is to establish a connection to an Access Point before performing any test steps:
+When the nRF TBR application is built with the Wi-Fi interface as the external link as described in `Enabling the Wi-Fi interface`_, the first step after the application is started is to establish a connection to an Access Point before performing any test steps:
 
 #. Connect to the PDK that runs the nRF TBR application with a terminal emulator that supports VT100/ANSI escape characters (for example, PuTTY).
    See :ref:`putty` for the required settings.
@@ -269,8 +270,8 @@ When the nRF TBR application is built with the Wi-Fi interface as the external l
       Connection requested
       Connected
 
-#. Test the connection with another host in the network with the ``net ping <address>`` command.
-   In the following example nRF TBR send ICMPv6 Echo Requests to a Linux Host's Link-Local
+#. Test the connection to another host in the network with the ``net ping <address>`` command.
+   In the following example the nRF TBR sends ICMPv6 Echo Requests to a Linux host's link-local address
 
    .. code-block:: console
 
@@ -287,7 +288,7 @@ To allow Thread devices to communicate with non-Thread networks, the nRF TBR app
 You must configure a Linux host machine so that it can accept incoming RA messages.
 To do so, perform the following steps:
 
-#. Enable acceptance of RA messages.
+1. Enable acceptance of RA messages.
    Set the ``accept_ra`` parameter to ``2`` by running the following command on Linux host terminal:
 
    .. code-block:: console
@@ -304,7 +305,7 @@ To do so, perform the following steps:
 DHCPv6 and prefix delegation
 ----------------------------
 
-During the nRF TBR startup, the application automatically starts the DHCPv6 client which tries to negotiate an address for a non-Thread interface.
+During the nRF TBR startup, the application automatically starts the DHCPv6 client which tries to negotiate an IPv6 address for a non-Thread interface.
 Moreover, it requests a delegated prefix for subnetting.
 
 Use the ``net iface`` command to display and verify information about the network interfaces.
@@ -389,7 +390,7 @@ To verify the communication between the nRF TBR and non-Thread network, complete
       1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 10/10.0/10 ms.
       Done
 
-#. Get the OMR IP address for nRF TBR with the ``ot ipaddr`` command.
+#. Get the Off-Mesh Routable (OMR) IP address for the nRF TBR with the ``ot ipaddr`` command.
    Example addresses listed in command output:
 
    .. code-block:: console
@@ -403,7 +404,7 @@ To verify the communication between the nRF TBR and non-Thread network, complete
       Done
 
    .. note::
-      To communicate with non-Thread networks, the nRF TBR generates an off-mesh route (OMR) prefix that is propagated as a part of the Thread Network Data.
+      To communicate with non-Thread networks, the nRF TBR generates an OMR prefix that is propagated as a part of the Thread Network Data.
       All devices in the network use it to generate an IPv6 address that is later used for communication with devices from an external network.
       To check the OMR prefix, use the ``ot br omrprefix`` command:
 
@@ -435,9 +436,9 @@ To verify the communication between the nRF TBR and non-Thread network, complete
 Testing communication with Thread node over nRF TBR
 ---------------------------------------------------
 
-After performing all steps from `Testing communication with Thread Border Router`_ you can optionally verify the communication between a Thread Router or End Device and a non-Thread device.
+After performing all steps from `Testing communication with Thread Border Router`_ you can optionally verify the communication between a Thread node (Router or End Device role) and a non-Thread device.
 
-1. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Thread CLI device building`_).
+1. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Building the Thread CLI device`_).
 #. Turn on the DK.
 #. |connect_terminal_ANSI|
 
@@ -527,12 +528,12 @@ For example, to discover the service, use the `Avahi`_ open-source tool and run 
 Multicast Forwarding
 --------------------
 
-After performing all steps from `Testing communication with Thread Border Router`_ you can optionally verify bidirectional communication using multicast messages between a Thread Router or End Device and a non-Thread device.
+After performing all steps from `Testing communication with Thread Border Router`_, you can optionally verify bidirectional communication using multicast messages between a Thread node (Router or End Device role) and a non-Thread device.
 
-#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Thread CLI device building`_).
+#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Building the Thread CLI device`_).
 
    .. note::
-      In order to perform Multicast Listener Registration the CLI sample must be built with enabled CONFIG_OPENTHREAD_MLR option.
+      In order to perform Multicast Listener Registration, the CLI sample must be built with the :kconfig:option:`CONFIG_OPENTHREAD_MLR` option enabled.
 
 #. Turn on the DK.
 #. |connect_terminal_ANSI|
@@ -552,7 +553,8 @@ After performing all steps from `Testing communication with Thread Border Router
       router
       Done
 
-#. Add new IPv6 multicast address with "Admin-Local" scope or higher. In the following example End Device subscribes to the ``ff05::abcd`` address:
+#. Add new IPv6 multicast address with "Admin-Local" scope or higher.
+   In the following example Thread node subscribes to the ``ff05::abcd`` address:
 
    .. code-block:: console
 
@@ -560,7 +562,14 @@ After performing all steps from `Testing communication with Thread Border Router
       Done
 
 #. Open an UDP port and subscribe to the multicast address on the Linux host.
-   For example, use the socat open-source tool and run the ``socat -u UDP6-RECV:<port>,ipv6-join-group='[<address>]':<interface>: -`` command where the ``<port>`` has to be changed to a given UDP port number, the ``<address>`` has to be changed to a given IPv6 multicast address, and the ``<interface>`` has to be changed to a network interface name or its index. Then, it will wait for incoming UDP datagrams and print their payload to the standard output:
+
+   For example, use the ``socat`` open-source tool and run the ``socat -u UDP6-RECV:<port>,ipv6-join-group='[<address>]':<interface>: -`` command, where:
+
+   * ``<port>`` is the UDP port number.
+   * ``<address>`` is the IPv6 multicast address.
+   * ``<interface>`` is the network interface name or its index.
+
+   After the command, the ``socat`` will wait for incoming UDP datagrams and print their payload to the standard output:
 
    .. code-block:: console
 
@@ -580,23 +589,30 @@ After performing all steps from `Testing communication with Thread Border Router
       uart:~$ ot udp send ff05::abcd 55555 foobar
       Done
 
-#. Verfy that the given payload is printed to the standard output of the Linux Host.
+#. Verify that the given payload is printed to the standard output of the Linux host.
 
-#. Bind an UDP port with the ``ot bind :: <port>`` command where ``<port>`` should be changed to a chosen value.
+#. Bind an UDP port with the ``ot bind :: <port>`` command where ``<port>`` should be changed to a selected value.
 
    .. code-block:: console
 
       uart:~$ ot udp bind :: 55555
       Done
 
-#. The socat tool can also be used to send UDP datagrams from the Linux Host to the End Device.
-   For example, use the ``echo "<payload>" | socat -u - UDP6-SENDTO:[<address>]:<port>,so-bindtodevice=<interface>`` command where ``<payload>`` specifies the text message, ``<address>`` and the ``<port>`` have to match values provided to the End Device, and the ``<interface>`` has to be changed to a given Linux Host's network interface's name:
+#. The ``socat`` tool can also be used to send UDP datagrams from the Linux host to the Thread node.
+
+   For example, use the ``echo "<payload>" | socat -u - UDP6-SENDTO:[<address>]:<port>,so-bindtodevice=<interface>`` command, where:
+
+   * ``<payload>`` specifies the text message.
+   * ``<address>`` and ``<port>`` match the values provided to the Thread node.
+   * ``<interface>`` is the Linux Host's network interface's name.
+
+   For example:
 
    .. code-block:: console
 
       user@host:~$ echo " foobar" | socat -u  - UDP6-SENDTO:[ff05::abcd]:55555,so-bindtodevice=enx00133bb15706
 
-#. Verify that the given payload is printed to the End Device's serial:
+#. Verify that the given payload is printed to the Thread node console:
 
    .. code-block:: console
 
@@ -610,10 +626,10 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
 #. Rebuild the nRF TBR application with :file:`overlay-nat64.conf` file.
    See the :ref:`nrf_tbr_app_select_configuration` section to learn how to select the configuration.
 
-#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Thread CLI device building`_).
+#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Building the Thread CLI device`_).
 
    .. note::
-      In order to test IPv4 connection the CLI sample must be built with enabled CONFIG_OPENTHREAD_NAT64_TRANSLATOR option.
+      In order to test IPv4 connection, the CLI sample must be built with the :kconfig:option:`CONFIG_OPENTHREAD_NAT64_TRANSLATOR` option enabled.
 
 #. Turn on the DK.
 #. |connect_terminal_both_ANSI|
@@ -650,9 +666,11 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       1 packets transmitted, 1 packets received. Packet loss = 0.0%. Round-trip min/avg/max = 23/23.0/23 ms.
       Done
 
-   Repeat command from Thread node, the console output should be the same.
+   Use the same command in the Thread node console.
+   The resulting console output should be the same.
 
-#. Resolve a hostname on the IPv4 network. DNS server address can also be provided as an IPv4 address:
+#. Resolve a hostname on the IPv4 network.
+   DNS server address can also be provided as an IPv4 address:
 
    .. code-block:: console
 
@@ -661,15 +679,19 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       DNS response for example.com. - fdb7:aace:3897:2:0:0:5db8:d822 TTL:7491
       Done
 
-   The command can be also repeated from Thread node.
+   You can use the same command in the Thread node console.
+   The resulting console output should be the same.
 
 #. Test TCP connection.
 
-   On your Linux IPv4 host, use ``nc`` to listen for TCP connection:
+   On your Linux IPv4 host, use ``socat`` open-source tool to create a classic TCP listening daemon.
+
+   Run the ``socat STDIO TCP-LISTEN:<port>`` command, where ``<port>`` is the TCP port number.
+   After the command, the ``socat`` will wait for incoming TCP connection and relay data to and from ``stdio``:
 
    .. code-block:: console
 
-      user@host:~$ nc -l 3000
+      user@host:~$ socat STDIO TCP-LISTEN:3000
 
    Establish a TCP connection from the nRF TBR or your Thread node:
 
@@ -693,11 +715,13 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
 
    .. code-block:: console
 
-      user@host:~$ nc -l 3000
+      user@host:~$ socat STDIO TCP-LISTEN:3000
       hello
 
-   You can also send message from Linux host to the nRF TBR or Thread node.
-   Just type a word and press ``Enter`` on shell running ``nc`` and check output on Thread device:
+   You can also send a message from the Linux host to the nRF TBR or Thread node.
+   To do so, in shell running the ``socat`` tool, enter any string and press ``Enter`` to send the message.
+   The Thread device console output will display that it has received data.
+   An example of receiving 8 bytes data on TCP is given below:
 
    .. code-block:: console
 
@@ -735,8 +759,10 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       user@host:~$ nc -u -l 3000
       hello
 
-   You can also send message from Linux host to the nRF TBR or Thread node.
-   Just type a word and press ``Enter`` on shell running ``nc`` and check output on Thread device:
+   You can also send a message from the Linux host to the nRF TBR or Thread node.
+   To do so, run the ``nc`` command, enter any string in the shell, and press ``Enter`` to send the message.
+   The Thread device console output will display that it has received data.
+   An example of receiving 4 bytes data on UDP is given below:
 
    .. code-block:: console
 
