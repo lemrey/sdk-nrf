@@ -58,10 +58,10 @@ Border Agent
 IPv4 support (NAT64/DNS64)
   NAT64 enables IPv6-only Thread network devices to communicate with IPv4-only network servers and devices.
   DNS64 allows an IPv6-only client to receive a special IPv6 representation of the IPv4 address.
-  Together, NAT64 and DNS64 together allow an IPv6-only Thread client to initiate communications by name to an IPv4-only server.
+  Together, NAT64 and DNS64 allow an IPv6-only Thread client to initiate communications by name to an IPv4-only server.
 
 Multicast Forwarding
-  Multicast Forwarding allows offers reaching devices on the Thread and non-Thread (external) networks in the same multicast group from both directions.
+  Multicast Forwarding allows reaching devices on the Thread and non-Thread (external) networks in the same multicast group from both directions.
 
 ND Proxy
   Handling of Neighbor Solicitation messages to provides information about IPv6 addresses of Thread nodes with active Domain Unicast Addresses.
@@ -87,7 +87,7 @@ In addition to the PDK, the application needs the following hardware modules:
          The `nRF7002 EB`_ as an external interface for Internet connection.
 
 
-         .. figure:: /images/nrf_tbr_app_hardware.svg
+         .. figure:: /images/nrf_tbr_app_hardware_nrf7002.svg
             :alt: Hardware connection
 
             Hardware Wi-Fi setup connection
@@ -108,7 +108,7 @@ In addition to the PDK, the application needs the following hardware modules:
          The `PHYTEC link board ETH`_ extension board as an external interface for Internet connection.
 
 
-         .. figure:: /images/nrf_tbr_app_hardware.svg
+         .. figure:: /images/nrf_tbr_app_hardware_phytec.svg
             :alt: Hardware connection
 
             Hardware Ethernet setup connection
@@ -156,7 +156,8 @@ The following configuration files are provided:
 
 * :file:`prj_release.conf` - This configuration file represents a ``release`` build type of the application.
   You can use this version to enable only the necessary application functionalities to optimize its performance and size.
-  This configuration file can be included by adding ``-DCONF_FILE=prj_release.conf`` to your build command. See :ref:`cmake_options`.
+  This configuration file can be included by adding ``-DCONF_FILE=prj_release.conf`` to your build command.
+  See :ref:`cmake_options`.
 
 * :file:`overlay-nat64.conf` - The overlay file that adds NAT64 and all necessary features required to access resources in IPv4 networks from Thread network.
   You can include it by adding ``-DOVERLAY_CONFIG=overlay-nat64.conf`` to your build command.
@@ -569,7 +570,7 @@ After performing all steps from `Testing communication with Thread Border Router
    * ``<address>`` is the IPv6 multicast address.
    * ``<interface>`` is the network interface name or its index.
 
-   After the command, the ``socat`` will wait for incoming UDP datagrams and print their payload to the standard output:
+   After the command, ``socat`` will wait for incoming UDP datagrams and print their payload to the standard output:
 
    .. code-block:: console
 
@@ -582,7 +583,7 @@ After performing all steps from `Testing communication with Thread Border Router
       uart:~$ ot udp open
       Done
 
-#. Send an UDP datagram with a given payload using the ``ot udp send <address> <port> <text payload>`` command where the ``<address>`` and the ``<port>`` have to match values provided to the socat command:
+#. Send an UDP datagram with a given payload using the ``ot udp send <address> <port> <text payload>`` command, where ``<address>`` and ``<port>`` have to match values provided to the socat command:
 
    .. code-block:: console
 
@@ -604,7 +605,7 @@ After performing all steps from `Testing communication with Thread Border Router
 
    * ``<payload>`` specifies the text message.
    * ``<address>`` and ``<port>`` match the values provided to the Thread node.
-   * ``<interface>`` is the Linux Host's network interface's name.
+   * ``<interface>`` is the name of the Linux Host's network interface.
 
    For example:
 
@@ -684,10 +685,10 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
 
 #. Test TCP connection.
 
-   On your Linux IPv4 host, use ``socat`` open-source tool to create a classic TCP listening daemon.
+   On your Linux IPv4 host, use the ``socat`` open-source tool to create a classic TCP listening daemon.
 
    Run the ``socat STDIO TCP-LISTEN:<port>`` command, where ``<port>`` is the TCP port number.
-   After the command, the ``socat`` will wait for incoming TCP connection and relay data to and from ``stdio``:
+   After the command, ``socat`` will wait for incoming TCP connection and relay data to and from ``stdio``:
 
    .. code-block:: console
 
@@ -719,7 +720,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       hello
 
    You can also send a message from the Linux host to the nRF TBR or Thread node.
-   To do so, in shell running the ``socat`` tool, enter any string and press ``Enter`` to send the message.
+   To do so, in the shell running the ``socat`` tool, enter any string and send the message.
    The Thread device console output will display that it has received data.
    An example of receiving 8 bytes data on TCP is given below:
 
@@ -760,7 +761,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       hello
 
    You can also send a message from the Linux host to the nRF TBR or Thread node.
-   To do so, run the ``nc`` command, enter any string in the shell, and press ``Enter`` to send the message.
+   To do so, run the ``nc`` command, enter any string in the shell send the message.
    The Thread device console output will display that it has received data.
    An example of receiving 4 bytes data on UDP is given below:
 
