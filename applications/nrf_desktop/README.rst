@@ -2103,7 +2103,7 @@ The nRF Desktop application uses the sequence number (:kconfig:option:`CONFIG_SU
 
 Make sure that the dedicated DFU partition called ``dfu_partition`` is defined in the DTS.
 The partition is used to store the incoming SUIT envelope with update candidate.
-For details about defining a memory layout for your target, see the :ref:`nrf_desktop_flash_memory_layout` section.
+For details about defining a memory layout for your target, see the :ref:`nrf_desktop_memory_layout` section.
 
 .. _nrf_desktop_bootloader_background_dfu:
 
