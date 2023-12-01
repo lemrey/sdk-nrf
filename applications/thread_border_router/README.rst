@@ -705,7 +705,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       Done
       TCP: Connection established
 
-   Now you can send message to your Linux host:
+   Now you can send a message to your Linux host:
 
    .. code-block:: console
 
@@ -730,11 +730,14 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
 
 #. Test UDP connection.
 
-   On your Linux IPv4 host, use ``nc`` to listen for UDP connection:
+   On your Linux IPv4 host, use the ``socat`` tool again, but this time to listen for UDP connection.
+
+   Run the ``socat STDIO UDP-LISTEN:<port>`` command, where ``<port>`` is the UDP port number.
+   After the command, ``socat`` will wait for incoming UDP datagrams and relay data to and from ``stdio``:
 
    .. code-block:: console
 
-      user@host:~$ nc -u -l 3000
+      user@host:~$ socat STDIO UDP-LISTEN:3000
 
    Establish a UDP connection from the nRF TBR or your Thread node:
 
@@ -746,7 +749,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       Connecting to synthesized IPv6 address: fdb7:aace:3897:2:0:0:c0a8:64
       Done
 
-   And now send message to your Linux host:
+   And now send a message to your Linux host:
 
    .. code-block:: console
 
@@ -761,7 +764,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       hello
 
    You can also send a message from the Linux host to the nRF TBR or Thread node.
-   To do so, run the ``nc`` command, enter any string in the shell send the message.
+   To do so, in the shell running the ``socat`` tool, enter any string and send the message.
    The Thread device console output will display that it has received data.
    An example of receiving 4 bytes data on UDP is given below:
 
