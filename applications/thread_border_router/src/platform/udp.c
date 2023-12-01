@@ -11,7 +11,7 @@
 #include "tbr.h"
 
 #include <ipv6.h>
-#include <openthread/udp.h>
+#include <openthread/platform/udp.h>
 
 #include <sys/errno.h>
 
@@ -56,6 +56,9 @@ otError otPlatUdpSocket(otUdpSocket *aUdpSocket)
 	aUdpSocket->mHandle = net_ctx;
 
 	LOG_DBG("OT socket (%p) - opened", aUdpSocket);
+
+	/* By default, bind every socket to Thread iface */
+	otPlatUdpBindToNetif(aUdpSocket, OT_NETIF_THREAD);
 
 	return OT_ERROR_NONE;
 }
@@ -109,10 +112,13 @@ otError otPlatUdpBind(otUdpSocket *aUdpSocket)
 otError otPlatUdpBindToNetif(otUdpSocket *aUdpSocket, otNetifIdentifier aNetifIdentifier)
 {
 	struct tbr_context *ctx = tbr_get_context();
+	struct net_context *net_ctx;
 
 	if (!aUdpSocket || !aUdpSocket->mHandle) {
 		return OT_ERROR_INVALID_ARGS;
 	}
+
+	net_ctx = aUdpSocket->mHandle;
 
 	switch(aNetifIdentifier) {
 	case OT_NETIF_THREAD:
@@ -120,18 +126,24 @@ otError otPlatUdpBindToNetif(otUdpSocket *aUdpSocket, otNetifIdentifier aNetifId
 			return OT_ERROR_FAILED;
 		}
 
-		net_context_set_iface(aUdpSocket->mHandle, ctx->ot->iface);
+		net_context_set_iface(net_ctx, ctx->ot->iface);
 		break;
 	case OT_NETIF_BACKBONE:
 		if (!ctx->backbone_iface) {
 			return OT_ERROR_FAILED;
 		}
 
-		net_context_set_iface(aUdpSocket->mHandle, ctx->backbone_iface);
+		net_context_set_iface(net_ctx, ctx->backbone_iface);
 		break;
 	default:
 		break;
 	}
+
+	/**
+	 * net_context_set_iface() does not set the flag and the binding may be
+	 * overwritten later on, do it manually.
+	 */
+	net_ctx->flags |= NET_CONTEXT_BOUND_TO_IFACE;
 
 	return OT_ERROR_NONE;
 }
