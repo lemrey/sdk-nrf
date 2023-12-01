@@ -102,7 +102,10 @@ static bool handle_sensor_event(const struct sensor_event *event)
 		if (++meas_cnt == BURST_MEAS_CNT) {
 			meas_cnt = 0;
 
-			APP_EVENT_SUBMIT(new_power_down_event());
+			struct power_down_event *evt = new_power_down_event();
+
+			evt->error = false;
+			APP_EVENT_SUBMIT(evt);
 		}
 	}
 
