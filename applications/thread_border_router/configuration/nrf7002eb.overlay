@@ -12,6 +12,7 @@
 			psels = <NRF_PSEL(SPIM_SCK, 2, 1)>,
 			        <NRF_PSEL(SPIM_MISO, 0, 5)>,
 			        <NRF_PSEL(SPIM_MOSI, 0, 4)>;
+			nordic,drive-mode = <NRF_DRIVE_H0H1>;
 		};
 	};
 
@@ -21,6 +22,7 @@
 			        <NRF_PSEL(SPIM_MISO, 0, 5)>,
 			        <NRF_PSEL(SPIM_MOSI, 0, 4)>;
 			low-power-enable;
+			nordic,drive-mode = <NRF_DRIVE_H0H1>;
 		};
 	};
 };

@@ -84,3 +84,6 @@ config OPENTHREAD_BACKBONE_ROUTER_DUA_NDPROXYING
 
 config NRF_TBR_NAT64_PREFIX_DISCOVERY
     default y
+
+config NET_IPV4_IGMP
+    default n

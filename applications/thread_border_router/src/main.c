@@ -55,7 +55,7 @@ static NPF_RULE(filter_mcast_loopback_rule, NET_OK, mcast_loopback_test);
 static void handle_wifi_connect_result(struct net_mgmt_event_callback *cb)
 {
 	const struct wifi_status *status =
-		(const struct wifi_status *) cb->info;	
+		(const struct wifi_status *) cb->info;
 
 	if (status->status) {
 		LOG_ERR("Backbone link connection request failed (%d)", status->status);
@@ -134,14 +134,16 @@ static int init_backbone_iface(void)
 	const struct device *backbone_device;
 
 #if defined(CONFIG_WIFI_NRF700X)
+	/* Wait for WiFi connection */
+	net_mgmt_init_event_callback(&wifi_mgmt_cb,
+				     wifi_mgmt_event_handler,
+				     WIFI_MGMT_EVENTS);
+	net_mgmt_add_event_callback(&wifi_mgmt_cb);
+
 	npf_insert_ipv6_recv_rule(&filter_mcast_loopback_rule);
 
 	backbone_device = device_get_binding("wlan0");
-	/* Wait for WiFi connection */
-	net_mgmt_init_event_callback(&wifi_mgmt_cb,
-				wifi_mgmt_event_handler,
-				WIFI_MGMT_EVENTS);
-	net_mgmt_add_event_callback(&wifi_mgmt_cb);
+
 #else
 	backbone_device = DEVICE_DT_GET(DT_NODELABEL(enc424j600_link_board_eth));
 	k_sem_give(&run_app);
@@ -160,30 +162,10 @@ static int init_backbone_iface(void)
 		return EXIT_FAILURE;
 	}
 
-	return EXIT_SUCCESS;
-}
-
-static bool configure_backbone_link(struct net_if *iface)
-{
-	k_sem_take(&run_app, K_FOREVER);
-
-	if (!context->backbone_iface) {
-		return false;
-	}
-
 	net_config_init_app(net_if_get_device(context->backbone_iface),
 			    "Initializing backbone interface");
 
-	if (!join_all_routers_group(iface)) {
-		return false;
-	}
-
-	/* Router solicitation can be sent before connection is alive, send it
-	 * explicitly after link is set up.
-	 */
-	net_ipv6_send_rs(iface);
-
-	return true;
+	return EXIT_SUCCESS;
 }
 
 static int init_application(void)
@@ -202,14 +184,15 @@ static int init_application(void)
 	backbone_agent_init();
 
 	net_mgmt_init_event_callback(&net_event_cb,
-				net_ev_cb_handler,
-				NET_EVENT_IPV6_DAD_SUCCEED);
+				     net_ev_cb_handler,
+				     NET_EVENT_IPV6_DAD_SUCCEED);
 	net_mgmt_add_event_callback(&net_event_cb);
 
 	return init_backbone_iface();
 }
 
-static void routing_set_enabled(struct otInstance *instance, bool enabled) {
+static void routing_set_enabled(struct otInstance *instance, bool enabled)
+{
 	NET_DBG("%s border routing", enabled ? "Enabling" : "Disabling");
 	otBorderRoutingSetEnabled(instance, enabled);
 
@@ -217,16 +200,17 @@ static void routing_set_enabled(struct otInstance *instance, bool enabled) {
 	otBackboneRouterSetEnabled(instance, enabled);
 }
 
-static void handle_role_change(struct otInstance *instance, otChangedFlags flags) {
+static void handle_role_change(struct otInstance *instance, otChangedFlags flags)
+{
 	switch (otThreadGetDeviceRole(instance)) {
 	case OT_DEVICE_ROLE_CHILD:
 	case OT_DEVICE_ROLE_ROUTER:
 	case OT_DEVICE_ROLE_LEADER:
 		if (otBorderRoutingGetState(instance) ==
-			OT_BORDER_ROUTING_STATE_UNINITIALIZED) {
+		    OT_BORDER_ROUTING_STATE_UNINITIALIZED) {
 			otBorderRoutingInit(instance,
-						net_if_get_by_iface(context->backbone_iface),
-						context->ll_addr != NULL);
+					    net_if_get_by_iface(context->backbone_iface),
+					    context->ll_addr != NULL);
 		}
 		routing_set_enabled(instance, true);
 		break;
@@ -254,6 +238,7 @@ static struct openthread_state_changed_cb ot_state_chaged_cb = { .state_changed_
 
 int main(void)
 {
+	k_sem_take(&run_app, K_FOREVER);
 	openthread_state_changed_cb_register(context->ot, &ot_state_chaged_cb);
 
 	if (!context->backbone_iface) {
@@ -261,12 +246,17 @@ int main(void)
 		return EXIT_FAILURE;
 	}
 
-	if (!configure_backbone_link(context->backbone_iface)) {
-		LOG_WRN("Backbone link configuration fail");
-		return EXIT_FAILURE;
+	if (!join_all_routers_group(context->backbone_iface)) {
+		return false;
 	}
 
-	otPlatInfraIfStateChanged(context->ot->instance, net_if_get_by_iface(context->backbone_iface),
+	/* Router solicitation can be sent before connection is alive, send it
+	 * explicitly after link is set up.
+	 */
+	net_ipv6_send_rs(context->backbone_iface);
+
+	otPlatInfraIfStateChanged(context->ot->instance,
+				  net_if_get_by_iface(context->backbone_iface),
 				  true);
 
 	border_agent_init();
