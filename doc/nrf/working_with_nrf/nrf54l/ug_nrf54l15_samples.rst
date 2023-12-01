@@ -65,3 +65,4 @@ Zephyr samples
 * :ref:`zephyr:settings_subsys_sample`
 * :ref:`zephyr:bluetooth-observer-sample`
 * :ref:`zephyr:adc-sample`
+* :ref:`zephyr:nrf-system-off-sample`
