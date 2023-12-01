@@ -5,10 +5,14 @@
 #
 
 config APP_VERSION
-        int "Application version"
+  int "Application version"
 	default 1
 
 config SUIT_ENVELOPE_SEQUENCE_NUM
-        default APP_VERSION
+  default APP_VERSION
+
+config SUIT_SECDOM_UPDATE_LOG
+  bool "Enable Secure Domain logs in update candidate"
+  default n
 
 source "Kconfig.zephyr"
