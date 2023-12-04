@@ -72,7 +72,7 @@ You need the nRF Command Line Tools 10.22.2 specific to the limited sampling rel
 To install the nRF Command Line Tools, you need to download and install the version corresponding to your system:
 
 * `10.22.3_cs3 64-bit Windows, executable`_
-* `10.22.3_cs3 macOS, DMG file`_
+* `10.22.3_cs3 macOS, zip archive`_
 * 64-bit Linux:
 
   * `10.22.3_cs3 x86 system, deb format`_
@@ -85,9 +85,7 @@ To install the nRF Command Line Tools, you need to download and install the vers
 
 * 32-bit Linux:
 
-  * `10.22.3_cs3 ARMHF system, deb format`_
-  * `10.22.3_cs3 ARMHF system, RPM`_
-  * `10.22.3_cs3 ARMHF system, tar archive`_
+  * `10.22.3_cs3 ARMHF system, zip archive`_
 
 Installing the toolchain
 ========================
@@ -131,9 +129,11 @@ Ensure that you additionally have Git and curl installed.
          .. caution::
             When working with the limited sampling release, you must always use the terminal window where the west environmental variables have been called.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\ncs-lcs` directory, and start over.
+      #. Install the `Serial Terminal from nRF Connect for Desktop`_.
 
-         We recommend adding the path where nrfutil is located to your environmental variables.
+      If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\ncs-lcs` directory, and start over.
+
+      We recommend adding the nrfutil path to your environmental variables.
 
 
    .. tab:: Linux
@@ -163,9 +163,11 @@ Ensure that you additionally have Git and curl installed.
          .. caution::
             When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+      #. Install the `Serial Terminal from nRF Connect for Desktop`_.
 
-         We recommend adding the path where nrfutil is located to your environmental variables.
+      If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+
+      We recommend adding the nrfutil path to your environmental variables.
 
    .. tab:: macOS
 
@@ -224,9 +226,19 @@ Ensure that you additionally have Git and curl installed.
          .. caution::
             When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+      #. Run the following commands in your terminal to install the correct lxml dependency:
 
-         We recommend adding the path where nrfutil is located to your environmental variables.
+         .. parsed-literal::
+            :class: highlight
+
+            pip uninstall -y lxml
+            pip install lxml
+
+      #. Install the `Serial Terminal from nRF Connect for Desktop`_.
+
+      If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+
+      We recommend adding the nrfutil path to your environmental variables.
 
 .. _nrf5l15_install_ncs:
 
@@ -385,7 +397,7 @@ With the :ref:`zephyr:hello_world_user` sample programmed, the nRF54L15 PDK outp
 
 To read the logs from the :ref:`zephyr:hello_world_user` sample programmed to the nRF54L15 PDK, complete the following steps:
 
-1. Connect to the PDK with a terminal emulator (for example, PuTTY) using the following settings:
+1. Connect to the PDK with a terminal emulator (for example, `Serial Terminal from nRF Connect for Desktop`_) using the following settings:
 
    * Baud rate: 115200
    * 8 data bits
@@ -400,6 +412,9 @@ To read the logs from the :ref:`zephyr:hello_world_user` sample programmed to th
 
    *** Booting Zephyr OS build 06af494ba663  ***
    Hello world! nrf54l15dk_nrf54l15_cpuapp@soc1
+
+.. note::
+   If no output is shown when using nRF Serial Terminal, select a different serial port in the terminal application.
 
 Install |nRFVSC|
 ****************
@@ -425,5 +440,7 @@ You are now all set to use the nRF54L15 PDK.
 See the following links for where to go next:
 
 * The :ref:`ug_nrf54l15_samples` page to see the available samples for the nRF54L15 PDK for the initial limited sampling.
-* The `nRF54L15 PDK schematic and PCB`_ PDF document for the nRF54L15 PDK.
+* The `nRF54L15 PDK schematic and PCB 0.2.1`_ PDF document for the nRF54L15 PDK.
+* The `nRF54L15 Objective Product Specification 0.5b`_ (OPS) PDF document.
+* The `nRF54L15 prototype difference`_ PDF document, listing the major differences between the final and the prototype silicon provided in the initial limited sampling.
 * The :ref:`introductory documentation <getting_started>` for more information on the |NCS| and the development environment.

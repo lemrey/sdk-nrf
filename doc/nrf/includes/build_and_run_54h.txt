@@ -24,13 +24,14 @@ In the limited sampling release of the |NCS|, you need to use either the command
 
       #. Connect the PDK to your computer using a USB cable.
       #. Power on the PDK.
-      #. Program the application to the kit using the following command:
+      #. Program the application to the kit using the following commands:
 
          .. code-block:: console
 
-            west flash --erase-storage
+            nrfjprog --eraseall
+            west flash
 
-         This command clears the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
+         These commands clear the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
 
          As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
          With this approach, the old data in other areas will be retained.

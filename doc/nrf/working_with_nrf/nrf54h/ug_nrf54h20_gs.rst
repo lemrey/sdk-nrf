@@ -75,7 +75,7 @@ You need the nRF Command Line Tools 10.22.3 specific to the limited sampling rel
 To install the nRF Command Line Tools, you need to download and install the version corresponding to your system:
 
 * `10.22.3_cs3 64-bit Windows, executable`_
-* `10.22.3_cs3 macOS, DMG file`_
+* `10.22.3_cs3 macOS, zip archive`_
 * 64-bit Linux:
 
   * `10.22.3_cs3 x86 system, deb format`_
@@ -88,9 +88,7 @@ To install the nRF Command Line Tools, you need to download and install the vers
 
 * 32-bit Linux:
 
-  * `10.22.3_cs3 ARMHF system, deb format`_
-  * `10.22.3_cs3 ARMHF system, RPM`_
-  * `10.22.3_cs3 ARMHF system, tar archive`_
+  * `10.22.3_cs3 ARMHF system, zip archive`_
 
 .. _nrf54h20_install_toolchain:
 
@@ -136,9 +134,11 @@ Ensure that you additionally have Git and curl installed.
          .. caution::
             When working with the limited sampling release, you must always use the terminal window where the west environmental variables have been called.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\ncs-lcs` directory, and start over.
+      #. Install the `Serial Terminal from nRF Connect for Desktop`_.
 
-         We recommend adding the path where nrfutil is located to your environmental variables.
+      If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`C:\\ncs-lcs` directory, and start over.
+
+      We recommend adding the nrfutil path to your environmental variables.
 
 
    .. tab:: Linux
@@ -168,9 +168,11 @@ Ensure that you additionally have Git and curl installed.
          .. caution::
             When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+      #. Install the `Serial Terminal from nRF Connect for Desktop`_.
 
-         We recommend adding the path where nrfutil is located to your environmental variables.
+      If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+
+      We recommend adding the nrfutil path to your environmental variables.
 
    .. tab:: macOS
 
@@ -229,9 +231,19 @@ Ensure that you additionally have Git and curl installed.
          .. caution::
             When working with west in the limited sampling release version of |NCS|, you must always use this shell window.
 
-         If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+      #. Run the following commands in your terminal to install the correct lxml dependency:
 
-         We recommend adding the path where nrfutil is located to your environmental variables.
+         .. parsed-literal::
+            :class: highlight
+
+            pip uninstall -y lxml
+            pip install lxml
+
+      #. Install the `Serial Terminal from nRF Connect for Desktop`_.
+
+      If you run into errors during the installation process, delete the :file:`.west` folder inside the :file:`ncs-lcs` directory, and start over.
+
+      We recommend adding the nrfutil path to your environmental variables.
 
 .. _nrf54h20_install_ncs:
 
@@ -362,7 +374,7 @@ To build and program the sample to the nRF54H20 PDK, complete the following step
 
       west build -b nrf54h20dk_nrf54h20_cpuapp@soc1
 
-#. Program the sample using the standard |NCS| command.
+#. Program the sample using nrfjprog.
    If you have multiple Nordic Semiconductor devices, make sure that only the nRF54H20 PDK you want to program is connected.
 
    .. code-block:: console
@@ -381,7 +393,7 @@ The logs are output over UART.
 
 To read the logs from the :ref:`multicore_hello_world` sample programmed to the nRF54H20 PDK, complete the following steps:
 
-1. Connect to the PDK with a terminal emulator (for example, PuTTY) using the following settings:
+1. Connect to the PDK with a terminal emulator (for example, `Serial Terminal from nRF Connect for Desktop`_) using the following settings:
 
    * Baud rate: 115200
    * 8 data bits
@@ -405,6 +417,9 @@ To read the logs from the :ref:`multicore_hello_world` sample programmed to the 
 
         *** Booting Zephyr OS build v2.7.99-ncs1-2193-gd359a86abf14  ***
         Hello world from nrf54h20dk_nrf54h20_cpuppr
+
+.. note::
+   If no output is shown when using nRF Serial Terminal, select a different serial port in the terminal application.
 
 See the :ref:`ug_nrf54h20_logging` page for more information.
 

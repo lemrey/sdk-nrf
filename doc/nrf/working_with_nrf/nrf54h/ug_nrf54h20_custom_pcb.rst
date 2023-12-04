@@ -32,7 +32,7 @@ However, if you plan to select your own power sources, consider the following li
 .. note::
    For a list of major differences between the final and the prototype silicon provided in the initial limited sampling, consult the `nRF54H20 prototype difference`_ document.
 
-Consult the `Objective Product Specification`_ (OPS) for more information on the mechanical specification of the SoC package and the reference circuitry used in the PDK.
+Consult the `nRF54H20 Objective Product Specification 0.3.1`_ (OPS) for more information on the mechanical specification of the SoC package and the reference circuitry used in the PDK.
 
 Prepare the configuration files for your custom board in the |NCS|
 ******************************************************************
