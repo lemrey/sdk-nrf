@@ -15,4 +15,7 @@ config SUIT_SECDOM_UPDATE_LOG
   bool "Enable Secure Domain logs in update candidate"
   default n
 
+config SUIT_BUILD_FLASH_COMPANION
+  bool "Enable build of the flash companion firmware"
+
 source "Kconfig.zephyr"
