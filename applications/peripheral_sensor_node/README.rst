@@ -242,6 +242,8 @@ After programming the application, perform the following steps to test the nRF P
    The application starts Bluetooth advertising.
 #. Start the `nRF Connect for Mobile`_ application on your smartphone or tablet.
 #. Connect to the device from the application.
+   When connected, go to more options and click :guilabel:`Request MTU`.
+   Set the value to ``498``.
    The device is advertising as ``Peripherial Sensor Node``.
    The services of the connected device are shown.
    If the device cannot be found, the PDK might be connected to another device.
@@ -255,7 +257,7 @@ After programming the application, perform the following steps to test the nRF P
 #. Find the ``Env read`` charateristic (UUID ``de550004-acb6-4c73-8445-2563acbb43c2``).
 #. Enable notification for this characteristic.
 #. Find ``Env read req`` charateristic (UUID ``de550002-acb6-4c73-8445-2563acbb43c2``).
-#. Write to ``Env read req`` a number of requested history depth as uint16_t.
+#. Write to ``Env read req`` a number of requested history depth as little endian uint16_t.
 #. Observe the returned data in ``Env read``.
 #. See the latest measurement results of IMU and environmental sensors through a separate **Nordic Status Message Service** characteristics.
 #. To observe the logs, connect to the development kit with a terminal emulator (for example, PuTTY).
