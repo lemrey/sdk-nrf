@@ -26,6 +26,7 @@ Additionally, the page lists the available Zephyr samples that are compatible wi
 * :ref:`peripheral_hids_mouse`
 * :ref:`peripheral_lbs`
 * :ref:`peripheral_uart`
+* :ref:`esb_prx_ptx`
 * :ref:`direct_test_mode`
 * :ref:`radio_test`
 * :ref:`record_launch_app`

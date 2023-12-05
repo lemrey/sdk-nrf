@@ -7,7 +7,7 @@
 #include <common/nordic_nrf_next/nrfx_ram3x_dma.dtsi>
 
  / {
-	leds0 {
+	leds {
 		compatible = "gpio-leds";
 
 		led0: led_0 {
@@ -44,6 +44,10 @@
 };
 
 &gpio9 {
+	status = "okay";
+};
+
+&gpio0 {
 	status = "okay";
 };
 

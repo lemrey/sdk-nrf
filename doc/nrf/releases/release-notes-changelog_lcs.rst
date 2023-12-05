@@ -89,7 +89,7 @@ See `Zigbee samples`_ for the list of changes for the Zigbee samples.
 ESB
 ---
 
-  * The :ref:`ESB module <esb_readme>` was ported to nRF54H20.
+  * The :ref:`ESB module <esb_readme>` was ported to nRF54H20 and nRF54L15.
   * Added radio mode with 4 Mbit/s rate.
 
 nRF IEEE 802.15.4 radio driver
@@ -220,7 +220,7 @@ Other samples
 
 * :ref:`esb_prx_ptx` sample:
 
-  * Added support for nRF54H20.
+  * Added support for nRF54H20 and nRF54L15.
 
 Devicetree configuration
 ========================
