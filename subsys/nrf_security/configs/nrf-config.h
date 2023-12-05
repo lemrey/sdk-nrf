@@ -203,6 +203,10 @@ extern "C" {
 #define MBEDTLS_SSL_DEBUG_ALL
 #endif
 
+#if defined(CONFIG_PSA_CRYPTO_DRIVER_CRACEN)
+#define MBEDTLS_ASN1_PARSE_C
+#endif
+
 #ifdef __cplusplus
 }
 #endif
