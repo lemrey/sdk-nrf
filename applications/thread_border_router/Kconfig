@@ -75,6 +75,8 @@ config NRF_TBR_ND_PROXY_ENTRY_COUNT
     help
       Maximum number of addresses that can be handled by ND Proxy module
 
+source "${ZEPHYR_BASE}/../nrf/applications/thread_border_router/Kconfig.defaults"
+
 menu "Zephyr Kernel"
 source "Kconfig.zephyr"
 endmenu
@@ -85,13 +87,8 @@ module-dep = LOG
 module-help = Enables nRF TBR log messages.
 source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
 
-source "${ZEPHYR_BASE}/../nrf/applications/thread_border_router/Kconfig.defaults"
 rsource "src/net/Kconfig"
 
 endif #NRF_TBR
 
 endmenu
-
-config NRF7002_ON_SPI
-	def_bool $(dt_compat_enabled,$(DT_COMPAT_NORDIC_NRF700X_SPI))
-	depends on WIFI_NRF700X
