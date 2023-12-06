@@ -21,7 +21,8 @@ int plat_run_cpu(uint8_t cpu_id, intptr_t run_address)
 	case NRF_PROCESSOR_APPLICATION: /* AppCore */
 	case NRF_PROCESSOR_RADIOCORE: { /* RadioCore */
 #ifdef CONFIG_SDFW_RESET_HANDLING_ENABLED
-		return reset_mgr_start_cpu(cpu_id, run_address, run_address);
+		/* Single run address implies no NSVTOR, so keep at reset value of 0x0. */
+		return reset_mgr_start_cpu(cpu_id, run_address, 0);
 #else
 		return SUIT_SUCCESS;
 #endif /* CONFIG_SDFW_RESET_HANDLING_ENABLED */
