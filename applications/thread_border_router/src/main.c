@@ -31,6 +31,9 @@ LOG_MODULE_REGISTER(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
 #define WIFI_MGMT_EVENTS (NET_EVENT_WIFI_CONNECT_RESULT)
 
+#define MAC_IPV6_MCAST_BYTE0 0x33
+#define MAC_IPV6_MCAST_BYTE1 0x33
+
 K_SEM_DEFINE(ll_addr_wait, 0, 1);
 K_SEM_DEFINE(run_app, 0, 1);
 
@@ -51,6 +54,11 @@ struct ipv6_input_test mcast_loopback_test = {
 };
 
 static NPF_RULE(filter_mcast_loopback_rule, NET_OK, mcast_loopback_test);
+
+static inline bool is_mac_addr_ipv6_mcast(struct net_eth_addr *address)
+{
+	return address->addr[0] == MAC_IPV6_MCAST_BYTE0 && address->addr[1] == MAC_IPV6_MCAST_BYTE1;
+}
 
 static void handle_wifi_connect_result(struct net_mgmt_event_callback *cb)
 {
@@ -83,15 +91,27 @@ static bool filter_mcast_loopback(struct npf_test *test, struct net_pkt *pkt)
 {
 	ARG_UNUSED(test);
 
-	struct net_ipv6_hdr *hdr = NET_IPV6_HDR(pkt);
+	struct net_eth_hdr *hdr;
+	struct net_linkaddr *backbone_mac_addr;
 
+	if (!context->backbone_iface || pkt->iface != context->backbone_iface) {
+		return true;
+	}
+
+	hdr = NET_ETH_HDR(pkt);
 	if (!hdr) {
-		LOG_WRN("Multicast loopback filter - failed to read IPv6 header");
+		LOG_WRN("Multicast loopback filter - failed to read the header");
 		return false;
 	}
 
-	return !context->ll_addr || !net_ipv6_is_addr_mcast((struct in6_addr *)hdr->dst) ||
-	       !net_ipv6_addr_cmp_raw((const uint8_t *)context->ll_addr, hdr->src);
+	backbone_mac_addr = net_if_get_link_addr(context->backbone_iface);
+
+	/* Eliminate a multicast loop by filtering out frames with a source MAC addresses
+	 * within IPv6 multicast range sent back by the backbone interface (with its
+	 * source address).
+	 */
+	return !is_mac_addr_ipv6_mcast(&hdr->dst) || memcmp(backbone_mac_addr->addr, &hdr->src,
+							    sizeof(hdr->src));
 }
 
 #endif /* defined(CONFIG_WIFI_NRF700X) */
@@ -140,7 +160,7 @@ static int init_backbone_iface(void)
 				     WIFI_MGMT_EVENTS);
 	net_mgmt_add_event_callback(&wifi_mgmt_cb);
 
-	npf_insert_ipv6_recv_rule(&filter_mcast_loopback_rule);
+	npf_insert_recv_rule(&filter_mcast_loopback_rule);
 
 	backbone_device = device_get_binding("wlan0");
 
