@@ -57,8 +57,10 @@ set(CONFIG_MBEDTLS_MD_C                             False)
 # Platform cannot be selected when building for TF-M, because TF-M itself has
 # control of the CryptoCell. Therefore, specifically for building TF-M we
 # enable it manually.
-set(CONFIG_NRF_CC3XX_PLATFORM                       True)
-set(CONFIG_MBEDTLS_PLATFORM_ZEROIZE_ALT             True)
+if(CONFIG_CRYPTOCELL_USABLE)
+  set(CONFIG_NRF_CC3XX_PLATFORM                       True)
+  set(CONFIG_MBEDTLS_PLATFORM_ZEROIZE_ALT             True)
+endif()
 
 # Disable threading for TF-M SPM image
 set(CONFIG_MBEDTLS_THREADING_ALT                    False)
