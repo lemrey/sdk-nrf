@@ -78,7 +78,7 @@ int suit_plat_invoke(suit_component_t image_handle, struct zcbor_string *invoke_
 	switch (component_type) {
 	case SUIT_COMPONENT_TYPE_MEM:
 		/* memory-mapped */
-		return plat_run_cpu(cpu_id, run_address);
+		return suit_plat_run_cpu(cpu_id, run_address);
 	default:
 		LOG_ERR("Unsupported component type");
 		break;

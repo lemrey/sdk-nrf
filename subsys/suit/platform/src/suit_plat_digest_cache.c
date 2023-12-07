@@ -13,8 +13,8 @@ typedef struct
     struct zcbor_string digest;
 } suit_plat_digest_cache_entry_t;
 
-static bool m_unlocked;
-static suit_plat_digest_cache_entry_t m_cache[CONFIG_SUIT_DIGEST_CACHE_SIZE];
+static bool unlocked;
+static suit_plat_digest_cache_entry_t cache[CONFIG_SUIT_DIGEST_CACHE_SIZE];
 
 /**
  * @brief Get the cache entry index for the given component id
@@ -25,9 +25,9 @@ static int find_entry(const struct zcbor_string *component_id, suit_plat_digest_
 
 	for (i = 0; i < CONFIG_SUIT_DIGEST_CACHE_SIZE; i++)
 	{
-		if (suit_compare_zcbor_strings(component_id, &m_cache[i].component_id))
+		if (suit_compare_zcbor_strings(component_id, &cache[i].component_id))
 		{
-			*p_entry = &m_cache[i];
+			*p_entry = &cache[i];
 			return SUIT_SUCCESS;
 		}
 	}
@@ -37,24 +37,24 @@ static int find_entry(const struct zcbor_string *component_id, suit_plat_digest_
 
 void suit_plat_digest_cache_unlock(void)
 {
-	m_unlocked = true;
+	unlocked = true;
 }
 
 void suit_plat_digest_cache_lock(void)
 {
-	m_unlocked = false;
+	unlocked = false;
 }
 
 bool suit_plat_digest_cache_is_unlocked(void)
 {
-	return m_unlocked;
+	return unlocked;
 }
 
 int suit_plat_digest_cache_add(struct zcbor_string *component_id, struct zcbor_string *digest)
 {
 	size_t i;
 
-	if (!m_unlocked)
+	if (!unlocked)
 	{
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
@@ -66,13 +66,13 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, struct zcbor_s
 
 	for (i = 0; i < CONFIG_SUIT_DIGEST_CACHE_SIZE; i++)
 	{
-		if (m_cache[i].component_id.value == NULL
-		    || suit_compare_zcbor_strings(component_id, &m_cache[i].component_id))
+		if (cache[i].component_id.value == NULL
+		    || suit_compare_zcbor_strings(component_id, &cache[i].component_id))
 		{
-			m_cache[i].component_id.len = component_id->len;
-			m_cache[i].component_id.value = component_id->value;
-			m_cache[i].digest.len = digest->len;
-			m_cache[i].digest.value = digest->value;
+			cache[i].component_id.len = component_id->len;
+			cache[i].component_id.value = component_id->value;
+			cache[i].digest.len = digest->len;
+			cache[i].digest.value = digest->value;
 
 			return SUIT_SUCCESS;
 		}
@@ -85,7 +85,7 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id)
 {
 	suit_plat_digest_cache_entry_t *entry;
 
-	if (!m_unlocked)
+	if (!unlocked)
 	{
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
@@ -126,17 +126,17 @@ int suit_plat_digest_cache_remove_all(void)
 {
 	size_t i;
 
-	if (!m_unlocked)
+	if (!unlocked)
 	{
 		return SUIT_ERR_UNSUPPORTED_COMMAND;
 	}
 
 	for (i = 0; i < CONFIG_SUIT_DIGEST_CACHE_SIZE; i++)
 	{
-		m_cache[i].component_id.len = 0;
-		m_cache[i].component_id.value = NULL;
-		m_cache[i].digest.len = 0;
-		m_cache[i].digest.value = NULL;
+		cache[i].component_id.len = 0;
+		cache[i].component_id.value = NULL;
+		cache[i].digest.len = 0;
+		cache[i].digest.value = NULL;
 	}
 
 	return SUIT_SUCCESS;

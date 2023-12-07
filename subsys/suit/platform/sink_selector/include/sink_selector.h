@@ -16,12 +16,12 @@ extern "C" {
 
 /**
  * @brief Get sink based on component handle
- * 
- * @param dst_handle Component handle 
+ *
+ * @param dst_handle Component handle
  * @param sink Pointer to sink structure to be filled
  * @return int 0 in case of success, otherwise error code
  */
-int select_sink(suit_component_t dst_handle, struct stream_sink *sink);
+int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink);
 
 #ifdef __cplusplus
 }

@@ -21,7 +21,7 @@ extern "C" {
  * @param run_address Start address for given CPU
  * @return int 0 in case of success, otherwise error code
  */
-int plat_run_cpu(uint8_t cpu_id, intptr_t run_address);
+int suit_plat_run_cpu(uint8_t cpu_id, intptr_t run_address);
 
 #ifdef __cplusplus
 }

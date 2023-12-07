@@ -23,7 +23,7 @@
 
 LOG_MODULE_REGISTER(suit_plat_sink_selector, CONFIG_SUIT_LOG_LEVEL);
 
-int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
+int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 {
 	struct zcbor_string *component_id;
 	int ret = SUIT_SUCCESS;

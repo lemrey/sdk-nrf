@@ -85,7 +85,7 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	}
 
 	/* Get dst_sink - final destination sink */
-	ret = select_sink(dst_handle, &dst_sink);
+	ret = suit_sink_select(dst_handle, &dst_sink);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
@@ -140,7 +140,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 #endif
 
 	/* Get dst_sink - final destination sink */
-	ret = select_sink(dst_handle, &dst_sink);
+	ret = suit_sink_select(dst_handle, &dst_sink);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
@@ -213,7 +213,7 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 #endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
 
 	/* Get dst_sink - final destination sink */
-	ret = select_sink(dst_handle, &dst_sink);
+	ret = suit_sink_select(dst_handle, &dst_sink);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;
@@ -260,7 +260,7 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 #endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
 
 	/* Get dst_sink - final destination sink */
-	ret = select_sink(dst_handle, &dst_sink);
+	ret = suit_sink_select(dst_handle, &dst_sink);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Selecting sink failed: %i", ret);
 		return ret;

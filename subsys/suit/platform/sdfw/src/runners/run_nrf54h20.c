@@ -15,7 +15,7 @@
 
 LOG_MODULE_REGISTER(suit_plat_run, CONFIG_SUIT_LOG_LEVEL);
 
-int plat_run_cpu(uint8_t cpu_id, intptr_t run_address)
+int suit_plat_run_cpu(uint8_t cpu_id, intptr_t run_address)
 {
 	switch (cpu_id) {
 	case NRF_PROCESSOR_APPLICATION: /* AppCore */

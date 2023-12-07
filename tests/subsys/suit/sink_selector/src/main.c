@@ -37,7 +37,7 @@ ZTEST(sink_selector_tests, test_select_memptr_sink_OK)
 	int ret = suit_plat_create_component_handle(&valid_component_id, &handle);
 	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
 
-	int err = select_sink(handle, &sink);
+	int err = suit_sink_select(handle, &sink);
 	zassert_equal(err, 0, "sink_selector: selecting memptr_sink failed - error %i", err);
 }
 
@@ -56,7 +56,7 @@ ZTEST(sink_selector_tests, test_select_flash_sink_OK)
 	int ret = suit_plat_create_component_handle(&valid_component_id, &handle);
 	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
 
-	int err = select_sink(handle, &sink);
+	int err = suit_sink_select(handle, &sink);
 	zassert_equal(err, 0, "sink_selector: selecting flash_sink failed - error %i", err);
 }
 
@@ -76,7 +76,7 @@ ZTEST(sink_selector_tests, test_select_sdfw_sink_OK)
 	int ret = suit_plat_create_component_handle(&valid_component_id, &handle);
 	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
 
-	int err = select_sink(handle, &sink);
+	int err = suit_sink_select(handle, &sink);
 	zassert_equal(err, 0, "sink_selector: selecting swdf_sink failed - error %i", err);
 }
 #endif
@@ -115,15 +115,15 @@ ZTEST(sink_selector_tests, test_select_unsupported_component)
 	int ret = suit_plat_create_component_handle(&invalid_component_id, &handle);
 	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
 
-	int err = select_sink(handle, &sink);
+	int err = suit_sink_select(handle, &sink);
 	zassert_not_equal(err, 0, "sink_selector should have failed - unsupported component");
 }
 
-ZTEST(sink_selector_tests, test_select_sink_invalid_handle)
+ZTEST(sink_selector_tests, test_suit_sink_select_invalid_handle)
 {
 	suit_component_t handle = 0;
 	struct stream_sink sink;
 
-	int err = select_sink(handle, &sink);
+	int err = suit_sink_select(handle, &sink);
 	zassert_not_equal(err, 0, "sink_selector should have failed - invalid handle");
 }

@@ -20,7 +20,7 @@ extern "C" {
  * @param vid_uuid Component vid
  * @return int Error code
  */
-int plat_com_check_vid(suit_component_t handle, struct zcbor_string *vid_uuid);
+int suit_plat_com_vid_check(suit_component_t handle, struct zcbor_string *vid_uuid);
 
 /**
  * @brief Validate component cid against expected value
@@ -29,7 +29,7 @@ int plat_com_check_vid(suit_component_t handle, struct zcbor_string *vid_uuid);
  * @param cid_uuid Component cid
  * @return int Error code
  */
-int plat_com_check_cid(suit_component_t handle, struct zcbor_string *cid_uuid);
+int suit_plat_com_cid_check(suit_component_t handle, struct zcbor_string *cid_uuid);
 
 #ifdef __cplusplus
 }

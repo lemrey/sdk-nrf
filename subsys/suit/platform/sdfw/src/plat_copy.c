@@ -84,9 +84,9 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	ret = select_sink(dst_handle, &dst_sink);
+	ret = suit_sink_select(dst_handle, &dst_sink);
 	if (ret != SUIT_SUCCESS) {
-		LOG_ERR("select_sink failed - error %i", ret);
+		LOG_ERR("suit_sink_select failed - error %i", ret);
 		return ret;
 	}
 
@@ -170,9 +170,9 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	ret = select_sink(dst_handle, &dst_sink);
+	ret = suit_sink_select(dst_handle, &dst_sink);
 	if (ret != SUIT_SUCCESS) {
-		LOG_ERR("select_sink failed - error %i", ret);
+		LOG_ERR("suit_sink_select failed - error %i", ret);
 		return ret;
 	}
 
