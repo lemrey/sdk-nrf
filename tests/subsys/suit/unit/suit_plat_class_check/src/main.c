@@ -50,7 +50,7 @@ static int suit_plat_component_id_get_correct_fake_func(suit_component_t handle,
 	return SUIT_SUCCESS;
 }
 
-int mci_get_supported_manifest_class_ids_correct_fake_func(
+int suit_mci_supported_manifest_class_ids_get_correct_fake_func(
 	const suit_manifest_class_id_t **class_id, size_t *size)
 {
 	zassert_not_null(class_id, "The API must provide a valid class_id pointer");
@@ -63,7 +63,7 @@ int mci_get_supported_manifest_class_ids_correct_fake_func(
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_supported_manifest_class_ids_invalid_fake_func(
+int suit_mci_supported_manifest_class_ids_get_invalid_fake_func(
 	const suit_manifest_class_id_t **class_id, size_t *size)
 {
 	zassert_not_null(class_id, "The API must provide a valid class_id pointer");
@@ -95,7 +95,7 @@ suit_plat_check_component_compatibility_correct_fake_func(const suit_manifest_cl
 	return SUIT_SUCCESS;
 }
 
-int mci_compare_suit_uuid_invalid_fake_func(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
+int suit_mci_suit_uuid_compare_invalid_fake_func(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
 {
 	zassert_not_null(uuid1, "The API must provide a valid uuid1 pointer");
 	zassert_not_null(uuid2, "The API must provide a valid uuid2 pointer");
@@ -103,7 +103,7 @@ int mci_compare_suit_uuid_invalid_fake_func(const suit_uuid_t *uuid1, const suit
 	return MCI_ERR_MANIFESTCLASSID;
 }
 
-int mci_compare_suit_uuid_correct_fake_func(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
+int suit_mci_suit_uuid_compare_correct_fake_func(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
 {
 	zassert_not_null(uuid1, "The API must provide a valid uuid1 pointer");
 	zassert_not_null(uuid2, "The API must provide a valid uuid2 pointer");
@@ -111,7 +111,7 @@ int mci_compare_suit_uuid_correct_fake_func(const suit_uuid_t *uuid1, const suit
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_vendor_id_for_manifest_class_id_invalid_fake_func(
+int suit_mci_vendor_id_for_manifest_class_id_get_invalid_fake_func(
 	const suit_manifest_class_id_t *class_id, const suit_uuid_t **vendor_id)
 {
 	zassert_not_null(class_id, "The API must provide a valid class_id pointer");
@@ -120,7 +120,7 @@ int mci_get_vendor_id_for_manifest_class_id_invalid_fake_func(
 	return MCI_ERR_MANIFESTCLASSID;
 }
 
-int mci_get_vendor_id_for_manifest_class_id_correct_fake_func(
+int suit_mci_vendor_id_for_manifest_class_id_get_correct_fake_func(
 	const suit_manifest_class_id_t *class_id, const suit_uuid_t **vendor_id)
 {
 	zassert_not_null(class_id, "The API must provide a valid class_id pointer");
@@ -140,14 +140,14 @@ ZTEST(suit_plat_class_check_cid_tests, test_null_cid_uuid)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 0,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_cid_tests, test_null_cid_value_uuid)
@@ -159,14 +159,14 @@ ZTEST(suit_plat_class_check_cid_tests, test_null_cid_value_uuid)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 0,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_cid_tests, test_cid_len_0_uuid)
@@ -178,40 +178,40 @@ ZTEST(suit_plat_class_check_cid_tests, test_cid_len_0_uuid)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 0,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
-ZTEST(suit_plat_class_check_cid_tests, test_invalid_mci_get_supported_manifest_class_ids)
+ZTEST(suit_plat_class_check_cid_tests, test_invalid_suit_mci_supported_manifest_class_ids_get)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_invalid_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_invalid_fake_func;
 
 	int ret = suit_plat_check_cid(valid_component_handle, &valid_cid_uuid);
 
 	zassert_equal(SUIT_ERR_CRASH, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_cid_tests, test_invalid_suit_plat_component_id_get)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_invalid_fake_func;
 
 	int ret = suit_plat_check_cid(valid_component_handle, &valid_cid_uuid);
@@ -219,20 +219,20 @@ ZTEST(suit_plat_class_check_cid_tests, test_invalid_suit_plat_component_id_get)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_cid_tests, test_invalid_suit_plat_check_component_compatibility)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
 	suit_plat_check_component_compatibility_fake.custom_fake =
 		suit_plat_check_component_compatibility_invalid_fake_func;
@@ -242,62 +242,62 @@ ZTEST(suit_plat_class_check_cid_tests, test_invalid_suit_plat_check_component_co
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 1,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
-ZTEST(suit_plat_class_check_cid_tests, test_invalid_mci_compare_suit_uuid)
+ZTEST(suit_plat_class_check_cid_tests, test_invalid_suit_mci_suit_uuid_compare)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
 	suit_plat_check_component_compatibility_fake.custom_fake =
 		suit_plat_check_component_compatibility_correct_fake_func;
-	mci_compare_suit_uuid_fake.custom_fake = mci_compare_suit_uuid_invalid_fake_func;
+	suit_mci_suit_uuid_compare_fake.custom_fake = suit_mci_suit_uuid_compare_invalid_fake_func;
 
 	int ret = suit_plat_check_cid(valid_component_handle, &valid_cid_uuid);
 
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 1,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 1,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 1,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_cid_tests, test_OK)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
 	suit_plat_check_component_compatibility_fake.custom_fake =
 		suit_plat_check_component_compatibility_correct_fake_func;
-	mci_compare_suit_uuid_fake.custom_fake = mci_compare_suit_uuid_correct_fake_func;
+	suit_mci_suit_uuid_compare_fake.custom_fake = suit_mci_suit_uuid_compare_correct_fake_func;
 
 	int ret = suit_plat_check_cid(valid_component_handle, &valid_cid_uuid);
 
 	zassert_equal(SUIT_SUCCESS, ret, "Check should have succeeded");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 1,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 1,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 1,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST_SUITE(suit_plat_class_check_vid_tests, NULL, NULL, test_before, NULL, NULL);
@@ -309,16 +309,16 @@ ZTEST(suit_plat_class_check_vid_tests, test_null_vid_uuid)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 0,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_vid_tests, test_null_vid_value_uuid)
@@ -330,16 +330,16 @@ ZTEST(suit_plat_class_check_vid_tests, test_null_vid_value_uuid)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 0,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_vid_tests, test_vid_len_0_uuid)
@@ -351,44 +351,44 @@ ZTEST(suit_plat_class_check_vid_tests, test_vid_len_0_uuid)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 0,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
-ZTEST(suit_plat_class_check_vid_tests, test_invalid_mci_get_supported_manifest_class_ids)
+ZTEST(suit_plat_class_check_vid_tests, test_invalid_suit_mci_supported_manifest_class_ids_get)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_invalid_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_invalid_fake_func;
 
 	int ret = suit_plat_check_vid(valid_component_handle, &valid_vid_uuid);
 
 	zassert_equal(SUIT_ERR_CRASH, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_vid_tests, test_invalid_suit_plat_component_id_get)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_invalid_fake_func;
 
 	int ret = suit_plat_check_vid(valid_component_handle, &valid_vid_uuid);
@@ -396,22 +396,22 @@ ZTEST(suit_plat_class_check_vid_tests, test_invalid_suit_plat_component_id_get)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 0,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_vid_tests, test_invalid_suit_plat_check_component_compatibility)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
 	suit_plat_check_component_compatibility_fake.custom_fake =
 		suit_plat_check_component_compatibility_invalid_fake_func;
@@ -421,99 +421,99 @@ ZTEST(suit_plat_class_check_vid_tests, test_invalid_suit_plat_check_component_co
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 1,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
-ZTEST(suit_plat_class_check_vid_tests, test_invalid_mci_get_vendor_id_for_manifest_class_id)
+ZTEST(suit_plat_class_check_vid_tests, test_invalid_suit_mci_vendor_id_for_manifest_class_id_get)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
 	suit_plat_check_component_compatibility_fake.custom_fake =
 		suit_plat_check_component_compatibility_correct_fake_func;
-	mci_get_vendor_id_for_manifest_class_id_fake.custom_fake =
-		mci_get_vendor_id_for_manifest_class_id_invalid_fake_func;
+	suit_mci_vendor_id_for_manifest_class_id_get_fake.custom_fake =
+		suit_mci_vendor_id_for_manifest_class_id_get_invalid_fake_func;
 
 	int ret = suit_plat_check_vid(valid_component_handle, &valid_vid_uuid);
 
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 1,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 0,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 0,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
-ZTEST(suit_plat_class_check_vid_tests, test_invalid_mci_compare_suit_uuid)
+ZTEST(suit_plat_class_check_vid_tests, test_invalid_suit_mci_suit_uuid_compare)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
 	suit_plat_check_component_compatibility_fake.custom_fake =
 		suit_plat_check_component_compatibility_correct_fake_func;
-	mci_get_vendor_id_for_manifest_class_id_fake.custom_fake =
-		mci_get_vendor_id_for_manifest_class_id_correct_fake_func;
-	mci_compare_suit_uuid_fake.custom_fake = mci_compare_suit_uuid_invalid_fake_func;
+	suit_mci_vendor_id_for_manifest_class_id_get_fake.custom_fake =
+		suit_mci_vendor_id_for_manifest_class_id_get_correct_fake_func;
+	suit_mci_suit_uuid_compare_fake.custom_fake = suit_mci_suit_uuid_compare_invalid_fake_func;
 
 	int ret = suit_plat_check_vid(valid_component_handle, &valid_vid_uuid);
 
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Check should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 1,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 1,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 1,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST(suit_plat_class_check_vid_tests, test_OK)
 {
-	mci_get_supported_manifest_class_ids_fake.custom_fake =
-		mci_get_supported_manifest_class_ids_correct_fake_func;
+	suit_mci_supported_manifest_class_ids_get_fake.custom_fake =
+		suit_mci_supported_manifest_class_ids_get_correct_fake_func;
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
 	suit_plat_check_component_compatibility_fake.custom_fake =
 		suit_plat_check_component_compatibility_correct_fake_func;
-	mci_get_vendor_id_for_manifest_class_id_fake.custom_fake =
-		mci_get_vendor_id_for_manifest_class_id_correct_fake_func;
-	mci_compare_suit_uuid_fake.custom_fake = mci_compare_suit_uuid_correct_fake_func;
+	suit_mci_vendor_id_for_manifest_class_id_get_fake.custom_fake =
+		suit_mci_vendor_id_for_manifest_class_id_get_correct_fake_func;
+	suit_mci_suit_uuid_compare_fake.custom_fake = suit_mci_suit_uuid_compare_correct_fake_func;
 
 	int ret = suit_plat_check_vid(valid_component_handle, &valid_vid_uuid);
 
 	zassert_equal(SUIT_SUCCESS, ret, "Check should have succeeded");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_get_supported_manifest_class_ids_fake.call_count, 1,
-		      "Incorrect number of mci_get_supported_manifest_class_ids() calls");
+	zassert_equal(suit_mci_supported_manifest_class_ids_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_supported_manifest_class_ids_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_check_component_compatibility_fake.call_count, 1,
 		      "Incorrect number of suit_plat_check_component_compatibility() calls");
-	zassert_equal(mci_get_vendor_id_for_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_get_vendor_id_for_manifest_class_id() calls");
-	zassert_equal(mci_compare_suit_uuid_fake.call_count, 1,
-		      "Incorrect number of mci_compare_suit_uuid() calls");
+	zassert_equal(suit_mci_vendor_id_for_manifest_class_id_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_vendor_id_for_manifest_class_id_get() calls");
+	zassert_equal(suit_mci_suit_uuid_compare_fake.call_count, 1,
+		      "Incorrect number of suit_mci_suit_uuid_compare() calls");
 }
 
 ZTEST_SUITE(suit_plat_class_check_did_tests, NULL, NULL, test_before, NULL, NULL);

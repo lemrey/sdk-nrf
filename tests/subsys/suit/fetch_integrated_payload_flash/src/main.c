@@ -25,7 +25,7 @@ extern const size_t manifest_len;
 
 static void *test_suit_setup(void)
 {
-	int err = mci_init();
+	int err = suit_mci_init();
 	zassert_equal(err, 0, "Unable to initialize MCI module");
 
 #ifdef CONFIG_ARCH_POSIX
@@ -57,7 +57,7 @@ ZTEST(fetch_integrated_payoad_flash_tests, test_suit_process)
 	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
 	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
 
-	err = mci_get_supported_manifest_class_ids(
+	err = suit_mci_supported_manifest_class_ids_get(
 		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
 	zassert_equal(0, err, "Failed to get list of supported manifest class IDs (%d)", err);
 

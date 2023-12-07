@@ -230,7 +230,8 @@ static int boot_path(void)
 	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES] = { NULL };
 	size_t class_ids_to_boot_len = ARRAY_SIZE(class_ids_to_boot);
 	int ret = SUIT_SUCCESS;
-	mci_err_t mci_ret = mci_get_invoke_order((const suit_manifest_class_id_t **)&class_ids_to_boot,
+	mci_err_t mci_ret = suit_mci_invoke_order_get(
+				       (const suit_manifest_class_id_t **)&class_ids_to_boot,
 				       &class_ids_to_boot_len);
 	if (mci_ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to get invoke order (MCI err: %d)", mci_ret);
@@ -261,7 +262,7 @@ int suit_orchestrator_init(void)
 		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err);
 	}
 
-	plat_err = mci_get_supported_manifest_class_ids(
+	plat_err = suit_mci_supported_manifest_class_ids_get(
 		   (const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
 	if (plat_err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get list of supported manifest class IDs: MCI err %d", plat_err);

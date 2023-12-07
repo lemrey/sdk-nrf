@@ -20,7 +20,7 @@
 
 static void *test_suit_setup(void)
 {
-	int err = mci_init();
+	int err = suit_mci_init();
 	zassert_equal(err, 0, "Unable to initialize MCI module");
 
 	err = suit_processor_init();

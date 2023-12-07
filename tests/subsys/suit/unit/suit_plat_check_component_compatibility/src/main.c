@@ -55,7 +55,7 @@ suit_plat_decode_manifest_class_id_invalid_fake_func(struct zcbor_string *compon
 }
 
 static int
-mci_validate_manifest_class_id_correct_fake_func(const suit_manifest_class_id_t *class_id)
+suit_mci_manifest_class_id_validate_correct_fake_func(const suit_manifest_class_id_t *class_id)
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 
@@ -63,7 +63,7 @@ mci_validate_manifest_class_id_correct_fake_func(const suit_manifest_class_id_t 
 }
 
 static int
-mci_validate_manifest_class_id_invalid_fake_func(const suit_manifest_class_id_t *class_id)
+suit_mci_manifest_class_id_validate_invalid_fake_func(const suit_manifest_class_id_t *class_id)
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
 
@@ -208,7 +208,7 @@ suit_plat_decode_component_number_correct_fake_func(struct zcbor_string *compone
 	return SUIT_PLAT_SUCCESS;
 }
 
-static int mci_validate_platform_specific_component_rights_invalid_fake_func(
+static int suit_mci_platform_specific_component_rights_validate_invalid_fake_func(
 	const suit_manifest_class_id_t *class_id, int platform_specific_component_number)
 {
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
@@ -218,7 +218,7 @@ static int mci_validate_platform_specific_component_rights_invalid_fake_func(
 	return MCI_ERR_NOACCESS;
 }
 
-static int mci_validate_platform_specific_component_rights_correct_fake_func(
+static int suit_mci_platform_specific_component_rights_validate_correct_fake_func(
 	const suit_manifest_class_id_t *class_id, int platform_specific_component_number)
 {
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
@@ -229,7 +229,7 @@ static int mci_validate_platform_specific_component_rights_correct_fake_func(
 }
 
 static int
-mci_validate_processor_start_rights_invalid_fake_func(const suit_manifest_class_id_t *class_id,
+suit_mci_processor_start_rights_validate_invalid_fake_func(const suit_manifest_class_id_t *class_id,
 						      int processor_id)
 {
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
@@ -238,7 +238,8 @@ mci_validate_processor_start_rights_invalid_fake_func(const suit_manifest_class_
 	return MCI_ERR_NOACCESS;
 }
 
-int mci_validate_processor_start_rights_correct_fake_func(const suit_manifest_class_id_t *class_id,
+int suit_mci_processor_start_rights_validate_correct_fake_func(
+							  const suit_manifest_class_id_t *class_id,
 							  int processor_id)
 {
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
@@ -248,7 +249,7 @@ int mci_validate_processor_start_rights_correct_fake_func(const suit_manifest_cl
 }
 
 static int
-mci_validate_memory_access_rights_invalid_fake_func(const suit_manifest_class_id_t *class_id,
+suit_mci_memory_access_rights_validate_invalid_fake_func(const suit_manifest_class_id_t *class_id,
 						    void *address, size_t mem_size)
 {
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
@@ -260,7 +261,7 @@ mci_validate_memory_access_rights_invalid_fake_func(const suit_manifest_class_id
 }
 
 static int
-mci_validate_memory_access_rights_correct_fake_func(const suit_manifest_class_id_t *class_id,
+suit_mci_memory_access_rights_validate_correct_fake_func(const suit_manifest_class_id_t *class_id,
 						    void *address, size_t mem_size)
 {
 	zassert_equal(&sample_class_id, class_id, "Invalid class ID value");
@@ -281,21 +282,21 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_null_manifest_class_id
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
@@ -308,21 +309,21 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_null_component_id)
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
@@ -340,21 +341,21 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_component_id_n
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
@@ -372,29 +373,29 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_component_id_0
 	zassert_equal(SUIT_ERR_DECODING, ret, "Failed to catch null argument");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_validate_manifest_class_id)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_invalid_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_invalid_fake_func;
 
 	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
@@ -402,29 +403,29 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_validate_manif
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_decode_component_type)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_invalid_fake_func;
 
@@ -434,29 +435,29 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_invalid_decode_compone
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_decode_component_id)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_mem_correct_fake_func;
 	suit_plat_decode_component_id_fake.custom_fake =
@@ -468,35 +469,35 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_decod
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_processor_start_rights)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_mem_correct_fake_func;
 	suit_plat_decode_component_id_fake.custom_fake =
 		suit_plat_decode_component_id_correct_fake_func;
-	mci_validate_processor_start_rights_fake.custom_fake =
-		mci_validate_processor_start_rights_invalid_fake_func;
+	suit_mci_processor_start_rights_validate_fake.custom_fake =
+		suit_mci_processor_start_rights_validate_invalid_fake_func;
 
 	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
@@ -504,37 +505,37 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_proce
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 1,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_memory_access_rights)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_mem_correct_fake_func;
 	suit_plat_decode_component_id_fake.custom_fake =
 		suit_plat_decode_component_id_correct_fake_func;
-	mci_validate_processor_start_rights_fake.custom_fake =
-		mci_validate_processor_start_rights_correct_fake_func;
-	mci_validate_memory_access_rights_fake.custom_fake =
-		mci_validate_memory_access_rights_invalid_fake_func;
+	suit_mci_processor_start_rights_validate_fake.custom_fake =
+		suit_mci_processor_start_rights_validate_correct_fake_func;
+	suit_mci_memory_access_rights_validate_fake.custom_fake =
+		suit_mci_memory_access_rights_validate_invalid_fake_func;
 
 	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
@@ -542,37 +543,37 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_invalid_memor
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 1,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 1,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_OK)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_mem_correct_fake_func;
 	suit_plat_decode_component_id_fake.custom_fake =
 		suit_plat_decode_component_id_correct_fake_func;
-	mci_validate_processor_start_rights_fake.custom_fake =
-		mci_validate_processor_start_rights_correct_fake_func;
-	mci_validate_memory_access_rights_fake.custom_fake =
-		mci_validate_memory_access_rights_correct_fake_func;
+	suit_mci_processor_start_rights_validate_fake.custom_fake =
+		suit_mci_processor_start_rights_validate_correct_fake_func;
+	suit_mci_memory_access_rights_validate_fake.custom_fake =
+		suit_mci_memory_access_rights_validate_correct_fake_func;
 
 	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
@@ -580,21 +581,21 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_OK)
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 1,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 1,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
@@ -602,8 +603,8 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_mem_type_OK)
 ZTEST(suit_plat_check_component_compatibility_tests,
       test_special_type_invalid_decode_component_number)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_special_correct_fake_func;
 	suit_plat_decode_component_number_fake.custom_fake =
@@ -615,21 +616,21 @@ ZTEST(suit_plat_check_component_compatibility_tests,
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
@@ -637,14 +638,14 @@ ZTEST(suit_plat_check_component_compatibility_tests,
 ZTEST(suit_plat_check_component_compatibility_tests,
       test_special_type_invalid_validate_platform_specific_component_rights)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_special_correct_fake_func;
 	suit_plat_decode_component_number_fake.custom_fake =
 		suit_plat_decode_component_number_correct_fake_func;
-	mci_validate_platform_specific_component_rights_fake.custom_fake =
-		mci_validate_platform_specific_component_rights_invalid_fake_func;
+	suit_mci_platform_specific_component_rights_validate_fake.custom_fake =
+		suit_mci_platform_specific_component_rights_validate_invalid_fake_func;
 
 	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
@@ -652,35 +653,35 @@ ZTEST(suit_plat_check_component_compatibility_tests,
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 1,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 1,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_special_type_OK)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_special_correct_fake_func;
 	suit_plat_decode_component_number_fake.custom_fake =
 		suit_plat_decode_component_number_correct_fake_func;
-	mci_validate_platform_specific_component_rights_fake.custom_fake =
-		mci_validate_platform_specific_component_rights_correct_fake_func;
+	suit_mci_platform_specific_component_rights_validate_fake.custom_fake =
+		suit_mci_platform_specific_component_rights_validate_correct_fake_func;
 
 	int ret = suit_plat_check_component_compatibility(&sample_class_id, &valid_component_id);
 
@@ -688,21 +689,21 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_special_type_OK)
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 1,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 1,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
@@ -710,8 +711,8 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_special_type_OK)
 ZTEST(suit_plat_check_component_compatibility_tests,
       test_cand_mfst_type_invalid_decode_component_number)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_cand_mfst_correct_fake_func;
 	suit_plat_decode_component_number_fake.custom_fake =
@@ -723,29 +724,29 @@ ZTEST(suit_plat_check_component_compatibility_tests,
 	zassert_equal(SUIT_ERR_DECODING, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_cand_mfst_type_OK)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_cand_mfst_correct_fake_func;
 	suit_plat_decode_component_number_fake.custom_fake =
@@ -757,21 +758,21 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_cand_mfst_type_OK)
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
@@ -779,8 +780,8 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_cand_mfst_type_OK)
 ZTEST(suit_plat_check_component_compatibility_tests,
       test_instld_mfst_type_invalid_suit_plat_decode_manifest_class_id)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_instld_mfst_correct_fake_func;
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
@@ -792,29 +793,29 @@ ZTEST(suit_plat_check_component_compatibility_tests,
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_instld_mfst_type_OK)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_instld_mfst_correct_fake_func;
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
@@ -826,29 +827,29 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_instld_mfst_type_OK)
 	zassert_equal(SUIT_SUCCESS, ret, "Authorization should have succeeded");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 2,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 2,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }
 
 ZTEST(suit_plat_check_component_compatibility_tests, test_unsupported_type_err)
 {
-	mci_validate_manifest_class_id_fake.custom_fake =
-		mci_validate_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
 	suit_plat_decode_component_type_fake.custom_fake =
 		suit_plat_decode_component_type_unsupported_correct_fake_func;
 
@@ -858,21 +859,21 @@ ZTEST(suit_plat_check_component_compatibility_tests, test_unsupported_type_err)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_COMPONENT_ID, ret, "Authorization should have failed");
 
 	/* Check expected call counts for fake functions */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_plat_decode_component_type_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_component_type() calls");
 	zassert_equal(suit_plat_decode_component_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_id() calls");
-	zassert_equal(mci_validate_processor_start_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_processor_start_rights() calls");
-	zassert_equal(mci_validate_memory_access_rights_fake.call_count, 0,
-		      "Incorrect number of mci_validate_memory_access_rights() calls");
+	zassert_equal(suit_mci_processor_start_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_processor_start_rights_validate() calls");
+	zassert_equal(suit_mci_memory_access_rights_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_memory_access_rights_validate() calls");
 	zassert_equal(suit_plat_decode_component_number_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_component_number() calls");
 	zassert_equal(
-		mci_validate_platform_specific_component_rights_fake.call_count, 0,
-		"Incorrect number of mci_validate_platform_specific_component_rights() calls");
+		suit_mci_platform_specific_component_rights_validate_fake.call_count, 0,
+		"Incorrect number of suit_mci_platform_specific_component_rights_validate() calls");
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 }

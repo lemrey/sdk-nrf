@@ -13,7 +13,7 @@ void test_topology(void);
 
 void test_main(void)
 {
-	mci_init();
+	suit_mci_init();
 	test_generic_ids();
 	test_sanity();
 	test_api_positive_scenarios();

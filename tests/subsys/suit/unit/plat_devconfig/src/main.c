@@ -79,7 +79,7 @@ static int suit_processor_get_manifest_metadata_decoder_busy_fake_func(
 }
 
 static mci_err_t
-mci_get_downgrade_prevention_policy_enabled_fake_func(const suit_manifest_class_id_t *class_id,
+suit_mci_downgrade_prevention_policy_get_enabled_fake_func(const suit_manifest_class_id_t *class_id,
 						      downgrade_prevention_policy_t *policy)
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
@@ -92,7 +92,8 @@ mci_get_downgrade_prevention_policy_enabled_fake_func(const suit_manifest_class_
 }
 
 static mci_err_t
-mci_get_downgrade_prevention_policy_disabled_fake_func(const suit_manifest_class_id_t *class_id,
+suit_mci_downgrade_prevention_policy_get_disabled_fake_func(
+						       const suit_manifest_class_id_t *class_id,
 						       downgrade_prevention_policy_t *policy)
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
@@ -105,7 +106,8 @@ mci_get_downgrade_prevention_policy_disabled_fake_func(const suit_manifest_class
 }
 
 static mci_err_t
-mci_get_downgrade_prevention_policy_unsupported_fake_func(const suit_manifest_class_id_t *class_id,
+suit_mci_downgrade_prevention_policy_get_unsupported_fake_func(
+							  const suit_manifest_class_id_t *class_id,
 							  downgrade_prevention_policy_t *policy)
 {
 	zassert_equal(class_id, &sample_class_id, "Invalid manifest class ID value");
@@ -130,14 +132,14 @@ ZTEST(suit_platform_devconfig_seq_tests, test_null_arg)
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 0,
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_processor_get_manifest_metadata_fake.call_count, 0,
 		      "Incorrect number of suit_processor_get_manifest_metadata() calls");
-	zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 0,
-		      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+	zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 }
 
 ZTEST(suit_platform_devconfig_seq_tests, test_null_component_id)
@@ -160,14 +162,14 @@ ZTEST(suit_platform_devconfig_seq_tests, test_null_component_id)
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 0,
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_processor_get_manifest_metadata_fake.call_count, 0,
 		      "Incorrect number of suit_processor_get_manifest_metadata() calls");
-	zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 0,
-		      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+	zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 }
 
 ZTEST(suit_platform_devconfig_seq_tests, test_invalid_manifest_component_id)
@@ -189,14 +191,14 @@ ZTEST(suit_platform_devconfig_seq_tests, test_invalid_manifest_component_id)
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and other checks were not performed */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 0,
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_processor_get_manifest_metadata_fake.call_count, 0,
 		      "Incorrect number of suit_processor_get_manifest_metadata() calls");
-	zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 0,
-		      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+	zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 }
 
 ZTEST(suit_platform_devconfig_seq_tests, test_unsupported_class_id)
@@ -205,7 +207,7 @@ ZTEST(suit_platform_devconfig_seq_tests, test_unsupported_class_id)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is not supported */
-	mci_validate_manifest_class_id_fake.return_val = MCI_ERR_MANIFESTCLASSID;
+	suit_mci_manifest_class_id_validate_fake.return_val = MCI_ERR_MANIFESTCLASSID;
 
 	/* WHEN platform is asked for authorization of INSTALL sequence from manifest with sequence
 	 * number 1 */
@@ -220,15 +222,15 @@ ZTEST(suit_platform_devconfig_seq_tests, test_unsupported_class_id)
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and manifest class ID is validated */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	/* ... and other checks were not performed */
 	zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 0,
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_processor_get_manifest_metadata_fake.call_count, 0,
 		      "Incorrect number of suit_processor_get_manifest_metadata() calls");
-	zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 0,
-		      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+	zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 0,
+		      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 }
 
 ZTEST(suit_platform_devconfig_seq_tests, test_boot_no_installed_envelope)
@@ -250,15 +252,15 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_no_installed_envelope)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+		suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the SUIT storage contains a valid envelope with given class ID */
 		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_ERR_NOT_FOUND;
 		/* ... and the envelope from SUIT storage is decodeable */
 		suit_processor_get_manifest_metadata_fake.custom_fake =
 			suit_processor_get_manifest_metadata_seq_one_fake_func;
 		/* ... and the downgrade prevention policy is enabled */
-		mci_get_downgrade_prevention_policy_fake.custom_fake =
-			mci_get_downgrade_prevention_policy_enabled_fake_func;
+		suit_mci_downgrade_prevention_policy_get_fake.custom_fake =
+			suit_mci_downgrade_prevention_policy_get_enabled_fake_func;
 
 		/* WHEN platform is asked for authorization of VALIDATE, LOAD or INVOKE sequence
 		 * from manifest with sequence number 1 */
@@ -273,16 +275,16 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_no_installed_envelope)
 		zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 			      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 		/* ... and manifest class ID is validated */
-		zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-			      "Incorrect number of mci_validate_manifest_class_id() calls");
+		zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+			      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 		/* ... and SUIT storage is searched for manifest with given class ID */
 		zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 1,
 			      "Incorrect number of suit_storage_installed_envelope_get() calls");
 		/* ... and other checks were not performed */
 		zassert_equal(suit_processor_get_manifest_metadata_fake.call_count, 0,
 			      "Incorrect number of suit_processor_get_manifest_metadata() calls");
-		zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 0,
-			      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+		zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 0,
+			      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 	}
 }
 
@@ -304,15 +306,15 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_no_installed_envelope)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+		suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the SUIT storage contains a valid envelope with given class ID */
 		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_ERR_NOT_FOUND;
 		/* ... and the envelope from SUIT storage is decodeable */
 		suit_processor_get_manifest_metadata_fake.custom_fake =
 			suit_processor_get_manifest_metadata_seq_one_fake_func;
 		/* ... and the downgrade prevention policy is enabled */
-		mci_get_downgrade_prevention_policy_fake.custom_fake =
-			mci_get_downgrade_prevention_policy_enabled_fake_func;
+		suit_mci_downgrade_prevention_policy_get_fake.custom_fake =
+			suit_mci_downgrade_prevention_policy_get_enabled_fake_func;
 
 		/* WHEN platform is asked for authorization of PARSE, SHARED, DEP_RESOLUTION,
 		 * PAYLOAD_FETCH, INSTALL, sequence from manifest with sequence number 1 */
@@ -326,16 +328,16 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_no_installed_envelope)
 		zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 			      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 		/* ... and manifest class ID is validated */
-		zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-			      "Incorrect number of mci_validate_manifest_class_id() calls");
+		zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+			      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 		/* ... and SUIT storage is searched for manifest with given class ID */
 		zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 1,
 			      "Incorrect number of suit_storage_installed_envelope_get() calls");
 		/* ... and other checks were not performed */
 		zassert_equal(suit_processor_get_manifest_metadata_fake.call_count, 0,
 			      "Incorrect number of suit_processor_get_manifest_metadata() calls");
-		zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 0,
-			      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+		zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 0,
+			      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 	}
 }
 
@@ -358,7 +360,7 @@ ZTEST(suit_platform_devconfig_seq_tests, test_decode_busy)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+		suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the SUIT storage contains a valid envelope with given class ID */
 		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 		/* ... and the envelope from SUIT storage is decodeable, but the decoder is busy */
@@ -379,8 +381,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_decode_busy)
 		zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 			      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 		/* ... and manifest class ID is validated */
-		zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-			      "Incorrect number of mci_validate_manifest_class_id() calls");
+		zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+			      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 		/* ... and SUIT storage is searched for manifest with given class ID */
 		zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 1,
 			      "Incorrect number of suit_storage_installed_envelope_get() calls");
@@ -390,8 +392,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_decode_busy)
 		/* ... and MCI is not asked for the downgrade prevention policy, associated with
 		 * given class ID
 		 */
-		zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 0,
-			      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+		zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 0,
+			      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 	}
 }
 
@@ -401,14 +403,14 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_no_downgrade_poli
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+	suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage contains a valid envelope with given class ID */
 	suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the envelope from SUIT storage is decodeable */
 	suit_processor_get_manifest_metadata_fake.custom_fake =
 		suit_processor_get_manifest_metadata_seq_one_fake_func;
 	/* ... and the downgrade prevention policy is unknown */
-	mci_get_downgrade_prevention_policy_fake.return_val = MCI_ERR_MANIFESTCLASSID;
+	suit_mci_downgrade_prevention_policy_get_fake.return_val = MCI_ERR_MANIFESTCLASSID;
 
 	/* WHEN platform is asked for authorization of INSTALL sequence from manifest with sequence
 	 * number 1 */
@@ -424,8 +426,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_no_downgrade_poli
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and manifest class ID is validated */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	/* ... and SUIT storage is searched for manifest with given class ID */
 	zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 1,
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
@@ -434,8 +436,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_no_downgrade_poli
 		      "Incorrect number of suit_processor_get_manifest_metadata() calls");
 	/* ... and MCI is asked for the downgrade prevention policy, associated with given class ID
 	 */
-	zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 1,
-		      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+	zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 }
 
 ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_unsupported_downgrade_policy)
@@ -444,15 +446,15 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_unsupported_downg
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+	suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage contains a valid envelope with given class ID */
 	suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the envelope from SUIT storage is decodeable */
 	suit_processor_get_manifest_metadata_fake.custom_fake =
 		suit_processor_get_manifest_metadata_seq_one_fake_func;
 	/* ... and the downgrade prevention policy is unsupported */
-	mci_get_downgrade_prevention_policy_fake.custom_fake =
-		mci_get_downgrade_prevention_policy_unsupported_fake_func;
+	suit_mci_downgrade_prevention_policy_get_fake.custom_fake =
+		suit_mci_downgrade_prevention_policy_get_unsupported_fake_func;
 
 	/* WHEN platform is asked for authorization of INSTALL sequence from manifest with sequence
 	 * number 1 */
@@ -468,8 +470,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_unsupported_downg
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and manifest class ID is validated */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	/* ... and SUIT storage is searched for manifest with given class ID */
 	zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 1,
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
@@ -478,8 +480,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_manifest_present_unsupported_downg
 		      "Incorrect number of suit_processor_get_manifest_metadata() calls");
 	/* ... and MCI is asked for the downgrade prevention policy, associated with given class ID
 	 */
-	zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count, 1,
-		      "Incorrect number of mci_get_downgrade_prevention_policy() calls");
+	zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count, 1,
+		      "Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 }
 
 ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_disabled_downgrade_prevention)
@@ -501,15 +503,15 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_disabled_d
 			suit_plat_decode_manifest_class_id_fake.custom_fake =
 				suit_plat_decode_manifest_class_id_correct_fake_func;
 			/* ... and the manifest class ID is supported */
-			mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+			suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the SUIT storage contains a valid envelope with given class ID */
 			suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the envelope from SUIT storage is decodeable */
 			suit_processor_get_manifest_metadata_fake.custom_fake =
 				suit_processor_get_manifest_metadata_seq_one_fake_func;
 			/* ... and the downgrade prevention policy is enabled */
-			mci_get_downgrade_prevention_policy_fake.custom_fake =
-				mci_get_downgrade_prevention_policy_disabled_fake_func;
+			suit_mci_downgrade_prevention_policy_get_fake.custom_fake =
+				suit_mci_downgrade_prevention_policy_get_disabled_fake_func;
 
 			/* WHEN platform is asked for authorization of any sequence from manifest
 			 * with any sequence number */
@@ -527,8 +529,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_disabled_d
 				suit_plat_decode_manifest_class_id_fake.call_count, 1,
 				"Incorrect number of suit_plat_decode_manifest_class_id() calls");
 			/* ... and manifest class ID is validated */
-			zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-				      "Incorrect number of mci_validate_manifest_class_id() calls");
+			zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+				      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 			/* ... and SUIT storage is searched for manifest with given class ID */
 			zassert_equal(
 				suit_storage_installed_envelope_get_fake.call_count, 1,
@@ -542,8 +544,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_disabled_d
 			 * given class ID
 			 */
 			zassert_equal(
-				mci_get_downgrade_prevention_policy_fake.call_count, 1,
-				"Incorrect number of mci_get_downgrade_prevention_policy() calls");
+				suit_mci_downgrade_prevention_policy_get_fake.call_count, 1,
+				"Incorrect number of suit_mci_downgrade_prevention_policy_get() calls");
 		}
 	}
 }
@@ -568,15 +570,15 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_manifest_present_disabled_dow
 			suit_plat_decode_manifest_class_id_fake.custom_fake =
 				suit_plat_decode_manifest_class_id_correct_fake_func;
 			/* ... and the manifest class ID is supported */
-			mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+			suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the SUIT storage contains a valid envelope with given class ID */
 			suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the envelope from SUIT storage is decodeable */
 			suit_processor_get_manifest_metadata_fake.custom_fake =
 				suit_processor_get_manifest_metadata_seq_one_fake_func;
 			/* ... and the downgrade prevention policy is enabled */
-			mci_get_downgrade_prevention_policy_fake.custom_fake =
-				mci_get_downgrade_prevention_policy_disabled_fake_func;
+			suit_mci_downgrade_prevention_policy_get_fake.custom_fake =
+				suit_mci_downgrade_prevention_policy_get_disabled_fake_func;
 
 			/* WHEN platform is asked for authorization of any sequence from manifest
 			 * with any sequence number */
@@ -598,9 +600,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_manifest_present_disabled_dow
 					      "Incorrect number of "
 					      "suit_plat_decode_manifest_class_id() calls");
 				/* ... and manifest class ID is validated */
-				zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
+				zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
 					      "Incorrect number of "
-					      "mci_validate_manifest_class_id() calls");
+					      "suit_mci_manifest_class_id_validate() calls");
 				/* ... and SUIT storage is searched for manifest with given class ID
 				 */
 				zassert_equal(suit_storage_installed_envelope_get_fake.call_count,
@@ -616,10 +618,10 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_manifest_present_disabled_dow
 				/* ... and MCI is not asked for the downgrade prevention policy,
 				 * associated with given class ID
 				 */
-				zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count,
+				zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count,
 					      0,
 					      "Incorrect number of "
-					      "mci_get_downgrade_prevention_policy() calls");
+					      "suit_mci_downgrade_prevention_policy_get() calls");
 			} else {
 				/* .. and the sequence number doe not match the installed envelope
 				 */
@@ -636,9 +638,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_manifest_present_disabled_dow
 					      "Incorrect number of "
 					      "suit_plat_decode_manifest_class_id() calls");
 				/* ... and manifest class ID is validated */
-				zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
+				zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
 					      "Incorrect number of "
-					      "mci_validate_manifest_class_id() calls");
+					      "suit_mci_manifest_class_id_validate() calls");
 				/* ... and SUIT storage is searched for manifest with given class ID
 				 */
 				zassert_equal(suit_storage_installed_envelope_get_fake.call_count,
@@ -654,10 +656,10 @@ ZTEST(suit_platform_devconfig_seq_tests, test_boot_manifest_present_disabled_dow
 				/* ... and MCI is not asked for the downgrade prevention policy,
 				 * associated with given class ID
 				 */
-				zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count,
+				zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count,
 					      0,
 					      "Incorrect number of "
-					      "mci_get_downgrade_prevention_policy() calls");
+					      "suit_mci_downgrade_prevention_policy_get() calls");
 			}
 		}
 	}
@@ -682,15 +684,15 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_enabled_do
 			suit_plat_decode_manifest_class_id_fake.custom_fake =
 				suit_plat_decode_manifest_class_id_correct_fake_func;
 			/* ... and the manifest class ID is supported */
-			mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+			suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the SUIT storage contains a valid envelope with given class ID */
 			suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_SUCCESS;
 			/* ... and the envelope from SUIT storage is decodeable */
 			suit_processor_get_manifest_metadata_fake.custom_fake =
 				suit_processor_get_manifest_metadata_seq_one_fake_func;
 			/* ... and the downgrade prevention policy is enabled */
-			mci_get_downgrade_prevention_policy_fake.custom_fake =
-				mci_get_downgrade_prevention_policy_enabled_fake_func;
+			suit_mci_downgrade_prevention_policy_get_fake.custom_fake =
+				suit_mci_downgrade_prevention_policy_get_enabled_fake_func;
 
 			/* WHEN platform is asked for authorization of any sequence from manifest
 			 * with any sequence number */
@@ -713,9 +715,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_enabled_do
 					      "Incorrect number of "
 					      "suit_plat_decode_manifest_class_id() calls");
 				/* ... and manifest class ID is validated */
-				zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
+				zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
 					      "Incorrect number of "
-					      "mci_validate_manifest_class_id() calls");
+					      "suit_mci_manifest_class_id_validate() calls");
 				/* ... and SUIT storage is searched for manifest with given class ID
 				 */
 				zassert_equal(suit_storage_installed_envelope_get_fake.call_count,
@@ -731,10 +733,10 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_enabled_do
 				/* ... and MCI is not asked for the downgrade prevention policy,
 				 * associated with given class ID
 				 */
-				zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count,
+				zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count,
 					      1,
 					      "Incorrect number of "
-					      "mci_get_downgrade_prevention_policy() calls");
+					      "suit_mci_downgrade_prevention_policy_get() calls");
 			} else {
 				/* .. and the sequence number doe not match the installed envelope
 				 */
@@ -751,9 +753,9 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_enabled_do
 					      "Incorrect number of "
 					      "suit_plat_decode_manifest_class_id() calls");
 				/* ... and manifest class ID is validated */
-				zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
+				zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
 					      "Incorrect number of "
-					      "mci_validate_manifest_class_id() calls");
+					      "suit_mci_manifest_class_id_validate() calls");
 				/* ... and SUIT storage is searched for manifest with given class ID
 				 */
 				zassert_equal(suit_storage_installed_envelope_get_fake.call_count,
@@ -769,10 +771,10 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_manifest_present_enabled_do
 				/* ... and MCI is not asked for the downgrade prevention policy,
 				 * associated with given class ID
 				 */
-				zassert_equal(mci_get_downgrade_prevention_policy_fake.call_count,
+				zassert_equal(suit_mci_downgrade_prevention_policy_get_fake.call_count,
 					      1,
 					      "Incorrect number of "
-					      "mci_get_downgrade_prevention_policy() calls");
+					      "suit_mci_downgrade_prevention_policy_get() calls");
 			}
 		}
 	}
@@ -791,8 +793,8 @@ ZTEST(suit_platform_devconfig_completed_tests, test_null_arg)
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_storage_install_envelope_fake.call_count, 0,
 		      "Incorrect number of suit_storage_install_envelope() calls");
 }
@@ -815,8 +817,8 @@ ZTEST(suit_platform_devconfig_completed_tests, test_null_component_id)
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_storage_install_envelope_fake.call_count, 0,
 		      "Incorrect number of suit_storage_install_envelope() calls");
 }
@@ -838,8 +840,8 @@ ZTEST(suit_platform_devconfig_completed_tests, test_invalid_manifest_component_i
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and other checks were not performed */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 0,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	zassert_equal(suit_storage_install_envelope_fake.call_count, 0,
 		      "Incorrect number of suit_storage_install_envelope() calls");
 }
@@ -850,7 +852,7 @@ ZTEST(suit_platform_devconfig_completed_tests, test_unsupported_class_id)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is not supported */
-	mci_validate_manifest_class_id_fake.return_val = MCI_ERR_MANIFESTCLASSID;
+	suit_mci_manifest_class_id_validate_fake.return_val = MCI_ERR_MANIFESTCLASSID;
 
 	/* WHEN sequence is completed */
 	int ret =
@@ -863,8 +865,8 @@ ZTEST(suit_platform_devconfig_completed_tests, test_unsupported_class_id)
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and manifest class ID is validated */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	/* ... and other checks were not performed */
 	zassert_equal(suit_storage_install_envelope_fake.call_count, 0,
 		      "Incorrect number of suit_storage_install_envelope() calls");
@@ -888,7 +890,7 @@ ZTEST(suit_platform_devconfig_completed_tests, test_non_install_seq)
 		suit_plat_decode_manifest_class_id_fake.custom_fake =
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
-		mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+		suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 
 		/* WHEN sequence is completed */
 		int ret = suit_plat_sequence_completed(suit_seq[i], &valid_manifest_component_id,
@@ -902,8 +904,8 @@ ZTEST(suit_platform_devconfig_completed_tests, test_non_install_seq)
 		zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 			      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 		/* ... and manifest class ID is validated */
-		zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-			      "Incorrect number of mci_validate_manifest_class_id() calls");
+		zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+			      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 		/* ... and the manifest is not passed to be installed in the SUIT storage */
 		zassert_equal(suit_storage_install_envelope_fake.call_count, 0,
 			      "Incorrect number of suit_storage_install_envelope() calls");
@@ -916,7 +918,7 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_failed)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+	suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage is unable to handle the manifest */
 	suit_storage_install_envelope_fake.return_val = SUIT_PLAT_ERR_NOT_FOUND;
 
@@ -931,8 +933,8 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_failed)
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and manifest class ID is validated */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	/* ... and the manifest is passed to be installed in the SUIT storage */
 	zassert_equal(suit_storage_install_envelope_fake.call_count, 1,
 		      "Incorrect number of suit_storage_install_envelope() calls");
@@ -944,7 +946,7 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_succeed)
 	suit_plat_decode_manifest_class_id_fake.custom_fake =
 		suit_plat_decode_manifest_class_id_correct_fake_func;
 	/* ... and the manifest class ID is supported */
-	mci_validate_manifest_class_id_fake.return_val = SUIT_PLAT_SUCCESS;
+	suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
 	/* ... and the SUIT storage is able to handle the manifest */
 	suit_storage_install_envelope_fake.return_val = SUIT_PLAT_SUCCESS;
 
@@ -959,8 +961,8 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_succeed)
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	/* ... and manifest class ID is validated */
-	zassert_equal(mci_validate_manifest_class_id_fake.call_count, 1,
-		      "Incorrect number of mci_validate_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
 	/* ... and the manifest is passed to be installed in the SUIT storage */
 	zassert_equal(suit_storage_install_envelope_fake.call_count, 1,
 		      "Incorrect number of suit_storage_install_envelope() calls");

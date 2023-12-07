@@ -83,7 +83,7 @@ typedef int mci_err_t;
  * @retval SUIT_PLAT_SUCCESS    on success
  * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  */
-mci_err_t mci_get_nordic_vendor_id(const suit_uuid_t **vendor_id);
+mci_err_t suit_mci_nordic_vendor_id_get(const suit_uuid_t **vendor_id);
 
 /**
  * @brief Gets class id for components which are not associated to specific class id
@@ -93,7 +93,7 @@ mci_err_t mci_get_nordic_vendor_id(const suit_uuid_t **vendor_id);
  * @retval SUIT_PLAT_SUCCESS    on success
  * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  */
-mci_err_t mci_get_nordic_unspecified_class_id(const suit_uuid_t **class_id);
+mci_err_t suit_mci_nordic_unspecified_class_id_get(const suit_uuid_t **class_id);
 
 /**
  * @brief Gets an array of supported manifest class ids.
@@ -106,7 +106,8 @@ mci_err_t mci_get_nordic_unspecified_class_id(const suit_uuid_t **class_id);
  * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  * @retval SUIT_PLAT_ERR_SIZE   too small to store all information
  */
-mci_err_t mci_get_supported_manifest_class_ids(const suit_manifest_class_id_t **class_id, size_t *size);
+mci_err_t suit_mci_supported_manifest_class_ids_get(const suit_manifest_class_id_t **class_id,
+						    size_t *size);
 
 /**
  * @brief Gets an array of manifest class ids in invocation order.
@@ -119,7 +120,7 @@ mci_err_t mci_get_supported_manifest_class_ids(const suit_manifest_class_id_t **
  * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  * @retval SUIT_PLAT_ERR_SIZE   too small to store all information
  */
-mci_err_t mci_get_invoke_order(const suit_manifest_class_id_t **class_id, size_t *size);
+mci_err_t suit_mci_invoke_order_get(const suit_manifest_class_id_t **class_id, size_t *size);
 
 /**
  * @brief Gets downgrade prevention policy for manifest class id
@@ -131,7 +132,7 @@ mci_err_t mci_get_invoke_order(const suit_manifest_class_id_t **class_id, size_t
  * @retval SUIT_PLAT_ERR_INVAL      invalid parameter, i.e. null pointer
  * @retval MCI_ERR_MANIFESTCLASSID  manifest class id unsupported
  */
-mci_err_t mci_get_downgrade_prevention_policy(const suit_manifest_class_id_t *class_id,
+mci_err_t suit_mci_downgrade_prevention_policy_get(const suit_manifest_class_id_t *class_id,
 					downgrade_prevention_policy_t *policy);
 
 /**
@@ -143,7 +144,7 @@ mci_err_t mci_get_downgrade_prevention_policy(const suit_manifest_class_id_t *cl
  * @retval SUIT_PLAT_ERR_INVAL      invalid parameter, i.e. null pointer
  * @retval MCI_ERR_MANIFESTCLASSID  manifest class id unsupported
  */
-mci_err_t mci_validate_manifest_class_id(const suit_manifest_class_id_t *class_id);
+mci_err_t suit_mci_manifest_class_id_validate(const suit_manifest_class_id_t *class_id);
 
 /**
  * @brief Verifying whether specific key_id is valid for signing/checking signature of specific
@@ -160,7 +161,8 @@ mci_err_t mci_validate_manifest_class_id(const suit_manifest_class_id_t *class_i
  * @retval MCI_ERR_WRONGKEYID       provided key ID is invalid for signing
  *                                  for provided manifest class
  */
-mci_err_t mci_validate_signing_key_id(const suit_manifest_class_id_t *class_id, uint32_t key_id);
+mci_err_t suit_mci_signing_key_id_validate(const suit_manifest_class_id_t *class_id,
+					   uint32_t key_id);
 
 /**
  * @brief Verifies if manifest with specific class id is entitled to start (invoke) code on specific
@@ -174,7 +176,8 @@ mci_err_t mci_validate_signing_key_id(const suit_manifest_class_id_t *class_id, 
  * @retval MCI_ERR_MANIFESTCLASSID  manifest class id unsupported
  * @retval MCI_ERR_NOACCESS         manifest is not entitled to operate on cpu
  */
-mci_err_t mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id, int processor_id);
+mci_err_t suit_mci_processor_start_rights_validate(const suit_manifest_class_id_t *class_id,
+						   int processor_id);
 
 /**
  * @brief Verifies if manifest with specific class id is entitled to operate on memory range
@@ -189,8 +192,9 @@ mci_err_t mci_validate_processor_start_rights(const suit_manifest_class_id_t *cl
  * @retval MCI_ERR_NOACCESS         manifest is not entitled to operate on
  *                                  memory range
  */
-mci_err_t mci_validate_memory_access_rights(const suit_manifest_class_id_t *class_id, void *address,
-				      size_t mem_size);
+mci_err_t suit_mci_memory_access_rights_validate(const suit_manifest_class_id_t *class_id,
+						 void *address,
+				                 size_t mem_size);
 
 /**
  * @brief Verifies if manifest with specific class id is entitled to operate on non-memory platform
@@ -205,7 +209,8 @@ mci_err_t mci_validate_memory_access_rights(const suit_manifest_class_id_t *clas
  * @retval MCI_ERR_NOACCESS         manifest is not entitled to operate on
  *                                  non-memory platform component
  */
-mci_err_t mci_validate_platform_specific_component_rights(const suit_manifest_class_id_t *class_id,
+mci_err_t suit_mci_platform_specific_component_rights_validate(
+						    const suit_manifest_class_id_t *class_id,
 						    int platform_specific_component_number);
 
 /**
@@ -220,8 +225,8 @@ mci_err_t mci_validate_platform_specific_component_rights(const suit_manifest_cl
  * @retval MCI_ERR_NOACCESS         parent-child relation for selected
  *                                  manifests is invalid
  */
-mci_err_t mci_validate_manifest_parent_child(const suit_manifest_class_id_t *parent_class_id,
-				       const suit_manifest_class_id_t *child_class_id);
+mci_err_t suit_mci_manifest_parent_child_validate(const suit_manifest_class_id_t *parent_class_id,
+						  const suit_manifest_class_id_t *child_class_id);
 
 /**
  * @brief Gets parent manifest class id for provided manifest class id
@@ -234,8 +239,8 @@ mci_err_t mci_validate_manifest_parent_child(const suit_manifest_class_id_t *par
  * @retval SUIT_PLAT_ERR_INVAL      invalid parameter, i.e. null pointer
  * @retval MCI_ERR_MANIFESTCLASSID  manifest class id unsupported
  */
-mci_err_t mci_get_manifest_parent(const suit_manifest_class_id_t *child_class_id,
-			    const suit_manifest_class_id_t **parent_class_id);
+mci_err_t suit_mci_manifest_parent_get(const suit_manifest_class_id_t *child_class_id,
+				       const suit_manifest_class_id_t **parent_class_id);
 
 /**
  * @brief Gets vendor id for provided manifest class id
@@ -247,7 +252,7 @@ mci_err_t mci_get_manifest_parent(const suit_manifest_class_id_t *child_class_id
  * @retval SUIT_PLAT_ERR_INVAL      invalid parameter, i.e. null pointer
  * @retval MCI_ERR_MANIFESTCLASSID  manifest class id unsupported
  */
-mci_err_t mci_get_vendor_id_for_manifest_class_id(const suit_manifest_class_id_t *class_id,
+mci_err_t suit_mci_vendor_id_for_manifest_class_id_get(const suit_manifest_class_id_t *class_id,
 					    const suit_uuid_t **vendor_id);
 
 /**
@@ -259,7 +264,7 @@ mci_err_t mci_get_vendor_id_for_manifest_class_id(const suit_manifest_class_id_t
  * @retval SUIT_PLAT_ERR_INVAL       invalid parameter, i.e. null pointer
  * @retval MCI_ERR_COMPARISON_FAILED content of UUIDs differs
  */
-mci_err_t mci_compare_suit_uuid(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2);
+mci_err_t suit_mci_suit_uuid_compare(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2);
 
 /**
  * @brief Initializes MCI
@@ -267,7 +272,7 @@ mci_err_t mci_compare_suit_uuid(const suit_uuid_t *uuid1, const suit_uuid_t *uui
  * @return SUIT_PLAT_SUCCESS
  *
  */
-mci_err_t mci_init(void);
+mci_err_t suit_mci_init(void);
 
 #ifdef __cplusplus
 }

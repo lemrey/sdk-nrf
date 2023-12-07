@@ -50,7 +50,7 @@ find_manifest_config(const suit_manifest_class_id_t *manifest_class_id)
 		const manifest_config_t *manifest_config = &supported_manifests[i];
 
 		if (0 ==
-		    mci_compare_suit_uuid(manifest_config->manifest_class_id, manifest_class_id)) {
+		    suit_mci_suit_uuid_compare(manifest_config->manifest_class_id, manifest_class_id)) {
 			return manifest_config;
 		}
 	}
@@ -91,7 +91,8 @@ static int load_keys(uint32_t *key_id)
 }
 #endif /* CONFIG_MBEDTLS || CONFIG_NRF_SECURITY */
 
-int mci_get_supported_manifest_class_ids(const suit_manifest_class_id_t **class_id, size_t *size)
+int suit_mci_supported_manifest_class_ids_get(const suit_manifest_class_id_t **class_id,
+					      size_t *size)
 {
 	if (NULL == class_id || NULL == size) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -112,7 +113,7 @@ int mci_get_supported_manifest_class_ids(const suit_manifest_class_id_t **class_
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_invoke_order(const suit_manifest_class_id_t **class_id, size_t *size)
+int suit_mci_invoke_order_get(const suit_manifest_class_id_t **class_id, size_t *size)
 {
 	if (NULL == class_id || NULL == size) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -133,7 +134,7 @@ int mci_get_invoke_order(const suit_manifest_class_id_t **class_id, size_t *size
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_downgrade_prevention_policy(const suit_manifest_class_id_t *class_id,
+int suit_mci_downgrade_prevention_policy_get(const suit_manifest_class_id_t *class_id,
 					downgrade_prevention_policy_t *policy)
 {
 	if (NULL == class_id || NULL == policy) {
@@ -149,7 +150,7 @@ int mci_get_downgrade_prevention_policy(const suit_manifest_class_id_t *class_id
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_validate_manifest_class_id(const suit_manifest_class_id_t *class_id)
+int suit_mci_manifest_class_id_validate(const suit_manifest_class_id_t *class_id)
 {
 	if (NULL == class_id) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -163,7 +164,7 @@ int mci_validate_manifest_class_id(const suit_manifest_class_id_t *class_id)
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_validate_signing_key_id(const suit_manifest_class_id_t *class_id, uint32_t key_id)
+int suit_mci_signing_key_id_validate(const suit_manifest_class_id_t *class_id, uint32_t key_id)
 {
 	if (NULL == class_id) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -183,7 +184,8 @@ int mci_validate_signing_key_id(const suit_manifest_class_id_t *class_id, uint32
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id, int processor_id)
+int suit_mci_processor_start_rights_validate(const suit_manifest_class_id_t *class_id,
+					     int processor_id)
 {
 	if (NULL == class_id) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -195,12 +197,12 @@ int mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id
 		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	if (0 == mci_compare_suit_uuid(&nordic_root_manifest_class_id, class_id)) {
+	if (0 == suit_mci_suit_uuid_compare(&nordic_root_manifest_class_id, class_id)) {
 		/* Root manifest - ability to start any cpu are intentionally blocked
 		 */
 		return MCI_ERR_NOACCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_app_manifest_class_id, class_id)) {
+	} else if (0 == suit_mci_suit_uuid_compare(&nordic_app_manifest_class_id, class_id)) {
 		/* Application manifest. Use "0" as CPU ID in tests
 		 */
 		if (0 == processor_id) {
@@ -213,8 +215,9 @@ int mci_validate_processor_start_rights(const suit_manifest_class_id_t *class_id
 	return MCI_ERR_NOACCESS;
 }
 
-int mci_validate_memory_access_rights(const suit_manifest_class_id_t *class_id, void *address,
-				      size_t mem_size)
+int suit_mci_memory_access_rights_validate(const suit_manifest_class_id_t *class_id,
+					   void *address,
+					   size_t mem_size)
 {
 	if (NULL == class_id || NULL == address || 0 == mem_size) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -226,12 +229,12 @@ int mci_validate_memory_access_rights(const suit_manifest_class_id_t *class_id, 
 		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	if (0 == mci_compare_suit_uuid(&nordic_root_manifest_class_id, class_id)) {
+	if (0 == suit_mci_suit_uuid_compare(&nordic_root_manifest_class_id, class_id)) {
 		/* Root manifest - ability to operate on memory ranges intentionally blocked
 		 */
 		return MCI_ERR_NOACCESS;
 
-	} else if (0 == mci_compare_suit_uuid(&nordic_app_manifest_class_id, class_id)) {
+	} else if (0 == suit_mci_suit_uuid_compare(&nordic_app_manifest_class_id, class_id)) {
 		/* Application manifest - allow to overwrite any address
 		 */
 		return SUIT_PLAT_SUCCESS;
@@ -240,7 +243,7 @@ int mci_validate_memory_access_rights(const suit_manifest_class_id_t *class_id, 
 	return MCI_ERR_NOACCESS;
 }
 
-int mci_validate_platform_specific_component_rights(const suit_manifest_class_id_t *class_id,
+int suit_mci_platform_specific_component_rights_validate(const suit_manifest_class_id_t *class_id,
 						    int platform_specific_component_number)
 {
 	if (NULL == class_id) {
@@ -256,8 +259,8 @@ int mci_validate_platform_specific_component_rights(const suit_manifest_class_id
 	return MCI_ERR_NOACCESS;
 }
 
-int mci_get_manifest_parent(const suit_manifest_class_id_t *child_class_id,
-			    const suit_manifest_class_id_t **parent_class_id)
+int suit_mci_manifest_parent_get(const suit_manifest_class_id_t *child_class_id,
+				 const suit_manifest_class_id_t **parent_class_id)
 {
 	if (NULL == child_class_id || NULL == parent_class_id) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -274,7 +277,7 @@ int mci_get_manifest_parent(const suit_manifest_class_id_t *child_class_id,
 	return SUIT_PLAT_SUCCESS;
 }
 
-int mci_get_vendor_id_for_manifest_class_id(const suit_manifest_class_id_t *class_id,
+int suit_mci_vendor_id_for_manifest_class_id_get(const suit_manifest_class_id_t *class_id,
 					    const suit_uuid_t **vendor_id)
 {
 	if (NULL == class_id || NULL == vendor_id) {
@@ -287,10 +290,10 @@ int mci_get_vendor_id_for_manifest_class_id(const suit_manifest_class_id_t *clas
 		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	return mci_get_nordic_vendor_id(vendor_id);
+	return suit_mci_nordic_vendor_id_get(vendor_id);
 }
 
-int mci_init(void)
+int suit_mci_init(void)
 {
 #if defined(CONFIG_MBEDTLS) || defined(CONFIG_NRF_SECURITY)
 	if (supported_manifests[0].signing_key_bits == 0) {

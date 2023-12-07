@@ -77,10 +77,10 @@ static void setup_update_candidate(const uint8_t *buf, size_t len)
 
 	setup_erased_flash();
 
-	int err = mci_init();
+	int err = suit_mci_init();
 	zassert_equal(0, err, "Failed to initialize MCI (%d)", err);
 
-	err = mci_get_supported_manifest_class_ids(
+	err = suit_mci_supported_manifest_class_ids_get(
 		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
 	zassert_equal(0, err, "Failed to get list of supported manifest class IDs (%d)", err);
 

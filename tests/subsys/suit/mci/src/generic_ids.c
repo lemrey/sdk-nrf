@@ -15,8 +15,8 @@ static void test_mci_nordic_vendor_id_value(void)
 	const suit_uuid_t *obtained_vid = NULL;
 	int rc = 0;
 
-	rc = mci_get_nordic_vendor_id(&obtained_vid);
-	zassert_equal(rc, 0, "mci_get_nordic_vendor_id returned (%d)", rc);
+	rc = suit_mci_nordic_vendor_id_get(&obtained_vid);
+	zassert_equal(rc, 0, "suit_mci_nordic_vendor_id_get returned (%d)", rc);
 	zassert_not_null(obtained_vid, "obtained_vid points to NULL");
 	zassert_mem_equal(obtained_vid->raw, expected_vid.raw, sizeof(((suit_uuid_t *)0)->raw),
 			  "unexpected vendor_id");
@@ -31,8 +31,8 @@ static void test_mci_nordic_unspecified_class_id_value(void)
 	const suit_uuid_t *obtained_cid = NULL;
 	int rc = 0;
 
-	rc = mci_get_nordic_unspecified_class_id(&obtained_cid);
-	zassert_equal(rc, 0, "mci_get_nordic_unspecified_class_id returned (%d)", rc);
+	rc = suit_mci_nordic_unspecified_class_id_get(&obtained_cid);
+	zassert_equal(rc, 0, "suit_mci_nordic_unspecified_class_id_get returned (%d)", rc);
 	zassert_not_null(obtained_cid, "obtained_cid points to NULL");
 	zassert_mem_equal(obtained_cid->raw, expected_cid.raw, sizeof(((suit_uuid_t *)0)->raw), "");
 }

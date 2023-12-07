@@ -6,7 +6,7 @@
 #include <suit_mci.h>
 #include <string.h>
 
-mci_err_t mci_compare_suit_uuid(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
+mci_err_t suit_mci_suit_uuid_compare(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
 {
 	if (NULL == uuid1 || NULL == uuid2) {
 		return SUIT_PLAT_ERR_INVAL;
@@ -19,15 +19,15 @@ mci_err_t mci_compare_suit_uuid(const suit_uuid_t *uuid1, const suit_uuid_t *uui
 	return MCI_ERR_COMPARISON_FAILED;
 }
 
-mci_err_t mci_validate_manifest_parent_child(const suit_manifest_class_id_t *parent_class_id,
-				       const suit_manifest_class_id_t *child_class_id)
+mci_err_t suit_mci_manifest_parent_child_validate(const suit_manifest_class_id_t *parent_class_id,
+						  const suit_manifest_class_id_t *child_class_id)
 {
 	if (NULL == parent_class_id || NULL == child_class_id) {
 		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	const suit_manifest_class_id_t *existing_parent_class_id = NULL;
-	mci_err_t ret = mci_get_manifest_parent(child_class_id, &existing_parent_class_id);
+	mci_err_t ret = suit_mci_manifest_parent_get(child_class_id, &existing_parent_class_id);
 
 	if (ret != SUIT_PLAT_SUCCESS) {
 		return ret;
@@ -37,7 +37,8 @@ mci_err_t mci_validate_manifest_parent_child(const suit_manifest_class_id_t *par
 		return MCI_ERR_NOACCESS;
 	}
 
-	if (SUIT_PLAT_SUCCESS == mci_compare_suit_uuid(parent_class_id, existing_parent_class_id)) {
+	if (SUIT_PLAT_SUCCESS
+	    == suit_mci_suit_uuid_compare(parent_class_id, existing_parent_class_id)) {
 		return SUIT_PLAT_SUCCESS;
 	}
 

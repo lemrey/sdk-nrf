@@ -21,8 +21,8 @@ static void test_duplicate_ids_in_supported_manifest(void)
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
-	zassert_equal(rc, 0, "mci_get_supported_manifest_class_ids returned (%d)", rc);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
+	zassert_equal(rc, 0, "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		for (int j = i + 1; j < output_size; ++j) {
@@ -37,8 +37,8 @@ static void test_duplicate_ids_in_invoke_order(void)
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_invoke_order(result_uuid, &output_size);
-	zassert_equal(rc, 0, "mci_get_invoke_order returned (%d)", rc);
+	rc = suit_mci_invoke_order_get(result_uuid, &output_size);
+	zassert_equal(rc, 0, "suit_mci_invoke_order_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		for (int j = i + 1; j < output_size; ++j) {

@@ -9,181 +9,181 @@
 #define OUTPUT_MAX_SIZE 32
 static const suit_uuid_t *result_uuid[OUTPUT_MAX_SIZE];
 
-static void test_mci_get_supported_manifest_class_ids(void)
+static void test_suit_mci_supported_manifest_class_ids_get(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 }
 
-static void test_mci_get_invoke_order(void)
+static void test_suit_mci_invoke_order_get(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_invoke_order(result_uuid, &output_size);
-	zassert_equal(rc, SUIT_PLAT_SUCCESS, "mci_get_invoke_order returned (%d)", rc);
+	rc = suit_mci_invoke_order_get(result_uuid, &output_size);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "suit_mci_invoke_order_get returned (%d)", rc);
 }
 
-static void test_mci_get_downgrade_prevention_policy(void)
+static void test_suit_mci_downgrade_prevention_policy_get(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		downgrade_prevention_policy_t policy;
 
-		rc = mci_get_downgrade_prevention_policy(result_uuid[i], &policy);
+		rc = suit_mci_downgrade_prevention_policy_get(result_uuid[i], &policy);
 		zassert_equal(rc, SUIT_PLAT_SUCCESS,
-			      "mci_get_downgrade_prevention_policy returned (%d)", rc);
+			      "suit_mci_downgrade_prevention_policy_get returned (%d)", rc);
 	}
 }
 
-static void test_mci_validate_manifest_class_id(void)
+static void test_suit_mci_manifest_class_id_validate(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
-		rc = mci_validate_manifest_class_id(result_uuid[i]);
+		rc = suit_mci_manifest_class_id_validate(result_uuid[i]);
 		zassert_equal(rc, SUIT_PLAT_SUCCESS,
-			      "mci_validate_manifest_class_id returned (%d)", rc);
+			      "suit_mci_manifest_class_id_validate returned (%d)", rc);
 	}
 }
 
-static void test_mci_validate_signing_key_id(void)
+static void test_suit_mci_signing_key_id_validate(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		uint32_t key_id = 0;
 
-		rc = mci_validate_signing_key_id(result_uuid[i], key_id);
+		rc = suit_mci_signing_key_id_validate(result_uuid[i], key_id);
 		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
-			     "mci_validate_signing_key_id returned (%d)", rc);
+			     "suit_mci_signing_key_id_validate returned (%d)", rc);
 	}
 }
 
-static void test_mci_validate_processor_start_rights(void)
+static void test_suit_mci_processor_start_rights_validate(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		int processor_id = 0;
 
-		rc = mci_validate_processor_start_rights(result_uuid[i], processor_id);
+		rc = suit_mci_processor_start_rights_validate(result_uuid[i], processor_id);
 		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
-			     "mci_validate_processor_start_rights returned (%d)", rc);
+			     "suit_mci_processor_start_rights_validate returned (%d)", rc);
 	}
 }
 
-static void test_mci_validate_memory_access_rights(void)
+static void test_suit_mci_memory_access_rights_validate(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		void *address = &address;
 		size_t mem_size = sizeof(void *);
 
-		rc = mci_validate_memory_access_rights(result_uuid[i], address, mem_size);
+		rc = suit_mci_memory_access_rights_validate(result_uuid[i], address, mem_size);
 		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
-			     "mci_validate_memory_access_rights returned (%d)", rc);
+			     "suit_mci_memory_access_rights_validate returned (%d)", rc);
 	}
 }
 
-static void test_mci_validate_platform_specific_component_rights(void)
+static void test_suit_mci_platform_specific_component_rights_validate(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		int platform_specific_component_number = 0;
 
-		rc = mci_validate_platform_specific_component_rights(
+		rc = suit_mci_platform_specific_component_rights_validate(
 			result_uuid[i], platform_specific_component_number);
 		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
-			     "mci_validate_platform_specific_component_rights returned (%d)", rc);
+			     "suit_mci_platform_specific_component_rights_validate returned (%d)", rc);
 	}
 }
 
-static void test_mci_validate_manifest_parent_child(void)
+static void test_suit_mci_manifest_parent_child_validate(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 
-		rc = mci_validate_manifest_parent_child(result_uuid[0], result_uuid[i]);
+		rc = suit_mci_manifest_parent_child_validate(result_uuid[0], result_uuid[i]);
 		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
-			     "mci_validate_manifest_parent_child returned (%d)", rc);
+			     "suit_mci_manifest_parent_child_validate returned (%d)", rc);
 	}
 }
 
-static void test_mci_get_vendor_id_for_manifest_class_id(void)
+static void test_suit_mci_vendor_id_for_manifest_class_id_get(void)
 {
 	int rc = 0;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
-	rc = mci_get_supported_manifest_class_ids(result_uuid, &output_size);
+	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS,
-		      "mci_get_supported_manifest_class_ids returned (%d)", rc);
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		const suit_uuid_t *vendor_id = NULL;
 
-		rc = mci_get_vendor_id_for_manifest_class_id(result_uuid[i], &vendor_id);
+		rc = suit_mci_vendor_id_for_manifest_class_id_get(result_uuid[i], &vendor_id);
 		zassert_equal(rc, SUIT_PLAT_SUCCESS,
-			      "mci_get_vendor_id_for_manifest_class_id returned (%d)", rc);
+			      "suit_mci_vendor_id_for_manifest_class_id_get returned (%d)", rc);
 	}
 }
 
 void test_api_positive_scenarios(void)
 {
 	ztest_test_suite(test_suit_mci_api,
-			 ztest_unit_test(test_mci_get_supported_manifest_class_ids),
-			 ztest_unit_test(test_mci_get_invoke_order),
-			 ztest_unit_test(test_mci_get_downgrade_prevention_policy),
-			 ztest_unit_test(test_mci_validate_signing_key_id),
-			 ztest_unit_test(test_mci_validate_manifest_class_id),
-			 ztest_unit_test(test_mci_validate_processor_start_rights),
-			 ztest_unit_test(test_mci_validate_memory_access_rights),
-			 ztest_unit_test(test_mci_validate_platform_specific_component_rights),
-			 ztest_unit_test(test_mci_validate_manifest_parent_child),
-			 ztest_unit_test(test_mci_get_vendor_id_for_manifest_class_id));
+			 ztest_unit_test(test_suit_mci_supported_manifest_class_ids_get),
+			 ztest_unit_test(test_suit_mci_invoke_order_get),
+			 ztest_unit_test(test_suit_mci_downgrade_prevention_policy_get),
+			 ztest_unit_test(test_suit_mci_signing_key_id_validate),
+			 ztest_unit_test(test_suit_mci_manifest_class_id_validate),
+			 ztest_unit_test(test_suit_mci_processor_start_rights_validate),
+			 ztest_unit_test(test_suit_mci_memory_access_rights_validate),
+			 ztest_unit_test(test_suit_mci_platform_specific_component_rights_validate),
+			 ztest_unit_test(test_suit_mci_manifest_parent_child_validate),
+			 ztest_unit_test(test_suit_mci_vendor_id_for_manifest_class_id_get));
 
 	ztest_run_test_suite(test_suit_mci_api);
 }

@@ -32,7 +32,7 @@ int suit_plat_sequence_completed(enum suit_command_sequence seq_name,
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	err = mci_validate_manifest_class_id(class_id);
+	err = suit_mci_manifest_class_id_validate(class_id);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to validate manifest class ID (MCI err: %d)", err);
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
@@ -73,7 +73,7 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	ret = mci_validate_manifest_class_id(class_id);
+	ret = suit_mci_manifest_class_id_validate(class_id);
 	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unsupported manifest class ID (MCI err: %d)", ret);
 		return SUIT_ERR_AUTHENTICATION;
@@ -113,7 +113,7 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 		}
 	}
 
-	ret = mci_get_downgrade_prevention_policy(class_id, &policy);
+	ret = suit_mci_downgrade_prevention_policy_get(class_id, &policy);
 	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to get downgrade prevention policy (MCI err: %d)", ret);
 		return SUIT_ERR_AUTHENTICATION;

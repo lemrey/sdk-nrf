@@ -24,7 +24,7 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 	}
 
 	/* Validate manifest class ID against supported manifests */
-	mci_err_t ret = mci_validate_manifest_class_id(class_id);
+	mci_err_t ret = suit_mci_manifest_class_id_validate(class_id);
 	if (ret != SUIT_PLAT_SUCCESS) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -42,12 +42,12 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 			return SUIT_ERR_DECODING;
 		}
 
-		ret = mci_validate_processor_start_rights(class_id, cpu_id);
+		ret = suit_mci_processor_start_rights_validate(class_id, cpu_id);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
 
-		ret = mci_validate_memory_access_rights(class_id, (void *)address, size);
+		ret = suit_mci_memory_access_rights_validate(class_id, (void *)address, size);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
@@ -57,7 +57,7 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 			return SUIT_ERR_DECODING;
 		}
 
-		ret = mci_validate_platform_specific_component_rights(class_id, number);
+		ret = suit_mci_platform_specific_component_rights_validate(class_id, number);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
@@ -78,7 +78,7 @@ int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *clas
 		}
 
 		/* Validate manifest class ID against supported manifests */
-		ret = mci_validate_manifest_class_id(decoded_class_id);
+		ret = suit_mci_manifest_class_id_validate(decoded_class_id);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 		}
