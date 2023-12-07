@@ -20,7 +20,7 @@
 		.st12 {fill:#ffffff;font-family:Arial;font-size:1.00001em}
 		.st13 {marker-end:url(#mrkr13-66);marker-start:url(#mrkr13-64);stroke:#00a9ce;stroke-linecap:butt;stroke-width:1}
 		.st14 {fill:#00a9ce;fill-opacity:1;stroke:#00a9ce;stroke-opacity:1;stroke-width:0.28409090909091}
-		.st15 {fill:#ffffff;stroke:none;stroke-linecap:butt;stroke-width:7.2}
+		.st15 {fill:#ffffff;stroke:none;stroke-linecap:butt}
 		.st16 {fill:#008bab;font-family:Calibri;font-size:0.833336em}
 		.st17 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
 	]]>
@@ -114,9 +114,9 @@
 		</g>
 		<g id="shape1476-46" transform="translate(395.141,-28.9073)">
 			<title>Pentagon.1476</title>
-			<desc>Linux Host machine</desc>
+			<desc>Linux host machine</desc>
 			<path d="M35.72 182.1 L-1.84 206.59 L12.51 246.22 L58.93 246.22 L73.27 206.59 L35.72 182.1 Z" class="st9"/>
-			<text x="25.05" y="211.16" class="st10">Linux <tspan x="7.81" dy="1.2em" class="st7">Host machine</tspan></text>		</g>
+			<text x="25.05" y="211.16" class="st10">Linux <tspan x="8.3" dy="1.2em" class="st7">host machine</tspan></text>		</g>
 		<g id="shape1479-50" transform="translate(191.508,-146.005)">
 			<title>Diamond</title>
 			<desc>nRF Thread Border Router</desc>
@@ -124,9 +124,9 @@
 			<text x="19.71" y="205.64" class="st11">nRF Thread <tspan x="15" dy="1.2em" class="st7">Border Router</tspan></text>		</g>
 		<g id="shape1480-54" transform="translate(352.905,-161.424)">
 			<title>Nordic Blueslate.1480</title>
-			<desc>Network device (Wi-FI AP, Router, Switch)</desc>
+			<desc>Network device (Wi-Fi AP, Router, Switch)</desc>
 			<rect x="0" y="200.699" width="155.906" height="45.5183" class="st5"/>
-			<text x="36.94" y="219.86" class="st12">Network device <tspan x="7.61" dy="1.2em" class="st7">(Wi</tspan>-FI AP, Router, Switch)</text>		</g>
+			<text x="36.94" y="219.86" class="st12">Network device <tspan x="7.94" dy="1.2em" class="st7">(Wi</tspan>-Fi AP, Router, Switch)</text>		</g>
 		<g id="shape1481-58" transform="translate(267.865,-177.097)">
 			<title>Dynamic connector.1481</title>
 			<desc>Wi-Fi or Ethernet</desc>
