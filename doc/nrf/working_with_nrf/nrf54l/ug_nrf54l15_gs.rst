@@ -67,7 +67,7 @@ See the following instructions to install the required tools.
 Installing the nRF Command Line Tools
 =====================================
 
-You need the nRF Command Line Tools 10.22.2 specific to the limited sampling release of the |NCS|.
+You need the nRF Command Line Tools specific to the limited sampling release of the |NCS|.
 
 To install the nRF Command Line Tools, you need to download and install the version corresponding to your system:
 
@@ -245,7 +245,7 @@ Ensure that you additionally have Git and curl installed.
 Installing the |NCS|
 ====================
 
-After you have installed nRF Command Line Tools 10.22.2 and the toolchain, you need to install the |NCS|:
+After you have installed nRF Command Line Tools and the toolchain, you need to install the |NCS|:
 
 1. In the terminal window opened during the toolchain installation, initialize west with the revision of the |NCS| from the limited sampling by running the following command:
 

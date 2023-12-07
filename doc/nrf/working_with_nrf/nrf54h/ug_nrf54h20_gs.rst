@@ -70,7 +70,7 @@ Follow the instructions in the next sections to install the required tools.
 Installing the nRF Command Line Tools
 =====================================
 
-You need the nRF Command Line Tools 10.22.3 specific to the limited sampling release of the |NCS|.
+You need the nRF Command Line Tools specific to the limited sampling release of the |NCS|.
 
 To install the nRF Command Line Tools, you need to download and install the version corresponding to your system:
 

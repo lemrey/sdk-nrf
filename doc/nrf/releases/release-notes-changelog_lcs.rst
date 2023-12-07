@@ -1,5 +1,3 @@
-:orphan:
-
 .. _ncs_release_notes_changelog_lcs:
 
 Changelog for the nRF54 customer sampling

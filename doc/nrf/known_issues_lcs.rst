@@ -1,5 +1,3 @@
-:orphan:
-
 .. _known_issues_lcs:
 
 Known issues and limitations for the limited sampling

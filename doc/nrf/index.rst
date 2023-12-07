@@ -38,6 +38,8 @@ The "99" at the end of the version number of this documentation indicates contin
    scripts
    release_notes
    migration
+   known_issues
+   known_issues_lcs
    software_maturity
    documentation
    glossary
