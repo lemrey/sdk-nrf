@@ -132,7 +132,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: v2.4.99-cs3
+      revision: 43959dc1b897aae227e38da6ea51a44c4a30c1eb
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
@@ -187,7 +187,7 @@ manifest:
       # Only for internal Nordic development
       repo-path: dragoon.git
       remote: dragoon
-      revision: 090f4abc9a392da904ad6899eb27185e6704c821
+      revision: a50b26b62ace053a325ff2d79ba27a4c5abc51c6
       submodules: true
       groups:
         - dragoon
