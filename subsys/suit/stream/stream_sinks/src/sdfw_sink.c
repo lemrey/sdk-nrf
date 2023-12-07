@@ -18,7 +18,11 @@
 
 #define SUIT_MAX_SDFW_COMPONENTS 1
 
+#define SDFW_SINK_ERR_AGAIN 1 /* Reboot is needed before proceeding. Call the API again. */
+
 LOG_MODULE_REGISTER(suit_sdfw_sink, CONFIG_SUIT_LOG_LEVEL);
+
+typedef int sdf_sink_err_t;
 
 struct sdfw_sink_context {
 	bool in_use;
@@ -116,7 +120,7 @@ static suit_plat_err_t schedule_sdfw_update(uint8_t *buf, size_t size)
 	return SUIT_PLAT_SUCCESS;
 }
 
-static suit_plat_err_t check_update_candidate(uint8_t *buf, size_t size)
+static sdf_sink_err_t check_update_candidate(uint8_t *buf, size_t size)
 {
 	uint8_t *candidate_binary_start =
 		(uint8_t *)(buf + CONFIG_SUIT_SDFW_UPDATE_FIRMWARE_OFFSET);
@@ -142,17 +146,40 @@ static suit_plat_err_t check_update_candidate(uint8_t *buf, size_t size)
 	LOG_DBG("Candidate consistent");
 
 	/* Then compare candidate's digest with current SDFW digest */
-	err = verify_digest(candidate_binary_start, size, PSA_ALG_SHA_512, current_sdfw_digest);
-	if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
+	err = verify_digest(candidate_binary_start,
+			    size - (size_t)CONFIG_SUIT_SDFW_UPDATE_FIRMWARE_OFFSET, PSA_ALG_SHA_512,
+			    current_sdfw_digest);
+	if (err == SUIT_PLAT_SUCCESS) {
+		LOG_INF("Same candidate - skip update");
+		return SUIT_PLAT_SUCCESS;
+	} else if (DIGEST_SINK_ERR_DIGEST_MISMATCH == err) {
 		LOG_INF("Different candidate");
-		return schedule_sdfw_update(buf, size);
+		err = schedule_sdfw_update(buf, size);
+		if (err == SUIT_PLAT_SUCCESS) {
+			LOG_DBG("Update scheduled");
+			err = SDFW_SINK_ERR_AGAIN;
+		}
+		return err;
 	} else {
-		LOG_ERR("Failed to calculate digest");
+		LOG_ERR("Failed to calculate digest: %d", err);
 		return SUIT_PLAT_ERR_CRASH;
 	}
+}
 
-	LOG_INF("Same candidate - skip update");
-	return SUIT_PLAT_SUCCESS;
+static void reboot_to_continue(void)
+{
+	if (IS_ENABLED(CONFIG_SUIT_UPDATE_REBOOT_ENABLED)) {
+		LOG_INF("Reboot the system to continue SDFW update");
+
+		if (IS_ENABLED(CONFIG_LOG)) {
+			/* Flush all logs */
+			log_panic();
+		}
+
+		sys_reboot(SYS_REBOOT_COLD);
+	} else {
+		LOG_DBG("Reboot disabled - perform manually");
+	}
 }
 
 static suit_plat_err_t check_urot_none(uint8_t *buf, size_t size)
@@ -168,22 +195,13 @@ static suit_plat_err_t check_urot_none(uint8_t *buf, size_t size)
 
 		suit_plat_err_t err = check_update_candidate(buf, size);
 
-		if (SUIT_PLAT_SUCCESS != err) {
-			LOG_ERR("Failed to check update candidate: %d", err);
-			return err;
-		}
-
-		if (IS_ENABLED(CONFIG_SUIT_UPDATE_REBOOT_ENABLED)) {
-			LOG_INF("Reboot the system to continue SDFW update");
-
-			if (IS_ENABLED(CONFIG_LOG)) {
-				/* Flush all logs */
-				log_panic();
-			}
-
-			sys_reboot(SYS_REBOOT_COLD);
-		} else {
-			LOG_DBG("Reboot disabled - perform manually");
+		if (err == SDFW_SINK_ERR_AGAIN) {
+			/* Update scheduled, continue after reboot */
+			reboot_to_continue();
+			/* If this code is reached, it means that reboot did not work. */
+			/* In such case report an error and convert the error code. */
+			LOG_ERR("Expected reboot did not happen");
+			err = SUIT_PLAT_ERR_UNREACHABLE_PATH;
 		}
 
 		return err;
