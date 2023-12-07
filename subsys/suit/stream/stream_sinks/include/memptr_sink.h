@@ -21,7 +21,7 @@ extern "C" {
  * @param handle Handle to storage object
  * @return SUIT_PLAT_SUCCESS if success otherwise error code.
  */
-suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle);
+suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle_t handle);
 
 #ifdef __cplusplus
 }

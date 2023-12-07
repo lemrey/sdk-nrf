@@ -31,7 +31,7 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 
 	uint8_t *data = NULL;
 	size_t size = 0;
-	err = get_memptr_ptr((memptr_storage_handle)impl_data, &data, &size);
+	err = suit_memptr_storage_ptr_get((memptr_storage_handle_t)impl_data, &data, &size);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get memptr ptr: %d", err);
 		return SUIT_ERR_CRASH;

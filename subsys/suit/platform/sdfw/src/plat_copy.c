@@ -99,7 +99,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	case SUIT_COMPONENT_TYPE_MEM: 
 	case SUIT_COMPONENT_TYPE_CAND_IMG: {
-		memptr_storage_handle handle = NULL;
+		memptr_storage_handle_t handle = NULL;
 		ret = suit_plat_component_impl_data_get(src_handle, &handle);
 
 		if (ret != SUIT_SUCCESS) {
@@ -108,11 +108,11 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 			return ret;
 		}
 
-		ret = get_memptr_ptr(handle, &payload_ptr, &payload_size);
+		ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
 		ret = suit_plat_err_to_proccessor_err_convert(ret);
 
 		if ((ret != SUIT_SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
-			LOG_ERR("get_memptr_ptr failed - error %i", ret);
+			LOG_ERR("suit_memptr_storage_ptr_get failed - error %i", ret);
 			release_sink(&dst_sink);
 			return ret;
 		}
@@ -192,7 +192,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	case SUIT_COMPONENT_TYPE_MEM:
 	case SUIT_COMPONENT_TYPE_CAND_IMG: {
-		memptr_storage_handle handle = NULL;
+		memptr_storage_handle_t handle = NULL;
 		ret = suit_plat_component_impl_data_get(src_handle, &handle);
 
 		if (ret != SUIT_SUCCESS) {
@@ -201,9 +201,9 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 			return ret;
 		}
 
-		ret = get_memptr_ptr(handle, &payload_ptr, &payload_size);
+		ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
 		if ((ret != SUIT_PLAT_SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
-			LOG_ERR("get_memptr_ptr failed - error %i", ret);
+			LOG_ERR("suit_memptr_storage_ptr_get failed - error %i", ret);
 			release_sink(&dst_sink);
 			return suit_plat_err_to_proccessor_err_convert(ret);
 		}

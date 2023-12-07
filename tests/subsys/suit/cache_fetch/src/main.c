@@ -71,14 +71,14 @@ ZTEST_SUITE(cache_streamer_tests, NULL, NULL, test_suite_before, test_suite_afte
 ZTEST(cache_streamer_tests, test_cache_streamer_ok)
 {
 	struct stream_sink memptr_sink;
-	memptr_storage_handle handle = NULL;
+	memptr_storage_handle_t handle = NULL;
 	char ok_uri[] = "http://databucket.com";
 	size_t ok_uri_len = sizeof("http://databucket.com");
 	uint8_t *payload_ptr;
 	size_t payload_size = 0;
 
-	int ret = get_memptr_storage(&handle);
-	zassert_equal(ret, 0, "get_memptr_storage failed - error %i", ret);
+	int ret = suit_memptr_storage_get(&handle);
+	zassert_equal(ret, 0, "suit_memptr_storage_get failed - error %i", ret);
 
 	ret = memptr_sink_get(&memptr_sink, handle);
 	zassert_equal(ret, 0, "memptr_sink_get failed - error %i", ret);
@@ -86,24 +86,24 @@ ZTEST(cache_streamer_tests, test_cache_streamer_ok)
 	ret = cache_streamer(ok_uri, ok_uri_len, &memptr_sink);
 	zassert_equal(ret, 0, "cache_streamer failed - error %i", ret);
 
-	ret = get_memptr_ptr(handle, &payload_ptr, &payload_size);
+	ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
 	zassert_equal(ret, 0, "memptr_storage.get failed - error %i", ret);
 
-	ret = release_memptr_storage(handle);
+	ret = suit_memptr_storage_release(handle);
 	zassert_equal(ret, 0, "memptr_storage.release failed - error %i", ret);
 }
 
 ZTEST(cache_streamer_tests, test_cache_streamer_nok)
 {
 	struct stream_sink memptr_sink;
-	memptr_storage_handle handle = NULL;
+	memptr_storage_handle_t handle = NULL;
 	char ok_uri[] = "http://databucket.com";
 	size_t ok_uri_len = sizeof("http://databucket.com");
 	char nok_uri[] = "http://data123.com";
 	size_t nok_uri_len = sizeof("http://data123.com");
 
-	int ret = get_memptr_storage(&handle);
-	zassert_equal(ret, 0, "get_memptr_storage failed - error %i", ret);
+	int ret = suit_memptr_storage_get(&handle);
+	zassert_equal(ret, 0, "suit_memptr_storage_get failed - error %i", ret);
 
 	ret = memptr_sink_get(&memptr_sink, handle);
 	zassert_equal(ret, 0, "memptr_sink_get failed - error %i", ret);
@@ -120,6 +120,6 @@ ZTEST(cache_streamer_tests, test_cache_streamer_nok)
 	ret = cache_streamer(nok_uri, nok_uri_len, &memptr_sink);
 	zassert_equal(ret, SUIT_PLAT_ERR_NOT_FOUND, "cache_streamer failed - error %i", ret);
 
-	ret = release_memptr_storage(handle);
+	ret = suit_memptr_storage_release(handle);
 	zassert_equal(ret, 0, "memptr_storage.release failed - error %i", ret);
 }

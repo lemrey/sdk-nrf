@@ -74,7 +74,7 @@ ZTEST_SUITE(fetch_tests, NULL, NULL, NULL, NULL, NULL);
 ZTEST(fetch_tests, test_integrated_fetch_to_memptr_OK)
 {
 	suit_component_t component_handle;
-	memptr_storage_handle handle = NULL;
+	memptr_storage_handle_t handle = NULL;
 	struct zcbor_string source = {.value = test_data, .len = sizeof(test_data)};
 	/* [h'CAND_IMG', h'02'] */
 	uint8_t valid_value[] = {0x82, 0x49, 0x68, 'C', 'A',  'N', 'D',
@@ -97,7 +97,7 @@ ZTEST(fetch_tests, test_integrated_fetch_to_memptr_OK)
 	uint8_t *payload;
 	size_t payload_size = 0;
 
-	ret = get_memptr_ptr(handle, &payload, &payload_size);
+	ret = suit_memptr_storage_ptr_get(handle, &payload, &payload_size);
 	zassert_equal(ret, 0, "storage.get failed - error %i", ret);
 	zassert_equal(test_data, payload, "Retrieved payload doesn't mach test_data");
 	zassert_equal(sizeof(test_data), payload_size,
@@ -256,8 +256,8 @@ ZTEST(fetch_tests, test_integrated_fetch_to_memptr_NOK_handle_NULL)
 	uint8_t *payload;
 	size_t payload_size = 0;
 
-	ret = get_memptr_ptr(NULL, &payload, &payload_size);
-	zassert_not_equal(ret, 0, "get_memptr_storage should failed - handle NULL");
+	ret = suit_memptr_storage_ptr_get(NULL, &payload, &payload_size);
+	zassert_not_equal(ret, 0, "suit_memptr_storage_get should failed - handle NULL");
 
 	ret = suit_plat_release_component_handle(component_handle);
 	zassert_equal(ret, 0, "Handle release failed - error %i", ret);

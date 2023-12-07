@@ -74,7 +74,7 @@ static int verify_and_get_sink(suit_component_t dst_handle, struct stream_sink *
 #ifdef CONFIG_SUIT_STREAM_SINK_MEMPTR
 	case SUIT_COMPONENT_TYPE_CAND_IMG:
 	case SUIT_COMPONENT_TYPE_CAND_MFST: { /* memptr_sink */
-		memptr_storage_handle handle;
+		memptr_storage_handle_t handle;
 
 		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
 		if (ret != SUIT_SUCCESS) {

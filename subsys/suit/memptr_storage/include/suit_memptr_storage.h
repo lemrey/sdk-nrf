@@ -23,7 +23,7 @@ typedef int suit_memptr_storage_err_t;
 /**< Write to unallocated record */
 #define SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD 2
 
-typedef void *memptr_storage_handle;
+typedef void *memptr_storage_handle_t;
 
 /**
  * @brief Get the memptr storage object
@@ -34,7 +34,7 @@ typedef void *memptr_storage_handle;
  * @retval SUIT_PLAT_ERR_INVAL   invalid parameter, i.e. null pointer
  * @retval SUIT_PLAT_ERR_NOMEM   no free records were found
  */
-suit_memptr_storage_err_t get_memptr_storage(memptr_storage_handle *handle);
+suit_memptr_storage_err_t suit_memptr_storage_get(memptr_storage_handle_t *handle);
 
 /**
  * @brief Release storage record
@@ -44,7 +44,7 @@ suit_memptr_storage_err_t get_memptr_storage(memptr_storage_handle *handle);
  * @retval SUIT_PLAT_SUCCESS    on success
  * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  */
-suit_memptr_storage_err_t release_memptr_storage(memptr_storage_handle handle);
+suit_memptr_storage_err_t suit_memptr_storage_release(memptr_storage_handle_t handle);
 
 /**
  * @brief
@@ -57,8 +57,9 @@ suit_memptr_storage_err_t release_memptr_storage(memptr_storage_handle handle);
  * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  * @retval SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD Attempt to write to unallocated record.
  */
-suit_memptr_storage_err_t store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr,
-					   size_t payload_size);
+suit_memptr_storage_err_t suit_memptr_storage_ptr_store(memptr_storage_handle_t handle,
+						        uint8_t *payload_ptr,
+						        size_t payload_size);
 
 /**
  * @brief Get the memptr ptr object
@@ -71,8 +72,9 @@ suit_memptr_storage_err_t store_memptr_ptr(memptr_storage_handle handle, uint8_t
  * @retval SUIT_PLAT_ERR_INVAL  invalid parameter, i.e. null pointer
  * @retval SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD Attempt to read from unallocated record.
  */
-suit_memptr_storage_err_t get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr,
-					 size_t *payload_size);
+suit_memptr_storage_err_t suit_memptr_storage_ptr_get(memptr_storage_handle_t handle,
+						      uint8_t **payload_ptr,
+						      size_t *payload_size);
 
 #ifdef __cplusplus
 }

@@ -66,8 +66,8 @@ ZTEST(check_image_match_tests, test_mem_valid)
 	err = suit_plat_component_impl_data_get(component, &impl_data);
 	zassert_equal(SUIT_SUCCESS, err, "test error - suit_plat_component_impl_data_get: %d", err);
 
-	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data));
-	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
+	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data, sizeof(data));
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d", err);
 
 	/* WHEN a check image match function is called */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
@@ -101,8 +101,8 @@ ZTEST(check_image_match_tests, test_mem_wrong_size)
 	zassert_equal(SUIT_SUCCESS, err, "test error - suit_plat_component_impl_data_get: %d", err);
 
 	/* ... but indicating wrong data size */
-	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data) - 1);
-	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
+	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data, sizeof(data) - 1);
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d", err);
 
 	/* WHEN a check image match function is called */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
@@ -135,8 +135,8 @@ ZTEST(check_image_match_tests, test_mem_wrong_digest)
 	err = suit_plat_component_impl_data_get(component, &impl_data);
 	zassert_equal(SUIT_SUCCESS, err, "test error - suit_plat_component_impl_data_get: %d", err);
 
-	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data));
-	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr: %d", err);
+	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data, sizeof(data));
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d", err);
 
 	/* WHEN a check image match function is called with invalid digest */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &invalid_digest);
@@ -184,8 +184,8 @@ ZTEST(check_image_match_tests, test_cand_img_match)
 	zassert_equal(SUIT_SUCCESS, err,
 		      "test error - suit_plat_component_impl_data_get failed: %d", err);
 
-	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data));
-	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr failed: %d", err);
+	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data, sizeof(data));
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store failed: %d", err);
 
 	/* WHEN a check image match function is called */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &valid_digest);
@@ -211,8 +211,8 @@ ZTEST(check_image_match_tests, test_cand_img_mismatch)
 	zassert_equal(SUIT_SUCCESS, err,
 		      "test error - suit_plat_component_impl_data_get failed: %d", err);
 
-	err = store_memptr_ptr((memptr_storage_handle)impl_data, data, sizeof(data));
-	zassert_equal(SUIT_SUCCESS, err, "test error - store_memptr_ptr failed: %d", err);
+	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data, sizeof(data));
+	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store failed: %d", err);
 
 	/* WHEN a check image match function is called with invalid digest */
 	err = suit_plat_check_image_match(component, suit_cose_sha256, &invalid_digest);

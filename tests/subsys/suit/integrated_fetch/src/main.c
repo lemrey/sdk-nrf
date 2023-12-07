@@ -23,10 +23,10 @@ ZTEST_SUITE(memptr_streamer_tests, NULL, NULL, NULL, NULL, NULL);
 ZTEST(memptr_streamer_tests, test_memptr_streamer_OK)
 {
 	struct stream_sink memptr_sink;
-	memptr_storage_handle handle = NULL;
+	memptr_storage_handle_t handle = NULL;
 
-	int err = get_memptr_storage(&handle);
-	zassert_equal(err, 0, "get_memptr_storage failed - error %i", err);
+	int err = suit_memptr_storage_get(&handle);
+	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
 	err = memptr_sink_get(&memptr_sink, handle);
 	zassert_equal(err, 0, "memptr_sink_get failed - error %i", err);
@@ -34,17 +34,17 @@ ZTEST(memptr_streamer_tests, test_memptr_streamer_OK)
 	err = memptr_streamer(test_data, TEST_DATA_SIZE, &memptr_sink);
 	zassert_equal(err, 0, "memptr_streamer failed - error %i", err);
 
-	err = release_memptr_storage(handle);
+	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
 }
 
 ZTEST(memptr_streamer_tests, test_memptr_streamer_NOK)
 {
 	struct stream_sink memptr_sink;
-	memptr_storage_handle handle = NULL;
+	memptr_storage_handle_t handle = NULL;
 
-	int err = get_memptr_storage(&handle);
-	zassert_equal(err, 0, "get_memptr_storage failed - error %i", err);
+	int err = suit_memptr_storage_get(&handle);
+	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
 	err = memptr_sink_get(&memptr_sink, handle);
 	zassert_equal(err, 0, "memptr_sink_get failed - error %i", err);
@@ -58,6 +58,6 @@ ZTEST(memptr_streamer_tests, test_memptr_streamer_NOK)
 	err = memptr_streamer(test_data, TEST_DATA_SIZE, NULL);
 	zassert_not_equal(err, 0, "memptr_streamer should have failed - sink == NULL");
 
-	err = release_memptr_storage(handle);
+	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
 }

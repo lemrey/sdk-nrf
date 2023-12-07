@@ -13,7 +13,7 @@
 #define TEST_CLASS_ID		   ((suit_manifest_class_id_t *)0x789)
 #define TEST_ENVELOPE_ADDRESS	   ((uint8_t *)0xabcd)
 #define TEST_ENVELOPE_SIZE	   ((size_t)0xef01)
-#define TEST_MEMPTR_STORAGE_HANDLE ((memptr_storage_handle)0x2345)
+#define TEST_MEMPTR_STORAGE_HANDLE ((memptr_storage_handle_t)0x2345)
 
 static void test_before(void *data)
 {
@@ -225,8 +225,9 @@ static int suit_plat_component_impl_data_get_data_fake_func(suit_component_t han
 	return SUIT_SUCCESS;
 }
 
-static int get_memptr_ptr_no_data_fake_func(memptr_storage_handle handle, uint8_t **payload_ptr,
-					    size_t *payload_size)
+static int suit_memptr_storage_ptr_get_no_data_fake_func(memptr_storage_handle_t handle,
+							 uint8_t **payload_ptr,
+							 size_t *payload_size)
 {
 	zassert_equal(handle, TEST_MEMPTR_STORAGE_HANDLE, "Unexpected memory storage handle value");
 	zassert_not_equal(payload_ptr, NULL,
@@ -237,7 +238,7 @@ static int get_memptr_ptr_no_data_fake_func(memptr_storage_handle handle, uint8_
 	return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
 }
 
-static int get_memptr_ptr_invalid_addr_fake_func(memptr_storage_handle handle,
+static int suit_memptr_storage_ptr_get_invalid_addr_fake_func(memptr_storage_handle_t handle,
 						 uint8_t **payload_ptr, size_t *payload_size)
 {
 	zassert_equal(handle, TEST_MEMPTR_STORAGE_HANDLE, "Unexpected memory storage handle value");
@@ -252,7 +253,7 @@ static int get_memptr_ptr_invalid_addr_fake_func(memptr_storage_handle handle,
 	return SUIT_PLAT_SUCCESS;
 }
 
-static int get_memptr_ptr_invalid_size_fake_func(memptr_storage_handle handle,
+static int suit_memptr_storage_ptr_get_invalid_size_fake_func(memptr_storage_handle_t handle,
 						 uint8_t **payload_ptr, size_t *payload_size)
 {
 	zassert_equal(handle, TEST_MEMPTR_STORAGE_HANDLE, "Unexpected memory storage handle value");
@@ -267,7 +268,7 @@ static int get_memptr_ptr_invalid_size_fake_func(memptr_storage_handle handle,
 	return SUIT_PLAT_SUCCESS;
 }
 
-static int get_memptr_ptr_valid_fake_func(memptr_storage_handle handle, uint8_t **payload_ptr,
+static int suit_memptr_storage_ptr_get_valid_fake_func(memptr_storage_handle_t handle, uint8_t **payload_ptr,
 					  size_t *payload_size)
 {
 	zassert_equal(handle, TEST_MEMPTR_STORAGE_HANDLE, "Unexpected memory storage handle value");
@@ -316,8 +317,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_handle_null_args)
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_handle_invalid)
@@ -348,8 +349,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_handle_invalid)
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_component_unknown)
@@ -384,8 +385,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_component_unknown)
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_component_unsupported)
@@ -420,8 +421,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_component_unsupported)
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_component_mem)
@@ -456,8 +457,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_component_mem)
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_component_cand_img)
@@ -492,8 +493,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_component_cand_img)
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_instld_invalid_class)
@@ -532,8 +533,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_instld_invalid_class)
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_not_found)
@@ -576,8 +577,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_not_found)
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_invalid_address)
@@ -620,8 +621,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_invalid_addres
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_invalid_size)
@@ -664,8 +665,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_invalid_size)
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_found)
@@ -710,8 +711,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_instld_manifest_found)
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 0,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_no_data)
@@ -750,8 +751,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_no_data)
 		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
 	zassert_equal(suit_storage_installed_envelope_get_fake.call_count, 0,
 		      "Incorrect number of suit_storage_installed_envelope_get() calls");
-	zassert_equal(get_memptr_ptr_fake.call_count, 0,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 0,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 }
 
 ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_no_ptr)
@@ -769,7 +770,7 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_no_ptr)
 	suit_plat_component_impl_data_get_fake.custom_fake =
 		suit_plat_component_impl_data_get_data_fake_func;
 	/* ... and there is no data in memory pointer storage */
-	get_memptr_ptr_fake.custom_fake = get_memptr_ptr_no_data_fake_func;
+	suit_memptr_storage_ptr_get_fake.custom_fake = suit_memptr_storage_ptr_get_no_data_fake_func;
 
 	/* WHEN platform is asked to return manifest */
 	int ret = suit_plat_retrieve_manifest(TEST_COMPONENT_HANDLE, &envelope_str, &envelope_len);
@@ -787,8 +788,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_no_ptr)
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
 	/* ... and envelope was fetched from the memory pointer storage */
-	zassert_equal(get_memptr_ptr_fake.call_count, 1,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 1,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
@@ -812,7 +813,7 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_invalid_addr)
 	suit_plat_component_impl_data_get_fake.custom_fake =
 		suit_plat_component_impl_data_get_data_fake_func;
 	/* ... and there is data in memory pointer storage */
-	get_memptr_ptr_fake.custom_fake = get_memptr_ptr_invalid_addr_fake_func;
+	suit_memptr_storage_ptr_get_fake.custom_fake = suit_memptr_storage_ptr_get_invalid_addr_fake_func;
 
 	/* WHEN platform is asked to return manifest */
 	int ret = suit_plat_retrieve_manifest(TEST_COMPONENT_HANDLE, &envelope_str, &envelope_len);
@@ -830,8 +831,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_invalid_addr)
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
 	/* ... and envelope was fetched from the memory pointer storage */
-	zassert_equal(get_memptr_ptr_fake.call_count, 1,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 1,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
@@ -855,7 +856,7 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_invalid_size)
 	suit_plat_component_impl_data_get_fake.custom_fake =
 		suit_plat_component_impl_data_get_data_fake_func;
 	/* ... and there is data in memory pointer storage */
-	get_memptr_ptr_fake.custom_fake = get_memptr_ptr_invalid_size_fake_func;
+	suit_memptr_storage_ptr_get_fake.custom_fake = suit_memptr_storage_ptr_get_invalid_size_fake_func;
 
 	/* WHEN platform is asked to return manifest */
 	int ret = suit_plat_retrieve_manifest(TEST_COMPONENT_HANDLE, &envelope_str, &envelope_len);
@@ -873,8 +874,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_invalid_size)
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
 	/* ... and envelope was fetched from the memory pointer storage */
-	zassert_equal(get_memptr_ptr_fake.call_count, 1,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 1,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
@@ -898,7 +899,7 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_valid)
 	suit_plat_component_impl_data_get_fake.custom_fake =
 		suit_plat_component_impl_data_get_data_fake_func;
 	/* ... and there is data in memory pointer storage */
-	get_memptr_ptr_fake.custom_fake = get_memptr_ptr_valid_fake_func;
+	suit_memptr_storage_ptr_get_fake.custom_fake = suit_memptr_storage_ptr_get_valid_fake_func;
 
 	/* WHEN platform is asked to return manifest */
 	int ret = suit_plat_retrieve_manifest(TEST_COMPONENT_HANDLE, &envelope_str, &envelope_len);
@@ -918,8 +919,8 @@ ZTEST(suit_platform_retrieve_manifest_tests, test_cand_manifest_valid)
 	zassert_equal(suit_plat_component_impl_data_get_fake.call_count, 1,
 		      "Incorrect number of suit_plat_component_impl_data_get() calls");
 	/* ... and envelope was fetched from the memory pointer storage */
-	zassert_equal(get_memptr_ptr_fake.call_count, 1,
-		      "Incorrect number of get_memptr_ptr() calls");
+	zassert_equal(suit_memptr_storage_ptr_get_fake.call_count, 1,
+		      "Incorrect number of suit_memptr_storage_ptr_get() calls");
 
 	/* ... and other checks were not performed */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,

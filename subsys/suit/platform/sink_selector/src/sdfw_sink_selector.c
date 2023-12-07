@@ -52,7 +52,7 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 	case SUIT_COMPONENT_TYPE_CAND_IMG:
 	case SUIT_COMPONENT_TYPE_CAND_MFST: { /* memptr_sink */
 		uint32_t number;
-		memptr_storage_handle handle;
+		memptr_storage_handle_t handle;
 
 		if (suit_plat_decode_component_number(component_id, &number) != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Missing component id number in candidate image component");
@@ -72,7 +72,7 @@ int select_sink(suit_component_t dst_handle, struct stream_sink *sink)
 
 #ifdef CONFIG_SUIT_STREAM_SINK_FLASH
 	case SUIT_COMPONENT_TYPE_MEM: { /* flash_sink */
-		memptr_storage_handle handle;
+		memptr_storage_handle_t handle;
 		intptr_t run_address;
 		size_t size;
 

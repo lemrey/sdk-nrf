@@ -23,7 +23,7 @@ ZTEST_SUITE(copy_tests, NULL, NULL, NULL, NULL, NULL);
 
 ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_OK)
 {
-	memptr_storage_handle handle;
+	memptr_storage_handle_t handle;
 	struct zcbor_string source = {.value = test_data, .len = sizeof(test_data)};
 
 	suit_component_t src_handle;
@@ -48,7 +48,7 @@ ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_OK)
 	uint8_t *payload;
 	size_t payload_size = 0;
 
-	ret = get_memptr_ptr(handle, &payload, &payload_size);
+	ret = suit_memptr_storage_ptr_get(handle, &payload, &payload_size);
 	zassert_equal(ret, 0, "storage.get failed - error %i", ret);
 	zassert_equal_ptr(test_data, payload, "Retrieved payload doesn't mach test_data");
 	zassert_equal(sizeof(test_data), payload_size,
@@ -78,14 +78,14 @@ ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_OK)
 	ret = suit_plat_release_component_handle(src_handle);
 	zassert_equal(ret, 0, "src_handle release failed - error %i", ret);
 
-	ret = release_memptr_storage(handle);
+	ret = suit_memptr_storage_release(handle);
 	zassert_equal(ret, 0, "memptr_storage handle release failed - error %i", ret);
 }
 
 /**************************************************************************************************/
 ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_NOK_dst_handle_released)
 {
-	memptr_storage_handle handle = NULL;
+	memptr_storage_handle_t handle = NULL;
 	struct zcbor_string source = {.value = test_data, .len = sizeof(test_data)};
 
 	suit_component_t src_handle;
@@ -110,7 +110,7 @@ ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_NOK_dst_hand
 	uint8_t *payload;
 	size_t payload_size = 0;
 
-	ret = get_memptr_ptr(handle, &payload, &payload_size);
+	ret = suit_memptr_storage_ptr_get(handle, &payload, &payload_size);
 	zassert_equal(ret, 0, "storage.get failed - error %i", ret);
 	zassert_equal_ptr(test_data, payload, "Retrieved payload doesn't mach test_data");
 	zassert_equal(sizeof(test_data), payload_size,
@@ -140,13 +140,13 @@ ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_NOK_dst_hand
 	ret = suit_plat_release_component_handle(src_handle);
 	zassert_equal(ret, 0, "src_handle release failed - error %i", ret);
 
-	ret = release_memptr_storage(handle);
+	ret = suit_memptr_storage_release(handle);
 	zassert_equal(ret, 0, "memptr_storage handle release failed - error %i", ret);
 }
 
 ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_NOK_src_handle_released)
 {
-	memptr_storage_handle handle = NULL;
+	memptr_storage_handle_t handle = NULL;
 	struct zcbor_string source = {.value = test_data, .len = sizeof(test_data)};
 
 	suit_component_t src_handle;
@@ -171,7 +171,7 @@ ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_NOK_src_hand
 	uint8_t *payload;
 	size_t payload_size = 0;
 
-	ret = get_memptr_ptr(handle, &payload, &payload_size);
+	ret = suit_memptr_storage_ptr_get(handle, &payload, &payload_size);
 	zassert_equal(ret, 0, "storage.get failed - error %i", ret);
 	zassert_equal_ptr(test_data, payload, "Retrieved payload doesn't mach test_data");
 	zassert_equal(sizeof(test_data), payload_size,
@@ -201,7 +201,7 @@ ZTEST(copy_tests, test_integrated_fetch_to_memptr_and_copy_to_msink_NOK_src_hand
 	ret = suit_plat_release_component_handle(dst_handle);
 	zassert_equal(ret, 0, "src_handle release failed - error %i", ret);
 
-	ret = release_memptr_storage(handle);
+	ret = suit_memptr_storage_release(handle);
 	zassert_equal(ret, 0, "memptr_storage handle release failed - error %i", ret);
 }
 

@@ -12,7 +12,7 @@ LOG_MODULE_REGISTER(suit_memptr_sink, CONFIG_SUIT_LOG_LEVEL);
 static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size);
 static suit_plat_err_t used_storage(void *ctx, size_t *size);
 
-suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle handle)
+suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle_t handle)
 {
 	if ((sink != NULL) && (handle != NULL)) {
 		sink->erase = NULL;
@@ -34,10 +34,10 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 {
 	suit_memptr_storage_err_t err;
 	if ((ctx != NULL) && (buf != NULL) && (size != NULL) && (*size != 0)) {
-		err = store_memptr_ptr(ctx, buf, *size);
+		err = suit_memptr_storage_ptr_store(ctx, buf, *size);
 		if (err != SUIT_PLAT_SUCCESS)
 		{
-			/* In the current conditions store_memptr_ptr will only
+			/* In the current conditions suit_memptr_storage_ptr_store will only
 			   fail with SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD */
 			return SUIT_PLAT_ERR_NOT_FOUND;
 		}
@@ -55,7 +55,8 @@ static suit_plat_err_t used_storage(void *ctx, size_t *size)
 		uint8_t *payload_ptr;
 		size_t payload_size;
 
-		if (get_memptr_ptr(ctx, &payload_ptr, &payload_size) == SUIT_PLAT_SUCCESS) {
+		if (suit_memptr_storage_ptr_get(ctx, &payload_ptr, &payload_size)
+		    == SUIT_PLAT_SUCCESS) {
 			if (payload_ptr != NULL) {
 				*size = payload_size;
 			} else {

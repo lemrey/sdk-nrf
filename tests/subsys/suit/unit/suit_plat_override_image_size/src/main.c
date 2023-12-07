@@ -42,13 +42,14 @@ static suit_plat_err_t suit_plat_decode_address_size_fake_ok(struct zcbor_string
 	return SUIT_PLAT_SUCCESS;
 }
 
-static int get_memptr_ptr_fake_invalid_record(memptr_storage_handle handle, uint8_t **payload_ptr,
-					      size_t *payload_size)
+static int suit_memptr_storage_ptr_get_fake_invalid_record(memptr_storage_handle_t handle,
+						           uint8_t **payload_ptr,
+							   size_t *payload_size)
 {
 	return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
 }
 
-static int store_memptr_ptr_fake_unallocated_record(memptr_storage_handle handle,
+static int suit_memptr_storage_ptr_store_fake_unallocated_record(memptr_storage_handle_t handle,
 						    uint8_t *payload_ptr, size_t payload_size)
 {
 	return SUIT_MEMPTR_STORAGE_ERR_UNALLOCATED_RECORD;
@@ -90,11 +91,11 @@ ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_siz
 	/* THEN memptr_storage size should be set to 0 */
 	int expected_call_count = 1;
 	size_t expected_size = 0;
-	zassert_equal(store_memptr_ptr_fake.call_count, expected_call_count,
-		      "Wrong initial size store call count", store_memptr_ptr_fake.call_count,
+	zassert_equal(suit_memptr_storage_ptr_store_fake.call_count, expected_call_count,
+		      "Wrong initial size store call count", suit_memptr_storage_ptr_store_fake.call_count,
 		      expected_call_count);
-	zassert_equal(store_memptr_ptr_fake.arg2_history[0], expected_size,
-		      "Wrong initial size: %d instead of %d", store_memptr_ptr_fake.arg2_history[0],
+	zassert_equal(suit_memptr_storage_ptr_store_fake.arg2_history[0], expected_size,
+		      "Wrong initial size: %d instead of %d", suit_memptr_storage_ptr_store_fake.arg2_history[0],
 		      expected_size);
 
 	/* WHEN size override is called */
@@ -104,11 +105,11 @@ ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_siz
 	/* THEN memptr_storage size should be updated to given value */
 	expected_call_count = 2;
 	expected_size = TEST_FAKE_SIZE;
-	zassert_equal(store_memptr_ptr_fake.call_count, expected_call_count,
+	zassert_equal(suit_memptr_storage_ptr_store_fake.call_count, expected_call_count,
 		      "Wrong size store call count: %d instead of %d",
-		      store_memptr_ptr_fake.call_count, expected_call_count);
-	zassert_equal(store_memptr_ptr_fake.arg2_history[1], expected_size,
-		      "Wrong size: %d instead of %d", store_memptr_ptr_fake.arg2_history[1],
+		      suit_memptr_storage_ptr_store_fake.call_count, expected_call_count);
+	zassert_equal(suit_memptr_storage_ptr_store_fake.arg2_history[1], expected_size,
+		      "Wrong size: %d instead of %d", suit_memptr_storage_ptr_store_fake.arg2_history[1],
 		      expected_size);
 }
 
@@ -133,7 +134,8 @@ ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_siz
 {
 	/* GIVEN a MEM-type component (created in test setup step)*/
 	/* WHEN internal function is going to fail */
-	get_memptr_ptr_fake.custom_fake = get_memptr_ptr_fake_invalid_record;
+	suit_memptr_storage_ptr_get_fake.custom_fake
+		= suit_memptr_storage_ptr_get_fake_invalid_record;
 
 	/* WHEN size override is called */
 	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
@@ -147,7 +149,8 @@ ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_siz
 {
 	/* GIVEN a MEM-type component (created in test setup step)*/
 	/* WHEN internal function is going to fail */
-	store_memptr_ptr_fake.custom_fake = store_memptr_ptr_fake_unallocated_record;
+	suit_memptr_storage_ptr_store_fake.custom_fake
+		= suit_memptr_storage_ptr_store_fake_unallocated_record;
 	/* WHEN size override is called */
 	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
 	/* THEN appropriate error code is returned */

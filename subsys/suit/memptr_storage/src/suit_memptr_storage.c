@@ -17,7 +17,7 @@ struct memptr_storage {
 
 static struct memptr_storage records[CONFIG_SUIT_MAX_NUMBER_OF_INTEGRATED_PAYLOADS];
 
-suit_memptr_storage_err_t get_memptr_storage(memptr_storage_handle *handle)
+suit_memptr_storage_err_t suit_memptr_storage_get(memptr_storage_handle_t *handle)
 {
 	if (handle != NULL) {
 		for (size_t i = 0; i < CONFIG_SUIT_MAX_NUMBER_OF_INTEGRATED_PAYLOADS; i++) {
@@ -40,8 +40,9 @@ suit_memptr_storage_err_t get_memptr_storage(memptr_storage_handle *handle)
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_memptr_storage_err_t store_memptr_ptr(memptr_storage_handle handle, uint8_t *payload_ptr,
-					   size_t payload_size)
+suit_memptr_storage_err_t suit_memptr_storage_ptr_store(memptr_storage_handle_t handle,
+							uint8_t *payload_ptr,
+							size_t payload_size)
 {
 	if (handle != NULL) {
 		struct memptr_storage *record = (struct memptr_storage *)handle;
@@ -61,8 +62,9 @@ suit_memptr_storage_err_t store_memptr_ptr(memptr_storage_handle handle, uint8_t
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_memptr_storage_err_t get_memptr_ptr(memptr_storage_handle handle, uint8_t **payload_ptr,
-					 size_t *payload_size)
+suit_memptr_storage_err_t suit_memptr_storage_ptr_get(memptr_storage_handle_t handle,
+						      uint8_t **payload_ptr,
+						      size_t *payload_size)
 {
 	if ((handle != NULL) && (payload_ptr != NULL) && (payload_size != NULL)) {
 		struct memptr_storage *record = (struct memptr_storage *)handle;
@@ -82,7 +84,7 @@ suit_memptr_storage_err_t get_memptr_ptr(memptr_storage_handle handle, uint8_t *
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_memptr_storage_err_t release_memptr_storage(memptr_storage_handle handle)
+suit_memptr_storage_err_t suit_memptr_storage_release(memptr_storage_handle_t handle)
 {
 	if (handle != NULL) {
 		struct memptr_storage *record = (struct memptr_storage *)handle;

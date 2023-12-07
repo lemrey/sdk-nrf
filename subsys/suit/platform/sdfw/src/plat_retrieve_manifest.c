@@ -67,7 +67,7 @@ int suit_plat_retrieve_manifest(suit_component_t component_handle, uint8_t **env
 #endif /* CONFIG_SUIT_STORAGE */
 #ifdef CONFIG_SUIT_MEMPTR_STORAGE
 	case SUIT_COMPONENT_TYPE_CAND_MFST: {
-		memptr_storage_handle handle = NULL;
+		memptr_storage_handle_t handle = NULL;
 
 		ret = suit_plat_component_impl_data_get(component_handle, &handle);
 		if (ret != SUIT_SUCCESS) {
@@ -76,7 +76,7 @@ int suit_plat_retrieve_manifest(suit_component_t component_handle, uint8_t **env
 			break;
 		}
 
-		ret = get_memptr_ptr(handle, envelope_str, envelope_len);
+		ret = suit_memptr_storage_ptr_get(handle, envelope_str, envelope_len);
 		if ((ret != SUIT_PLAT_SUCCESS) || (*envelope_str == NULL) || (*envelope_len == 0)) {
 			LOG_ERR("Unable to fetch pointer to manifest candidate"
 				"(memptr storage err: %d)", ret);

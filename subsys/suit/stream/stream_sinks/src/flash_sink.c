@@ -65,7 +65,7 @@ struct flash_ctx {
 	size_t offset;
 	size_t offset_limit;
 	uintptr_t ptr;
-	memptr_storage_handle handle;
+	memptr_storage_handle_t handle;
 	const struct device *fdev;
 	size_t flash_write_size;
 	bool in_use;
@@ -125,14 +125,15 @@ static suit_plat_err_t register_write(struct flash_ctx *flash_ctx, size_t write_
 	uint8_t *payload_ptr = NULL;
 	size_t payload_size = 0;
 
-	suit_plat_err_t res = get_memptr_ptr(flash_ctx->handle, &payload_ptr, &payload_size);
+	suit_plat_err_t res = suit_memptr_storage_ptr_get(flash_ctx->handle, &payload_ptr,
+							  &payload_size);
 	if (res != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to retrieve memptr");
 		return res;
 	}
 
 	payload_size = flash_ctx->size_used;
-	res = store_memptr_ptr(flash_ctx->handle, payload_ptr, payload_size);
+	res = suit_memptr_storage_ptr_store(flash_ctx->handle, payload_ptr, payload_size);
 	if (res != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to update memptr");
 		return res;
@@ -198,7 +199,7 @@ suit_plat_err_t erase(void *ctx)
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle handle)
+suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle_t handle)
 {
 	if ((dst != NULL) && (size > 0) && (sink != NULL) && (handle != NULL)) {
 		struct flash_ctx *ctx = new_ctx_get();
@@ -249,7 +250,7 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 			uint8_t *payload_ptr = NULL;
 			size_t payload_size = 0;
 
-			suit_plat_err_t res = get_memptr_ptr(handle, &payload_ptr, &payload_size);
+			suit_plat_err_t res = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
 			if (res != SUIT_PLAT_SUCCESS) {
 				memset(ctx, 0, sizeof(*ctx));
 				LOG_ERR("Failed to retrieve memptr");
@@ -257,7 +258,7 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 			}
 
 			payload_size = 0;
-			res = store_memptr_ptr(handle, payload_ptr, payload_size);
+			res = suit_memptr_storage_ptr_store(handle, payload_ptr, payload_size);
 			if (res != SUIT_PLAT_SUCCESS) {
 				memset(ctx, 0, sizeof(*ctx));
 				LOG_ERR("Failed to update memptr");

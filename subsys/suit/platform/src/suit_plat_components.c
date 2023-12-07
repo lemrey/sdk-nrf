@@ -74,7 +74,7 @@ int suit_plat_release_component_handle(suit_component_t handle)
 	}
 
 	if (is_mem_mapped(component_type)) {
-		suit_memptr_storage_err_t ret = release_memptr_storage(component->impl_data);
+		suit_memptr_storage_err_t ret = suit_memptr_storage_release(component->impl_data);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			return SUIT_ERR_CRASH;
@@ -123,7 +123,7 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 
 	if ((component_type == SUIT_COMPONENT_TYPE_CAND_IMG) ||
 	    (component_type == SUIT_COMPONENT_TYPE_CAND_MFST)) {
-		err = get_memptr_storage(&component->impl_data);
+		err = suit_memptr_storage_get(&component->impl_data);
 		if (err != SUIT_PLAT_SUCCESS)
 		{
 			return suit_plat_err_to_proccessor_err_convert(err);
@@ -141,7 +141,7 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 		}
 
 		/* Associate memptr_storage with component's implementation data */
-		err = get_memptr_storage(&component->impl_data);
+		err = suit_memptr_storage_get(&component->impl_data);
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to get memptr_storage: %d", err);
 
@@ -150,7 +150,7 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 
 		/* Set the address as in component id but set size with 0 */
 		size = 0;
-		suit_memptr_storage_err_t err = store_memptr_ptr(component->impl_data, 
+		suit_memptr_storage_err_t err = suit_memptr_storage_ptr_store(component->impl_data, 
 						(uint8_t *)address, size);
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to store memptr ptr: %d", err);
@@ -240,14 +240,14 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 		uint8_t *payload_ptr = NULL;
 		size_t payload_size = 0;
 
-		err = get_memptr_ptr(impl_data, &payload_ptr, &payload_size);
+		err = suit_memptr_storage_ptr_get(impl_data, &payload_ptr, &payload_size);
 		if (err != SUIT_PLAT_SUCCESS) {			
 			LOG_ERR("Failed to get memptr: %i", err);
 			return SUIT_ERR_CRASH;
 		}
 
 		payload_size = size;
-		err = store_memptr_ptr(impl_data, payload_ptr, payload_size);
+		err = suit_memptr_storage_ptr_store(impl_data, payload_ptr, payload_size);
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to update memptr: %i", err);
 			return SUIT_ERR_CRASH;
