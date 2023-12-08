@@ -10,10 +10,6 @@
 	};
 };
 
-&cracen {
-	status = "okay";
-};
-
 &secdom_nvs {
 	partitions {
 		compatible = "fixed-partitions";
