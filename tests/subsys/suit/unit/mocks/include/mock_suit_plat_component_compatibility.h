@@ -10,13 +10,13 @@
 #include <zephyr/fff.h>
 #include <mock_globals.h>
 
-#include <suit_plat_check_component_compatibility.h>
+#include <suit_plat_component_compatibility.h>
 
-FAKE_VALUE_FUNC(int, suit_plat_check_component_compatibility, const suit_manifest_class_id_t *, struct zcbor_string *);
+FAKE_VALUE_FUNC(int, suit_plat_component_compatibility_check, const suit_manifest_class_id_t *, struct zcbor_string *);
 
-static inline void mock_suit_plat_check_component_compatibility_reset(void)
+static inline void mock_suit_plat_component_compatibility_check_reset(void)
 {
-	RESET_FAKE(suit_plat_check_component_compatibility);
+	RESET_FAKE(suit_plat_component_compatibility_check);
 }
 
 #endif /* MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY_H__ */

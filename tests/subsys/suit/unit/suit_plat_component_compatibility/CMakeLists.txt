@@ -12,5 +12,5 @@ project(suit_plat_check_component_id)
 
 target_sources(testbinary PRIVATE
   src/main.c
-  ${SUIT_SUBSYS_DIR}/platform/src/suit_plat_check_component_compatibility.c
+  ${SUIT_SUBSYS_DIR}/platform/src/suit_plat_component_compatibility.c
 )

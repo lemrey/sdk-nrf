@@ -21,7 +21,7 @@ extern "C" {
  * @param component_id Component ID to be checked
  * @return int ) in case of success, otherwise error code
  */
-int suit_plat_check_component_compatibility(const suit_manifest_class_id_t *class_id,
+int suit_plat_component_compatibility_check(const suit_manifest_class_id_t *class_id,
 					    struct zcbor_string *component_id);
 
 #ifdef __cplusplus

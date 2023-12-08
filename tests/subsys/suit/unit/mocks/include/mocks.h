@@ -31,7 +31,7 @@
 #endif
 
 #ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
-#include <mock_suit plat_check_component_compatibility.h>
+#include <mock_suit_plat_component_compatibility.h>
 #endif /* CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY */
 
 #ifdef CONFIG_MOCK_SUIT_PLATFORM_INTERNAL
@@ -65,7 +65,7 @@ static inline void mocks_reset(void)
 #endif
 
 #ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
-	mock_suit_plat_check_component_compatibility_reset();
+	mock_suit_plat_component_compatibility_check_reset();
 #endif
 
 #ifdef CONFIG_MOCK_SUIT_PLATFORM_INTERNAL

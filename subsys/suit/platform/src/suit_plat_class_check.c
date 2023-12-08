@@ -7,7 +7,7 @@
 #include <suit_platform.h>
 #include <suit_platform_internal.h>
 #include <suit_mci.h>
-#include <suit_plat_check_component_compatibility.h>
+#include <suit_plat_component_compatibility.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(suit_plat_class_check, CONFIG_SUIT_LOG_LEVEL);
@@ -47,7 +47,7 @@ int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *
 	}
 
 	for (size_t i = 0; i < size; i++) {
-		if ((suit_plat_check_component_compatibility(manifest_class_ids_list[i],
+		if ((suit_plat_component_compatibility_check(manifest_class_ids_list[i],
 							     component_id) == SUIT_SUCCESS) &&
 		    (suit_mci_suit_uuid_compare(cid, manifest_class_ids_list[i]) == SUIT_PLAT_SUCCESS)) {
 			return SUIT_SUCCESS;
@@ -83,7 +83,7 @@ int suit_plat_check_vid(suit_component_t component_handle, struct zcbor_string *
 	}
 
 	for (size_t i = 0; i < size; i++) {
-		if ((suit_plat_check_component_compatibility(manifest_class_ids_list[i],
+		if ((suit_plat_component_compatibility_check(manifest_class_ids_list[i],
 							     component_id) == SUIT_SUCCESS) &&
 		    (suit_mci_vendor_id_for_manifest_class_id_get(manifest_class_ids_list[i],
 							     &vendor_id) == SUIT_PLAT_SUCCESS) &&

@@ -8,7 +8,7 @@
 #include <suit_platform.h>
 #include <suit_mci.h>
 #include <suit_plat_decode_util.h>
-#include <suit_plat_check_component_compatibility.h>
+#include <suit_plat_component_compatibility.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(suit_plat_authenticate, CONFIG_SUIT_LOG_LEVEL);
@@ -127,5 +127,5 @@ int suit_plat_authorize_component_id(struct zcbor_string *manifest_component_id,
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
-	return suit_plat_check_component_compatibility(class_id, component_id);
+	return suit_plat_component_compatibility_check(class_id, component_id);
 }
