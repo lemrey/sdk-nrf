@@ -45,7 +45,8 @@ extern "C" {
  *    the suit_plat_err_to_proccessor_err_convert function to do so, however they can also choose
  *    to convert the error differently.
  * 5) Specific modules can extend the error codes pool. Error codes for a module must be positive
- *    integers. Note that error codes for modules might overlap.
+ *    integers to avoid collisions with common error code pool values.
+ *    Note that error codes for modules might overlap.
  * 6) If a module extends the error code pool it should define a type <module_name>_err_t which
  *    is resolved to int and should use it as a return type. This does not have a functional
  *    value, however it indicates the meaning of the error codes.
@@ -59,8 +60,7 @@ extern "C" {
  *    code of the dependent might differ depending on the context. However helper macros
  *    such as SUIT_RETURN_IF_SUIT_PLAT_ERR_CODE which have usage for many cases can be used.
  * 10) Modules might define their own, internal error code pools not exported outside of the
- *    module. However, these error code pools must be an extension of the common
- *    error code pool.
+ *    module. These error codes must be positive integers to avoid collisions with common error code pool values.
  * 11) It is recommended to use the error codes from the common error code pool unless it is
  *     really necessary - the main reason for adding module specific error codes should be
  *     the need of a higher layer module to control its flow based on lower level module
