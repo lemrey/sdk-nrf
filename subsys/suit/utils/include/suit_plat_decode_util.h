@@ -46,13 +46,6 @@ suit_plat_err_t suit_plat_decode_component_id(struct zcbor_string *component_id,
 suit_plat_err_t suit_plat_decode_component_type(struct zcbor_string *component_id,
 						suit_component_type_t *type);
 
-static inline bool is_mem_mapped(suit_component_type_t component_type)
-{
-	return (SUIT_COMPONENT_TYPE_CAND_IMG == component_type) ||
-	       (SUIT_COMPONENT_TYPE_CAND_MFST == component_type) ||
-	       (SUIT_COMPONENT_TYPE_MEM == component_type);
-}
-
 #endif /* CONFIG_SUIT_PLATFORM */
 
 /**

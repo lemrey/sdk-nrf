@@ -23,6 +23,13 @@ struct suit_plat_component {
 /** Platform component list, populated as a result of successful SUIT manifest validation. */
 static struct suit_plat_component components[SUIT_MAX_NUM_COMPONENT_PARAMS];
 
+static inline bool is_mem_mapped(suit_component_type_t component_type)
+{
+	return (SUIT_COMPONENT_TYPE_CAND_IMG == component_type) ||
+	       (SUIT_COMPONENT_TYPE_CAND_MFST == component_type) ||
+	       (SUIT_COMPONENT_TYPE_MEM == component_type);
+}
+
 /** Resolve pointer to the component structure into component handle.
  */
 static inline suit_component_t handle_from_component(const struct suit_plat_component *component)
