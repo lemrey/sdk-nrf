@@ -46,6 +46,19 @@
 
 #endif /* defined(CONFIG_TFM_SECURE_UART1) */
 
+// TODO: NCSDK-25009: Support configuring which UART instance is enabled
+#if defined(CONFIG_TFM_SECURE_UART22) && DOMAIN_NS != 1U
+
+#define RTE_USART22 1
+
+/* Configuration settings for Driver_USART22. */
+#define RTE_USART22_PINS          \
+{                                 \
+        NRF_PSEL(UART_TX,  1, 4), \
+        NRF_PSEL(UART_RX,  1, 5), \
+}
+
+#endif
 /* Configuration settings for Driver_FLASH0. */
 #define RTE_FLASH0 1
 

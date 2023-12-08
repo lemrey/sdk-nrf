@@ -60,7 +60,25 @@
 #define EXCEPTION_TYPE_BUSFAULT    (NVIC_USER_IRQ_OFFSET + BusFault_IRQn)
 #define EXCEPTION_TYPE_USAGEFAULT  (NVIC_USER_IRQ_OFFSET + UsageFault_IRQn)
 
+#if SPU_IRQn
 #define EXCEPTION_TYPE_SPUFAULT    (NVIC_USER_IRQ_OFFSET + SPU_IRQn)
+#endif
+
+#if SPU00_IRQn
+#define EXCEPTION_TYPE_SPU00FAULT    (NVIC_USER_IRQ_OFFSET + SPU00_IRQn)
+#endif
+
+#if SPU10_IRQn
+#define EXCEPTION_TYPE_SPU10FAULT    (NVIC_USER_IRQ_OFFSET + SPU10_IRQn)
+#endif
+
+#if SPU20_IRQn
+#define EXCEPTION_TYPE_SPU20FAULT    (NVIC_USER_IRQ_OFFSET + SPU20_IRQn)
+#endif
+
+#if SPU30_IRQn
+#define EXCEPTION_TYPE_SPU30FAULT    (NVIC_USER_IRQ_OFFSET + SPU30_IRQn)
+#endif
 
 typedef void (*ns_funcptr) (void) __attribute__((cmse_nonsecure_call));
 
@@ -145,7 +163,25 @@ void ns_fault_service_call_handler(void)
 	switch (exc_ctx.VECTACTIVE) {
 	case EXCEPTION_TYPE_SECUREFAULT:
 	case EXCEPTION_TYPE_BUSFAULT:
+#ifdef EXCEPTION_TYPE_SPUFAULT
 	case EXCEPTION_TYPE_SPUFAULT:
+#endif
+
+#ifdef EXCEPTION_TYPE_SPU00FAULT
+	case EXCEPTION_TYPE_SPU00FAULT:
+#endif
+
+#ifdef EXCEPTION_TYPE_SPU10FAULT
+	case EXCEPTION_TYPE_SPU10FAULT:
+#endif
+
+#ifdef EXCEPTION_TYPE_SPU20FAULT
+	case EXCEPTION_TYPE_SPU20FAULT:
+#endif
+
+#ifdef EXCEPTION_TYPE_SPU30FAULT
+	case EXCEPTION_TYPE_SPU30FAULT:
+#endif
 		break;
 	default:
 		/* Always handle HardFaults in secure.
