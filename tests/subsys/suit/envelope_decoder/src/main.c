@@ -14,7 +14,7 @@
 #include <suit_platform.h>
 #include <suit_mci.h>
 
-#define DFU_PARTITION_ADDRESS (suit_plat_get_nvm_ptr(DFU_PARTITION_OFFSET))
+#define DFU_PARTITION_ADDRESS (suit_plat_mem_nvm_ptr_get(DFU_PARTITION_OFFSET))
 #define DFU_PARTITION_OFFSET  ((size_t)FIXED_PARTITION_OFFSET(dfu_partition))
 #define DFU_PARTITION_SIZE    ((size_t)FIXED_PARTITION_SIZE(dfu_partition))
 

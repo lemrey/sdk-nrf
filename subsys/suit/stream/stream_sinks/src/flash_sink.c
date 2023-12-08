@@ -149,7 +149,7 @@ static suit_plat_err_t register_write(struct flash_ctx *flash_ctx, size_t write_
  */
 static const struct nvm_area *nvm_area_get(uint8_t *address)
 {
-	size_t target_offset = suit_plat_get_nvm_offset(address);
+	size_t target_offset = suit_plat_mem_nvm_offset_get(address);
 
 	for (size_t i = 0; i < nvm_area_map_size; i++) {
 		LOG_DBG("nvm_area: start_address: 0x%lX,  size: 0x%X,  target offset: 0x%X", nvm_area_map[i].na_start, nvm_area_map[i].na_size, target_offset);
@@ -204,7 +204,8 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 		struct flash_ctx *ctx = new_ctx_get();
 
 		if (ctx != NULL) {
-			LOG_DBG("flash_sink requested area: offset: 0x%lX; size: 0x%X", suit_plat_get_nvm_offset(dst), size);
+			LOG_DBG("flash_sink requested area: offset: 0x%lX; size: 0x%X",
+				suit_plat_mem_nvm_offset_get(dst), size);
 
 			const struct nvm_area *nvm_area = nvm_area_get(dst);
 
@@ -219,7 +220,8 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 			}
 
 			/* Check if requested area fits in found nvm */
-			if ((suit_plat_get_nvm_offset(dst) + size) > (nvm_area->na_start + nvm_area->na_size)) {
+			if ((suit_plat_mem_nvm_offset_get(dst) + size)
+			    > (nvm_area->na_start + nvm_area->na_size)) {
 				LOG_ERR("Requested memory area out of bounds of corresponding nvm");
 				return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
 			}
@@ -228,13 +230,13 @@ suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t si
 			ctx->flash_write_size = flash_write_size_get(nvm_area->na_fdev);
 			ctx->fdev = nvm_area->na_fdev;
 			ctx->offset = 0;
-			ctx->offset_limit = suit_plat_get_nvm_offset(dst) + size; /* max address */
+			ctx->offset_limit = suit_plat_mem_nvm_offset_get(dst) + size; /* max address */
 			ctx->size_used = 0;
-			ctx->ptr = suit_plat_get_nvm_offset(dst);
+			ctx->ptr = suit_plat_mem_nvm_offset_get(dst);
 			ctx->handle = handle;
 			ctx->in_use = true;
 
-			if ((ctx->flash_write_size > 
+			if ((ctx->flash_write_size >
 				(nvm_area->na_start + nvm_area->na_size)) ||
 				(ctx->flash_write_size > SWAP_BUFFER_SIZE)) {
 

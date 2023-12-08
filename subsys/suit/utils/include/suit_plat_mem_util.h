@@ -38,7 +38,7 @@ extern "C" {
  *
  * @returns Pointer to the memory.
  */
-uint8_t *suit_plat_get_mem_ptr(uintptr_t address);
+uint8_t *suit_plat_mem_ptr_get(uintptr_t address);
 
 /** @brief Convert pointer to the memory to address compatible with SUIT component ID.
  *
@@ -49,7 +49,7 @@ uint8_t *suit_plat_get_mem_ptr(uintptr_t address);
  *
  * @returns Address compatible with the SUIT component ID.
  */
-uintptr_t suit_plat_get_mem_address(uint8_t *ptr);
+uintptr_t suit_plat_mem_address_get(uint8_t *ptr);
 
 /** @brief Convert pointer to the memory to the offset in the area, managed by the default flash
  *         controller.
@@ -61,7 +61,7 @@ uintptr_t suit_plat_get_mem_address(uint8_t *ptr);
  *
  * @returns Offset in the NVM area, managed by the flash controller.
  */
-uintptr_t suit_plat_get_nvm_offset(uint8_t *ptr);
+uintptr_t suit_plat_mem_nvm_offset_get(uint8_t *ptr);
 
 /** @brief Convert the offset in the area, managed by the default flash controller to pointer to the
  *         memory.
@@ -73,7 +73,7 @@ uintptr_t suit_plat_get_nvm_offset(uint8_t *ptr);
  *
  * @returns Pointer to the memory.
  */
-uint8_t *suit_plat_get_nvm_ptr(uintptr_t offset);
+uint8_t *suit_plat_mem_nvm_ptr_get(uintptr_t offset);
 
 #ifdef __cplusplus
 }

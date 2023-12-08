@@ -35,7 +35,7 @@ suit_plat_err_t suit_plat_decode_component_id(struct zcbor_string *component_id,
 	res = res && zcbor_list_end_decode(state);
 
 	if (res) {
-		*run_address = (intptr_t)suit_plat_get_mem_ptr(*run_address);
+		*run_address = (intptr_t)suit_plat_mem_ptr_get(*run_address);
 		return SUIT_PLAT_SUCCESS;
 	}
 
@@ -118,7 +118,7 @@ suit_plat_err_t suit_plat_decode_address_size(struct zcbor_string *component_id,
 	res = res && zcbor_list_end_decode(state);
 
 	if (res) {
-		*run_address = (intptr_t)suit_plat_get_mem_ptr(*run_address);
+		*run_address = (intptr_t)suit_plat_mem_ptr_get(*run_address);
 		return SUIT_PLAT_SUCCESS;
 	}
 

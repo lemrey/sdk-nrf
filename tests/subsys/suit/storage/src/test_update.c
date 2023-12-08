@@ -9,7 +9,7 @@
 #include <suit_plat_mem_util.h>
 #include <update_magic_values.h>
 
-#define SUIT_STORAGE_ADDRESS suit_plat_get_nvm_ptr(SUIT_STORAGE_OFFSET)
+#define SUIT_STORAGE_ADDRESS suit_plat_mem_nvm_ptr_get(SUIT_STORAGE_OFFSET)
 #define SUIT_STORAGE_OFFSET  FIXED_PARTITION_OFFSET(suit_storage)
 #define SUIT_STORAGE_SIZE    FIXED_PARTITION_SIZE(suit_storage)
 

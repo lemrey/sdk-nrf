@@ -9,7 +9,7 @@
 #include <zephyr/drivers/flash/flash_simulator.h>
 #endif /* CONFIG_FLASH_SIMULATOR */
 
-uint8_t *suit_plat_get_mem_ptr(uintptr_t address)
+uint8_t *suit_plat_mem_ptr_get(uintptr_t address)
 {
 #ifdef CONFIG_FLASH_SIMULATOR
 	static uint8_t *f_base_address = NULL;
@@ -28,7 +28,7 @@ uint8_t *suit_plat_get_mem_ptr(uintptr_t address)
 #endif /* CONFIG_FLASH_SIMULATOR */
 }
 
-uintptr_t suit_plat_get_mem_address(uint8_t *ptr)
+uintptr_t suit_plat_mem_address_get(uint8_t *ptr)
 {
 #ifdef CONFIG_FLASH_SIMULATOR
 	static uint8_t *f_base_address = NULL;
@@ -47,9 +47,9 @@ uintptr_t suit_plat_get_mem_address(uint8_t *ptr)
 #endif /* CONFIG_FLASH_SIMULATOR */
 }
 
-uintptr_t suit_plat_get_nvm_offset(uint8_t *ptr)
+uintptr_t suit_plat_mem_nvm_offset_get(uint8_t *ptr)
 {
-	uintptr_t address = suit_plat_get_mem_address(ptr);
+	uintptr_t address = suit_plat_mem_address_get(ptr);
 
 #if (DT_NODE_EXISTS(DT_NODELABEL(mram10)))
 	address = (((address)&0xEFFFFFFFUL) - (DT_REG_ADDR(DT_NODELABEL(mram10)) & 0xEFFFFFFFUL));
@@ -58,7 +58,7 @@ uintptr_t suit_plat_get_nvm_offset(uint8_t *ptr)
 	return address;
 }
 
-uint8_t *suit_plat_get_nvm_ptr(uintptr_t offset)
+uint8_t *suit_plat_mem_nvm_ptr_get(uintptr_t offset)
 {
 	uintptr_t address;
 
@@ -68,5 +68,5 @@ uint8_t *suit_plat_get_nvm_ptr(uintptr_t offset)
 	address = offset;
 #endif
 
-	return suit_plat_get_mem_ptr(address);
+	return suit_plat_mem_ptr_get(address);
 }

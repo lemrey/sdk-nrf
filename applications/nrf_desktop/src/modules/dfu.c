@@ -333,7 +333,8 @@ static void complete_dfu_data_store(void)
 			LOG_ERR("Cannot request the image upgrade (err:%d)", err);
 		}
 #elif CONFIG_SUIT
-		update_candidate.mem = suit_plat_get_nvm_ptr(FIXED_PARTITION_OFFSET(dfu_partition));
+		update_candidate.mem
+			= suit_plat_mem_nvm_ptr_get(FIXED_PARTITION_OFFSET(dfu_partition));
 		update_candidate.size = img_length;
 		LOG_INF("DFU update candidate stored in DFU partition");
 		LOG_INF("Update will be performed on configuration channel reboot request");

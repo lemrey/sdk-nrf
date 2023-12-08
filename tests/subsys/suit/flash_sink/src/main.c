@@ -14,7 +14,7 @@
 
 #define TEST_DATA_SIZE 64
 #define TEST_REQUESTED_AREA 0x1000
-#define WRITE_ADDR     suit_plat_get_nvm_ptr(SUIT_DFU_PARTITION_OFFSET)
+#define WRITE_ADDR     suit_plat_mem_nvm_ptr_get(SUIT_DFU_PARTITION_OFFSET)
 
 #define SUIT_DFU_PARTITION_OFFSET  FIXED_PARTITION_OFFSET(dfu_partition)
 #define SUIT_DFU_PARTITION_SIZE    FIXED_PARTITION_SIZE(dfu_partition)

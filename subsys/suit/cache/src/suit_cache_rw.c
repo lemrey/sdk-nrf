@@ -98,7 +98,7 @@ suit_plat_err_t suit_cache_initialize_rw(void *addr, size_t size)
 	for (size_t i = 0; i < suit_cache.partitions_count; i++) {
 		suit_cache.partitions[i].size = dfu_partitions_ext[i].size;
 		suit_cache.partitions[i].address =
-			suit_plat_get_nvm_ptr(dfu_partitions_ext[i].offset);
+			suit_plat_mem_nvm_ptr_get(dfu_partitions_ext[i].offset);
 		LOG_DBG("Found partition %d: (addr: %p, size: 0x%x)", i,
 			(void *)suit_cache.partitions[i].address, suit_cache.partitions[i].size);
 	}
@@ -186,7 +186,7 @@ static suit_plat_err_t cache_check_free_space(struct suit_cache_partition_ext *p
 		part_tmp_offset = part->offset;
 
 		zcbor_new_state(states, sizeof(states) / sizeof(zcbor_state_t),
-				suit_plat_get_nvm_ptr(part->offset), part->size, 1);
+				suit_plat_mem_nvm_ptr_get(part->offset), part->size, 1);
 		ret = zcbor_map_start_decode(states);
 
 		do {
@@ -194,7 +194,7 @@ static suit_plat_err_t cache_check_free_space(struct suit_cache_partition_ext *p
 				      (zcbor_bstr_decode(states, &current_data)));
 
 			if (ret) {
-				part_tmp_offset = suit_plat_get_nvm_offset(
+				part_tmp_offset = suit_plat_mem_nvm_offset_get(
 					(uint8_t *)(current_data.value + current_data.len));
 				break;
 			}
@@ -205,7 +205,7 @@ static suit_plat_err_t cache_check_free_space(struct suit_cache_partition_ext *p
 
 		for (; part_tmp_offset < (part->offset + part->size); part_tmp_offset++) {
 			/* cache is indefinite-length map, so to find end we look for 0xFF marker */
-			if ((*suit_plat_get_nvm_ptr(part_tmp_offset)) == 0xFF) {
+			if ((*suit_plat_mem_nvm_ptr_get(part_tmp_offset)) == 0xFF) {
 				slot->size = part->offset + part->size - part_tmp_offset;
 				slot->slot_offset = part_tmp_offset;
 
@@ -320,14 +320,14 @@ static suit_plat_err_t update_cache_0(void *address, size_t size)
 	}
 
 	/* Check if update address is in dfu_partition range */
-	if ((suit_plat_get_nvm_offset(address) < dfu_partitions_ext[0].offset) ||
-	    (suit_plat_get_nvm_offset(address) >=
+	if ((suit_plat_mem_nvm_offset_get(address) < dfu_partitions_ext[0].offset) ||
+	    (suit_plat_mem_nvm_offset_get(address) >=
 	     (dfu_partitions_ext[0].offset + dfu_partitions_ext[0].size))) {
 		LOG_ERR("Envelope address doesn't match dfu_partition");
 		return SUIT_PLAT_ERR_INVAL;
 	}
 
-	size_t tmp_offset = suit_plat_get_nvm_offset(address) + size;
+	size_t tmp_offset = suit_plat_mem_nvm_offset_get(address) + size;
 
 	if (tmp_offset >= (dfu_partitions_ext[0].offset + dfu_partitions_ext[0].size)) {
 		LOG_WRN("No free space for cache");
@@ -337,7 +337,7 @@ static suit_plat_err_t update_cache_0(void *address, size_t size)
 		dfu_partitions_ext[0].offset = tmp_offset;
 
 		/* Calculate remaining free space in dfu_partition */
-		dfu_partitions_ext[0].size -= (suit_plat_get_nvm_offset(address) + size);
+		dfu_partitions_ext[0].size -= (suit_plat_mem_nvm_offset_get(address) + size);
 	}
 
 	if (dfu_partitions_ext[0].size > 0) {
