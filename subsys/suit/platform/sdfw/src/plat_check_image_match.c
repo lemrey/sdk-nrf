@@ -56,7 +56,7 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 		return suit_plat_err_to_proccessor_err_convert(err);
 	}
 
-	err = memptr_streamer(data, size, &digest_sink);
+	err = suit_memptr_streamer_stream(data, size, &digest_sink);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to stream to digest sink: %d", err);
 		err = suit_plat_err_to_proccessor_err_convert(err);

@@ -9,7 +9,7 @@
 
 LOG_MODULE_REGISTER(suit_memptr_streamer, CONFIG_SUIT_LOG_LEVEL);
 
-suit_plat_err_t memptr_streamer(const uint8_t *payload, size_t payload_size,
+suit_plat_err_t suit_memptr_streamer_stream(const uint8_t *payload, size_t payload_size,
 				struct stream_sink *sink)
 {
 	if ((payload != NULL) && (sink != NULL) && (sink->write != NULL) && (payload_size > 0)) {

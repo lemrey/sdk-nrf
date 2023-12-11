@@ -158,14 +158,14 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 #ifdef CONFIG_SUIT_STREAM_FETCH_SOURCE_MGR
 	case SUIT_COMPONENT_TYPE_CACHE_POOL:
 	case SUIT_COMPONENT_TYPE_MEM: {
-		ret = fetch_source_stream(uri->value, uri->len, &dst_sink);
+		ret = suit_fetch_source_stream(uri->value, uri->len, &dst_sink);
 		ret = suit_plat_err_to_proccessor_err_convert(ret);
 	} break;
 #endif /* SUIT_STREAM_FETCH_SOURCE_MGR */
 #if defined(CONFIG_SUIT_CACHE_RW) || defined(SUIT_CACHE)
 	case SUIT_COMPONENT_TYPE_CAND_MFST:
 	case SUIT_COMPONENT_TYPE_CAND_IMG: {
-		ret = dfu_cache_streamer(uri->value, uri->len, &dst_sink);
+		ret = suit_dfu_cache_streamer_stream(uri->value, uri->len, &dst_sink);
 		ret = suit_plat_err_to_proccessor_err_convert(ret);
 	} break;
 #endif
@@ -279,7 +279,7 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 	}
 
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
-	ret = memptr_streamer(payload->value, payload->len, &dst_sink);
+	ret = suit_memptr_streamer_stream(payload->value, payload->len, &dst_sink);
 #endif  /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
 
 	if (sink.release != NULL) {

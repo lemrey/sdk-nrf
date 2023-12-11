@@ -21,8 +21,8 @@ extern "C" {
  * @param sink Pointer to sink that will write payload - target
  * @return SUIT_PLAT_SUCCESS if success otherwise error code
  */
-suit_plat_err_t memptr_streamer(const uint8_t *payload, size_t payload_size,
-				struct stream_sink *sink);
+suit_plat_err_t suit_memptr_streamer_stream(const uint8_t *payload, size_t payload_size,
+					    struct stream_sink *sink);
 
 #ifdef __cplusplus
 }

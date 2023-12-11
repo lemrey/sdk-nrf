@@ -208,7 +208,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 			return suit_plat_err_to_proccessor_err_convert(ret);
 		}
 
-		ret = memptr_streamer(payload_ptr, payload_size, &dst_sink);
+		ret = suit_memptr_streamer_stream(payload_ptr, payload_size, &dst_sink);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("memptr_streamer failed - error %i", ret);

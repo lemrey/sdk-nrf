@@ -50,7 +50,7 @@ typedef suit_plat_err_t (*fetch_source_mgr_fetch_request_fn)(const uint8_t *uri,
  * @return SUIT_PLAT_SUCCESS on success, error code otherwise
  */
 
-suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn);
+suit_plat_err_t suit_fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn);
 
 /**
  * @brief Streams an image from source to sink
@@ -65,8 +65,8 @@ suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_
  *
  * @return SUIT_PLAT_SUCCESS on success, error code otherwise
  */
-suit_plat_err_t fetch_source_stream(const uint8_t *resource_id, size_t resource_id_length,
-			struct stream_sink *sink);
+suit_plat_err_t suit_fetch_source_stream(const uint8_t *resource_id, size_t resource_id_length,
+					 struct stream_sink *sink);
 
 #ifdef __cplusplus
 }

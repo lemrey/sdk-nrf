@@ -139,7 +139,7 @@ static suit_plat_err_t seek_proxy(void *ctx, size_t offset)
 	return err;
 }
 
-suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn)
+suit_plat_err_t suit_fetch_source_register(fetch_source_mgr_fetch_request_fn request_fn)
 {
 	component_lock();
 
@@ -156,7 +156,8 @@ suit_plat_err_t fetch_source_register(fetch_source_mgr_fetch_request_fn request_
 	return SUIT_PLAT_ERR_NO_RESOURCES;
 }
 
-suit_plat_err_t fetch_source_stream(const uint8_t *uri, size_t uri_length, struct stream_sink *sink)
+suit_plat_err_t suit_fetch_source_stream(const uint8_t *uri, size_t uri_length,
+					 struct stream_sink *sink)
 {
 
 	if (NULL == uri || 0 == uri_length || NULL == sink || NULL == sink->write) {

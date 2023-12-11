@@ -355,7 +355,7 @@ static void image_request_worker(struct k_work *item)
 				   .ctx = (void *)(uintptr_t)ri->stream_session_id};
 
 	uint8_t *resource_id = ri->buffer_info.buffer[0];
-	suit_plat_err_t err = fetch_source_stream(resource_id, strlen(resource_id), &sink);
+	suit_plat_err_t err = suit_fetch_source_stream(resource_id, strlen(resource_id), &sink);
 
 	if (SUIT_PLAT_SUCCESS == err) {
 		err = end_of_stream(ri);

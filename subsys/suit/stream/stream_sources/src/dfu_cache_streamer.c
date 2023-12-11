@@ -11,9 +11,10 @@
 
 LOG_MODULE_REGISTER(dfu_cache_streamer, CONFIG_SUIT_LOG_LEVEL);
 
-suit_plat_err_t dfu_cache_streamer(const uint8_t *uri, size_t uri_size, struct stream_sink *sink)
+suit_plat_err_t suit_dfu_cache_streamer_stream(const uint8_t *uri, size_t uri_size,
+					       struct stream_sink *sink)
 {
-	LOG_ERR("Running dfu_cache_streamer function");
+	LOG_ERR("Running suit_dfu_cache_streamer_stream function");
 	if ((uri != NULL) && (sink != NULL) && (sink->write != NULL) && (uri_size > 0)) {
 		suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 		uint8_t *payload = NULL;

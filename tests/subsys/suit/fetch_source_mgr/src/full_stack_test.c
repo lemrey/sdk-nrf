@@ -115,7 +115,7 @@ void test_full_stack(void)
 	rc = suit_ipc_streamer_provider_init();
 	zassert_equal(rc, 0, "suit_ipc_streamer_provider_init returned (%d)", rc);
 
-	rc = fetch_source_register(fetch_request_fn);
+	rc = suit_fetch_source_register(fetch_request_fn);
 	zassert_equal(rc, 0, "fetch_source_register returned (%d)", rc);
 
 	struct stream_sink test_sink = {
