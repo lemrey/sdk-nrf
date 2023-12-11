@@ -107,13 +107,13 @@ void test_full_stack(void)
 		}
 	}
 
-	ipc_streamer_chunk_status_evt_unsubscribe();
-	ipc_streamer_missing_image_evt_unsubscribe();
+	suit_ipc_streamer_chunk_status_evt_unsubscribe();
+	suit_ipc_streamer_missing_image_evt_unsubscribe();
 
 	int rc = 0;
 
-	rc = ipc_streamer_provider_init();
-	zassert_equal(rc, 0, "ipc_streamer_provider_init returned (%d)", rc);
+	rc = suit_ipc_streamer_provider_init();
+	zassert_equal(rc, 0, "suit_ipc_streamer_provider_init returned (%d)", rc);
 
 	rc = fetch_source_register(fetch_request_fn);
 	zassert_equal(rc, 0, "fetch_source_register returned (%d)", rc);
@@ -129,11 +129,11 @@ void test_full_stack(void)
 
 	uint32_t inter_chunk_timeout_ms = 10000;
 	uint32_t requesting_period_ms = 1000;
-	rc = ipc_streamer_stream(requested_resource_id, strlen(requested_resource_id), &test_sink,
-				 inter_chunk_timeout_ms, requesting_period_ms);
+	rc = suit_ipc_streamer_stream(requested_resource_id, strlen(requested_resource_id),
+				      &test_sink, inter_chunk_timeout_ms, requesting_period_ms);
 
 	zassert_equal(expected_bytes, received_bytes, "%d vs %d", expected_bytes, received_bytes);
 	zassert_equal(expected_checksum, received_checksum, "%d vs %d", expected_checksum,
 		      received_checksum);
-	zassert_equal(rc, 0, "ipc_streamer_stream returned (%d)", rc);
+	zassert_equal(rc, 0, "suit_ipc_streamer_stream returned (%d)", rc);
 }

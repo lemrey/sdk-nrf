@@ -48,14 +48,14 @@ void test_ipc_streamer_requestor_no_response(void)
 	uint32_t requesting_period_ms = 1000;
 	int rc = 0;
 
-	ipc_streamer_missing_image_evt_unsubscribe();
-	rc = ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fn,
+	suit_ipc_streamer_missing_image_evt_unsubscribe();
+	rc = suit_ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fn,
 						      missing_image_notify_requested_ctx);
-	zassert_equal(rc, 0, "ipc_streamer_missing_image_evt_subscribe returned (%d)", rc);
+	zassert_equal(rc, 0, "suit_ipc_streamer_missing_image_evt_subscribe returned (%d)", rc);
 
-	rc = ipc_streamer_stream(requested_resource_id, strlen(requested_resource_id), &test_sink,
-				 inter_chunk_timeout_ms, requesting_period_ms);
-	zassert_equal(rc, SUIT_PLAT_ERR_TIME, "ipc_streamer_stream returned (%d)", rc);
+	rc = suit_ipc_streamer_stream(requested_resource_id, strlen(requested_resource_id),
+				      &test_sink, inter_chunk_timeout_ms, requesting_period_ms);
+	zassert_equal(rc, SUIT_PLAT_ERR_TIME, "suit_ipc_streamer_stream returned (%d)", rc);
 	zassert_equal(write_chunk_count, 0, "write_chunk_count (%d)", write_chunk_count);
 
 	/* taking requesting_period_ms = 1s and inter_chunk_timeout_ms = 10s

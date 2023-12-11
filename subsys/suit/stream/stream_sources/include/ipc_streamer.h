@@ -43,7 +43,7 @@ extern "C" {
  * @param[in]   sink			Function pointers to pass image chunk to next chunk
  *processing element. Non-'null' write_ptr is always required. Non-'null' seek_ptr is required if
  *streamer provider delivers image in non-continous chunks. In event of failure of any sink-related
- *operations ipc_streamer_stream will fail as well.
+ *operations suit_ipc_streamer_stream will fail as well.
  *
  * @param[in]   inter_chunk_timeout_ms	Function will fail (timeout) in case of streamer provider
  *inactivity period longer then this parameter value
@@ -58,37 +58,37 @@ extern "C" {
  *		SUIT_PLAT_ERR_TIME timeout error. streamer provider did not respond or stopped
  *to respond
  */
-suit_plat_err_t ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
+suit_plat_err_t suit_ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
 			struct stream_sink *sink, uint32_t inter_chunk_timeout_ms,
 			uint32_t requesting_period_ms);
 
 /**
  * @brief Initialization function for streamer requestor (when executed in SDFW) or streamer
  * requestor proxy (when executed on local Domain MCU). In case of execution on local Domain MCU -
- * It is called directly from ipc_streamer_provider_init implementation.
+ * It is called directly from suit_ipc_streamer_provider_init implementation.
  *
  * @return SUIT_PLAT_SUCCESS on success, error code in case of failure
  */
-suit_plat_err_t ipc_streamer_requestor_init(void);
+suit_plat_err_t suit_ipc_streamer_requestor_init(void);
 
 /**
  * @brief Initialization function for streamer provider.
  *
  * @return SUIT_PLAT_SUCCESS on success, error code in case of failure
  */
-suit_plat_err_t ipc_streamer_provider_init(void);
+suit_plat_err_t suit_ipc_streamer_provider_init(void);
 
 typedef enum {
 	PENDING = 0,
 	PROCESSED = 1,
 	REFUSED = 2
-} ipc_streamer_chunk_status_t;
+} suit_ipc_streamer_chunk_status_t;
 
 typedef struct {
 	uint32_t chunk_id;
-	ipc_streamer_chunk_status_t status;
+	suit_ipc_streamer_chunk_status_t status;
 
-} ipc_streamer_chunk_info_t;
+} suit_ipc_streamer_chunk_info_t;
 
 /**
  * @brief Enqueues image chunk for future processing. Implemented by streamer requestor and exposed
@@ -98,10 +98,11 @@ typedef struct {
  *
  *
  * @param[in]   stream_session_id	Session identifier - see
- *ipc_streamer_missing_image_notify_fn
+ *suit_ipc_streamer_missing_image_notify_fn
  *
  * @param[in]   chunk_id		Chunk identifier assigned by streamer provider, not
- *interpreted by streamer requestor, but provided back as output of ipc_streamer_chunk_status_req
+ *interpreted by streamer requestor, but provided back as output of
+ *suit_ipc_streamer_chunk_status_req
  *Non-zero value assigned by streamer provider, unique for chunk in space of stream_session_id. It
  *is utilized by streamer provider for buffer mananagment.
  *
@@ -110,9 +111,9 @@ typedef struct {
  * @param[in]   address			Location of memory buffer where image chunk is stored. Once
  *passed to streamer requestor
  *					- its content shall not be modified by streamer provider
- *till the end of processing by streamer requestor. See ipc_streamer_chunk_status_req. It is allowed
- *to pass 'null' address and 0 bytes size, to signalize seeking operation or to report end of
- *stream.
+ *till the end of processing by streamer requestor. See suit_ipc_streamer_chunk_status_req.
+ *It is allowed *to pass 'null' address and 0 bytes size, to signalize seeking operation or
+ *to report end of stream.
  *
  * @param[in]   size			Size of image chunk, in bytes
  *
@@ -126,8 +127,9 @@ typedef struct {
  *		stream_session_id or session is closing, and another chunk cannot be accepted
  *		SUIT_PLAT_ERR_BUSY not enough space to enqueue this chunk. Try again later
  */
-suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id,
-			       uint32_t offset, uint8_t *address, uint32_t size, bool last_chunk);
+suit_plat_err_t suit_ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id,
+						uint32_t offset, uint8_t *address, uint32_t size,
+						bool last_chunk);
 
 /**
  * @brief Returns information about chunks enqueued by streamer requestor. Implemented by streamer
@@ -137,13 +139,14 @@ suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t 
  *function will succeed eventually.
  *
  * @param[in]   stream_session_id	Session identifier - see
- *ipc_streamer_missing_image_notify_fn
+ *suit_ipc_streamer_missing_image_notify_fn
  *
  * @param[out]  chunk_info		An array, holding information about chunks enqueued by
  *streamer requestor. At time when chunk is passed to streamer requestor - see
- *ipc_streamer_chunk_enqueue, its status is set to 'PENDING' - see ipc_streamer_chunk_status_t. Once
- *chunk processing is completed, its status is set to 'PROCESSED' or 'REFUSED' based on processing
- *results.
+ *suit_ipc_streamer_chunk_enqueue, its status is set to 'PENDING'
+ *- see suit_ipc_streamer_chunk_status_t.
+ *Once *chunk processing is completed, its status is set to 'PROCESSED' or 'REFUSED' based on
+ *processing results.
  *
  *
  * @param[in,out]  chunk_info_count	as input - maximal amount of elements an chunk_info array
@@ -156,8 +159,9 @@ suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t 
  *		SUIT_PLAT_ERR_BUSY chunk_info array is too small
  *
  */
-suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
-				  ipc_streamer_chunk_info_t *chunk_info, size_t *chunk_info_count);
+suit_plat_err_t suit_ipc_streamer_chunk_status_req(uint32_t stream_session_id,
+						   suit_ipc_streamer_chunk_info_t *chunk_info,
+						   size_t *chunk_info_count);
 
 /**
  * @brief Chunk status update notification function prototype
@@ -165,29 +169,29 @@ suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
  * @param[in]   stream_session_id	Session identifier. Non-zero value assigned by streamer
  *requestor, unique for image request.
  *
- * @param[in]   context			parameter of ipc_streamer_chunk_status_evt_subscribe
+ * @param[in]   context			parameter of suit_ipc_streamer_chunk_status_evt_subscribe
  *provided by streamer requestor or streamer requestor proxy
  *
  * @return SUIT_PLAT_ERR_INCORRECT_STATE on success, error code in case of failure
  */
-typedef suit_plat_err_t (*ipc_streamer_chunk_status_notify_fn)(uint32_t stream_session_id,
-			 void *context);
+typedef suit_plat_err_t (*suit_ipc_streamer_chunk_status_notify_fn)(uint32_t stream_session_id,
+								    void *context);
 
 /**
  * @brief Registers chunk status update notification function. Implemented individually by streamer
  *requestor and streamer requestor proxy.
  *
- * @param[in]   notify_fn		see ipc_streamer_chunk_status_notify_fn
+ * @param[in]   notify_fn		see suit_ipc_streamer_chunk_status_notify_fn
  *
  * @param[in]   context			parameter not interpreted by streamer requestor or streamer
- *requestor proxy, provided back to ipc_streamer_chunk_status_notify_fn
+ *requestor proxy, provided back to suit_ipc_streamer_chunk_status_notify_fn
  *
  * @return SUIT_PLAT_SUCCESS on success,
  *		SUIT_PLAT_ERR_NOMEM not enough space to register another notification function
  *
  */
-suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
-					    ipc_streamer_chunk_status_notify_fn notify_fn,
+suit_plat_err_t suit_ipc_streamer_chunk_status_evt_subscribe(
+					    suit_ipc_streamer_chunk_status_notify_fn notify_fn,
 					    void *context);
 
 /**
@@ -195,44 +199,44 @@ suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
  * streamer requestor and streamer requestor proxy.
  *
  */
-void ipc_streamer_chunk_status_evt_unsubscribe(void);
+void suit_ipc_streamer_chunk_status_evt_unsubscribe(void);
 
 /**
  * @brief Missing image notification function prototype
  *
  * @param[in]   resource_id		requested resource identifier, typically URI. See
- *ipc_streamer_stream
+ *suit_ipc_streamer_stream
  *
  * @param[in]   resource_id_length	Length of resource_id, in bytes
  *
  * @param[in]   stream_session_id	Session identifier. Non-zero value assigned by streamer
- *requestor, unique for image request, as result of ipc_streamer_stream call
+ *requestor, unique for image request, as result of suit_ipc_streamer_stream call
  *
- * @param[in]   context			parameter of ipc_streamer_missing_image_evt_subscribe
+ * @param[in]   context			parameter of suit_ipc_streamer_missing_image_evt_subscribe
  *provided by streamer requestor or streamer requestor proxy
  *
  * @return SUIT_PLAT_SUCCESS on success, error code in case of failure
  */
-typedef suit_plat_err_t (*ipc_streamer_missing_image_notify_fn)(const uint8_t *resource_id,
-								size_t resource_id_length,
-								uint32_t stream_session_id,
-								void *context);
+typedef suit_plat_err_t (*suit_ipc_streamer_missing_image_notify_fn)(const uint8_t *resource_id,
+								     size_t resource_id_length,
+								     uint32_t stream_session_id,
+								     void *context);
 
 /**
  * @brief Registers missing image notification function. Implemented individually by streamer
  *requestor and streamer requestor proxy.
  *
- * @param[in]   notify_fn		see ipc_streamer_missing_image_notify_fn
+ * @param[in]   notify_fn		see suit_ipc_streamer_missing_image_notify_fn
  *
  * @param[in]   context			parameter not interpreted by streamer requestor or streamer
- *requestor proxy, provided back to ipc_streamer_missing_image_notify_fn
+ *requestor proxy, provided back to suit_ipc_streamer_missing_image_notify_fn
  *
  * @return SUIT_PLAT_SUCCESS on success,
  *		SUIT_PLAT_ERR_NOMEM not enough space to register another notification function
  *
  */
-suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
-					     ipc_streamer_missing_image_notify_fn notify_fn,
+suit_plat_err_t suit_ipc_streamer_missing_image_evt_subscribe(
+					     suit_ipc_streamer_missing_image_notify_fn notify_fn,
 					     void *context);
 
 /**
@@ -240,7 +244,7 @@ suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
  * requestor and streamer requestor proxy.
  *
  */
-void ipc_streamer_missing_image_evt_unsubscribe(void);
+void suit_ipc_streamer_missing_image_evt_unsubscribe(void);
 
 #ifdef __cplusplus
 }

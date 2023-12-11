@@ -94,25 +94,25 @@ static image_request_state_t image_request_state = {
 	.stage = STAGE_IDLE,
 };
 
-static ipc_streamer_chunk_status_notify_fn chunk_status_notify_fn = NULL;
+static suit_ipc_streamer_chunk_status_notify_fn chunk_status_notify_fn = NULL;
 static void *chunk_status_notify_context = 0;
 
-static ipc_streamer_missing_image_notify_fn missing_image_notify_fn = NULL;
+static suit_ipc_streamer_missing_image_notify_fn missing_image_notify_fn = NULL;
 static void *missing_image_notify_context = 0;
 
-static inline void lock_image_request_state()
+static inline void image_request_state_lock()
 {
 	k_mutex_lock(&image_request_state_mutex, K_FOREVER);
 }
 
-static inline void unlock_image_request_state()
+static inline void image_request_state_unlock()
 {
 	k_mutex_unlock(&image_request_state_mutex);
 }
 
 /* Assumption - access to image_request_state locked on entry/exit
  */
-static chunk_processing_state_t *get_next_pending_chunk(image_request_state_t *irs)
+static chunk_processing_state_t *pending_chunk_get_next(image_request_state_t *irs)
 {
 
 	for (int i = 0; i < CONFIG_SUIT_STREAM_IPC_REQUESTOR_MAX_CHUNKS; i++) {
@@ -127,7 +127,7 @@ static chunk_processing_state_t *get_next_pending_chunk(image_request_state_t *i
 
 /* Assumption - access to image_request_state locked on entry/exit
  */
-static chunk_processing_state_t *get_empty_chunk_slot(image_request_state_t *irs)
+static chunk_processing_state_t *empty_chunk_slot_get(image_request_state_t *irs)
 {
 
 	for (int i = 0; i < CONFIG_SUIT_STREAM_IPC_REQUESTOR_MAX_CHUNKS; i++) {
@@ -141,7 +141,7 @@ static chunk_processing_state_t *get_empty_chunk_slot(image_request_state_t *irs
 
 /* Assumption - access to image_request_state locked on entry/exit
  */
-static chunk_processing_state_t *get_next_non_empty_chunk_slot(image_request_state_t *irs,
+static chunk_processing_state_t *non_empty_chunk_slot_get_next(image_request_state_t *irs,
 							       uint32_t min_arrival_number)
 {
 
@@ -164,7 +164,7 @@ static chunk_processing_state_t *get_next_non_empty_chunk_slot(image_request_sta
 
 /* Assumption - access to image_request_state locked on entry/exit
  */
-static int get_non_empty_chunk_slot_count(image_request_state_t *irs)
+static int non_empty_chunk_slot_count_get(image_request_state_t *irs)
 {
 
 	int count = 0;
@@ -184,7 +184,7 @@ static int get_non_empty_chunk_slot_count(image_request_state_t *irs)
 static void chunk_status_notify(image_request_state_t *irs)
 {
 
-	ipc_streamer_chunk_status_notify_fn notify_fn = chunk_status_notify_fn;
+	suit_ipc_streamer_chunk_status_notify_fn notify_fn = chunk_status_notify_fn;
 	void *context = chunk_status_notify_context;
 	uint32_t stream_session_id = irs->stream_session_id;
 
@@ -192,25 +192,25 @@ static void chunk_status_notify(image_request_state_t *irs)
 		return;
 	}
 
-	unlock_image_request_state();
+	image_request_state_unlock();
 	notify_fn(stream_session_id, context);
-	lock_image_request_state();
+	image_request_state_lock();
 }
 
 /* Assumption - access to image_request_state locked on entry/exit
  */
 static void missing_image_notify(image_request_state_t *irs)
 {
-	ipc_streamer_missing_image_notify_fn notify_fn = missing_image_notify_fn;
+	suit_ipc_streamer_missing_image_notify_fn notify_fn = missing_image_notify_fn;
 	void *context = missing_image_notify_context;
 	const uint8_t *resource_id = irs->resource_id;
 	size_t resource_id_length = irs->resource_id_length;
 	uint32_t stream_session_id = irs->stream_session_id;
 
 	if (NULL != notify_fn) {
-		unlock_image_request_state();
+		image_request_state_unlock();
 		notify_fn(resource_id, resource_id_length, stream_session_id, context);
-		lock_image_request_state();
+		image_request_state_lock();
 	}
 }
 
@@ -218,10 +218,10 @@ static void missing_image_notify(image_request_state_t *irs)
  * image_request_state will also be locked on function exit.
  * Function will release image_request_state for blocking operation
  * and get it back once blocking operation is over. This is to avoid blocking
- * ipc_streamer_chunk_enqueue while other chunk is being processed, i.e. decrypting,
+ * suit_ipc_streamer_chunk_enqueue while other chunk is being processed, i.e. decrypting,
  * storing in non-volatile memory, and also to avoid potential deadlock between
- * ipc_streamer_chunk_enqueue,
- * and ipc_streamer_missing_image_notify_fn, ipc_streamer_chunk_status_notify_fn
+ * suit_ipc_streamer_chunk_enqueue,
+ * and suit_ipc_streamer_missing_image_notify_fn, suit_ipc_streamer_chunk_status_notify_fn
  */
 static suit_plat_err_t data_loop(image_request_state_t *irs)
 {
@@ -230,9 +230,9 @@ static suit_plat_err_t data_loop(image_request_state_t *irs)
 
 	while (true) {
 
-		unlock_image_request_state();
+		image_request_state_unlock();
 		k_sem_take(data_loop_kick_sem, K_MSEC(sleep_period_ms));
-		lock_image_request_state();
+		image_request_state_lock();
 
 		int64_t current_ts = k_uptime_get();
 
@@ -243,7 +243,7 @@ static suit_plat_err_t data_loop(image_request_state_t *irs)
 		/* Pushing the chunk to sink - if chunk is available
 		 */
 		if (STAGE_IN_PROGRESS == irs->stage) {
-			chunk_processing_state_t *cps = get_next_pending_chunk(irs);
+			chunk_processing_state_t *cps = pending_chunk_get_next(irs);
 			if (NULL != cps) {
 				suit_plat_err_t sink_error = SUIT_PLAT_SUCCESS;
 
@@ -254,10 +254,10 @@ static suit_plat_err_t data_loop(image_request_state_t *irs)
 				if (seek_needed) {
 
 					if (NULL != irs->sink->seek) {
-						unlock_image_request_state();
+						image_request_state_unlock();
 						sink_error = irs->sink->seek(irs->sink->ctx,
 									     cps->offset);
-						lock_image_request_state();
+						image_request_state_lock();
 
 						if (SUIT_PLAT_SUCCESS == sink_error) {
 							irs->current_sink_write_offset =
@@ -272,10 +272,10 @@ static suit_plat_err_t data_loop(image_request_state_t *irs)
 
 				if (SUIT_PLAT_SUCCESS == sink_error && NULL != cps->address && 0 != cps->size) {
 
-					unlock_image_request_state();
+					image_request_state_unlock();
 					sink_error = irs->sink->write(irs->sink->ctx, cps->address,
 								      &cps->size);
-					lock_image_request_state();
+					image_request_state_lock();
 
 					if (SUIT_PLAT_SUCCESS == sink_error) {
 						irs->current_sink_write_offset =
@@ -357,7 +357,7 @@ static suit_plat_err_t data_loop(image_request_state_t *irs)
 
 /* Assumption - access to image_request_state locked on entry/exit
  */
-static image_request_state_t *allocate_image_request_state(const uint8_t *resource_id,
+static image_request_state_t *image_request_state_allocate(const uint8_t *resource_id,
 							   size_t resource_id_length,
 							   struct stream_sink *sink,
 							   uint32_t inter_chunk_timeout_ms,
@@ -401,31 +401,32 @@ static image_request_state_t *allocate_image_request_state(const uint8_t *resour
 	return irs;
 }
 
-suit_plat_err_t ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
-			struct stream_sink *sink, uint32_t inter_chunk_timeout_ms,
-			uint32_t requesting_period_ms)
+suit_plat_err_t suit_ipc_streamer_stream(const uint8_t *resource_id, size_t resource_id_length,
+					 struct stream_sink *sink, uint32_t inter_chunk_timeout_ms,
+					 uint32_t requesting_period_ms)
 {
 	if (NULL == resource_id || 0 == resource_id_length || NULL == sink || NULL == sink->write) {
 		return SUIT_PLAT_ERR_INVAL;
 	}
 
-	lock_image_request_state();
+	image_request_state_lock();
 	image_request_state_t *irs =
-		allocate_image_request_state(resource_id, resource_id_length, sink,
+		image_request_state_allocate(resource_id, resource_id_length, sink,
 					     inter_chunk_timeout_ms, requesting_period_ms);
 	if (NULL == irs) {
-		unlock_image_request_state();
+		image_request_state_unlock();
 		return SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
 	suit_plat_err_t err = data_loop(irs);
-	unlock_image_request_state();
+	image_request_state_unlock();
 
 	return err;
 }
 
-suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id,
-			uint32_t offset, uint8_t *address, uint32_t size, bool last_chunk)
+suit_plat_err_t suit_ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t chunk_id,
+						uint32_t offset, uint8_t *address, uint32_t size,
+						bool last_chunk)
 {
 	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	if (NULL != address && 0 != size) {
@@ -445,7 +446,7 @@ suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t 
 		err = SUIT_PLAT_ERR_INVAL;
 	}
 
-	lock_image_request_state();
+	image_request_state_lock();
 
 	image_request_state_t *irs = &image_request_state;
 	if (SUIT_PLAT_SUCCESS == err) {
@@ -470,7 +471,7 @@ suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t 
 
 		irs->last_response_ts = k_uptime_get();
 
-		chunk_processing_state_t *cps = get_empty_chunk_slot(irs);
+		chunk_processing_state_t *cps = empty_chunk_slot_get(irs);
 		if (NULL == cps) {
 			/* not enough space to store chunk info. Try again later
 			 */
@@ -493,20 +494,21 @@ suit_plat_err_t ipc_streamer_chunk_enqueue(uint32_t stream_session_id, uint32_t 
 		}
 	}
 
-	unlock_image_request_state();
+	image_request_state_unlock();
 
 	return err;
 }
 
-suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
-				  ipc_streamer_chunk_info_t *chunk_info, size_t *chunk_info_count)
+suit_plat_err_t suit_ipc_streamer_chunk_status_req(uint32_t stream_session_id,
+						   suit_ipc_streamer_chunk_info_t *chunk_info,
+						   size_t *chunk_info_count)
 {
 	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	if (NULL == chunk_info || NULL == chunk_info_count) {
 		err = SUIT_PLAT_ERR_INVAL;
 	}
 
-	lock_image_request_state();
+	image_request_state_lock();
 
 	image_request_state_t *irs = &image_request_state;
 
@@ -522,7 +524,7 @@ suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
 
 		uint32_t min_arrival_number = 1;
 
-		count = get_non_empty_chunk_slot_count(irs);
+		count = non_empty_chunk_slot_count_get(irs);
 		if (count > *chunk_info_count) {
 			err = SUIT_PLAT_ERR_BUSY;
 		}
@@ -531,13 +533,13 @@ suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
 		while (count < CONFIG_SUIT_STREAM_IPC_REQUESTOR_MAX_CHUNKS) {
 
 			chunk_processing_state_t *cps =
-				get_next_non_empty_chunk_slot(irs, min_arrival_number);
+				non_empty_chunk_slot_get_next(irs, min_arrival_number);
 			if (NULL != cps) {
 
 				min_arrival_number = cps->arrival_number + 1;
 
 				if (SUIT_PLAT_SUCCESS == err) {
-					ipc_streamer_chunk_info_t *entry = &chunk_info[count];
+					suit_ipc_streamer_chunk_info_t *entry = &chunk_info[count];
 					*chunk_info_count = count + 1;
 					entry->chunk_id = cps->chunk_id;
 
@@ -563,18 +565,18 @@ suit_plat_err_t ipc_streamer_chunk_status_req(uint32_t stream_session_id,
 		}
 	}
 
-	unlock_image_request_state();
+	image_request_state_unlock();
 
 	return err;
 }
 
-suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
-					    ipc_streamer_chunk_status_notify_fn notify_fn,
+suit_plat_err_t suit_ipc_streamer_chunk_status_evt_subscribe(
+					    suit_ipc_streamer_chunk_status_notify_fn notify_fn,
 					    void *context)
 {
 	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
-	lock_image_request_state();
+	image_request_state_lock();
 
 	if (NULL == chunk_status_notify_fn) {
 		chunk_status_notify_fn = notify_fn;
@@ -583,26 +585,26 @@ suit_plat_err_t ipc_streamer_chunk_status_evt_subscribe(
 		err = SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
-	unlock_image_request_state();
+	image_request_state_unlock();
 
 	return err;
 }
 
-void ipc_streamer_chunk_status_evt_unsubscribe(void)
+void suit_ipc_streamer_chunk_status_evt_unsubscribe(void)
 {
-	lock_image_request_state();
+	image_request_state_lock();
 	chunk_status_notify_fn = NULL;
 	chunk_status_notify_context = 0;
-	unlock_image_request_state();
+	image_request_state_unlock();
 }
 
-suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
-					     ipc_streamer_missing_image_notify_fn notify_fn,
+suit_plat_err_t suit_ipc_streamer_missing_image_evt_subscribe(
+					     suit_ipc_streamer_missing_image_notify_fn notify_fn,
 					     void *context)
 {
 	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
-	lock_image_request_state();
+	image_request_state_lock();
 
 	if (NULL == missing_image_notify_fn) {
 		missing_image_notify_fn = notify_fn;
@@ -611,20 +613,20 @@ suit_plat_err_t ipc_streamer_missing_image_evt_subscribe(
 		err = SUIT_PLAT_ERR_NO_RESOURCES;
 	}
 
-	unlock_image_request_state();
+	image_request_state_unlock();
 
 	return err;
 }
 
-void ipc_streamer_missing_image_evt_unsubscribe(void)
+void suit_ipc_streamer_missing_image_evt_unsubscribe(void)
 {
-	lock_image_request_state();
+	image_request_state_lock();
 	missing_image_notify_fn = NULL;
 	missing_image_notify_context = 0;
-	unlock_image_request_state();
+	image_request_state_unlock();
 }
 
-suit_plat_err_t ipc_streamer_requestor_init(void)
+suit_plat_err_t suit_ipc_streamer_requestor_init(void)
 {
 	return SUIT_PLAT_SUCCESS;
 }

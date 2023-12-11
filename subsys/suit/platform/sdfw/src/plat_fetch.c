@@ -170,9 +170,9 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	if ((ret == SUIT_PLAT_ERR_NOT_FOUND) &&		/* URI was not found in cache */
 	    is_type_supported_by_ipc(component_type)) { /* component type is supported */
 		/* Request uri through ipc streamer */
-		ret = ipc_streamer_stream(uri->value, uri->len, &dst_sink,
-					  CONFIG_SUIT_STREAM_IPC_STREAMER_CHUNK_TIMEOUT,
-					  CONFIG_SUIT_STREAM_IPC_STREAMER_REQUESTING_PERIOD);
+		ret = suit_ipc_streamer_stream(uri->value, uri->len, &dst_sink,
+					       CONFIG_SUIT_STREAM_IPC_STREAMER_CHUNK_TIMEOUT,
+					       CONFIG_SUIT_STREAM_IPC_STREAMER_REQUESTING_PERIOD);
 	}
 #endif /* CONFIG_SUIT_STREAM_IPC_REQUESTOR */
 

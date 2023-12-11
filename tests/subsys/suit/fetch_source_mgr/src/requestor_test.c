@@ -63,12 +63,12 @@ static image_request_info_t request_info;
 static int wait_for_buffer_state_change(image_request_info_t *ri)
 {
 	int err = 0;
-	ipc_streamer_chunk_info_t injected_chunks[BUFFER_COUNT];
+	suit_ipc_streamer_chunk_info_t injected_chunks[BUFFER_COUNT];
 	size_t chunk_info_count = BUFFER_COUNT;
 
 	while (true) {
-		err = ipc_streamer_chunk_status_req(ri->stream_session_id, injected_chunks,
-						    &chunk_info_count);
+		err = suit_ipc_streamer_chunk_status_req(ri->stream_session_id, injected_chunks,
+							 &chunk_info_count);
 		if (SUIT_PLAT_ERR_BUSY == err) {
 			/* not enough space in injected_chunks. This is not a problem,
 			 *  stream requestor most probably just released its space and
@@ -87,7 +87,7 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 				if (ENQUEUED == bm->buffer_state) {
 					bool still_enqueued = false;
 					for (int j = 0; j < chunk_info_count; j++) {
-						ipc_streamer_chunk_info_t *ci = &injected_chunks[j];
+						suit_ipc_streamer_chunk_info_t *ci = &injected_chunks[j];
 						if (ci->chunk_id == bm->chunk_id &&
 						    PENDING == ci->status) {
 							still_enqueued = true;
@@ -149,8 +149,8 @@ static int chunk_enqueue(image_request_info_t *ri, uint32_t chunk_id, uint32_t o
 	int err = 0;
 
 	while (true) {
-		err = ipc_streamer_chunk_enqueue(ri->stream_session_id, chunk_id, offset, address,
-						 size, last_chunk);
+		err = suit_ipc_streamer_chunk_enqueue(ri->stream_session_id, chunk_id, offset,
+						      address, size, last_chunk);
 		if (SUIT_PLAT_ERR_BUSY == err) {
 			/* Not enough space in requestor, try again later
 			 */
@@ -306,22 +306,22 @@ void test_ipc_streamer_requestor(void)
 	uint32_t requesting_period_ms = 1000;
 	int rc = 0;
 
-	rc = ipc_streamer_requestor_init();
-	zassert_equal(rc, 0, "ipc_streamer_requestor_init returned (%d)", rc);
+	rc = suit_ipc_streamer_requestor_init();
+	zassert_equal(rc, 0, "suit_ipc_streamer_requestor_init returned (%d)", rc);
 
-	ipc_streamer_chunk_status_evt_unsubscribe();
-	rc = ipc_streamer_chunk_status_evt_subscribe(chunk_status_notify_fn,
+	suit_ipc_streamer_chunk_status_evt_unsubscribe();
+	rc = suit_ipc_streamer_chunk_status_evt_subscribe(chunk_status_notify_fn,
 						     chunk_status_notify_requested_ctx);
-	zassert_equal(rc, 0, "ipc_streamer_chunk_status_evt_subscribe returned (%d)", rc);
+	zassert_equal(rc, 0, "suit_ipc_streamer_chunk_status_evt_subscribe returned (%d)", rc);
 
-	ipc_streamer_missing_image_evt_unsubscribe();
-	rc = ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fn,
+	suit_ipc_streamer_missing_image_evt_unsubscribe();
+	rc = suit_ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fn,
 						      missing_image_notify_requested_ctx);
-	zassert_equal(rc, 0, "ipc_streamer_missing_image_evt_unsubscribe returned (%d)", rc);
+	zassert_equal(rc, 0, "suit_ipc_streamer_missing_image_evt_unsubscribe returned (%d)", rc);
 
-	rc = ipc_streamer_stream(requested_resource_id, strlen(requested_resource_id), &test_sink,
-				 inter_chunk_timeout_ms, requesting_period_ms);
-	zassert_equal(rc, 0, "ipc_streamer_stream returned (%d)", rc);
+	rc = suit_ipc_streamer_stream(requested_resource_id, strlen(requested_resource_id),
+				      &test_sink, inter_chunk_timeout_ms, requesting_period_ms);
+	zassert_equal(rc, 0, "suit_ipc_streamer_stream returned (%d)", rc);
 	zassert_equal(expected_bytes, received_bytes, "%d vs %d", expected_bytes, received_bytes);
 	zassert_equal(expected_checksum, received_checksum, "%d vs %d", expected_checksum,
 		      received_checksum);
