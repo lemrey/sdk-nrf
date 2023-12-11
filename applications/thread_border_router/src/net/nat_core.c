@@ -53,6 +53,8 @@ static bool nat_rx_cb(struct npf_test *test, struct net_pkt *pkt)
 
 	if (!net_ipv4_is_addr_bcast(net_pkt_iface(pkt),
 				    (struct in_addr *)NET_IPV4_HDR(pkt)->dst) &&
+	    (!net_ipv4_is_addr_loopback((struct in_addr *)NET_IPV4_HDR(pkt)->src) &&
+	     !net_ipv4_is_my_addr((struct in_addr *)NET_IPV4_HDR(pkt)->src)) &&
 	    net_ipv4_is_my_addr((struct in_addr *)NET_IPV4_HDR(pkt)->dst)) {
 		switch (NET_IPV4_HDR(pkt)->proto) {
 		case IPPROTO_ICMP:
