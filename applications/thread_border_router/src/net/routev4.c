@@ -184,7 +184,8 @@ static bool prerouting_cb(struct npf_test *test, struct net_pkt *pkt)
 	 * to a destination address, hence the packet must be rerouted.
 	 */
 	if (iface != net_pkt_iface(pkt)) {
-		if (net_ipv4_is_my_addr((struct in_addr *)hdr->dst)) {
+		if (net_ipv4_is_my_addr((struct in_addr *)hdr->dst) ||
+		    net_ipv4_is_addr_loopback((struct in_addr *)hdr->dst)) {
 			return false;
 		}
 
@@ -211,7 +212,8 @@ static bool postrouting_cb(struct npf_test *test, struct net_pkt *pkt)
 	 * to a destination address, hence the packet must be rerouted.
 	 */
 	if (iface != net_pkt_iface(pkt)) {
-		if (net_ipv4_is_my_addr((struct in_addr *)hdr->dst)) {
+		if (net_ipv4_is_my_addr((struct in_addr *)hdr->dst) ||
+		    net_ipv4_is_addr_loopback((struct in_addr *)hdr->dst)) {
 			return true;
 		}
 
