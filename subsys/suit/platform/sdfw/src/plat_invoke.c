@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <suit_platform.h>
 #include <suit_plat_decode_util.h>
-#include <run_cpu.h>
+#include <cpu_run.h>
 
 LOG_MODULE_REGISTER(suit_plat_invoke, CONFIG_SUIT_LOG_LEVEL);
 
@@ -78,7 +78,7 @@ int suit_plat_invoke(suit_component_t image_handle, struct zcbor_string *invoke_
 	switch (component_type) {
 	case SUIT_COMPONENT_TYPE_MEM:
 		/* memory-mapped */
-		return suit_plat_run_cpu(cpu_id, run_address);
+		return suit_plat_cpu_run(cpu_id, run_address);
 	default:
 		LOG_ERR("Unsupported component type");
 		break;

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <run_cpu.h>
+#include <cpu_run.h>
 #include <zephyr/logging/log.h>
 #include <suit_platform_internal.h>
 #include <drivers/nrfx_common.h>
@@ -15,7 +15,7 @@
 
 LOG_MODULE_REGISTER(suit_plat_run, CONFIG_SUIT_LOG_LEVEL);
 
-int suit_plat_run_cpu(uint8_t cpu_id, intptr_t run_address)
+int suit_plat_cpu_run(uint8_t cpu_id, intptr_t run_address)
 {
 	switch (cpu_id) {
 	case NRF_PROCESSOR_APPLICATION: /* AppCore */
