@@ -1,5 +1,6 @@
 tests:
   unity.wrap_test:
     tags: wrap_test
+    platform_allow: native_posix
     integration_platforms:
       - native_posix
