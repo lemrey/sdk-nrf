@@ -82,12 +82,13 @@ static int verify_and_get_sink(suit_component_t dst_handle, struct stream_sink *
 			return ret;
 		}
 
-		return suit_plat_err_to_proccessor_err_convert(memptr_sink_get(&dst_sink, handle));
+		return suit_plat_err_to_proccessor_err_convert(suit_memptr_sink_get(&dst_sink,
+							       handle));
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
 #ifdef CONFIG_SUIT_CACHE_RW
 	case SUIT_COMPONENT_TYPE_CACHE_POOL: {
-		ret = dfu_get_cache_sink(&dst_sink, number, uri->value, uri->len);
+		ret = suit_dfu_cache_sink_get(&dst_sink, number, uri->value, uri->len);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Getting cache sink failed");
 			return suit_plat_err_to_proccessor_err_convert(ret);

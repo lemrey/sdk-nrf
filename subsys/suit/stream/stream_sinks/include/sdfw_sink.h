@@ -19,7 +19,7 @@ extern "C" {
  * @param sink Pointer to sink_stream to be filled
  * @return SUIT_PLAT_SUCCESS if success, error code otherwise
  */
-suit_plat_err_t sdfw_sink_get(struct stream_sink *sink);
+suit_plat_err_t suit_sdfw_sink_get(struct stream_sink *sink);
 
 #ifdef __cplusplus
 }

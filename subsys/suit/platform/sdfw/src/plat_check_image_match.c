@@ -50,7 +50,7 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 
 	struct stream_sink digest_sink;
 
-	err = digest_sink_get(&digest_sink, psa_alg, digest->value);
+	err = suit_digest_sink_get(&digest_sink, psa_alg, digest->value);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
 		return suit_plat_err_to_proccessor_err_convert(err);
@@ -61,7 +61,7 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 		LOG_ERR("Failed to stream to digest sink: %d", err);
 		err = suit_plat_err_to_proccessor_err_convert(err);
 	} else {
-		err = digest_sink_digest_match(digest_sink.ctx);
+		err = suit_digest_sink_digest_match(digest_sink.ctx);
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to check digest: %d", err);
 			/* Translate error code to allow entering another branches in try-each

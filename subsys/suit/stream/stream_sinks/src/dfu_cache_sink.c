@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-#include <cache_sink.h>
+#include <dfu_cache_sink.h>
 #include <flash_sink.h>
 #include <errno.h>
 #include <dfu_cache_rw.h>
@@ -30,8 +30,8 @@ struct cache_ctx {
 
 static struct cache_ctx ctx;
 
-suit_plat_err_t dfu_get_cache_sink(struct stream_sink *sink, uint8_t cache_partition_id,
-				   const uint8_t *uri, size_t uri_size)
+suit_plat_err_t suit_dfu_cache_sink_get(struct stream_sink *sink, uint8_t cache_partition_id,
+					const uint8_t *uri, size_t uri_size)
 {
 	if ((sink != NULL) && (uri != NULL) && (uri_size > 0)) {
 
@@ -78,7 +78,7 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 		if (cache_ctx->write_enabled) {
 			/* Check if data will fit */
 			if ((*size + cache_ctx->offset) < cache_ctx->offset_limit) {
-				suit_plat_err_t ret = flash_sink_get(
+				suit_plat_err_t ret = suit_flash_sink_get(
 					&sink,
 					suit_plat_mem_nvm_ptr_get(cache_ctx->slot.slot_offset +
 								  cache_ctx->slot.data_offset +
@@ -180,7 +180,7 @@ static suit_plat_err_t release(void *ctx)
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_plat_err_t suit_cache_sink_commit(void *ctx)
+suit_plat_err_t suit_dfu_cache_sink_commit(void *ctx)
 {
 	if (ctx != NULL) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;
@@ -198,7 +198,7 @@ suit_plat_err_t suit_cache_sink_commit(void *ctx)
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_plat_err_t suit_cache_sink_drop(void *ctx)
+suit_plat_err_t suit_dfu_cache_sink_drop(void *ctx)
 {
 	if (ctx != NULL) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;

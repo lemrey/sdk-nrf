@@ -8,7 +8,7 @@
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
 #include <sink.h>
-#include <cache_sink.h>
+#include <dfu_cache_sink.h>
 #include <dfu_cache_rw.h>
 #include <suit_plat_mem_util.h>
 
@@ -138,13 +138,13 @@ ZTEST(cache_sink_recovery_tests, test_cache_recovery_header_ok_size_nok)
 {
 	struct stream_sink sink;
 
-	int ret = dfu_get_cache_sink(&sink, 1, uri3, sizeof(uri3));
+	int ret = suit_dfu_cache_sink_get(&sink, 1, uri3, sizeof(uri3));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	ret = sink.write(sink.ctx, data, &data_size);
 	zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 
-	ret = suit_cache_sink_commit(sink.ctx);
+	ret = suit_dfu_cache_sink_commit(sink.ctx);
 	zassert_equal(ret, 0, "Failed to commit to cache: %i", ret);
 
 	ret = sink.release(sink.ctx);
@@ -157,25 +157,25 @@ ZTEST(cache_sink_tests, test_cache_drop_slot_ok)
 {
 	struct stream_sink sink;
 
-	int ret = dfu_get_cache_sink(&sink, 1, uri, sizeof(uri));
+	int ret = suit_dfu_cache_sink_get(&sink, 1, uri, sizeof(uri));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	ret = sink.write(sink.ctx, data, &data_size);
 	zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 
-	ret = suit_cache_sink_drop(sink.ctx);
+	ret = suit_dfu_cache_sink_drop(sink.ctx);
 	zassert_equal(ret, 0, "Failed to drop cache: %i", ret);
 
 	ret = sink.release(sink.ctx);
 	zassert_equal(ret, 0, "Failed to release sink: %i", ret);
 
-	ret = dfu_get_cache_sink(&sink, 1, uri2, sizeof(uri2));
+	ret = suit_dfu_cache_sink_get(&sink, 1, uri2, sizeof(uri2));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	ret = sink.write(sink.ctx, data2, &data2_size);
 	zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 
-	ret = suit_cache_sink_commit(sink.ctx);
+	ret = suit_dfu_cache_sink_commit(sink.ctx);
 	zassert_equal(ret, 0, "Failed to commit to cache: %i", ret);
 
 	ret = sink.release(sink.ctx);
@@ -197,13 +197,13 @@ ZTEST(cache_sink_tests, test_cache_get_slot_ok)
 {
 	struct stream_sink sink;
 
-	int ret = dfu_get_cache_sink(&sink, 1, uri, sizeof(uri));
+	int ret = suit_dfu_cache_sink_get(&sink, 1, uri, sizeof(uri));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	ret = sink.write(sink.ctx, data, &data_size);
 	zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 
-	ret = suit_cache_sink_commit(sink.ctx);
+	ret = suit_dfu_cache_sink_commit(sink.ctx);
 	zassert_equal(ret, 0, "Failed to commit to cache: %i", ret);
 
 	ret = sink.release(sink.ctx);
@@ -220,13 +220,13 @@ ZTEST(cache_sink_tests, test_cache_get_slot_ok)
 		      "Invalid data size for retrieved payload. payload(%u) data(%u)", payload_size,
 		      data_size);
 
-	ret = dfu_get_cache_sink(&sink, 3, uri2, sizeof(uri2));
+	ret = suit_dfu_cache_sink_get(&sink, 3, uri2, sizeof(uri2));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	ret = sink.write(sink.ctx, data2, &data2_size);
 	zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 
-	ret = suit_cache_sink_commit(sink.ctx);
+	ret = suit_dfu_cache_sink_commit(sink.ctx);
 	zassert_equal(ret, 0, "Failed to commit to cache: %i", ret);
 
 	ret = sink.release(sink.ctx);
@@ -246,13 +246,13 @@ ZTEST(cache_sink_tests, test_cache_get_slot_nok_uri_exists)
 {
 	struct stream_sink sink;
 
-	int ret = dfu_get_cache_sink(&sink, 1, uri, sizeof(uri));
+	int ret = suit_dfu_cache_sink_get(&sink, 1, uri, sizeof(uri));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	ret = sink.write(sink.ctx, data, &data_size);
 	zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 
-	ret = suit_cache_sink_commit(sink.ctx);
+	ret = suit_dfu_cache_sink_commit(sink.ctx);
 	zassert_equal(ret, 0, "Failed to commit to cache: %i", ret);
 
 	ret = sink.release(sink.ctx);
@@ -261,7 +261,7 @@ ZTEST(cache_sink_tests, test_cache_get_slot_nok_uri_exists)
 	/* Request sink for dfu_cache_partition_3 but it should fail because dfu_cache_partition_1
 	 *	already has same uri written
 	 */
-	ret = dfu_get_cache_sink(&sink, 3, uri, sizeof(uri));
+	ret = suit_dfu_cache_sink_get(&sink, 3, uri, sizeof(uri));
 	zassert_not_equal(ret, 0,
 			  "Get cache sink should have failed, uri already should be in cache: %i",
 			  ret);
@@ -272,7 +272,7 @@ ZTEST(cache_sink_tests, test_cache_get_slot_nok_no_requested_cache)
 	struct stream_sink sink;
 
 	/* Request sink for suit_cache_4, which should fail because suit_cache_4 was not defined */
-	int ret = dfu_get_cache_sink(&sink, 4, uri, sizeof(uri));
+	int ret = suit_dfu_cache_sink_get(&sink, 4, uri, sizeof(uri));
 	zassert_not_equal(ret, 0, "Get cache sink should have failed, suit_cache_4 not defined: %i",
 			  ret);
 }
@@ -281,7 +281,7 @@ ZTEST(cache_sink_tests, test_cache_get_slot_nok_not_enough_space)
 {
 	struct stream_sink sink;
 
-	int ret = dfu_get_cache_sink(&sink, 1, uri3, sizeof(uri3));
+	int ret = suit_dfu_cache_sink_get(&sink, 1, uri3, sizeof(uri3));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	for (size_t i = 0x10 + sizeof(data3);
@@ -290,13 +290,13 @@ ZTEST(cache_sink_tests, test_cache_get_slot_nok_not_enough_space)
 		zassert_equal(ret, 0, "Failed to write to sink: %i", ret);
 	}
 
-	ret = suit_cache_sink_commit(sink.ctx);
+	ret = suit_dfu_cache_sink_commit(sink.ctx);
 	zassert_equal(ret, 0, "Failed to commit to cache: %i", ret);
 
 	ret = sink.release(sink.ctx);
 	zassert_equal(ret, 0, "Failed to release sink: %i", ret);
 
-	ret = dfu_get_cache_sink(&sink, 1, uri4, sizeof(uri4));
+	ret = suit_dfu_cache_sink_get(&sink, 1, uri4, sizeof(uri4));
 	zassert_equal(ret, 0, "Failed to get sink: %i", ret);
 
 	ret = sink.write(sink.ctx, data3, &data3_size);

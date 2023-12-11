@@ -15,7 +15,7 @@ target_link_libraries(suit_stream_sinks_interface INTERFACE suit_platform_err)
 
 zephyr_library()
 
-zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_CACHE src/cache_sink.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_CACHE src/dfu_cache_sink.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_RAM src/ram_sink.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_FLASH src/flash_sink.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_SINK_MEMPTR src/memptr_sink.c)

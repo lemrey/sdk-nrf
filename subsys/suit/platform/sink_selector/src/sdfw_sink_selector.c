@@ -65,7 +65,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 			return ret;
 		}
 
-		sink_get_err = memptr_sink_get(sink, handle);
+		sink_get_err = suit_memptr_sink_get(sink, handle);
 		return suit_plat_err_to_proccessor_err_convert(sink_get_err);
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
@@ -100,7 +100,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 		 */
 
 		/* Internal MRAM/Flash on single controller */
-		sink_get_err = flash_sink_get(sink, (uint8_t *)run_address, size, handle);
+		sink_get_err = suit_flash_sink_get(sink, (uint8_t *)run_address, size, handle);
 		if (sink_get_err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to get flash sink: %i", sink_get_err);
 			return suit_plat_err_to_proccessor_err_convert(sink_get_err);
@@ -120,7 +120,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 
 		if (1 == number) {
 			if (IS_ENABLED(CONFIG_SUIT_STREAM_SINK_SDFW)) {
-				sink_get_err = sdfw_sink_get(sink);
+				sink_get_err = suit_sdfw_sink_get(sink);
 				return suit_plat_err_to_proccessor_err_convert(sink_get_err);
 			}
 

@@ -201,7 +201,8 @@ suit_plat_err_t erase(void *ctx)
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_plat_err_t flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size, memptr_storage_handle_t handle)
+suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size,
+				    memptr_storage_handle_t handle)
 {
 	if ((dst != NULL) && (size > 0) && (sink != NULL)) {
 		struct flash_ctx *ctx = new_ctx_get();

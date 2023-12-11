@@ -45,7 +45,7 @@ int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *diges
 
 	struct stream_sink digest_sink;
 
-	suit_plat_err_t err = digest_sink_get(&digest_sink, psa_alg, digest->value);
+	suit_plat_err_t err = suit_digest_sink_get(&digest_sink, psa_alg, digest->value);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
 		return suit_plat_err_to_proccessor_err_convert(err);
@@ -57,7 +57,7 @@ int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *diges
 		return suit_plat_err_to_proccessor_err_convert(err);
 	}
 
-	digest_sink_err_t ret = digest_sink_digest_match(digest_sink.ctx);
+	digest_sink_err_t ret = suit_digest_sink_digest_match(digest_sink.ctx);
 
 	err = digest_sink.release(digest_sink.ctx);
 	if (err != SUIT_PLAT_SUCCESS) {

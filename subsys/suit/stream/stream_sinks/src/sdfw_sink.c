@@ -47,7 +47,7 @@ static digest_sink_err_t verify_digest(uint8_t *buf, size_t buf_size, psa_algori
 {
 	struct stream_sink digest_sink;
 
-	suit_plat_err_t err = digest_sink_get(&digest_sink, algorithm, expected_digest);
+	suit_plat_err_t err = suit_digest_sink_get(&digest_sink, algorithm, expected_digest);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
 		return err;
@@ -59,7 +59,7 @@ static digest_sink_err_t verify_digest(uint8_t *buf, size_t buf_size, psa_algori
 		return err;
 	}
 
-	digest_sink_err_t ret = digest_sink_digest_match(digest_sink.ctx);
+	digest_sink_err_t ret = suit_digest_sink_digest_match(digest_sink.ctx);
 
 	err = digest_sink.release(digest_sink.ctx);
 	if (err != SUIT_PLAT_SUCCESS) {
@@ -316,7 +316,7 @@ static suit_plat_err_t release(void *ctx)
 	return SUIT_PLAT_SUCCESS;
 }
 
-suit_plat_err_t sdfw_sink_get(struct stream_sink *sink)
+suit_plat_err_t suit_sdfw_sink_get(struct stream_sink *sink)
 {
 	if (NULL == sink) {
 		LOG_ERR("Invalid arguments");

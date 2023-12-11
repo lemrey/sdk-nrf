@@ -69,8 +69,8 @@ static suit_plat_err_t release(void *ctx)
 	return SUIT_PLAT_SUCCESS;
 }
 
-suit_plat_err_t digest_sink_get(struct stream_sink *sink, psa_algorithm_t algorithm,
-		    const uint8_t *expected_digest)
+suit_plat_err_t suit_digest_sink_get(struct stream_sink *sink, psa_algorithm_t algorithm,
+				     const uint8_t *expected_digest)
 {
 	if (NULL == sink || NULL == expected_digest) {
 		LOG_ERR("Invalid argument");
@@ -113,7 +113,7 @@ suit_plat_err_t digest_sink_get(struct stream_sink *sink, psa_algorithm_t algori
 	return SUIT_PLAT_SUCCESS;
 }
 
-digest_sink_err_t digest_sink_digest_match(void *ctx)
+digest_sink_err_t suit_digest_sink_digest_match(void *ctx)
 {
 	if (NULL == ctx) {
 		LOG_ERR("Invalid argument");

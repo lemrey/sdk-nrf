@@ -160,7 +160,7 @@ static suit_plat_err_t write_to_sink(size_t offset, uint8_t *data, size_t *size)
 {
 	struct stream_sink sink;
 
-	suit_plat_err_t ret = flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), *size, NULL);
+	suit_plat_err_t ret = suit_flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), *size, NULL);
 	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Getting flash_sink failed. %i", ret);
 		return SUIT_PLAT_ERR_IO;
@@ -197,7 +197,7 @@ static suit_plat_err_t erase_on_sink(size_t offset, size_t size)
 {
 	struct stream_sink sink;
 
-	suit_plat_err_t ret = flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), size, NULL);
+	suit_plat_err_t ret = suit_flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), size, NULL);
 	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Getting flash_sink failed. %i", ret);
 		return SUIT_PLAT_ERR_IO;

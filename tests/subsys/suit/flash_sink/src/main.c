@@ -36,7 +36,7 @@ static void test_setup_flash(void *arg)
 
 ZTEST_SUITE(flash_sink_tests, NULL, NULL, test_setup_flash, NULL, NULL);
 
-ZTEST(flash_sink_tests, test_flash_sink_get_OK)
+ZTEST(flash_sink_tests, test_suit_flash_sink_get_OK)
 {
 	struct stream_sink flash_sink;
 	memptr_storage_handle_t handle = NULL;
@@ -44,9 +44,9 @@ ZTEST(flash_sink_tests, test_flash_sink_get_OK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
-	zassert_not_equal(flash_sink.ctx, NULL, "flash_sink_get failed - ctx is NULL");
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
+	zassert_not_equal(flash_sink.ctx, NULL, "suit_flash_sink_get failed - ctx is NULL");
 
 	err = flash_sink.release(flash_sink.ctx);
 	zassert_equal(err, 0, "flash_sink.release failed - error %i", err);
@@ -55,7 +55,7 @@ ZTEST(flash_sink_tests, test_flash_sink_get_OK)
 	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
 }
 
-ZTEST(flash_sink_tests, test_flash_sink_get_NOK)
+ZTEST(flash_sink_tests, test_suit_flash_sink_get_NOK)
 {
 	struct stream_sink flash_sink;
 	memptr_storage_handle_t handle = NULL;
@@ -63,11 +63,11 @@ ZTEST(flash_sink_tests, test_flash_sink_get_NOK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, NULL, TEST_REQUESTED_AREA, handle);
-	zassert_not_equal(err, 0, "flash_sink_get should have failed - dst == NULL");
+	err = suit_flash_sink_get(&flash_sink, NULL, TEST_REQUESTED_AREA, handle);
+	zassert_not_equal(err, 0, "suit_flash_sink_get should have failed - dst == NULL");
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, 0, handle);
-	zassert_not_equal(err, 0, "flash_sink_get should have failed - offset_limit == 0");
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, 0, handle);
+	zassert_not_equal(err, 0, "suit_flash_sink_get should have failed - offset_limit == 0");
 
 	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
@@ -81,8 +81,8 @@ ZTEST(flash_sink_tests, test_flash_sink_release_NOK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
 
 	err = flash_sink.release(NULL);
 	zassert_not_equal(err, 0, "flash_sink.release should have failed - ctx == NULL");
@@ -102,8 +102,8 @@ ZTEST(flash_sink_tests, test_flash_sink_seek_OK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
 
 	err = flash_sink.seek(flash_sink.ctx, 0);
 	zassert_equal(err, 0, "flash_sink.seek failed - error %i", err);
@@ -129,8 +129,8 @@ ZTEST(flash_sink_tests, test_flash_sink_seek_NOK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
 
 	err = flash_sink.seek(flash_sink.ctx, TEST_REQUESTED_AREA);
 	zassert_not_equal(err, 0, "flash_sink.seek should have failed - passed arg == offset_limit");
@@ -154,8 +154,8 @@ ZTEST(flash_sink_tests, test_flash_sink_used_storage_OK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
 
 	err = flash_sink.used_storage(flash_sink.ctx, &used_storage);
 	zassert_equal(err, 0, "flash_sink.use_storage failed - error %i", err);
@@ -176,8 +176,8 @@ ZTEST(flash_sink_tests, test_flash_sink_used_storage_NOK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
 
 	err = flash_sink.used_storage(flash_sink.ctx, NULL);
 	zassert_not_equal(err, 0, "flash_sink.use_storage should have failed - arg size == NULL");
@@ -199,8 +199,8 @@ ZTEST(flash_sink_tests, test_flash_sink_write_OK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
 
 	err = flash_sink.write(flash_sink.ctx, test_data, &input_size);
 	zassert_equal(err, 0, "flash_sink.write failed - error %i", err);
@@ -235,8 +235,8 @@ ZTEST(flash_sink_tests, test_flash_sink_write_NOK)
 	int err = suit_memptr_storage_get(&handle);
 	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
 
-	err = flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
-	zassert_equal(err, 0, "flash_sink_get failed - error %i", err);
+	err = suit_flash_sink_get(&flash_sink, WRITE_ADDR, TEST_REQUESTED_AREA, handle);
+	zassert_equal(err, 0, "suit_flash_sink_get failed - error %i", err);
 
 	err = flash_sink.write(flash_sink.ctx, test_data, &input_size);
 	zassert_not_equal(err, 0, "flash_sink.write should have failed - size == 0");

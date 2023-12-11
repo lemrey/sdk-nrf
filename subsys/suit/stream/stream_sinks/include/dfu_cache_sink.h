@@ -22,8 +22,8 @@ extern "C" {
  * @param uri_size Size of URI
  * @return SUIT_PLAT_SUCCESS if success otherwise error code
  */
-suit_plat_err_t dfu_get_cache_sink(struct stream_sink *sink, uint8_t cache_partition_id,
-				   const uint8_t *uri, size_t uri_size);
+suit_plat_err_t suit_dfu_cache_sink_get(struct stream_sink *sink, uint8_t cache_partition_id,
+					const uint8_t *uri, size_t uri_size);
 
 /**
  * @brief Commits written data to cache
@@ -31,7 +31,7 @@ suit_plat_err_t dfu_get_cache_sink(struct stream_sink *sink, uint8_t cache_parti
  * @param ctx Pointer to sink context
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t suit_cache_sink_commit(void *ctx);
+suit_plat_err_t suit_dfu_cache_sink_commit(void *ctx);
 
 /**
  * @brief Created slot is removed along with any data written to it.
@@ -39,7 +39,7 @@ suit_plat_err_t suit_cache_sink_commit(void *ctx);
  * @param ctx Pointer to sink context
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t suit_cache_sink_drop(void *ctx);
+suit_plat_err_t suit_dfu_cache_sink_drop(void *ctx);
 
 #ifdef __cplusplus
 }

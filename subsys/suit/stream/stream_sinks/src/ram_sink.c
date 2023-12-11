@@ -47,7 +47,7 @@ static struct ram_ctx *get_new_ctx()
 	return NULL; /* No free ctx */
 }
 
-suit_plat_err_t ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size)
+suit_plat_err_t suit_ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size)
 {
 	if ((dst != NULL) && (size > 0)) {
 		struct ram_ctx *ctx = get_new_ctx();

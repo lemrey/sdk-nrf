@@ -80,8 +80,8 @@ ZTEST(cache_streamer_tests, test_cache_streamer_ok)
 	int ret = suit_memptr_storage_get(&handle);
 	zassert_equal(ret, 0, "suit_memptr_storage_get failed - error %i", ret);
 
-	ret = memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(ret, 0, "memptr_sink_get failed - error %i", ret);
+	ret = suit_memptr_sink_get(&memptr_sink, handle);
+	zassert_equal(ret, 0, "suit_memptr_sink_get failed - error %i", ret);
 
 	ret = dfu_cache_streamer(ok_uri, ok_uri_len, &memptr_sink);
 	zassert_equal(ret, 0, "dfu_cache_streamer failed - error %i", ret);
@@ -105,8 +105,8 @@ ZTEST(cache_streamer_tests, test_cache_streamer_nok)
 	int ret = suit_memptr_storage_get(&handle);
 	zassert_equal(ret, 0, "suit_memptr_storage_get failed - error %i", ret);
 
-	ret = memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(ret, 0, "memptr_sink_get failed - error %i", ret);
+	ret = suit_memptr_sink_get(&memptr_sink, handle);
+	zassert_equal(ret, 0, "suit_memptr_sink_get failed - error %i", ret);
 
 	ret = dfu_cache_streamer(NULL, ok_uri_len, &memptr_sink);
 	zassert_equal(ret, SUIT_PLAT_ERR_INVAL,

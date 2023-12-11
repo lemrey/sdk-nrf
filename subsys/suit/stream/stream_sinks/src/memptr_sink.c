@@ -12,7 +12,7 @@ LOG_MODULE_REGISTER(suit_memptr_sink, CONFIG_SUIT_LOG_LEVEL);
 static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size);
 static suit_plat_err_t used_storage(void *ctx, size_t *size);
 
-suit_plat_err_t memptr_sink_get(struct stream_sink *sink, memptr_storage_handle_t handle)
+suit_plat_err_t suit_memptr_sink_get(struct stream_sink *sink, memptr_storage_handle_t handle)
 {
 	if ((sink != NULL) && (handle != NULL)) {
 		sink->erase = NULL;
