@@ -61,6 +61,7 @@ Additionally, the page lists the available Zephyr samples that are compatible wi
 The following |NCS| application has been developed and tested on the nRF54L15 for the initial limited sampling:
 
 * :ref:`nrf_peripheral_sensor_node_app`
+* :ref:`nrf_desktop`
 
 Zephyr samples
 **************

@@ -127,7 +127,9 @@ No changes since the latest nRF Connect SDK release.
 nRF Desktop
 -----------
 
-No changes since the latest nRF Connect SDK release.
+* Added support for the nRF54L15 PDK with the ``nrf54l15dk_nrf54l15_cpuapp@soc1`` board target.
+  The DK can act as a sample mouse or keyboard.
+  The DK supports the Bluetooth LE HID data transport and uses SoftDevice Link Layer with Low Latency Packet Mode (LLPM) enabled.
 
 Thingy:53 Zigbee weather station
 --------------------------------

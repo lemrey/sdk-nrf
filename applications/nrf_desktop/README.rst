@@ -362,7 +362,7 @@ Depending on what development kit you use, you need to select the respective con
 
       .. table-from-rows:: /includes/sample_board_rows.txt
          :header: heading
-         :rows: nrf52840dk_nrf52840, nrf52833dk_nrf52833, nrf52833dk_nrf52820, nrf5340dk_nrf5340_cpuapp, nrf54h20dk_nrf54h20_cpuapp@soc1
+         :rows: nrf52840dk_nrf52840, nrf52833dk_nrf52833, nrf52833dk_nrf52820, nrf5340dk_nrf5340_cpuapp, nrf54h20dk_nrf54h20_cpuapp@soc1, nrf54l15dk_nrf54l15_cpuapp@soc1
 
       Depending on the configuration, a DK may act either as mouse, keyboard or dongle.
       You can check supported configurations for each board in the :ref:`nrf_desktop_board_configuration_files` section.
@@ -832,11 +832,11 @@ For detailed information about building the nRF Desktop application for the nRF2
 Building and running
 ********************
 
-.. |application path| replace:: :file:`applications/nrf_desktop`
+.. |sample path| replace:: :file:`applications/nrf_desktop`
 
 The nRF Desktop application is built the same way to any other |NCS| application or sample.
 
-.. include:: /includes/application_build_and_run_54h.txt
+.. include:: /includes/build_and_run_54h_54l.txt
 
 .. note::
     Information about the known issues in nRF Desktop can be found in |NCS|'s :ref:`release_notes` and on the :ref:`known_issues` page.
@@ -1331,6 +1331,18 @@ Sample gaming mouse (nrf54h20dk_nrf54h20_cpuapp\@soc1)
         The :ref:`nrf_desktop_config_channel_script` script and :ref:`nrf_desktop_dfu` are used to handle the envelope transfer over the configuration channel protocol.
         The ``smp_suit`` configuration uses the SUITFU (:file:`subsys/mgmt/suitfu`) for the SUIT envelope transfer.
         The :ref:`nrf_desktop_dfu_mcumgr_suit` is used to ensure a proper SUITFU configuration and to lower the Bluetooth LE connection latency, allowing quick data transfer over SMP.
+
+Sample mouse or keyboard (nrf54l15dk_nrf54l15_cpuapp\@soc1)
+      * The configuration uses the nRF54L15 Preview Development Kit.
+      * The build types allow to build the application as mouse or keyboard.
+      * Inputs are simulated based on the hardware button presses.
+        On the PDK v0.2.1, GPIOs assigned to **Button 3** and **Button 4** do not support interrupts.
+        Because of this, the application cannot use those buttons.
+      * Only Bluetooth LE transport is enabled.
+        Bluetooth LE is configured to use Nordic Semiconductor's SoftDevice Link Layer and LLPM.
+      * In debug configurations, logs are provided through the UART.
+        For detailed information on working with the nRF54L15 PDK, see the :ref:`ug_nrf54l15_gs` documentation.
+      * Configurations do not enable bootloader and do not support a firmware update.
 
 .. _porting_guide_adding_board:
 
