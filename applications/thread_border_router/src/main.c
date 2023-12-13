@@ -25,7 +25,11 @@
 #include <zephyr/net/net_config.h>
 #include <zephyr/net/net_pkt_filter.h>
 #include <zephyr/net/openthread.h>
+
+#if defined(CONFIG_WIFI_NRF700X)
 #include <zephyr/net/wifi_mgmt.h>
+#include <net/wifi_mgmt_ext.h>
+#endif /* CONFIG_WIFI_NRF700X */
 
 LOG_MODULE_REGISTER(nrf_tbr, CONFIG_NRF_TBR_LOG_LEVEL);
 
@@ -154,6 +158,7 @@ static int init_backbone_iface(void)
 	const struct device *backbone_device;
 
 #if defined(CONFIG_WIFI_NRF700X)
+
 	/* Wait for WiFi connection */
 	net_mgmt_init_event_callback(&wifi_mgmt_cb,
 				     wifi_mgmt_event_handler,
@@ -258,7 +263,22 @@ static struct openthread_state_changed_cb ot_state_chaged_cb = { .state_changed_
 
 int main(void)
 {
+#if defined(CONFIG_WIFI_NRF700X)
+	int err;
+
+	/* Add temporary fix to prevent using Wi-Fi before WPA supplicant is ready. */
+	k_sleep(K_SECONDS(1));
+
+	err = net_mgmt(NET_REQUEST_WIFI_CONNECT_STORED, net_if_get_default(), NULL, 0);
+
+	if (err) {
+		LOG_ERR("Connecting to Wi-Fi failed. error: %d", err);
+	}
+
+#endif /* CONFIG_WIFI_NRF700X */
+
 	k_sem_take(&run_app, K_FOREVER);
+
 	openthread_state_changed_cb_register(context->ot, &ot_state_chaged_cb);
 
 	if (!context->backbone_iface) {

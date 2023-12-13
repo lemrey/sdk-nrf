@@ -43,3 +43,17 @@ tests:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: nRF_TBR TBR_app TBR_app_wifi
+  applications.thrad_border_router.application.release.wifi.static_cred:
+    build_only: true
+    extra_args: CONF_FILE=prj_release.conf OVERLAY_CONFIG=overlay-static_credentials.conf BACKBONE_WIFI=1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: nRF_TBR TBR_app TBR_app_wifi static_credentials
+  applications.thrad_border_router.application.debug.wifi.static_cred:
+    build_only: true
+    extra_args: OVERLAY_CONFIG=overlay-static_credentials.conf BACKBONE_WIFI=1
+    integration_platforms:
+      - nrf54h20dk_nrf54h20_cpuapp@soc1
+    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
+    tags: nRF_TBR TBR_app TBR_app_wifi static_credentials

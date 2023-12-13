@@ -162,6 +162,8 @@ The following configuration files are provided:
 * :file:`overlay-nat64.conf` - The overlay file that adds NAT64 and all necessary features required to access resources in IPv4 networks from Thread network.
   You can include it by adding ``-DOVERLAY_CONFIG=overlay-nat64.conf`` to your build command.
 
+* :file:`overlay-static_credentials.conf` - Configuration file that enables the use of and sets static Wi-Fi credentials.
+
 See :ref:`app_build_system` for more information on the |NCS| configuration system.
 
 .. note::
@@ -258,9 +260,9 @@ When the nRF TBR application is built with the Wi-Fi interface as the external l
       uart:~$ wifi scan
       Scan requested
       Num  | SSID                             (len) | Chan | RSSI | Security | BSSID
-      1    | TestNetwork                      11    | 1    | -37  | WPA/WPA2 | aa:aa:aa:aa:aa:aa
-      2    | pqrst                            5     | 1    | -65  | WPA/WPA2 | xx:xx:xx:xx:xx:xx
-      3    | AZBYCXD                          7     | 1    | -41  | WPA/WPA2 | yy:yy:yy:yy:yy:yy
+      1    | TestNetwork                      11    | 1    | -37  | WPA2-PSK | aa:aa:aa:aa:aa:aa
+      2    | pqrst                            5     | 1    | -65  | WPA2-PSK | xx:xx:xx:xx:xx:xx
+      3    | AZBYCXD                          7     | 1    | -41  | WPA2-PSK | yy:yy:yy:yy:yy:yy
       Scan request done
 
 #. Connect to a selected Wi-Fi network with the ``wifi connect "<SSID>" <password>`` command:
@@ -281,6 +283,32 @@ When the nRF TBR application is built with the Wi-Fi interface as the external l
       net8 bytes from fe80::630d:f707:a3:9ab2 to fe80::f6ce:36ff:fe00:337a: icmp_seq=1 ttl=64 rssi=0 time=86 ms
       net8 bytes from fe80::630d:f707:a3:9ab2 to fe80::f6ce:36ff:fe00:337a: icmp_seq=2 ttl=64 rssi=0 time=13 ms
       net8 bytes from fe80::630d:f707:a3:9ab2 to fe80::f6ce:36ff:fe00:337a: icmp_seq=3 ttl=64 rssi=0 time=10 ms
+
+Optionally, you can save your Wi-Fi credentials to automatically reconnect to your Wi-Fi network when the nRF TBR application reboots or starts.
+To do this, complete the following steps:
+
+1. Add the Wi-Fi network to credential storage with the ``wifi_cred add "<SSID>" <Security> <password>`` command:
+
+   .. code-block:: console
+
+      uart:~$ wifi_cred add "TestNetwork" WPA2-PSK password.100
+
+#. Connect to the stored network with the ``wifi_cred auto_connect`` command:
+
+   .. code-block:: console
+
+      uart:~$ wifi_cred auto_connect
+
+.. note::
+
+   For development purposes, the Wi-Fi credentials can be set statically using the following Kconfig options:
+
+   * :kconfig:option:`CONFIG_WIFI_CREDENTIALS_STATIC` - This option enables static Wi-Fi configuration.
+   * :kconfig:option:`CONFIG_WIFI_CREDENTIALS_STATIC_SSID` - Sets the Wi-Fi SSID.
+   * :kconfig:option:`CONFIG_WIFI_CREDENTIALS_STATIC_PASSWORD` - Sets the Wi-Fi password.
+
+   You can set the Wi-Fi credentials by changing the ``<ssid>`` and ``<password>`` values in the :file:`overlay-static_credentials.conf` overlay file and including it in the build command.
+   See :ref:`nrf_tbr_app_select_configuration`.
 
 Linux machine configuration
 ---------------------------
