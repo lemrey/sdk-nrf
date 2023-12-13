@@ -146,7 +146,7 @@ manifest:
       repo-path: sdk-nrfxlib
       path: nrfxlib
       remote: lemrey
-      revision: 1e9412d6a51ac1e4d6ece3a256176c8b970201c7
+      revision: b08950f399f436d5c7572cf5249ee6ce208a211c
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m
