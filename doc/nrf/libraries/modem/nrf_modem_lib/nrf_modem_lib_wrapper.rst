@@ -50,10 +50,10 @@ See the :ref:`modem_callbacks_sample` sample for more information.
 Modem functional mode changes
 =============================
 
-The library wrapper also provides macros for registering multiple callbacks on changes to the modem functional mode.
+The library wrapper provides macros for registering multiple callbacks on changes to the modem functional mode.
 The application can set up a callback for AT CFUN calls using the :c:macro:`NRF_MODEM_LIB_ON_CFUN` macro.
 This compile-time callback allows any part of the application to perform any steps that is required when the modem changes functional mode.
-The callbacks registered using :c:macro:`NRF_MODEM_LIB_ON_CFUN` macro are executed after the functional mode has been successfully changed.
+The callbacks registered using the :c:macro:`NRF_MODEM_LIB_ON_CFUN` macro are executed after the functional mode has been successfully changed.
 See the :ref:`modem_callbacks_sample` sample for more information.
 
 .. important::
