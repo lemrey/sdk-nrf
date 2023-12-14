@@ -38,9 +38,14 @@ target_sources(app PRIVATE ${NRF_DIR}/lib/nrf_modem_lib/lte_connectivity/lte_ip_
 target_sources(app PRIVATE ${NRF_DIR}/lib/nrf_modem_lib/nrf91_sockets.c)
 
 target_include_directories(app PRIVATE ${NRF_DIR}/lib/nrf_modem_lib/lte_connectivity)
+target_include_directories(app PRIVATE ${ZEPHYR_NRFXLIB_MODULE_DIR}/nrf_modem/include)
 
 add_compile_definitions(CONFIG_NRF_MODEM_LIB_MEM_DIAG)
 add_compile_definitions(CONFIG_LTE_CONNECTIVITY_CONNECT_TIMEOUT_SECONDS=30)
 add_compile_definitions(CONFIG_LTE_CONNECTIVITY)
 add_compile_definitions(CONFIG_LTE_CONNECTIVITY_WORKQUEUE_STACK_SIZE=1024)
 add_compile_definitions(CONFIG_LTE_CONNECTIVITY_CONNECTION_PERSISTENCE)
+
+# manually add define needed in nrf_socket.h that is missing because
+# no SOC is specified for nrf_modem when unit testing.
+add_compile_definitions(NRF_MODEM_SOC_MAX_SOCKET_COUNT=8)

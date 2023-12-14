@@ -28,3 +28,7 @@ test_runner_generate(src/nrf91_sockets_test.c)
 
 # add test file
 target_sources(app PRIVATE src/nrf91_sockets_test.c)
+
+# manually add define needed in nrf_socket.h that is missing because
+# no SOC is specified for nrf_modem when unit testing.
+add_compile_definitions(NRF_MODEM_SOC_MAX_SOCKET_COUNT=8)
