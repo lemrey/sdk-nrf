@@ -40,8 +40,8 @@ suit_plat_err_t suit_dfu_cache_sink_get(struct stream_sink *sink, uint8_t cache_
 			return SUIT_PLAT_ERR_BUSY;
 		}
 
-		suit_plat_err_t ret = dfu_create_cache_slot(cache_partition_id, &ctx.slot,
-							    uri, uri_size);
+		suit_plat_err_t ret = suit_dfu_cache_rw_slot_create(cache_partition_id, &ctx.slot,
+								    uri, uri_size);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Getting slot in cache failed");
@@ -110,6 +110,10 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 
 				return SUIT_PLAT_SUCCESS;
 			}
+			else
+			{
+				return SUIT_PLAT_ERR_NOMEM;
+			}
 		}
 
 		return SUIT_PLAT_ERR_INCORRECT_STATE;
@@ -166,7 +170,7 @@ static suit_plat_err_t release(void *ctx)
 			LOG_INF("Changes were not committed and will be dropped");
 			cache_ctx->write_enabled = false;
 
-			ret = dfu_drop_cache_slot(&cache_ctx->slot);
+			ret = suit_dfu_cache_rw_slot_drop(&cache_ctx->slot);
 
 			if (ret != SUIT_PLAT_SUCCESS) {
 				return ret;
@@ -184,7 +188,8 @@ suit_plat_err_t suit_dfu_cache_sink_commit(void *ctx)
 {
 	if (ctx != NULL) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;
-		suit_plat_err_t ret = dfu_close_cache_slot(&cache_ctx->slot, cache_ctx->offset);
+		suit_plat_err_t ret = suit_dfu_cache_rw_slot_close(&cache_ctx->slot,
+								   cache_ctx->offset);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Commit to cache failed.");
@@ -202,7 +207,7 @@ suit_plat_err_t suit_dfu_cache_sink_drop(void *ctx)
 {
 	if (ctx != NULL) {
 		struct cache_ctx *cache_ctx = (struct cache_ctx *)ctx;
-		suit_plat_err_t ret = dfu_drop_cache_slot(&cache_ctx->slot);
+		suit_plat_err_t ret = suit_dfu_cache_rw_slot_drop(&cache_ctx->slot);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Drop changes to cache failed.");

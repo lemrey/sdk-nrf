@@ -40,12 +40,12 @@ struct suit_cache_slot {
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t suit_dfu_cache_initialize_rw(void *addr, size_t size);
+suit_plat_err_t suit_dfu_cache_rw_initialize(void *addr, size_t size);
 
 /**
  * @brief Deinitialize SUIT cache
  */
-void suit_dfu_cache_deinitialize_rw(void);
+void suit_dfu_cache_rw_deinitialize(void);
 
 /**
  * @brief Function tries to allocate slot in cache pointed by ID
@@ -57,8 +57,9 @@ void suit_dfu_cache_deinitialize_rw(void);
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_cache_slot *slot,
-				      const uint8_t *uri, size_t uri_size);
+suit_plat_err_t suit_dfu_cache_rw_slot_create(uint8_t cache_partition_id,
+					      struct suit_cache_slot *slot,
+					      const uint8_t *uri, size_t uri_size);
 
 /**
  * @brief Closes slot by updating bstring header with size of data that was written
@@ -69,7 +70,7 @@ suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_ca
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t dfu_commit_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
+suit_plat_err_t suit_dfu_cache_rw_slot_commit(struct suit_cache_slot *slot, size_t data_end_offset);
 
 /**
  * @brief Commits changes written to slot by updating cbor header for the cache slot
@@ -79,7 +80,7 @@ suit_plat_err_t dfu_commit_cache_slot(struct suit_cache_slot *slot, size_t data_
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset);
+suit_plat_err_t suit_dfu_cache_rw_slot_close(struct suit_cache_slot *slot, size_t data_end_offset);
 
 /**
  * @brief Drop data written to slot and revert slot allocation
@@ -88,7 +89,7 @@ suit_plat_err_t dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_e
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */
-suit_plat_err_t dfu_drop_cache_slot(struct suit_cache_slot *slot);
+suit_plat_err_t suit_dfu_cache_rw_slot_drop(struct suit_cache_slot *slot);
 
 #ifdef __cplusplus
 }

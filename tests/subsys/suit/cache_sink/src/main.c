@@ -88,7 +88,7 @@ static size_t data3_size = sizeof(data3);
 
 void setup_dfu_test_cache(void *f)
 {
-	int ret = suit_dfu_cache_initialize_rw(NULL, 0);
+	int ret = suit_dfu_cache_rw_initialize(NULL, 0);
 	zassert_equal(ret, 0, "Failed to initialize cache: %i", ret);
 }
 
@@ -128,7 +128,7 @@ void clear_dfu_test_partitions(void *f)
 			 FIXED_PARTITION_SIZE(dfu_cache_partition_3));
 	zassert_equal(rc, 0, "Unable to erase dfu_cache_partition_3 before test execution: %i", rc);
 
-	suit_dfu_cache_deinitialize_rw();
+	suit_dfu_cache_rw_deinitialize();
 }
 
 ZTEST_SUITE(cache_sink_recovery_tests, NULL, NULL, setup_dfu_test_corrupted_cache,

@@ -65,13 +65,13 @@ static struct dfu_cache_partition_ext dfu_partitions_ext[] = {
 #define ERASE_SWAP_BUFFER_MAX_SIZE 4096
 static uint8_t erase_swap_buffer[ERASE_SWAP_BUFFER_MAX_SIZE];
 
-static suit_plat_err_t initialize_partition(struct dfu_cache_partition_ext *part);
-static suit_plat_err_t update_cache_0(void *address, size_t size);
-static struct dfu_cache_partition_ext *get_cache_partition(uint8_t partition_id);
-static suit_plat_err_t allocate_slot_in_cache_partition(const struct zcbor_string *uri,
+static suit_plat_err_t partition_initialize(struct dfu_cache_partition_ext *part);
+static suit_plat_err_t cache_0_update(void *address, size_t size);
+static struct dfu_cache_partition_ext *cache_partition_get(uint8_t partition_id);
+static suit_plat_err_t slot_in_cache_partition_allocate(const struct zcbor_string *uri,
 							struct suit_cache_slot *slot,
 							struct dfu_cache_partition_ext *part);
-static suit_plat_err_t cache_check_free_space(struct dfu_cache_partition_ext *part,
+static suit_plat_err_t cache_free_space_check(struct dfu_cache_partition_ext *part,
 					      struct suit_cache_slot *slot);
 
 /**
@@ -82,7 +82,7 @@ static suit_plat_err_t cache_check_free_space(struct dfu_cache_partition_ext *pa
  * @return struct dfu_cache_partition_ext* In case of success pointer to partition or
  *		NULL if requested partition was not found
  */
-static struct dfu_cache_partition_ext *get_cache_partition(uint8_t partition_id)
+static struct dfu_cache_partition_ext *cache_partition_get(uint8_t partition_id)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(dfu_partitions_ext); i++) {
 		if (dfu_partitions_ext[i].id == partition_id) {
@@ -99,7 +99,7 @@ static struct dfu_cache_partition_ext *get_cache_partition(uint8_t partition_id)
  * @param offset Offset in desired partition
  * @return struct dfu_cache_partition_ext* or NULL in case of error
  */
-static struct dfu_cache_partition_ext *get_cache_partition_by_offset(size_t offset)
+static struct dfu_cache_partition_ext *cache_partition_get_by_offset(size_t offset)
 {
 	for (size_t i = 1; i < ARRAY_SIZE(dfu_partitions_ext); i++) {
 		if ((offset >= dfu_partitions_ext[i].offset) &&
@@ -111,9 +111,9 @@ static struct dfu_cache_partition_ext *get_cache_partition_by_offset(size_t offs
 	return NULL;
 }
 
-suit_plat_err_t suit_dfu_cache_initialize_rw(void *addr, size_t size)
+suit_plat_err_t suit_dfu_cache_rw_initialize(void *addr, size_t size)
 {
-	suit_plat_err_t ret = update_cache_0(addr, size);
+	suit_plat_err_t ret = cache_0_update(addr, size);
 
 	if (ret != SUIT_PLAT_SUCCESS) {
 		return ret;
@@ -123,7 +123,7 @@ suit_plat_err_t suit_dfu_cache_initialize_rw(void *addr, size_t size)
 
 	for (size_t i = 1; i < ARRAY_SIZE(dfu_partitions_ext); i++) {
 		/* Check if partition already has valid cache and if not initialize */
-		ret = initialize_partition(&dfu_partitions_ext[i]);
+		ret = partition_initialize(&dfu_partitions_ext[i]);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_WRN("suit_cache_%u initialization failed: %i", dfu_partitions_ext[i].id,
@@ -143,7 +143,7 @@ suit_plat_err_t suit_dfu_cache_initialize_rw(void *addr, size_t size)
 	return SUIT_PLAT_SUCCESS;
 }
 
-void suit_dfu_cache_deinitialize_rw(void)
+void suit_dfu_cache_rw_deinitialize(void)
 {
 	suit_dfu_cache_clear(&dfu_cache);
 }
@@ -290,7 +290,7 @@ static suit_plat_err_t is_partition_initialized(struct dfu_cache_partition_ext *
  * @param part Pointer to cache partition structure
  * @return SUIT_PLAT_SUCCESS on success, otherwise error code
  */
-static suit_plat_err_t initialize_partition(struct dfu_cache_partition_ext *part)
+static suit_plat_err_t partition_initialize(struct dfu_cache_partition_ext *part)
 {
 	const uint8_t header[] = {0xBF,	 /* Indefinite length map */
 				  0xFF}; /* End marker */
@@ -347,7 +347,7 @@ static suit_plat_err_t initialize_partition(struct dfu_cache_partition_ext *part
  * @param slot Pointer to structure that will contain allocable slot info
  * @return SUIT_PLAT_SUCCESS on success, otherwise error code
  */
-static suit_plat_err_t cache_check_free_space(struct dfu_cache_partition_ext *part,
+static suit_plat_err_t cache_free_space_check(struct dfu_cache_partition_ext *part,
 					      struct suit_cache_slot *slot)
 {
 	bool ret = true;
@@ -387,7 +387,7 @@ static suit_plat_err_t cache_check_free_space(struct dfu_cache_partition_ext *pa
 			return SUIT_PLAT_SUCCESS;
 		}
 
-		ret = dfu_drop_cache_slot(slot);
+		ret = suit_dfu_cache_rw_slot_drop(slot);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Clearing recovering corrupted cache pool failed: %i", ret);
 			return SUIT_PLAT_ERR_CRASH;
@@ -408,7 +408,7 @@ static suit_plat_err_t cache_check_free_space(struct dfu_cache_partition_ext *pa
  * @param cache_index Index of cache in which slot shall be allocated
  * @return SUIT_PLAT_SUCCESS on success, otherwise error code
  */
-static suit_plat_err_t allocate_slot_in_cache_partition(const struct zcbor_string *uri,
+static suit_plat_err_t slot_in_cache_partition_allocate(const struct zcbor_string *uri,
 							struct suit_cache_slot *slot,
 							struct dfu_cache_partition_ext *part)
 {
@@ -431,7 +431,7 @@ static suit_plat_err_t allocate_slot_in_cache_partition(const struct zcbor_strin
 		}
 
 		/* Check how much free space is in given cache pool*/
-		ret = cache_check_free_space(part, slot);
+		ret = cache_free_space_check(part, slot);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			return ret;
@@ -486,7 +486,7 @@ static suit_plat_err_t allocate_slot_in_cache_partition(const struct zcbor_strin
  *
  * @return SUIT_PLAT_SUCCESS on success, otherwise error code
  */
-static suit_plat_err_t update_cache_0(void *address, size_t size)
+static suit_plat_err_t cache_0_update(void *address, size_t size)
 
 {
 	if ((address == NULL) || (size == 0)) {
@@ -517,14 +517,15 @@ static suit_plat_err_t update_cache_0(void *address, size_t size)
 	}
 
 	if (dfu_partitions_ext[0].size > 0) {
-		return initialize_partition(&dfu_partitions_ext[0]);
+		return partition_initialize(&dfu_partitions_ext[0]);
 	}
 
 	return SUIT_PLAT_SUCCESS;
 }
 
-suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_cache_slot *slot,
-				      const uint8_t *uri, size_t uri_size)
+suit_plat_err_t suit_dfu_cache_rw_slot_create(uint8_t cache_partition_id,
+					      struct suit_cache_slot *slot,
+					      const uint8_t *uri, size_t uri_size)
 {
 	if ((slot != NULL) && (uri != NULL) && (uri_size > 0)) {
 		struct zcbor_string tmp_uri = {.value = uri, .len = uri_size};
@@ -533,7 +534,7 @@ suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_ca
 			tmp_uri.len--;
 		}
 
-		struct dfu_cache_partition_ext *part = get_cache_partition(cache_partition_id);
+		struct dfu_cache_partition_ext *part = cache_partition_get(cache_partition_id);
 
 		if (part == NULL) {
 			LOG_ERR("Partition not found");
@@ -541,7 +542,7 @@ suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_ca
 		}
 
 		slot->eb_size = part->eb_size;
-		suit_plat_err_t ret = allocate_slot_in_cache_partition(&tmp_uri, slot, part);
+		suit_plat_err_t ret = slot_in_cache_partition_allocate(&tmp_uri, slot, part);
 
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Allocating slot in cache failed.");
@@ -555,7 +556,7 @@ suit_plat_err_t dfu_create_cache_slot(uint8_t cache_partition_id, struct suit_ca
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_plat_err_t dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_end_offset)
+suit_plat_err_t suit_dfu_cache_rw_slot_close(struct suit_cache_slot *slot, size_t data_end_offset)
 {
 	if (slot != NULL) {
 		uint32_t tmp = __bswap_32(data_end_offset);
@@ -586,7 +587,7 @@ suit_plat_err_t dfu_close_cache_slot(struct suit_cache_slot *slot, size_t data_e
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_plat_err_t dfu_drop_cache_slot(struct suit_cache_slot *slot)
+suit_plat_err_t suit_dfu_cache_rw_slot_drop(struct suit_cache_slot *slot)
 {
 	if (ERASE_SWAP_BUFFER_MAX_SIZE > 128) {
 		LOG_WRN("ERASE_SWAP_BUFFER_MAX_SIZE is set to %u", ERASE_SWAP_BUFFER_MAX_SIZE);
@@ -594,7 +595,7 @@ suit_plat_err_t dfu_drop_cache_slot(struct suit_cache_slot *slot)
 
 	if (slot != NULL) {
 		struct dfu_cache_partition_ext *part =
-			get_cache_partition_by_offset(slot->slot_offset);
+			cache_partition_get_by_offset(slot->slot_offset);
 		slot->eb_size = part->eb_size;
 
 		if (part == NULL) {
