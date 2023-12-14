@@ -516,12 +516,18 @@
   - "subsys/nrf_rpc/**/*"
 
 "CI-suit-dfu-test":
-  - "modules/tfm/**/*"
-  - "include/tfm/**/*"
+  - "subsys/suit/**/*"
+  - "subsys/mgmt/suitfu/**/*"
+  - "subsys/nrf_rpc/**/*"
+  - "samples/suit/**/*"
+  - "tests/subsys/suit/**/*"
+  - "lib/dk_buttons_and_leds/**/*"
+  - "subsys/nrf_security/**/*"
+
+"CI-suit-dfu-test-extended":
   - "subsys/suit/**/*"
   - "subsys/mgmt/suitfu/**/*"
   - "samples/suit/**/*"
-  - "tests/subsys/suit/**/*"
 
 "CI-test-zephyr-sanitycheck-low-level":
   - "samples/egu/**/*"
