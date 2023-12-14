@@ -177,6 +177,8 @@ manifest:
           upstream-url: https://github.com/project-chip/connectedhomeip
           upstream-sha: 8f66f4215bc0708efc8cc73bda80620e67d8955f
           compare-by-default: false
+      groups:
+        - matter
     - name: nrf-802154
       repo-path: sdk-nrf-802154
       path: nrf-802154
@@ -239,6 +241,8 @@ manifest:
     - name: suit-generator
       revision: 425d339c16fad764cd4d3341507fd31c36802e26
       path: modules/lib/suit-generator
+      groups:
+        - suit-generator
 
     # Other third-party repositories.
     - name: cmock
