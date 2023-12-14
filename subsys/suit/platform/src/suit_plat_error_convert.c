@@ -6,7 +6,7 @@
 
 #include "suit_plat_error_convert.h"
 
-int suit_plat_err_to_proccessor_err_convert(suit_plat_err_t plat_err)
+int suit_plat_err_to_processor_err_convert(suit_plat_err_t plat_err)
 {
 	int proc_err = SUIT_ERR_CRASH;
 	switch (plat_err)

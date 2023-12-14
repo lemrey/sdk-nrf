@@ -66,7 +66,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 		}
 
 		sink_get_err = suit_memptr_sink_get(sink, handle);
-		return suit_plat_err_to_proccessor_err_convert(sink_get_err);
+		return suit_plat_err_to_processor_err_convert(sink_get_err);
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
 
@@ -103,7 +103,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 		sink_get_err = suit_flash_sink_get(sink, (uint8_t *)run_address, size, handle);
 		if (sink_get_err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to get flash sink: %i", sink_get_err);
-			return suit_plat_err_to_proccessor_err_convert(sink_get_err);
+			return suit_plat_err_to_processor_err_convert(sink_get_err);
 		}
 
 		return SUIT_SUCCESS;
@@ -121,7 +121,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 		if (1 == number) {
 			if (IS_ENABLED(CONFIG_SUIT_STREAM_SINK_SDFW)) {
 				sink_get_err = suit_sdfw_sink_get(sink);
-				return suit_plat_err_to_proccessor_err_convert(sink_get_err);
+				return suit_plat_err_to_processor_err_convert(sink_get_err);
 			}
 
 			LOG_ERR("SDFW sink not enabled");

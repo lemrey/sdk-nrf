@@ -42,7 +42,7 @@ extern "C" {
  * 4) Any function that is called by the SUIT processor MUST convert the platform error codes
  *    to error codes which are defined by the SUIT processor in suit_types.h. All other public
  *    functions defined in the platform directory should also do this. They can use
- *    the suit_plat_err_to_proccessor_err_convert function to do so, however they can also choose
+ *    the suit_plat_err_to_processor_err_convert function to do so, however they can also choose
  *    to convert the error differently.
  * 5) Specific modules can extend the error codes pool. Error codes for a module must be positive
  *    integers to avoid collisions with common error code pool values.

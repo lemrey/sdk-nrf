@@ -48,13 +48,13 @@ int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *diges
 	suit_plat_err_t err = suit_digest_sink_get(&digest_sink, psa_alg, digest->value);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
-		return suit_plat_err_to_proccessor_err_convert(err);
+		return suit_plat_err_to_processor_err_convert(err);
 	}
 
 	err = digest_sink.write(digest_sink.ctx, (uint8_t *)payload->value, &payload->len);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to write to stream: %d", err);
-		return suit_plat_err_to_proccessor_err_convert(err);
+		return suit_plat_err_to_processor_err_convert(err);
 	}
 
 	digest_sink_err_t ret = suit_digest_sink_digest_match(digest_sink.ctx);
@@ -63,7 +63,7 @@ int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *diges
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to release stream: %d", err);
 		if (SUIT_PLAT_SUCCESS == ret) {
-			return suit_plat_err_to_proccessor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 	}
 
@@ -72,5 +72,5 @@ int suit_plat_check_digest(enum suit_cose_alg alg_id, struct zcbor_string *diges
 		return SUIT_FAIL_CONDITION;
 	}
 
-	return suit_plat_err_to_proccessor_err_convert(err);
+	return suit_plat_err_to_processor_err_convert(err);
 }

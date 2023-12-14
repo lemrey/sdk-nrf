@@ -82,7 +82,7 @@ static int verify_and_get_sink(suit_component_t dst_handle, struct stream_sink *
 			return ret;
 		}
 
-		return suit_plat_err_to_proccessor_err_convert(suit_memptr_sink_get(&dst_sink,
+		return suit_plat_err_to_processor_err_convert(suit_memptr_sink_get(&dst_sink,
 							       handle));
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
@@ -91,7 +91,7 @@ static int verify_and_get_sink(suit_component_t dst_handle, struct stream_sink *
 		ret = suit_dfu_cache_sink_get(&dst_sink, number, uri->value, uri->len);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Getting cache sink failed");
-			return suit_plat_err_to_proccessor_err_convert(ret);
+			return suit_plat_err_to_processor_err_convert(ret);
 		}
 	} break;
 #endif /* CONFIG_SUIT_CACHE_RW */
@@ -120,7 +120,7 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return suit_plat_err_to_proccessor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 	}
 
@@ -149,7 +149,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		ret = dst_sink.erase(dst_sink.ctx);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Sink mem erase failed: %i", ret);
-			return suit_plat_err_to_proccessor_err_convert(ret);
+			return suit_plat_err_to_processor_err_convert(ret);
 		}
 	}
 
@@ -159,14 +159,14 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	case SUIT_COMPONENT_TYPE_CACHE_POOL:
 	case SUIT_COMPONENT_TYPE_MEM: {
 		ret = suit_fetch_source_stream(uri->value, uri->len, &dst_sink);
-		ret = suit_plat_err_to_proccessor_err_convert(ret);
+		ret = suit_plat_err_to_processor_err_convert(ret);
 	} break;
 #endif /* SUIT_STREAM_FETCH_SOURCE_MGR */
 #if defined(CONFIG_SUIT_CACHE_RW) || defined(SUIT_CACHE)
 	case SUIT_COMPONENT_TYPE_CAND_MFST:
 	case SUIT_COMPONENT_TYPE_CAND_IMG: {
 		ret = suit_dfu_cache_streamer_stream(uri->value, uri->len, &dst_sink);
-		ret = suit_plat_err_to_proccessor_err_convert(ret);
+		ret = suit_plat_err_to_processor_err_convert(ret);
 	} break;
 #endif
 	default:
@@ -179,7 +179,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return suit_plat_err_to_proccessor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 	}
 
@@ -227,7 +227,7 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return suit_plat_err_to_proccessor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 	}
 
@@ -274,7 +274,7 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 		ret = dst_sink.erase(dst_sink.ctx);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Sink mem erase failed: %i", ret);
-			return suit_plat_err_to_proccessor_err_convert(ret);
+			return suit_plat_err_to_processor_err_convert(ret);
 		}
 	}
 
@@ -287,11 +287,11 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("sink release failed: %i", err);
-			return suit_plat_err_to_proccessor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 	}
 
-	return suit_plat_err_to_proccessor_err_convert(ret);
+	return suit_plat_err_to_processor_err_convert(ret);
 #else
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM */

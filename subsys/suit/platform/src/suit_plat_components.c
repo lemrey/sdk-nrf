@@ -126,7 +126,7 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 		err = suit_memptr_storage_get(&component->impl_data);
 		if (err != SUIT_PLAT_SUCCESS)
 		{
-			return suit_plat_err_to_proccessor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 	}
 
@@ -145,7 +145,7 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to get memptr_storage: %d", err);
 
-			suit_plat_err_to_proccessor_err_convert(err);
+			suit_plat_err_to_processor_err_convert(err);
 		}
 
 		/* Set the address as in component id but set size with 0 */

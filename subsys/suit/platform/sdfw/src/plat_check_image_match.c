@@ -53,13 +53,13 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 	err = suit_digest_sink_get(&digest_sink, psa_alg, digest->value);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get digest sink: %d", err);
-		return suit_plat_err_to_proccessor_err_convert(err);
+		return suit_plat_err_to_processor_err_convert(err);
 	}
 
 	err = suit_memptr_streamer_stream(data, size, &digest_sink);
 	if (err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to stream to digest sink: %d", err);
-		err = suit_plat_err_to_proccessor_err_convert(err);
+		err = suit_plat_err_to_processor_err_convert(err);
 	} else {
 		err = suit_digest_sink_digest_match(digest_sink.ctx);
 		if (err != SUIT_PLAT_SUCCESS) {
@@ -78,7 +78,7 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 	if (release_err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to release digest sink: %d", release_err);
 		if (err != SUIT_SUCCESS) {
-			err = suit_plat_err_to_proccessor_err_convert(release_err);
+			err = suit_plat_err_to_processor_err_convert(release_err);
 		}
 	}
 

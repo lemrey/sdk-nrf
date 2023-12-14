@@ -48,7 +48,7 @@ int suit_plat_sequence_completed(enum suit_command_sequence seq_name,
 		}
 	}
 
-	return suit_plat_err_to_proccessor_err_convert(err);
+	return suit_plat_err_to_processor_err_convert(err);
 }
 
 int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,

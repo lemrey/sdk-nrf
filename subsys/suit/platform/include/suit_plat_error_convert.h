@@ -22,7 +22,7 @@ extern "C" {
  *                   code from a SUIT module extending the common platform error
  *                   code pool. In this case it will be converted to SUIT_ERR_CRASH.
 */
-int suit_plat_err_to_proccessor_err_convert(suit_plat_err_t plat_err);
+int suit_plat_err_to_processor_err_convert(suit_plat_err_t plat_err);
 
 #ifdef __cplusplus
 }

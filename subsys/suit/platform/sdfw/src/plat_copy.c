@@ -35,7 +35,7 @@ static int release_sink(struct stream_sink *sink)
 				LOG_ERR("sink release failed.");
 			}
 
-			return suit_plat_err_to_proccessor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 
 		return SUIT_SUCCESS;
@@ -109,7 +109,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 		}
 
 		ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
-		ret = suit_plat_err_to_proccessor_err_convert(ret);
+		ret = suit_plat_err_to_processor_err_convert(ret);
 
 		if ((ret != SUIT_SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
 			LOG_ERR("suit_memptr_storage_ptr_get failed - error %i", ret);
@@ -205,7 +205,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		if ((ret != SUIT_PLAT_SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
 			LOG_ERR("suit_memptr_storage_ptr_get failed - error %i", ret);
 			release_sink(&dst_sink);
-			return suit_plat_err_to_proccessor_err_convert(ret);
+			return suit_plat_err_to_processor_err_convert(ret);
 		}
 
 		ret = suit_memptr_streamer_stream(payload_ptr, payload_size, &dst_sink);
@@ -214,7 +214,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 			LOG_ERR("memptr_streamer failed - error %i", ret);
 		}
 
-		ret = suit_plat_err_to_proccessor_err_convert(ret);
+		ret = suit_plat_err_to_processor_err_convert(ret);
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
 
