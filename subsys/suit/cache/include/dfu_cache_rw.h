@@ -35,8 +35,8 @@ struct suit_cache_slot {
  * @note dfu_cache structure is initialized based on dfu_partitions_ext which in turn is
  *       initialized using SUIT cache partitions information from Device Tree.
  *
- * @param addr  DFU partition address
- * @param size  DFU partition size
+ * @param addr  Address of the envelope in DFU partition
+ * @param size  Size of the envelope
  *
  * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
  */

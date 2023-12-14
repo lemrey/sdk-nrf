@@ -72,15 +72,8 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 
 #ifdef CONFIG_SUIT_STREAM_SINK_FLASH
 	case SUIT_COMPONENT_TYPE_MEM: { /* flash_sink */
-		memptr_storage_handle_t handle;
 		intptr_t run_address;
 		size_t size;
-
-		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
-		if (ret != SUIT_SUCCESS) {
-			LOG_ERR("Unable to get component data for candidate image (err: %d)", ret);
-			return ret;
-		}
 
 		if (suit_plat_decode_address_size(component_id, &run_address, &size)
 		    != SUIT_PLAT_SUCCESS) {
@@ -100,7 +93,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 		 */
 
 		/* Internal MRAM/Flash on single controller */
-		sink_get_err = suit_flash_sink_get(sink, (uint8_t *)run_address, size, handle);
+		sink_get_err = suit_flash_sink_get(sink, (uint8_t *)run_address, size);
 		if (sink_get_err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to get flash sink: %i", sink_get_err);
 			return suit_plat_err_to_processor_err_convert(sink_get_err);

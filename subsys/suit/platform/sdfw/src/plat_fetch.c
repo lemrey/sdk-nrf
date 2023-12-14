@@ -25,10 +25,30 @@
 #include <stdbool.h>
 #include <suit_platform.h>
 #include <suit_memptr_storage.h>
+#include <suit_plat_memptr_size_update.h>
 
 LOG_MODULE_REGISTER(suit_plat_fetch_sdfw, CONFIG_SUIT_LOG_LEVEL);
 
 #ifdef CONFIG_SUIT_STREAM
+static suit_plat_err_t release_sink(struct stream_sink *sink)
+{
+	if (sink != NULL) {
+		if (sink->release != NULL) {
+			suit_plat_err_t err = sink->release(sink->ctx);
+
+			if (err != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("sink release failed.");
+			}
+
+			return err;
+		}
+
+		return SUIT_PLAT_SUCCESS;
+	}
+
+	return SUIT_PLAT_ERR_INVAL;
+}
+
 /**
  * @brief Function checks if component type is supported by SDFW fetch command
  *
@@ -70,17 +90,17 @@ static bool is_type_supported_by_ipc(suit_component_type_t component_type)
 int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 {
 #ifdef CONFIG_SUIT_STREAM
-	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
+	suit_component_type_t dst_component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 	struct stream_sink dst_sink;
 
 	/* Get component type based on component handle*/
-	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	int ret = suit_plat_component_type_get(dst_handle, &dst_component_type);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Failed to decode component type: %i", ret);
 		return ret;
 	}
 
-	if (!is_type_supported(component_type)) {
+	if (!is_type_supported(dst_component_type)) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
@@ -91,18 +111,14 @@ int suit_plat_check_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 		return ret;
 	}
 
-	if (dst_sink.release != NULL) {
-		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
-
-		if (err != SUIT_PLAT_SUCCESS) {
-			LOG_ERR("sink release failed: %i", err);
-			return suit_plat_err_to_processor_err_convert(err);
-		}
+	ret = release_sink(&dst_sink);
+	if (ret != SUIT_PLAT_SUCCESS) {
+		return suit_plat_err_to_processor_err_convert(ret);
 	}
 
 	if (IS_ENABLED(CONFIG_SUIT_STREAM_SOURCE_CACHE) ||
 	    (IS_ENABLED(CONFIG_SUIT_STREAM_IPC_REQUESTOR) &&
-	     is_type_supported_by_ipc(component_type))) {
+	     is_type_supported_by_ipc(dst_component_type))) {
 		return SUIT_SUCCESS;
 	}
 #endif /* CONFIG_SUIT_STREAM */
@@ -114,16 +130,16 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 {
 #ifdef CONFIG_SUIT_STREAM
 	struct stream_sink dst_sink;
-	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
+	suit_component_type_t dst_component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	/* Get component type based on component handle*/
-	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	int ret = suit_plat_component_type_get(dst_handle, &dst_component_type);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Failed to decode component type: %i", ret);
 		return ret;
 	}
 
-	if (!is_type_supported(component_type)) {
+	if (!is_type_supported(dst_component_type)) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
@@ -168,7 +184,7 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 #ifdef CONFIG_SUIT_STREAM_IPC_REQUESTOR
 	if ((ret == SUIT_PLAT_ERR_NOT_FOUND) &&		/* URI was not found in cache */
-	    is_type_supported_by_ipc(component_type)) { /* component type is supported */
+	    is_type_supported_by_ipc(dst_component_type)) { /* component type is supported */
 		/* Request uri through ipc streamer */
 		ret = suit_ipc_streamer_stream(uri->value, uri->len, &dst_sink,
 					       CONFIG_SUIT_STREAM_IPC_STREAMER_CHUNK_TIMEOUT,
@@ -176,15 +192,33 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 	}
 #endif /* CONFIG_SUIT_STREAM_IPC_REQUESTOR */
 
-	if (dst_sink.release != NULL) {
-		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
+	if (ret == SUIT_PLAT_SUCCESS) {
+		/* Update size in memptr for MEM component */
+		if (dst_component_type == SUIT_COMPONENT_TYPE_MEM) {
+			size_t new_size = 0;
 
-		if (err != SUIT_PLAT_SUCCESS) {
-			LOG_ERR("sink release failed: %i", err);
-			ret = err;
+			ret = dst_sink.used_storage(dst_sink.ctx, &new_size);
+			if (ret != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Getting used storage on destination sink failed");
+				release_sink(&dst_sink);
+
+				return suit_plat_err_to_processor_err_convert(ret);
+			}
+
+			ret = suit_plat_memptr_size_update(dst_handle, new_size);
+			if (ret != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Failed to update destination MEM component size: %i", ret);
+				release_sink(&dst_sink);
+
+				return ret;
+			}
 		}
+
+		ret = release_sink(&dst_sink);
+		return suit_plat_err_to_processor_err_convert(ret);
 	}
 
+	release_sink(&dst_sink);
 	return suit_plat_err_to_processor_err_convert(ret);
 #else
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
@@ -195,16 +229,16 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 {
 #ifdef CONFIG_SUIT_STREAM
 	struct stream_sink dst_sink;
-	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
+	suit_component_type_t dst_component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	/* Get component type based on component handle*/
-	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	int ret = suit_plat_component_type_get(dst_handle, &dst_component_type);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Failed to decode component type: %i", ret);
 		return ret;
 	}
 
-	if (!is_type_supported(component_type)) {
+	if (!is_type_supported(dst_component_type)) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
@@ -223,15 +257,7 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 	 *	Like decryption and/or decompression sinks.
 	 */
 
-	if (dst_sink.release != NULL) {
-		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
-
-		if (err != SUIT_PLAT_SUCCESS) {
-			LOG_ERR("sink release failed: %i", err);
-			return suit_plat_err_to_processor_err_convert(err);
-		}
-	}
-
+	ret = release_sink(&dst_sink);
 	return ret;
 #else
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
@@ -242,16 +268,16 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 {
 #ifdef CONFIG_SUIT_STREAM
 	struct stream_sink dst_sink;
-	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
+	suit_component_type_t dst_component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	/* Get component type based on component handle*/
-	int ret = suit_plat_component_type_get(dst_handle, &component_type);
+	int ret = suit_plat_component_type_get(dst_handle, &dst_component_type);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("Failed to decode component type: %i", ret);
 		return ret;
 	}
 
-	if (!is_type_supported(component_type)) {
+	if (!is_type_supported(dst_component_type)) {
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
@@ -288,17 +314,35 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
 	ret = suit_memptr_streamer_stream(payload->value, payload->len, &dst_sink);
-#endif  /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+#endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
 
-	if (dst_sink.release != NULL) {
-		suit_plat_err_t err = dst_sink.release(dst_sink.ctx);
+	if (ret == SUIT_PLAT_SUCCESS) {
+		/* Update size in memptr for MEM component */
+		if (dst_component_type == SUIT_COMPONENT_TYPE_MEM) {
+			size_t new_size = 0;
 
-		if (err != SUIT_PLAT_SUCCESS) {
-			LOG_ERR("sink release failed: %i", err);
-			ret = err;
+			ret = dst_sink.used_storage(dst_sink.ctx, &new_size);
+			if (ret != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Getting used storage on destination sink failed");
+				release_sink(&dst_sink);
+
+				return suit_plat_err_to_processor_err_convert(ret);
+			}
+
+			ret = suit_plat_memptr_size_update(dst_handle, new_size);
+			if (ret != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Failed to update destination MEM component size: %i", ret);
+				release_sink(&dst_sink);
+
+				return ret;
+			}
 		}
+
+		ret = release_sink(&dst_sink);
+		return suit_plat_err_to_processor_err_convert(ret);
 	}
 
+	release_sink(&dst_sink);
 	return suit_plat_err_to_processor_err_convert(ret);
 #else  /* CONFIG_SUIT_STREAM */
 	return SUIT_ERR_UNSUPPORTED_COMMAND;

@@ -65,7 +65,6 @@ struct flash_ctx {
 	size_t offset;
 	size_t offset_limit;
 	uintptr_t ptr;
-	memptr_storage_handle_t handle;
 	const struct device *fdev;
 	size_t flash_write_size;
 	bool in_use;
@@ -119,26 +118,6 @@ static suit_plat_err_t register_write(struct flash_ctx *flash_ctx, size_t write_
 
 	if (flash_ctx->offset > flash_ctx->size_used) {
 		flash_ctx->size_used = flash_ctx->offset;
-	}
-
-	if (flash_ctx->handle != NULL) {
-		/* Update memptr size */
-		uint8_t *payload_ptr = NULL;
-		size_t payload_size = 0;
-
-		suit_plat_err_t res =
-			suit_memptr_storage_ptr_get(flash_ctx->handle, &payload_ptr, &payload_size);
-		if (res != SUIT_PLAT_SUCCESS) {
-			LOG_ERR("Failed to retrieve memptr");
-			return res;
-		}
-
-		payload_size = flash_ctx->size_used;
-		res = suit_memptr_storage_ptr_store(flash_ctx->handle, payload_ptr, payload_size);
-		if (res != SUIT_PLAT_SUCCESS) {
-			LOG_ERR("Failed to update memptr");
-			return res;
-		}
 	}
 
 	return SUIT_PLAT_SUCCESS;
@@ -201,8 +180,7 @@ suit_plat_err_t erase(void *ctx)
 	return SUIT_PLAT_ERR_INVAL;
 }
 
-suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size,
-				    memptr_storage_handle_t handle)
+suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size)
 {
 	if ((dst != NULL) && (size > 0) && (sink != NULL)) {
 		struct flash_ctx *ctx = new_ctx_get();
@@ -237,7 +215,6 @@ suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size
 			ctx->offset_limit = suit_plat_mem_nvm_offset_get(dst) + size; /* max address */
 			ctx->size_used = 0;
 			ctx->ptr = suit_plat_mem_nvm_offset_get(dst);
-			ctx->handle = handle;
 			ctx->in_use = true;
 
 			if ((ctx->flash_write_size >
@@ -247,29 +224,6 @@ suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size
 				memset(ctx, 0, sizeof(*ctx));
 				LOG_ERR("Write block size exceeds set safety limits");
 				return SUIT_PLAT_ERR_INVAL;
-			}
-
-			if (ctx->handle != NULL) {
-				/* Set memptr size to zero */
-				uint8_t *payload_ptr = NULL;
-				size_t payload_size = 0;
-
-				suit_plat_err_t res = suit_memptr_storage_ptr_get(
-					handle, &payload_ptr, &payload_size);
-				if (res != SUIT_PLAT_SUCCESS) {
-					memset(ctx, 0, sizeof(*ctx));
-					LOG_ERR("Failed to retrieve memptr");
-					return res;
-				}
-
-				payload_size = 0;
-				res = suit_memptr_storage_ptr_store(handle, payload_ptr,
-								    payload_size);
-				if (res != SUIT_PLAT_SUCCESS) {
-					memset(ctx, 0, sizeof(*ctx));
-					LOG_ERR("Failed to update memptr");
-					return res;
-				}
 			}
 
 			memset(sink, 0, sizeof(*sink));

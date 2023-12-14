@@ -160,7 +160,7 @@ static suit_plat_err_t write_to_sink(size_t offset, uint8_t *data, size_t *size)
 {
 	struct stream_sink sink;
 
-	suit_plat_err_t ret = suit_flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), *size, NULL);
+	suit_plat_err_t ret = suit_flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), *size);
 	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Getting flash_sink failed. %i", ret);
 		return SUIT_PLAT_ERR_IO;
@@ -197,7 +197,7 @@ static suit_plat_err_t erase_on_sink(size_t offset, size_t size)
 {
 	struct stream_sink sink;
 
-	suit_plat_err_t ret = suit_flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), size, NULL);
+	suit_plat_err_t ret = suit_flash_sink_get(&sink, suit_plat_mem_nvm_ptr_get(offset), size);
 	if (ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Getting flash_sink failed. %i", ret);
 		return SUIT_PLAT_ERR_IO;
@@ -301,7 +301,7 @@ static suit_plat_err_t partition_initialize(struct dfu_cache_partition_ext *part
 			uint8_t *address = suit_plat_mem_nvm_ptr_get(part->offset);
 
 			LOG_INF("Partition %u: offset(%p) address(%p) size(%u)", part->id,
-				(void *)part->offset, address, part->size);
+				(void *)part->offset, (void *)address, part->size);
 
 			suit_plat_err_t ret = is_partition_empty(part);
 
@@ -495,17 +495,18 @@ static suit_plat_err_t cache_0_update(void *address, size_t size)
 		return SUIT_PLAT_SUCCESS;
 	}
 
+	size_t cache_0_end = dfu_partitions_ext[0].offset + dfu_partitions_ext[0].size;
+
 	/* Check if update address is in dfu_partition range */
 	if ((suit_plat_mem_nvm_offset_get(address) < dfu_partitions_ext[0].offset) ||
-	    (suit_plat_mem_nvm_offset_get(address) >=
-	     (dfu_partitions_ext[0].offset + dfu_partitions_ext[0].size))) {
+	    (suit_plat_mem_nvm_offset_get(address) >= cache_0_end)) {
 		LOG_ERR("Envelope address doesn't match dfu_partition");
 		return SUIT_PLAT_ERR_INVAL;
 	}
 
 	size_t tmp_offset = suit_plat_mem_nvm_offset_get(address) + size;
 
-	if (tmp_offset >= (dfu_partitions_ext[0].offset + dfu_partitions_ext[0].size)) {
+	if (tmp_offset >= cache_0_end) {
 		LOG_WRN("No free space for cache");
 		dfu_partitions_ext[0].size = 0;
 	} else {
@@ -513,7 +514,7 @@ static suit_plat_err_t cache_0_update(void *address, size_t size)
 		dfu_partitions_ext[0].offset = tmp_offset;
 
 		/* Calculate remaining free space in dfu_partition */
-		dfu_partitions_ext[0].size -= (suit_plat_mem_nvm_offset_get(address) + size);
+		dfu_partitions_ext[0].size = cache_0_end - tmp_offset;
 	}
 
 	if (dfu_partitions_ext[0].size > 0) {

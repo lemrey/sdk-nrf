@@ -131,6 +131,35 @@ void clear_dfu_test_partitions(void *f)
 	suit_dfu_cache_rw_deinitialize();
 }
 
+ZTEST_SUITE(cache_rw_initialization_tests, NULL, NULL, NULL, clear_dfu_test_partitions, NULL);
+
+ZTEST(cache_rw_initialization_tests, test_cache_initialization_size_nok)
+{
+	uint8_t *envelope_address = suit_plat_mem_nvm_ptr_get(FIXED_PARTITION_OFFSET(dfu_partition)) + 256;
+	size_t envelope_size = FIXED_PARTITION_SIZE(dfu_partition);
+
+	int ret = suit_dfu_cache_rw_initialize(envelope_address, envelope_size);
+	zassert_not_equal(ret, 0, "Initialization should have failed: size out of bounds");
+}
+
+ZTEST(cache_rw_initialization_tests, test_cache_initialization_address_nok)
+{
+	uint8_t *envelope_address = suit_plat_mem_nvm_ptr_get(FIXED_PARTITION_OFFSET(dfu_partition)) - 256;
+	size_t envelope_size = FIXED_PARTITION_SIZE(dfu_partition);
+
+	int ret = suit_dfu_cache_rw_initialize(envelope_address, envelope_size);
+	zassert_not_equal(ret, 0, "Initialization should have failed: address out of bounds");
+}
+
+ZTEST(cache_rw_initialization_tests, test_cache_initialization_ok)
+{
+	uint8_t *envelope_address = suit_plat_mem_nvm_ptr_get(FIXED_PARTITION_OFFSET(dfu_partition)) + 256;
+	size_t envelope_size = FIXED_PARTITION_SIZE(dfu_partition) - 1024;
+
+	int ret = suit_dfu_cache_rw_initialize(envelope_address, envelope_size);
+	zassert_equal(ret, 0, "Initialization failed: %i", ret);
+}
+
 ZTEST_SUITE(cache_sink_recovery_tests, NULL, NULL, setup_dfu_test_corrupted_cache,
 	    clear_dfu_test_partitions, NULL);
 

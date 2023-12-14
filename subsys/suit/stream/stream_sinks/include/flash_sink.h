@@ -20,11 +20,9 @@ extern "C" {
  * @param sink Pointer to sink_stream to be filled
  * @param dst Destination address - start of write area
  * @param size Write area size
- * @param handle Handle to storage object
  * @return SUIT_PLAT_SUCCESS if success otherwise error code.
  */
-suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size,
-				    memptr_storage_handle_t handle);
+suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size);
 
 #ifdef __cplusplus
 }

@@ -11,6 +11,7 @@
 #include <suit_plat_error_convert.h>
 #include <suit_platform_internal.h>
 #include <suit_plat_digest_cache.h>
+#include <suit_plat_memptr_size_update.h>
 
 #ifdef CONFIG_SUIT_STREAM
 #include <sink.h>
@@ -25,7 +26,7 @@
 LOG_MODULE_REGISTER(suit_plat_copy, CONFIG_SUIT_LOG_LEVEL);
 
 #ifdef CONFIG_SUIT_STREAM
-static int release_sink(struct stream_sink *sink)
+static suit_plat_err_t release_sink(struct stream_sink *sink)
 {
 	if (sink != NULL) {
 		if (sink->release != NULL) {
@@ -35,13 +36,13 @@ static int release_sink(struct stream_sink *sink)
 				LOG_ERR("sink release failed.");
 			}
 
-			return suit_plat_err_to_processor_err_convert(err);
+			return err;
 		}
 
-		return SUIT_SUCCESS;
+		return SUIT_PLAT_SUCCESS;
 	}
 
-	return SUIT_ERR_CRASH;
+	return SUIT_PLAT_ERR_INVAL;
 }
 #endif /* CONFIG_SUIT_STREAM */
 
@@ -97,7 +98,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 	/* Select source based on component type */
 	switch (src_component_type) {
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR
-	case SUIT_COMPONENT_TYPE_MEM: 
+	case SUIT_COMPONENT_TYPE_MEM:
 	case SUIT_COMPONENT_TYPE_CAND_IMG: {
 		memptr_storage_handle_t handle = NULL;
 		ret = suit_plat_component_impl_data_get(src_handle, &handle);
@@ -111,7 +112,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 		ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
 		ret = suit_plat_err_to_processor_err_convert(ret);
 
-		if ((ret != SUIT_SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
+		if (ret != SUIT_SUCCESS) {
 			LOG_ERR("suit_memptr_storage_ptr_get failed - error %i", ret);
 			release_sink(&dst_sink);
 			return ret;
@@ -124,8 +125,8 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 		break;
 	}
 
-	release_sink(&dst_sink);
-	return ret;
+	ret = release_sink(&dst_sink);
+	return suit_plat_err_to_processor_err_convert(ret);
 #else  /* CONFIG_SUIT_STREAM */
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM */
@@ -170,6 +171,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
 
+	/* Select destination */
 	ret = suit_sink_select(dst_handle, &dst_sink);
 	if (ret != SUIT_SUCCESS) {
 		LOG_ERR("suit_sink_select failed - error %i", ret);
@@ -202,7 +204,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		}
 
 		ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
-		if ((ret != SUIT_PLAT_SUCCESS) && (payload_ptr != NULL) && (payload_size > 0)) {
+		if (ret != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("suit_memptr_storage_ptr_get failed - error %i", ret);
 			release_sink(&dst_sink);
 			return suit_plat_err_to_processor_err_convert(ret);
@@ -223,8 +225,34 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 		break;
 	}
 
+	if (ret == SUIT_SUCCESS) {
+		/* Update size in memptr for MEM component */
+		if (dst_component_type == SUIT_COMPONENT_TYPE_MEM) {
+			size_t new_size = 0;
+
+			ret = dst_sink.used_storage(dst_sink.ctx, &new_size);
+			if (ret != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Getting used storage on destination sink failed");
+				release_sink(&dst_sink);
+
+				return suit_plat_err_to_processor_err_convert(ret);
+			}
+
+			ret = suit_plat_memptr_size_update(dst_handle, new_size);
+			if (ret != SUIT_SUCCESS) {
+				LOG_ERR("Failed to update destination MEM component size: %i", ret);
+				release_sink(&dst_sink);
+
+				return ret;
+			}
+		}
+
+		ret = release_sink(&dst_sink);
+		return suit_plat_err_to_processor_err_convert(ret);
+	}
+
 	release_sink(&dst_sink);
-	return ret;
+	return suit_plat_err_to_processor_err_convert(ret);
 #else  /* CONFIG_SUIT_STREAM */
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM */
