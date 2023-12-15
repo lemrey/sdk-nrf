@@ -159,10 +159,8 @@ The following configuration files are provided:
   This configuration file can be included by adding ``-DCONF_FILE=prj_release.conf`` to your build command.
   See :ref:`cmake_options`.
 
-* :file:`overlay-nat64.conf` - The overlay file that adds NAT64 and all necessary features required to access resources in IPv4 networks from Thread network.
-  You can include it by adding ``-DOVERLAY_CONFIG=overlay-nat64.conf`` to your build command.
-
 * :file:`overlay-static_credentials.conf` - Configuration file that enables the use of and sets static Wi-Fi credentials.
+  You can include it by adding ``-DOVERLAY_CONFIG=overlay-static_credentials.conf`` to your build command.
 
 See :ref:`app_build_system` for more information on the |NCS| configuration system.
 
@@ -209,7 +207,7 @@ Also, you can enable specific feature for ``nrf54h20dk_nrf54h20_cpuapp`` by runn
 
 .. code-block:: console
 
-   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=overlay-nat64.conf
+   west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DOVERLAY_CONFIG=overlay-static_credentials.conf
 
 Enabling the Wi-Fi interface
 ============================
@@ -247,7 +245,7 @@ Setting up a Wi-Fi link connection
 
 When the nRF TBR application is built with the Wi-Fi interface as the external link as described in `Enabling the Wi-Fi interface`_, the first step after the application is started is to establish a connection to an Access Point before performing any test steps:
 
-#. Connect to the PDK that runs the nRF TBR application with a terminal emulator that supports VT100/ANSI escape characters (for example, PuTTY).
+1. Connect to the PDK that runs the nRF TBR application with a terminal emulator that supports VT100/ANSI escape characters (for example, PuTTY).
    See :ref:`putty` for the required settings.
 
    .. note::
@@ -559,7 +557,7 @@ Multicast Forwarding
 
 After performing all steps from `Testing communication with Thread Border Router`_, you can optionally verify bidirectional communication using multicast messages between a Thread node (Router or End Device role) and a non-Thread device.
 
-#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Building the Thread CLI device`_).
+1. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Building the Thread CLI device`_).
 
    .. note::
       In order to perform Multicast Listener Registration, the CLI sample must be built with the :kconfig:option:`CONFIG_OPENTHREAD_MLR` option enabled.
@@ -652,10 +650,7 @@ nRF TBR IPv4 communication
 
 To test IPv4 communication from the nRF TBR or Thread node , complete the following steps:
 
-#. Rebuild the nRF TBR application with :file:`overlay-nat64.conf` file.
-   See the :ref:`nrf_tbr_app_select_configuration` section to learn how to select the configuration.
-
-#. Make sure that the development kit (DK) that will work as Thread node is programmed with the CLI sample (`Building the Thread CLI device`_).
+1. Make sure that the development kit (DK) that will work as the Thread node is programmed with the CLI sample (`Building the Thread CLI device`_).
 
    .. note::
       In order to test IPv4 connection, the CLI sample must be built with the :kconfig:option:`CONFIG_OPENTHREAD_NAT64_TRANSLATOR` option enabled.
@@ -676,7 +671,7 @@ To test IPv4 communication from the nRF TBR or Thread node , complete the follow
       uart:~$ ot nat64 enable
       Done
 
-   Use following command to check state of NAT64:
+   Use the following command to check state of NAT64:
 
    .. code-block:: console
 

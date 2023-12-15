@@ -14,6 +14,7 @@ menuconfig NRF_TBR
     imply NET_IPV6
     imply NET_IPV4
     imply NET_UDP
+    imply NET_TCP
     imply NET_IPV6_NBR_CACHE
     imply NET_IPV6_DAD
     imply NET_ROUTING
