@@ -177,8 +177,9 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 	LOG_DBG("Validated installed root manifest");
 
 	unsigned int seq_num;
-	err = suit_processor_get_manifest_metadata(
-		installed_envelope_address, installed_envelope_size, true, NULL, NULL, NULL, &seq_num);
+	err = suit_processor_get_manifest_metadata(installed_envelope_address,
+						   installed_envelope_size, true, NULL, NULL, NULL,
+						   &seq_num);
 	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to read manifest version and digest: %d", err);
 		return enter_emergency_recovery();
@@ -227,12 +228,11 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 
 static int boot_path(void)
 {
-	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES] = { NULL };
+	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES] = {NULL};
 	size_t class_ids_to_boot_len = ARRAY_SIZE(class_ids_to_boot);
 	int ret = SUIT_SUCCESS;
 	mci_err_t mci_ret = suit_mci_invoke_order_get(
-				       (const suit_manifest_class_id_t **)&class_ids_to_boot,
-				       &class_ids_to_boot_len);
+		(const suit_manifest_class_id_t **)&class_ids_to_boot, &class_ids_to_boot_len);
 	if (mci_ret != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to get invoke order (MCI err: %d)", mci_ret);
 		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(mci_ret);
@@ -252,7 +252,8 @@ static int boot_path(void)
 
 int suit_orchestrator_init(void)
 {
-	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES] = { NULL };
+	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES] = {
+		NULL};
 	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
 
 	suit_plat_err_t plat_err;
@@ -263,7 +264,7 @@ int suit_orchestrator_init(void)
 	}
 
 	plat_err = suit_mci_supported_manifest_class_ids_get(
-		   (const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
+		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
 	if (plat_err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to get list of supported manifest class IDs: MCI err %d", plat_err);
 		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(plat_err);
@@ -281,6 +282,10 @@ int suit_orchestrator_init(void)
 
 int suit_orchestrator_entry(void)
 {
+#ifdef CONFIG_SUIT_LOG_SECDOM_VERSION
+	LOG_INF("Secdom version: %s", CONFIG_SUIT_SECDOM_VERSION);
+#endif /* CONFIG_SUIT_LOG_SECDOM_VERSION */
+
 	const suit_plat_mreg_t *update_regions = NULL;
 	size_t update_regions_len = 0;
 
