@@ -120,6 +120,8 @@ Building and running
 
 .. |sample path| replace:: :file:`samples/openthread/cli`
 
+.. |build command| replace:: west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
+
 |enable_thread_before_testing|
 
 .. include:: /includes/build_and_run_ns_54h.txt

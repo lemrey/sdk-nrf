@@ -447,16 +447,16 @@ Building command example for the nRF54H
 Use the following build commands to select the build type for the nRF54H20 PDK:
 
    * To build the sample without the Device Firmware Upgrade support:
-      
+
       .. code-block:: console
 
-      west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf
+         west build -b nrf54h20dk_nrf54h20_cpuapp@soc1 -- -DCONF_FILE=prj_no_dfu.conf
 
    * To build the sample with the Device Firmware Upgrade support:
-      
+
       .. code-block:: console
 
-      west build -b nrf54h20dk_nrf54h20_cpuapp@soc1
+         west build -b nrf54h20dk_nrf54h20_cpuapp@soc1
 
 See :ref:`ug_nrf54h20_gs_sample` in the nRF54H20 user guide for more information.
 

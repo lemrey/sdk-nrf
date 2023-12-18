@@ -9,7 +9,7 @@ Building and programming using the command line
 ===============================================
 
 nRF54H20 PDK
-   Complete the following steps to program the nRF54H20 PDK using the command line interface:
+   Complete the following steps to program the nRF54H20 PDK using the command-line interface:
 
    1. Open a terminal window in the |sample path| directory inside the |NCS| folder structure.
    #. Build the application using the ``west`` command:
@@ -17,11 +17,11 @@ nRF54H20 PDK
       .. parsed-literal::
          :class: highlight
 
-         west build -b nrf54h20dk_nrf54h20_cpuapp@soc1
+         west build -b nrf54h20dk_nrf54h20_cpuapp\@soc1
 
       If you want to configure your application, see :ref:`configure_application` for additional information.
 
-      After running the ``west build`` command, the build files can be found in :file:`build/zephyr`.
+      After running the ``west build`` command, the build files can be found in the :file:`build/zephyr` folder.
       For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
       For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
 
@@ -34,7 +34,7 @@ nRF54H20 PDK
          nrfjprog --eraseall
          west flash
 
-      These commands clear the user information configuration registers (UICR) and the locations for the new images and the application core storage partition memory before programming, which is the recommended approach.
+      It is recommended to use this command before programming, as it clears the user information configuration registers (UICR) and the locations for the new images as well as the application core storage partition memory.
 
       As an alternative, you can also clear only those flash memory pages that are to be overwritten with the new application.
       With this approach, the old data in other areas will be retained.
@@ -47,27 +47,30 @@ nRF54H20 PDK
 
       The ``west flash`` command automatically resets the kit and starts the application.
 
-   For more information on building and programming with the command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.
-   See :ref:`ug_nrf54h20_debugging` and :ref:`ug_nrf54h20_logging` for information about debugging and logging on the nRF54H20.
+   For more information on building and programming with through command line, see the Zephyr documentation on :ref:`zephyr:west-build-flash-debug`.
+   See :ref:`ug_nrf54h20_debugging` and :ref:`ug_nrf54h20_logging` for information about debugging and logging on the nRF54H20 PDK.
 
 nRF54L15 PDK
-   Complete the following steps to program the nRF54L15 PDK using the command line interface:
+   Complete the following steps to program the nRF54L15 PDK using the command-line interface:
 
       1. Connect the nRF54L15 PDK to your computer using the IMCU USB port on the PDK.
       #. Navigate to the |sample path| folder containing the sample.
-      #. Build the sample by running the following command::
+      #. Build the sample by running the following command:
 
-            west build -b nrf54l15dk_nrf54l15_cpuapp@soc1
+         .. parsed-literal::
+            :class: highlight
+
+            west build -b nrf54l15dk_nrf54l15_cpuapp\@soc1
 
       #. Program the sample using the standard |NCS| command.
-         If you have multiple Nordic Semiconductor devices, make sure that only the nRF54L15 PDK you want to program is connected.
+         If you have multiple Nordic Semiconductor devices, make sure you connected only the nRF54L15 PDK you want to program.
 
          .. code-block:: console
 
             west flash
 
          .. note::
-            When programming the device, you might get an error similar to the following message::
+            When programming the device, you might get an error similar to the following message:
 
                 ERROR: The operation attempted is unavailable due to readback protection in
                 ERROR: your device. Please use --recover to unlock the device.

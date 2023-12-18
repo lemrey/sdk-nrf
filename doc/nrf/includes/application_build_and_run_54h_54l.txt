@@ -1,6 +1,9 @@
-This sample can be found under |sample path| in the |NCS| folder structure.
+This application can be found under |application path| in the |NCS| folder structure.
 
-In the limited sampling release of the |NCS|, you need to use either the command line or |nRFVSC| to program the sample to the nRF54H20 or nRF54L15 PDKs.
+.. note::
+   In the initial limited sampling, TrustZone is not available.
+
+In the limited sampling release of the |NCS|, you need to use either the command line or |nRFVSC| to program the application to the nRF54H20 or nRF54L15 PDKs.
 
 Building and programming using the command line
 ===============================================
@@ -8,7 +11,7 @@ Building and programming using the command line
 nRF54H20 PDK
    Complete the following steps to program the nRF54H20 PDK using the command-line interface:
 
-   1. Open a terminal window in the |sample path| directory inside the |NCS| folder structure.
+   1. Open a terminal window in the |application path| directory inside the |NCS| folder structure.
    #. Build the application using the ``west`` command:
 
       .. parsed-literal::
@@ -18,7 +21,7 @@ nRF54H20 PDK
 
       If you want to configure your application, see :ref:`configure_application` for additional information.
 
-      After running the ``west build`` command, the build files can be found in the :file:`build/zephyr` file.
+      After running the ``west build`` command, the build files can be found in the :file:`build/zephyr` folder.
       For more information about files generated as output of the build process, see :ref:`app_build_output_files`.
       For more information on the contents of the build directory, see :ref:`zephyr:build-directory-contents` in the Zephyr documentation.
 
@@ -28,8 +31,7 @@ nRF54H20 PDK
 
       .. code-block:: console
 
-         nrfjprog --eraseall
-         west flash
+         west flash --erase-storage
 
       It is recommended to use this command before programming, as it clears the user information configuration registers (UICR) and the locations for the new images as well as the application core storage partition memory.
 
@@ -51,15 +53,15 @@ nRF54L15 PDK
    Complete the following steps to program the nRF54L15 PDK using the command-line interface:
 
       1. Connect the nRF54L15 PDK to your computer using the IMCU USB port on the PDK.
-      #. Navigate to the |sample path| folder containing the sample.
-      #. Build the sample by running the following command:
+      #. Navigate to the |application path| folder containing the application.
+      #. Build the application by running the following command:
 
          .. parsed-literal::
             :class: highlight
 
             west build -b nrf54l15dk_nrf54l15_cpuapp\@soc1
 
-      #. Program the sample using the standard |NCS| command.
+      #. Program the application using the standard |NCS| command.
          If you have multiple Nordic Semiconductor devices, make sure you connected only the nRF54L15 PDK you want to program.
 
          .. code-block:: console
@@ -85,4 +87,4 @@ nRF54L15 PDK
 Building and programming using |nRFVSC|
 =======================================
 
-To build the sample using |VSC|, follow the steps listed on the `How to build an application`_ page in the |nRFVSC| documentation.
+To build the application using |VSC|, follow the steps listed on the `How to build an application`_ page in the |nRFVSC| documentation.
