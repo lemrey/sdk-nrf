@@ -122,6 +122,16 @@ static uint16_t channel_to_frequency(nrf_radio_mode_t mode, uint8_t channel)
 static nrf_radio_txpower_t dbm_to_nrf_radio_txpower(int8_t tx_power)
 {
 	switch (tx_power) {
+#if defined(RADIO_TXPOWER_TXPOWER_Neg70dBm)
+	case -70:
+		return RADIO_TXPOWER_TXPOWER_Neg70dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg70dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg46dBm)
+	case -46:
+		return RADIO_TXPOWER_TXPOWER_Neg46dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg46dBm) */
+
 	case -40:
 		return RADIO_TXPOWER_TXPOWER_Neg40dBm;
 
@@ -130,14 +140,34 @@ static nrf_radio_txpower_t dbm_to_nrf_radio_txpower(int8_t tx_power)
 		return RADIO_TXPOWER_TXPOWER_Neg30dBm;
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Neg30dBm) */
 
+#if defined(RADIO_TXPOWER_TXPOWER_Neg26dBm)
+	case -26:
+		return RADIO_TXPOWER_TXPOWER_Neg26dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg26dBm) */
+
 	case -20:
 		return RADIO_TXPOWER_TXPOWER_Neg20dBm;
 
 	case -16:
 		return RADIO_TXPOWER_TXPOWER_Neg16dBm;
 
+#if defined(RADIO_TXPOWER_TXPOWER_Neg14dBm)
+	case -14:
+		return RADIO_TXPOWER_TXPOWER_Neg14dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg14dBm) */
+
 	case -12:
 		return RADIO_TXPOWER_TXPOWER_Neg12dBm;
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg10dBm)
+	case -10:
+		return RADIO_TXPOWER_TXPOWER_Neg10dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg10dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg9dBm)
+	case -9:
+		return RADIO_TXPOWER_TXPOWER_Neg9dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg9dBm) */
 
 	case -8:
 		return RADIO_TXPOWER_TXPOWER_Neg8dBm;
@@ -178,6 +208,11 @@ static nrf_radio_txpower_t dbm_to_nrf_radio_txpower(int8_t tx_power)
 	case 0:
 		return RADIO_TXPOWER_TXPOWER_0dBm;
 
+#if defined(RADIO_TXPOWER_TXPOWER_Pos1dBm)
+	case 1:
+		return RADIO_TXPOWER_TXPOWER_Pos1dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos1dBm) */
+
 #if defined(RADIO_TXPOWER_TXPOWER_Pos2dBm)
 	case 2:
 		return RADIO_TXPOWER_TXPOWER_Pos2dBm;
@@ -212,6 +247,16 @@ static nrf_radio_txpower_t dbm_to_nrf_radio_txpower(int8_t tx_power)
 	case 8:
 		return RADIO_TXPOWER_TXPOWER_Pos8dBm;
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos8dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Pos9dBm)
+	case 9:
+		return RADIO_TXPOWER_TXPOWER_Pos9dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos9dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Pos10dBm)
+	case 10:
+		return RADIO_TXPOWER_TXPOWER_Pos10dBm;
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos10dBm) */
 
 	default:
 		printk("TX power to enumerator conversion failed, defaulting to 0 dBm\n");

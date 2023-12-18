@@ -678,6 +678,14 @@ static void cmd_pos2dbm(const struct shell *shell, size_t argc, char **argv)
 }
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos2dBm) */
 
+#if defined(RADIO_TXPOWER_TXPOWER_Pos1dBm)
+static void cmd_pos1dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = 1;
+	shell_print(shell, "TX power : %d dBm", config.txpower);
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos1dBm) */
+
 static void cmd_pos0dbm(const struct shell *shell, size_t argc, char **argv)
 {
 	config.txpower = 0;
@@ -744,11 +752,35 @@ static void cmd_neg8dbm(const struct shell *shell, size_t argc, char **argv)
 	shell_print(shell, "TX power : %d dBm", config.txpower);
 }
 
+#if defined(RADIO_TXPOWER_TXPOWER_Neg9dBm)
+static void cmd_neg9dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = -9;
+	shell_print(shell, "TX power : %d dBm", config.txpower);
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg9dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg10dBm)
+static void cmd_neg10dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = -10;
+	shell_print(shell, "TX power : %d dBm", config.txpower);
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg10dBm) */
+
 static void cmd_neg12dbm(const struct shell *shell, size_t argc, char **argv)
 {
 	config.txpower = -12;
 	shell_print(shell, "TX power : %d dBm", config.txpower);
 }
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg14dBm)
+static void cmd_neg14dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = -14;
+	shell_print(shell, "TX power : %d dBm", config.txpower);
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg14dBm) */
 
 static void cmd_neg16dbm(const struct shell *shell, size_t argc, char **argv)
 {
@@ -761,6 +793,14 @@ static void cmd_neg20dbm(const struct shell *shell, size_t argc, char **argv)
 	config.txpower = -20;
 	shell_print(shell, "TX power : %d dBm", config.txpower);
 }
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg26dBm)
+static void cmd_neg26dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = -26;
+	shell_print(shell, "TX power : %d dBm", config.txpower);
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg26dBm) */
 
 #if defined(RADIO_TXPOWER_TXPOWER_Neg30dBm)
 static void cmd_neg30dbm(const struct shell *shell, size_t argc, char **argv)
@@ -775,6 +815,22 @@ static void cmd_neg40dbm(const struct shell *shell, size_t argc, char **argv)
 	config.txpower = -40;
 	shell_print(shell, "TX power : %d dBm", config.txpower);
 }
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg46dBm)
+static void cmd_neg46dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = -46;
+	shell_print(shell, "TX power : %d dBm", config.txpower);
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg46dBm) */
+
+#if defined(RADIO_TXPOWER_TXPOWER_Neg70dBm)
+static void cmd_neg70dbm(const struct shell *shell, size_t argc, char **argv)
+{
+	config.txpower = -70;
+	shell_print(shell, "TX power : %d dBm", config.txpower);
+}
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg70dBm) */
 
 static int cmd_nrf_1mbit(const struct shell *shell, size_t argc, char **argv)
 {
@@ -1091,7 +1147,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_output_power,
 	SHELL_CMD(pos10dBm, NULL, "TX power: +10 dBm", cmd_pos10dbm),
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos10dBm) */
 #if defined(RADIO_TXPOWER_TXPOWER_Pos9dBm)
-	SHELL_CMD(pos9dBm, NULL, "TX power: +8 dBm", cmd_pos9dbm),
+	SHELL_CMD(pos9dBm, NULL, "TX power: +9 dBm", cmd_pos9dbm),
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos9dBm) */
 #if defined(RADIO_TXPOWER_TXPOWER_Pos8dBm)
 	SHELL_CMD(pos8dBm, NULL, "TX power: +8 dBm", cmd_pos8dbm),
@@ -1114,6 +1170,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_output_power,
 #if defined(RADIO_TXPOWER_TXPOWER_Pos2dBm)
 	SHELL_CMD(pos2dBm, NULL, "TX power: +2 dBm", cmd_pos2dbm),
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Pos2dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Pos1dBm)
+	SHELL_CMD(pos1dBm, NULL, "TX power: +1 dBm", cmd_pos1dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Pos1dBm) */
 	SHELL_CMD(pos0dBm, NULL, "TX power: 0 dBm", cmd_pos0dbm),
 #if defined(RADIO_TXPOWER_TXPOWER_Neg1dBm)
 	SHELL_CMD(neg1dBm, NULL, "TX power: -1 dBm", cmd_neg1dbm),
@@ -1135,13 +1194,31 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_output_power,
 	SHELL_CMD(neg7dBm, NULL, "TX power: -7 dBm", cmd_neg7dbm),
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Neg7dBm) */
 	SHELL_CMD(neg8dBm, NULL, "TX power: -8 dBm", cmd_neg8dbm),
+#if defined(RADIO_TXPOWER_TXPOWER_Neg9dBm)
+	SHELL_CMD(neg9dBm, NULL, "TX power: -9 dBm", cmd_neg9dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg9dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg10dBm)
+	SHELL_CMD(neg10dBm, NULL, "TX power: -10 dBm", cmd_neg10dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg10dBm) */
 	SHELL_CMD(neg12dBm, NULL, "TX power: -12 dBm", cmd_neg12dbm),
+#if defined(RADIO_TXPOWER_TXPOWER_Neg14dBm)
+	SHELL_CMD(neg14dBm, NULL, "TX power: -14 dBm", cmd_neg14dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg14dBm) */
 	SHELL_CMD(neg16dBm, NULL, "TX power: -16 dBm", cmd_neg16dbm),
 	SHELL_CMD(neg20dBm, NULL, "TX power: -20 dBm", cmd_neg20dbm),
+#if defined(RADIO_TXPOWER_TXPOWER_Neg26dBm)
+	SHELL_CMD(neg26dBm, NULL, "TX power: -26 dBm", cmd_neg26dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg26dBm) */
 #if defined(RADIO_TXPOWER_TXPOWER_Neg30dBm)
 	SHELL_CMD(neg30dBm, NULL, "TX power: -30 dBm", cmd_neg30dbm),
 #endif /* defined(RADIO_TXPOWER_TXPOWER_Neg30dBm) */
 	SHELL_CMD(neg40dBm, NULL, "TX power: -40 dBm", cmd_neg40dbm),
+#if defined(RADIO_TXPOWER_TXPOWER_Neg46dBm)
+	SHELL_CMD(neg46dBm, NULL, "TX power: -46 dBm", cmd_neg46dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg46dBm) */
+#if defined(RADIO_TXPOWER_TXPOWER_Neg70dBm)
+	SHELL_CMD(neg70dBm, NULL, "TX power: -70 dBm", cmd_neg70dbm),
+#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg70dBm) */
 	SHELL_SUBCMD_SET_END
 );
 
