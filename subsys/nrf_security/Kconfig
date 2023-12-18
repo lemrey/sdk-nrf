@@ -8,6 +8,7 @@ menu "nrf_security module"
 
 config ENTROPY_PSA_CRYPTO_RNG
 	select NRF_SECURITY if !BUILD_WITH_TFM
+	select CRACEN if HAS_HW_NRF_CRACEN && !BUILD_WITH_TFM
 
 config NORDIC_SECURITY_PROMPTLESS
 	bool
