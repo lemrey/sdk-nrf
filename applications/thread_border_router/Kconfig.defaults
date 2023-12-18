@@ -91,6 +91,63 @@ config OPENTHREAD_NAT64_BORDER_ROUTING
 config OPENTHREAD_TCP_ENABLE
     default y
 
+config OPENTHREAD_COAP
+    default y
+
+config OPENTHREAD_COAPS
+    default y
+
+config OPENTHREAD_COMMISSIONER
+    default y
+
+config OPENTHREAD_DIAG
+    default y
+
+config OPENTHREAD_DHCP6_SERVER
+    default y
+
+config OPENTHREAD_DHCP6_CLIENT
+    default y
+
+config OPENTHREAD_ECDSA
+    default y
+
+config OPENTHREAD_IP6_FRAGM
+    default y
+
+config OPENTHREAD_JAM_DETECTION
+    default y
+
+config OPENTHREAD_JOINER
+    default y
+
+config OPENTHREAD_RAW
+    default y
+
+config OPENTHREAD_MAC_FILTER
+    default y
+
+config OPENTHREAD_NETDIAG_CLIENT
+    default y
+
+config OPENTHREAD_ENABLE_SERVICE
+    default y
+
+config OPENTHREAD_SNTP_CLIENT
+    default y
+
+config OPENTHREAD_SRP_CLIENT
+    default y
+
+config OPENTHREAD_LINK_METRICS_INITIATOR
+    default y
+
+config OPENTHREAD_LINK_METRICS_SUBJECT
+    default y
+
+config OPENTHREAD_EXTERNAL_HEAP
+    default y
+
 config NRF_TBR_NAT64_PREFIX_DISCOVERY
     default y
 
