@@ -809,37 +809,20 @@ static void handle_image_info_request(uint8_t *data, size_t *size)
 #elif CONFIG_SUIT
 static void handle_image_info_request(uint8_t *data, size_t *size)
 {
-	/* CBOR encoded Manifest Component ID
+	/* Manifest class ID
 	 * nRF Desktop uses default SUIT manifest file (default namespace and name).
 	 */
-	const uint8_t component_id[] = {
-		0x82, /* CBOR type: list, length: 2 */
-		  0x4c, /* CBOR type: byte string, length: 12 */
-		    0x6b, /* CBOR type: text string, length: 11 */
-		      'I', 'N', 'S', 'T',  'L', 'D',  '_',  'M',  'F',   'S',  'T',
-		  0x50, /* CBOR type: byte string, length: 16 */
-		    /* RFC4122 uuid5(uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com'),
-		     *               'nRF54H20_sample_root')
-		     */
-		    0x3f, 0x6a, 0x3a, 0x4d, 0xcd, 0xfa, 0x58, 0xc5,
-		    0xac, 0xce, 0xf9, 0xf5, 0x84, 0xc4, 0x11, 0x24
-	};
-	/* SUIT uses hash with length of 32 bytes. */
-	uint8_t hash[32] = {0};
-	int alg_id = 0;
+	const suit_manifest_class_id_t manifest_class_id = {{
+		/* RFC4122 uuid5(uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com'),
+		  *               'nRF54H20_sample_root')
+		  */
+		0x3f, 0x6a, 0x3a, 0x4d, 0xcd, 0xfa, 0x58, 0xc5,
+		0xac, 0xce, 0xf9, 0xf5, 0x84, 0xc4, 0x11, 0x24
+	}};
 	unsigned int seq_num = 0;
 
-	suit_plat_mreg_t hash_mreg = {
-		.mem = hash,
-		.size = sizeof(hash)
-	};
-	suit_plat_mreg_t manifest_component_id = {
-		.mem = component_id,
-		.size = sizeof(component_id),
-	};
-
-	int err = suit_get_installed_manifest_info(&manifest_component_id, &seq_num, &alg_id,
-						   &hash_mreg);
+	int err = suit_get_installed_manifest_info((suit_manifest_class_id_t *)&manifest_class_id,
+						   &seq_num, NULL, NULL, NULL, NULL, NULL);
 
 	if (!err) {
 		uint8_t flash_area_id = 0;

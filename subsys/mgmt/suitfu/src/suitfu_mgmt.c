@@ -288,22 +288,17 @@ static int img_mgmt_state_read(struct smp_streamer *ctx)
 #ifdef CONFIG_SSF_SUIT_SERVICE_ENABLED
 	unsigned int seq_num = 0;
 	int alg_id = 0;
-	/* ["INSTLD_MFST", RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_root')] */
-	const uint8_t component_id[] = {0x82, 0x4c, 0x6b, 'I',	'N',  'S',  'T',  'L',
-					'D',  '_',  'M',  'F',	'S',  'T',  0x50, 0x3f,
-					0x6a, 0x3a, 0x4d, 0xcd, 0xfa, 0x58, 0xc5, 0xac,
-					0xce, 0xf9, 0xf5, 0x84, 0xc4, 0x11, 0x24};
-
+	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_root') */
+	const suit_manifest_class_id_t manifest_class_id = {{0x3f, 0x6a, 0x3a, 0x4d, 0xcd, 0xfa,
+							     0x58, 0xc5, 0xac, 0xce, 0xf9, 0xf5,
+							     0x84, 0xc4, 0x11, 0x24}};
 	suit_plat_mreg_t hash_mreg = {.mem = hash, .size = IMG_MGMT_HASH_LEN};
-	suit_plat_mreg_t manifest_component_id = {
-		.mem = component_id,
-		.size = sizeof(component_id),
-	};
 
 	if (ok) {
 		/* Let's proceed installed envelope */
-		int err = suit_get_installed_manifest_info(&manifest_component_id, &seq_num,
-							   &alg_id, &hash_mreg);
+		int err = suit_get_installed_manifest_info(
+			(suit_manifest_class_id_t *)&manifest_class_id, &seq_num, NULL, NULL, NULL,
+			&alg_id, &hash_mreg);
 		if (err != 0) {
 			LOG_ERR("Unable to read the current manifest data: %d", err);
 			ok = false;
