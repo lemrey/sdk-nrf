@@ -34,6 +34,13 @@ if (CONFIG_MOCK_SUIT_MCI)
   endif()
 endif()
 
+if (CONFIG_MOCK_SUIT_METADATA)
+  target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_METADATA)
+  target_include_directories(testbinary PRIVATE
+    ${SUIT_SUBSYS_DIR}/metadata/include
+  )
+endif()
+
 if (CONFIG_MOCK_SUIT_STORAGE)
   target_compile_options(test_interface INTERFACE -DCONFIG_SUIT_STORAGE)
   target_include_directories(testbinary PRIVATE

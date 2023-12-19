@@ -18,6 +18,10 @@
 #include <mock_suit_mci.h>
 #endif /* CONFIG_MOCK_SUIT_MCI */
 
+#ifdef CONFIG_MOCK_SUIT_METADATA
+#include <mock_suit_metadata.h>
+#endif /* CONFIG_MOCK_SUIT_METADATA */
+
 #ifdef CONFIG_MOCK_SUIT_STORAGE
 #include <mock_suit_storage.h>
 #endif /* CONFIG_MOCK_SUIT_STORAGE */
@@ -51,6 +55,10 @@ static inline void mocks_reset(void)
 #ifdef CONFIG_MOCK_SUIT_MCI
 	mock_suit_mci_reset();
 #endif /* CONFIG_MOCK_SUIT_MCI */
+
+#ifdef CONFIG_MOCK_SUIT_METADATA
+	mock_suit_metadata_reset();
+#endif /* CONFIG_MOCK_SUIT_METADATA */
 
 #ifdef CONFIG_MOCK_SUIT_STORAGE
 	mock_suit_storage_reset();

@@ -36,6 +36,9 @@ config MOCK_SUIT_PLAT_DECODE_UTIL
 
 endif # MOCK_SUIT_UTILS
 
+config MOCK_SUIT_METADATA
+	bool "Include SUIT manifest metadata types and conversion mocks"
+
 config MOCK_SUIT_PROCESSOR
 	bool "Include SUIT processor mocks"
 

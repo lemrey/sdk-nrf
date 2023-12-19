@@ -48,16 +48,11 @@
  */
 #include <zephyr/types.h>
 #include <suit_plat_err.h>
+#include <suit_metadata.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
-	uint8_t raw[16];
-} suit_uuid_t;
-
-typedef suit_uuid_t suit_manifest_class_id_t;
 
 typedef enum {
 	DOWNGRADE_PREVENTION_DISABLED = 0,

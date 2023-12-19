@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-CONFIG_ZTEST=y
+# Include and define MOCK_* Kconfigs
+rsource "../mocks/Kconfig"
 
-CONFIG_SUIT=y
-CONFIG_SUIT_MCI=y
-CONFIG_SUIT_METADATA=y
+source "Kconfig.zephyr"

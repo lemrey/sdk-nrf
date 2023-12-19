@@ -19,6 +19,7 @@ config SUIT_DEVCONFIG
 	bool "Enable manifest authorization and installation"
 	depends on SUIT_STORAGE
 	depends on SUIT_MCI
+	depends on SUIT_METADATA
 
 config SUIT_DIGEST
 	bool "Enable digest calculation"
@@ -50,6 +51,7 @@ config SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 	bool "Enable component ID check against supported manifest class IDs"
 	depends on SUIT_UTILS
 	depends on SUIT_MCI
+	depends on SUIT_METADATA
 
 config SUIT_PLAT_CHECK_CLASSES
 	bool "Enable vendor/class/device class ID checks"

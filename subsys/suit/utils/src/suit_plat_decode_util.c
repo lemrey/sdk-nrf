@@ -60,8 +60,7 @@ suit_plat_err_t suit_plat_decode_component_type(struct zcbor_string *component_i
 	res = res && zcbor_tstr_decode(state, &tmp);
 	res = res && zcbor_bstr_end_decode(state);
 
-	if (!res)
-	{
+	if (!res) {
 		return SUIT_PLAT_ERR_CBOR_DECODING;
 	}
 
@@ -159,14 +158,14 @@ suit_plat_err_t suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *i
 
 	ZCBOR_STATE_D(state, 2, key_id->value, key_id->len, 1);
 
-	if(zcbor_uint32_decode(state, integer_key_id)) {
+	if (zcbor_uint32_decode(state, integer_key_id)) {
 		return SUIT_PLAT_SUCCESS;
 	}
 
 	return SUIT_PLAT_ERR_CBOR_DECODING;
 }
 
-#ifdef CONFIG_SUIT_MCI
+#ifdef CONFIG_SUIT_METADATA
 suit_plat_err_t suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
 						   suit_manifest_class_id_t **class_id)
 {
@@ -209,4 +208,4 @@ suit_plat_err_t suit_plat_decode_manifest_class_id(struct zcbor_string *componen
 
 	return SUIT_PLAT_ERR_CBOR_DECODING;
 }
-#endif /* CONFIG_SUIT_MCI */
+#endif /* CONFIG_SUIT_METADATA */

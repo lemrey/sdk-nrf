@@ -30,6 +30,7 @@ config SUIT_ENABLE_DEFAULTS_SDFW
 	imply SUIT_DIGEST_CACHE
 	imply SUIT_CHECK_IMAGE_MATCH
 	imply SUIT_MCI
+	imply SUIT_METADATA
 	imply SUIT_ORCHESTRATOR
 	imply SUIT_PLATFORM
 	imply SUIT_STREAM
@@ -47,6 +48,7 @@ config SUIT_ENABLE_DEFAULTS_SDFW
 config SUIT_ENABLE_DEFAULTS_APP
 	bool "Application"
 	imply SUIT_UTILS
+	imply SUIT_METADATA
 	imply SSF_SUIT_SERVICE_ENABLED
 
 config SUIT_ENABLE_DEFAULTS_NONE
@@ -56,6 +58,7 @@ endchoice # SUIT_ENABLE_DEFAULTS
 
 rsource "cache/Kconfig"
 rsource "mci/Kconfig"
+rsource "metadata/Kconfig"
 rsource "storage/Kconfig"
 rsource "orchestrator/Kconfig"
 rsource "memptr_storage/Kconfig"

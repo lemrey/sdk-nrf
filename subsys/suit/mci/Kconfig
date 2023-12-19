@@ -6,6 +6,7 @@
 
 menuconfig SUIT_MCI
 	bool "Enable SUIT Manifest Configuration Information module"
+	depends on SUIT_METADATA
 
 if SUIT_MCI
 

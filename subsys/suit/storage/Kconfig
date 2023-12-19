@@ -9,6 +9,7 @@ menuconfig SUIT_STORAGE
 	depends on ZCBOR
 	depends on ZCBOR_CANONICAL
 	depends on SUIT_MCI
+	depends on SUIT_METADATA
 	depends on SUIT_UTILS
 	depends on FLASH
 

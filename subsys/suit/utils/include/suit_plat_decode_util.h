@@ -8,9 +8,9 @@
 #define SUIT_PLAT_DECODE_UTIL_H__
 
 #include <zcbor_common.h>
-#ifdef CONFIG_SUIT_MCI
-#include <suit_mci.h>
-#endif /* CONFIG_SUIT_MCI */
+#ifdef CONFIG_SUIT_METADATA
+#include <suit_metadata.h>
+#endif /* CONFIG_SUIT_METaDATA */
 #ifdef CONFIG_SUIT_PLATFORM
 #include <suit_platform_internal.h>
 #endif /* CONFIG_SUIT_PLATFORM*/
@@ -78,7 +78,7 @@ suit_plat_err_t suit_plat_decode_component_number(struct zcbor_string *component
  */
 suit_plat_err_t suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *integer_key_id);
 
-#ifdef CONFIG_SUIT_MCI
+#ifdef CONFIG_SUIT_METADATA
 /**
  * @brief Decode manifest class ID from component_id
  *
@@ -89,7 +89,7 @@ suit_plat_err_t suit_plat_decode_key_id(struct zcbor_string *key_id, uint32_t *i
  */
 suit_plat_err_t suit_plat_decode_manifest_class_id(struct zcbor_string *component_id,
 						   suit_manifest_class_id_t **class_id);
-#endif /* CONFIG_SUIT_MCI */
+#endif /* CONFIG_SUIT_METADATA */
 
 #ifdef __cplusplus
 }
