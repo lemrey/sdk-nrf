@@ -16,6 +16,7 @@ zephyr_library_sources(src/plat_fetch.c)
 zephyr_library_sources(src/plat_copy.c)
 zephyr_library_sources(src/plat_retrieve_manifest.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_CHECK_IMAGE_MATCH src/plat_check_image_match.c)
+zephyr_library_sources(src/plat_check_content.c)
 
 zephyr_library_sources(src/plat_invoke.c)
 if(${CONFIG_ZTEST})
