@@ -3,6 +3,10 @@
 SUIT manifest overview
 ######################
 
+.. contents::
+   :local:
+   :depth: 2
+
 The SUIT DFU procedure features manifests, which are encased in a SUIT envelope.
 The SUIT manifest contains components, which is the main element that the SUIT DFU procedure operates on.
 
@@ -24,18 +28,13 @@ These templates work out-of-the-box for development and testing purposes.
 This document describes the contents of a SUIT manifest.
 If you want to modify elements of the manifest template, see the :ref:`ug_nrf54h20_suit_customize_dfu` user guide.
 
-.. _ug_how_suit_manifest_works:
-
-How ``SUIT_Manifest`` works
-***************************
-
 The ``SUIT_Manifest``, found within root and local manifests, contains several sequences.
 These sequences are data structures that can contain directives and conditions.
 
 .. _ug_suit_dfu_suit_manifest_elements:
 
 Manifest elements
-=================
+*****************
 
 ``SUIT_Manifest`` contains contains metadata elements and command sequences (a kind of "scripts") within its structure.
 These scripts contain the commands that will be executed at certain stages of the update process.
@@ -50,13 +49,13 @@ Additionally, they provide a shortcut when a component's information, or other d
 The SUIT manifest contains the following elements:
 
 ``suit-manifest-version``
--------------------------
+=========================
 
 Checks and compares the version number of the manifest format, or, in other words, the serialization format.
 If the SUIT processor receives a manifest and sees a version number it does not recognize, it will fail due to incompatibility.
 
 ``suit-manifest-sequence-number``
----------------------------------
+=================================
 
 This is a SUIT-specific version number of the software that is contained in this manifest.
 It is compared against the existing sequence number to verify that the update is newer than the current software.
@@ -65,7 +64,7 @@ The sequence number does not have to match the official version number of the so
 .. _ug_suit_dfu_suit_common:
 
 ``suit-common``
----------------
+===============
 
 This element contains two subsections:
 
@@ -84,7 +83,7 @@ This element contains two subsections:
 .. _ug_suit_dfu_suit_concepts_sequences:
 
 Sequences
----------
+*********
 
 SUIT manifest contains the following command sequences:
 
@@ -109,7 +108,7 @@ SUIT manifest contains the following command sequences:
 .. _ug_suit_dfu_suit_directives:
 
 Directives
-==========
+**********
 
 The SUIT procedure defines the following directives:
 
@@ -137,7 +136,7 @@ The SUIT procedure defines the following directives:
 .. _ug_suit_dfu_suit_conditions:
 
 Conditions
-==========
+**********
 
 The SUIT procedure defines the following conditions:
 

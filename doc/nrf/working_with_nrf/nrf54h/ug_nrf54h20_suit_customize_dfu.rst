@@ -16,8 +16,10 @@ The specified Kconfig options in the sample can be used to modify the artifacts 
 
     For additional modifications mentioned in this guide, see the :ref:`ug_nrf54h20_suit_components` page.
 
-This guide provides a range of instructions and details for how to modify values in the SUIT manifest.
+This guide provides a range of instructions and details for how to modify values in the :ref:`SUIT manifest <ug_nrf54h20_suit_manifest_overview>`.
 See the :ref:`ug_suit_customize_manifest_quick` section of this document for brief instructions on how to make modifications.
+
+.. _ug_suit_build_system_config:
 
 Build system configuration
 ==========================
@@ -357,6 +359,9 @@ In the :file:`app_envelope_yaml.jinja2` (found `here <https://github.com/nrfconn
     - ``{{ app['dt'].label2node['cpu'].unit_addr }}``
     - ``{{ get_absolute_address(app['dt'].chosen_nodes['zephyr,code-partition']) }}``
     - ``{{ app['dt'].chosen_nodes['zephyr,code-partition'].regs[0].size }}``
+
+.. note::
+   See the :ref:`ug_suit_dfu_component_def` page for a full list and table of the available customizable components.
 
 Set integrated payload
 ----------------------
