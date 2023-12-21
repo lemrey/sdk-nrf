@@ -101,22 +101,24 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id)
 	return SUIT_SUCCESS;
 }
 
-int suit_plat_digest_cache_get(const struct zcbor_string *component_id,
-			       const struct zcbor_string **digest_out)
+int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
+				   const struct zcbor_string *digest)
 {
 	int ret;
 	suit_plat_digest_cache_entry_t *entry;
-
-	if (digest_out == NULL)
-	{
-		return SUIT_ERR_UNSUPPORTED_PARAMETER;
-	}
 
 	ret = find_entry(component_id, &entry);
 
 	if (ret == SUIT_SUCCESS)
 	{
-		*digest_out = &entry->digest;
+		if (suit_compare_zcbor_strings(digest, &entry->digest))
+		{
+			ret = SUIT_SUCCESS;
+		}
+		else
+		{
+			ret = SUIT_FAIL_CONDITION;
+		}
 	}
 
 	return ret;

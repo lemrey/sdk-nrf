@@ -85,18 +85,20 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, struct zcbor_s
 int suit_plat_digest_cache_remove(struct zcbor_string *component_id);
 
 /**
- * @brief Get the digest for a given Component ID.
+ * @brief Check if the digest stored in the cache for a given component is matching
+ *        the provided digest.
  *
  * @param[in]  component_id The Component ID.
- * @param[out] digest_out   The CBOR string containing the digest for the given Component ID.
+ * @param[out] digest       The CBOR string containing the digest to compare against.
  *
- * @retval SUIT_SUCCESS                   The given Component ID was found in the cache and output parameters
- *                                        are valid
+ * @retval SUIT_SUCCESS                   The provided digest and the digest stored for the
+ *                                        given Component ID are matching
+ * @retval SUIT_FAIL_CONDITION            The provided digest does not match the digest stored
+ *                                        for the given Component ID
  * @retval SUIT_ERR_MISSING_COMPONENT     The given Component ID was not found in the cache
- * @retval SUIT_ERR_UNSUPPORTED_PARAMETER @p digest_out is not a valid pointer
  */
-int suit_plat_digest_cache_get(const struct zcbor_string *component_id,
-			       const struct zcbor_string ** digest_out);
+int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
+				   const struct zcbor_string * digest);
 
 /**
  * @brief Invalidate all elements in the cache,
