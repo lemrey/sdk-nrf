@@ -9,8 +9,9 @@
 
 typedef struct
 {
-    struct zcbor_string component_id;
-    struct zcbor_string digest;
+	struct zcbor_string component_id;
+	enum suit_cose_alg alg_id;
+	struct zcbor_string digest;
 } suit_plat_digest_cache_entry_t;
 
 static bool unlocked;
@@ -50,7 +51,8 @@ bool suit_plat_digest_cache_is_unlocked(void)
 	return unlocked;
 }
 
-int suit_plat_digest_cache_add(struct zcbor_string *component_id, struct zcbor_string *digest)
+int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose_alg alg_id,
+			       struct zcbor_string *digest)
 {
 	size_t i;
 
@@ -71,6 +73,7 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, struct zcbor_s
 		{
 			cache[i].component_id.len = component_id->len;
 			cache[i].component_id.value = component_id->value;
+			cache[i].alg_id = alg_id;
 			cache[i].digest.len = digest->len;
 			cache[i].digest.value = digest->value;
 
@@ -94,6 +97,7 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id)
 	{
 		entry->component_id.len = 0;
 		entry->component_id.value = NULL;
+		entry->alg_id = 0;
 		entry->digest.len = 0;
 		entry->digest.value = NULL;
 	}
@@ -102,6 +106,7 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id)
 }
 
 int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
+				   enum suit_cose_alg alg_id,
 				   const struct zcbor_string *digest)
 {
 	int ret;
@@ -111,7 +116,7 @@ int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
 
 	if (ret == SUIT_SUCCESS)
 	{
-		if (suit_compare_zcbor_strings(digest, &entry->digest))
+		if (entry->alg_id == alg_id && suit_compare_zcbor_strings(digest, &entry->digest))
 		{
 			ret = SUIT_SUCCESS;
 		}

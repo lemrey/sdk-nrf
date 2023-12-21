@@ -65,6 +65,7 @@ bool suit_plat_digest_cache_is_unlocked(void);
  *       parameters point are not changed as long as the entry is present in the cache.
  *
  * @param[in] component_id CBOR string containing the Component ID data.
+ * @param[in] alg_id       The algorithm used to calculate the digest.
  * @param[in] digest       CBOR string containing the digest for the given Component ID.
  *
  * @retval SUIT_SUCCESS                   Entry added or updated successfully
@@ -72,7 +73,8 @@ bool suit_plat_digest_cache_is_unlocked(void);
  * @retval SUIT_ERR_UNSUPPORTED_PARAMETER One of the parameters is not a valid pointer
  * @retval SUIT_ERR_OVERFLOW              The cache is full
  */
-int suit_plat_digest_cache_add(struct zcbor_string *component_id, struct zcbor_string *digest);
+int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose_alg alg_id,
+			       struct zcbor_string *digest);
 
 /**
  * @brief Invalidate element in the cache
@@ -89,6 +91,7 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id);
  *        the provided digest.
  *
  * @param[in]  component_id The Component ID.
+ * @param[in]  alg_id       The algorithm used to calculate the digest.
  * @param[out] digest       The CBOR string containing the digest to compare against.
  *
  * @retval SUIT_SUCCESS                   The provided digest and the digest stored for the
@@ -98,6 +101,7 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id);
  * @retval SUIT_ERR_MISSING_COMPONENT     The given Component ID was not found in the cache
  */
 int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
+				   enum suit_cose_alg alg_id,
 				   const struct zcbor_string * digest);
 
 /**

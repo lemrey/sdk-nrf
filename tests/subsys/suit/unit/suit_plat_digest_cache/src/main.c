@@ -69,7 +69,7 @@ static int add_digest_for_component(int index)
 		digest.len = digest_lengths[index];
 		digest.value = digests_mem[index];
 
-		ret = suit_plat_digest_cache_add(&component_id, &digest);
+		ret = suit_plat_digest_cache_add(&component_id, suit_cose_sha256, &digest);
 	}
 
 	return ret;
@@ -119,7 +119,7 @@ static void verify_matching_component_in_cache(int index)
 		digest_copy.value = digest_copies_mem[index];
 
 
-		ret = suit_plat_digest_cache_compare(&component_id_copy, &digest_copy);
+		ret = suit_plat_digest_cache_compare(&component_id_copy, suit_cose_sha256, &digest_copy);
 
 		zassert_equal(SUIT_SUCCESS, ret, "Matching digest for a given component ID"
 						 " was not found");
@@ -139,7 +139,7 @@ static void verify_component_missing_from_cache(int index)
 
 		/* Value of the digest does not matter, it won't be verified due to the missing
 		   component ID */
-		ret = suit_plat_digest_cache_compare(&component_id, NULL);
+		ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, NULL);
 
 		zassert_equal(SUIT_ERR_MISSING_COMPONENT, ret,
 			  "Attempt to retrieve missing does not report correctly");
@@ -159,7 +159,7 @@ static void verify_cache_is_empty(void)
 
 		/* Value of the digest does not matter, it won't be verified due to the missing
 		   component ID */
-		ret = suit_plat_digest_cache_compare(&component_id, NULL);
+		ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, NULL);
 		zassert_equal(SUIT_ERR_MISSING_COMPONENT, ret, "Cache is not empty");
 	}
 }
@@ -259,7 +259,7 @@ ZTEST(suit_plat_digest_cache_tests, test_add_null_digest)
 	component_id.len = component_id_lengths[0];
 	component_id.value = component_ids_mem[0];
 
-	ret = suit_plat_digest_cache_add(&component_id, NULL);
+	ret = suit_plat_digest_cache_add(&component_id, suit_cose_sha256, NULL);
 
 	zassert_equal(SUIT_ERR_UNSUPPORTED_PARAMETER, ret,
 		      "Passing NULL digest parameter to suit_plat_digest_cache_add"
@@ -275,7 +275,7 @@ ZTEST(suit_plat_digest_cache_tests, test_add_null_component_id)
 	digest.len = digest_lengths[0];
 	digest.value = digests_mem[0];
 
-	ret = suit_plat_digest_cache_add(NULL, &digest);
+	ret = suit_plat_digest_cache_add(NULL, suit_cose_sha256, &digest);
 
 	zassert_equal(SUIT_ERR_UNSUPPORTED_PARAMETER, ret,
 		      "Passing NULL component_id parameter to suit_plat_digest_cache_add"
@@ -298,12 +298,12 @@ ZTEST(suit_plat_digest_cache_tests, test_replace_existing_component)
 	digest.value = digests_mem[4];
 
 	// Replace the component digest with a new digest
-	ret = suit_plat_digest_cache_add(&component_id, &digest);
+	ret = suit_plat_digest_cache_add(&component_id, suit_cose_sha256, &digest);
 	zassert_equal(SUIT_SUCCESS, ret, "Replacing the component digest failed");
 
 	digest_copy.len = digest_lengths[4];
 	digest_copy.value = digest_copies_mem[4];
-	ret = suit_plat_digest_cache_compare(&component_id, &digest_copy);
+	ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, &digest_copy);
 
 	zassert_equal(SUIT_SUCCESS, ret, "Verifying the replaced component ID failed");
 }
@@ -324,7 +324,7 @@ ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_length)
 	mismatched_digest.len = digest_lengths[3];
 	mismatched_digest.value = digests_mem[3];
 
-	ret = suit_plat_digest_cache_compare(&component_id, &mismatched_digest);
+	ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, &mismatched_digest);
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Comparing against a mismatched digest"
 						" does not return the correct error code");
 }
@@ -345,7 +345,7 @@ ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_content_different_len
 	mismatched_digest.len = digest_lengths[0] - 1;
 	mismatched_digest.value = digests_mem[0];
 
-	ret = suit_plat_digest_cache_compare(&component_id, &mismatched_digest);
+	ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, &mismatched_digest);
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Comparing against a mismatched digest"
 						" does not return the correct error code");
 }

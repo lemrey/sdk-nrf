@@ -200,7 +200,7 @@ int suit_plat_check_image_match(suit_component_t component, enum suit_cose_alg a
 		{
 		case SUIT_COMPONENT_TYPE_MEM:
 		case SUIT_COMPONENT_TYPE_SOC_SPEC: {
-			ret = suit_plat_digest_cache_add(component_id, digest);
+			ret = suit_plat_digest_cache_add(component_id, alg_id, digest);
 
 			if (ret != SUIT_SUCCESS)
 			{
