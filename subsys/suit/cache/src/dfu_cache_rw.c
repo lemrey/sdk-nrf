@@ -614,7 +614,7 @@ suit_plat_err_t suit_dfu_cache_rw_slot_drop(struct suit_cache_slot *slot)
 
 		if (slot->eb_size > 128) {
 			LOG_WRN("Erase swap buffer for dropping cache slot is at excessive size "
-				"(%u) due to defined erase blok size in dts",
+				"(%u) due to defined erase block size in dts",
 				slot->eb_size);
 		}
 
