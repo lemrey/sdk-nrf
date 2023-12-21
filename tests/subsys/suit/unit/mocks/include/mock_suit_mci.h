@@ -20,7 +20,7 @@ FAKE_VALUE_FUNC(int, suit_mci_nordic_unspecified_class_id_get, const suit_uuid_t
 
 /* utils.c */
 #ifdef CONFIG_MOCK_SUIT_MCI_UTILS
-FAKE_VALUE_FUNC(int, suit_mci_suit_uuid_compare, const suit_uuid_t *, const suit_uuid_t *);
+FAKE_VALUE_FUNC(int, suit_metadata_uuid_compare, const suit_uuid_t *, const suit_uuid_t *);
 FAKE_VALUE_FUNC(int, suit_mci_manifest_parent_child_validate, const suit_manifest_class_id_t *,
 		const suit_manifest_class_id_t *);
 #endif /* CONFIG_MOCK_SUIT_MCI_UTILS */
@@ -33,9 +33,10 @@ FAKE_VALUE_FUNC(int, suit_mci_downgrade_prevention_policy_get, const suit_manife
 		downgrade_prevention_policy_t *);
 FAKE_VALUE_FUNC(int, suit_mci_manifest_class_id_validate, const suit_manifest_class_id_t *);
 FAKE_VALUE_FUNC(int, suit_mci_signing_key_id_validate, const suit_manifest_class_id_t *, uint32_t);
-FAKE_VALUE_FUNC(int, suit_mci_processor_start_rights_validate, const suit_manifest_class_id_t *, int);
-FAKE_VALUE_FUNC(int, suit_mci_memory_access_rights_validate, const suit_manifest_class_id_t *, void *,
-		size_t);
+FAKE_VALUE_FUNC(int, suit_mci_processor_start_rights_validate, const suit_manifest_class_id_t *,
+		int);
+FAKE_VALUE_FUNC(int, suit_mci_memory_access_rights_validate, const suit_manifest_class_id_t *,
+		void *, size_t);
 FAKE_VALUE_FUNC(int, suit_mci_platform_specific_component_rights_validate,
 		const suit_manifest_class_id_t *, int);
 FAKE_VALUE_FUNC(int, suit_mci_manifest_parent_get, const suit_manifest_class_id_t *,
@@ -52,7 +53,7 @@ static inline void mock_suit_mci_reset(void)
 #endif /* CONFIG_MOCK_SUIT_MCI_GENERIC_IDS */
 
 #ifdef CONFIG_MOCK_SUIT_MCI_UTILS
-	RESET_FAKE(suit_mci_suit_uuid_compare);
+	RESET_FAKE(suit_metadata_uuid_compare);
 	RESET_FAKE(suit_mci_manifest_parent_child_validate);
 #endif /* CONFIG_MOCK_SUIT_MCI_UTILS */
 

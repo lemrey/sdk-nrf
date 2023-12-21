@@ -15,6 +15,11 @@
 extern "C" {
 #endif
 
+typedef int suit_metadata_err_t;
+
+/**< Content of compared suit_uuid_t structures differs */
+#define METADATA_ERR_COMPARISON_FAILED 1
+
 /* Define constant values for backward compatibility purposes. */
 typedef enum {
 	/** Digest status value uninitialized (invalid). */
@@ -94,6 +99,18 @@ typedef struct {
 /** The 128-bit UUID, identifying the SUIT manifest class. */
 typedef suit_uuid_t suit_manifest_class_id_t;
 
+/**
+ * @brief Checks if two suit_uuid_t structures hold the same uuid value
+ *
+ * @param[in]  uuid1  UUID to compare.
+ * @param[in]  uuid2  UUID to compare with.
+ *
+ * @retval SUIT_PLAT_SUCCESS              on success
+ * @retval SUIT_PLAT_ERR_INVAL            invalid parameter, i.e. null pointer
+ * @retval METADATA_ERR_COMPARISON_FAILED content of UUIDs differs
+ */
+suit_metadata_err_t suit_metadata_uuid_compare(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2);
+
 /** @brief Convert semantic version, encoded as array of integers into structure.
  *
  * @details The meaning of array elements is defined in suit-update-management extension.
@@ -107,8 +124,8 @@ typedef suit_uuid_t suit_manifest_class_id_t;
  * @retval SUIT_PLAT_ERR_OUT_OF_BOUNDS If version is negative or the release type is not supported.
  * @retval SUIT_PLAT_SUCCESS           If conversion was successful.
  */
-suit_plat_err_t suit_metadata_version_from_array(suit_version_t *version, int32_t *array,
-						 size_t array_len);
+suit_metadata_err_t suit_metadata_version_from_array(suit_version_t *version, int32_t *array,
+						     size_t array_len);
 
 #ifdef __cplusplus
 }

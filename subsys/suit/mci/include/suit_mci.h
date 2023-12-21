@@ -61,14 +61,12 @@ typedef enum {
 
 typedef int mci_err_t;
 
- /**< Invalid or unsupported manifest class id */
-#define MCI_ERR_MANIFESTCLASSID   1
+/**< Invalid or unsupported manifest class id */
+#define MCI_ERR_MANIFESTCLASSID 1
 /**< Manifest is not entitled to operate on resource */
-#define MCI_ERR_NOACCESS	      2
+#define MCI_ERR_NOACCESS	2
 /**< Provided key ID is invalid for desired operation */
-#define MCI_ERR_WRONGKEYID	      3
-/**< Content of compared suit_uuid_t structures differs */
-#define MCI_ERR_COMPARISON_FAILED 4
+#define MCI_ERR_WRONGKEYID	3
 
 /**
  * @brief Gets Nordic vendor id
@@ -128,7 +126,7 @@ mci_err_t suit_mci_invoke_order_get(const suit_manifest_class_id_t **class_id, s
  * @retval MCI_ERR_MANIFESTCLASSID  manifest class id unsupported
  */
 mci_err_t suit_mci_downgrade_prevention_policy_get(const suit_manifest_class_id_t *class_id,
-					downgrade_prevention_policy_t *policy);
+						   downgrade_prevention_policy_t *policy);
 
 /**
  * @brief Validates if manifest class id is supported in the device.
@@ -188,8 +186,7 @@ mci_err_t suit_mci_processor_start_rights_validate(const suit_manifest_class_id_
  *                                  memory range
  */
 mci_err_t suit_mci_memory_access_rights_validate(const suit_manifest_class_id_t *class_id,
-						 void *address,
-				                 size_t mem_size);
+						 void *address, size_t mem_size);
 
 /**
  * @brief Verifies if manifest with specific class id is entitled to operate on non-memory platform
@@ -204,9 +201,9 @@ mci_err_t suit_mci_memory_access_rights_validate(const suit_manifest_class_id_t 
  * @retval MCI_ERR_NOACCESS         manifest is not entitled to operate on
  *                                  non-memory platform component
  */
-mci_err_t suit_mci_platform_specific_component_rights_validate(
-						    const suit_manifest_class_id_t *class_id,
-						    int platform_specific_component_number);
+mci_err_t
+suit_mci_platform_specific_component_rights_validate(const suit_manifest_class_id_t *class_id,
+						     int platform_specific_component_number);
 
 /**
  * @brief Verifies whether parent-child relationship for selected manifests is valid
@@ -248,18 +245,7 @@ mci_err_t suit_mci_manifest_parent_get(const suit_manifest_class_id_t *child_cla
  * @retval MCI_ERR_MANIFESTCLASSID  manifest class id unsupported
  */
 mci_err_t suit_mci_vendor_id_for_manifest_class_id_get(const suit_manifest_class_id_t *class_id,
-					    const suit_uuid_t **vendor_id);
-
-/**
- * @brief Checks if two suit_uuid_t structures hold the same uuid value
- *
- * @param[in]   uuid1, uuid2
- *
- * @retval SUIT_PLAT_SUCCESS         on success
- * @retval SUIT_PLAT_ERR_INVAL       invalid parameter, i.e. null pointer
- * @retval MCI_ERR_COMPARISON_FAILED content of UUIDs differs
- */
-mci_err_t suit_mci_suit_uuid_compare(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2);
+						       const suit_uuid_t **vendor_id);
 
 /**
  * @brief Initializes MCI

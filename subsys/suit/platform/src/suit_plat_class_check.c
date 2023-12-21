@@ -25,7 +25,7 @@ static const suit_uuid_t *validate_and_get_uuid(struct zcbor_string *in_uuid)
 int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *cid_uuid)
 {
 	const suit_manifest_class_id_t
-		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS] = { NULL };
+		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS] = {NULL};
 	size_t size = CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS;
 	struct zcbor_string *component_id;
 	const suit_uuid_t *cid = validate_and_get_uuid(cid_uuid);
@@ -49,7 +49,8 @@ int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *
 	for (size_t i = 0; i < size; i++) {
 		if ((suit_plat_component_compatibility_check(manifest_class_ids_list[i],
 							     component_id) == SUIT_SUCCESS) &&
-		    (suit_mci_suit_uuid_compare(cid, manifest_class_ids_list[i]) == SUIT_PLAT_SUCCESS)) {
+		    (suit_metadata_uuid_compare(cid, manifest_class_ids_list[i]) ==
+		     SUIT_PLAT_SUCCESS)) {
 			return SUIT_SUCCESS;
 		}
 	}
@@ -60,7 +61,7 @@ int suit_plat_check_cid(suit_component_t component_handle, struct zcbor_string *
 int suit_plat_check_vid(suit_component_t component_handle, struct zcbor_string *vid_uuid)
 {
 	const suit_manifest_class_id_t
-		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS] = { NULL };
+		*manifest_class_ids_list[CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS] = {NULL};
 	size_t size = CONFIG_MAX_NUMBER_OF_MANIFEST_CLASS_IDS;
 	struct zcbor_string *component_id;
 	const suit_uuid_t *vendor_id;
@@ -85,9 +86,9 @@ int suit_plat_check_vid(suit_component_t component_handle, struct zcbor_string *
 	for (size_t i = 0; i < size; i++) {
 		if ((suit_plat_component_compatibility_check(manifest_class_ids_list[i],
 							     component_id) == SUIT_SUCCESS) &&
-		    (suit_mci_vendor_id_for_manifest_class_id_get(manifest_class_ids_list[i],
-							     &vendor_id) == SUIT_PLAT_SUCCESS) &&
-		    (suit_mci_suit_uuid_compare(vid, vendor_id) == SUIT_PLAT_SUCCESS)) {
+		    (suit_mci_vendor_id_for_manifest_class_id_get(
+			     manifest_class_ids_list[i], &vendor_id) == SUIT_PLAT_SUCCESS) &&
+		    (suit_metadata_uuid_compare(vid, vendor_id) == SUIT_PLAT_SUCCESS)) {
 			return SUIT_SUCCESS;
 		}
 	}

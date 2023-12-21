@@ -5,9 +5,23 @@
  */
 
 #include <suit_metadata.h>
+#include <string.h>
 
-suit_plat_err_t suit_metadata_version_from_array(suit_version_t *version, int32_t *array,
-						 size_t array_len)
+suit_metadata_err_t suit_metadata_uuid_compare(const suit_uuid_t *uuid1, const suit_uuid_t *uuid2)
+{
+	if (NULL == uuid1 || NULL == uuid2) {
+		return SUIT_PLAT_ERR_INVAL;
+	}
+
+	if (0 == memcmp(uuid1->raw, uuid2->raw, sizeof(((suit_uuid_t *)0)->raw))) {
+		return SUIT_PLAT_SUCCESS;
+	}
+
+	return METADATA_ERR_COMPARISON_FAILED;
+}
+
+suit_metadata_err_t suit_metadata_version_from_array(suit_version_t *version, int32_t *array,
+						     size_t array_len)
 {
 	if ((version == NULL) || (array == NULL)) {
 		return SUIT_PLAT_ERR_INVAL;

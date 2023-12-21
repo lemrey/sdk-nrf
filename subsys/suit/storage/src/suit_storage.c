@@ -124,8 +124,7 @@ static suit_plat_err_t save_envelope_partial(size_t index, const void *addr, siz
 		offset += sizeof(write_buf);
 	}
 
-	if (err != 0)
-	{
+	if (err != 0) {
 		return SUIT_PLAT_ERR_IO;
 	}
 	return SUIT_PLAT_SUCCESS;
@@ -146,8 +145,8 @@ static suit_plat_err_t save_envelope_partial_bstr(size_t index, uint16_t key,
 	uint8_t kv_hdr_buf[SUIT_STORAGE_ENCODED_BSTR_HDR_LEN_MAX];
 	size_t hdr_len = sizeof(kv_hdr_buf);
 
-	suit_plat_err_t err = suit_storage_encode_bstr_kv_header(key, bstr->len, kv_hdr_buf,
-								 &hdr_len);
+	suit_plat_err_t err =
+		suit_storage_encode_bstr_kv_header(key, bstr->len, kv_hdr_buf, &hdr_len);
 	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
@@ -173,7 +172,7 @@ static bool is_supported_class_id(const suit_manifest_class_id_t *id)
 	}
 
 	for (size_t i = 0; i < manifest_class_ids_len; i++) {
-		if (suit_mci_suit_uuid_compare(id, manifest_class_ids[i]) == SUIT_PLAT_SUCCESS) {
+		if (suit_metadata_uuid_compare(id, manifest_class_ids[i]) == SUIT_PLAT_SUCCESS) {
 			return true;
 		}
 	}
@@ -229,7 +228,7 @@ static suit_plat_err_t find_manifest_index(const suit_manifest_class_id_t *id, s
 			continue;
 		}
 
-		if (suit_mci_suit_uuid_compare(id, class_id) == SUIT_PLAT_SUCCESS) {
+		if (suit_metadata_uuid_compare(id, class_id) == SUIT_PLAT_SUCCESS) {
 			LOG_DBG("Envelope with given class ID found at index %d", index);
 			break;
 		}
@@ -269,10 +268,11 @@ static suit_plat_err_t erase_unsupported_envelopes(void)
 							     .mem[envelope.class_id_offset];
 
 		if (!is_supported_class_id(class_id)) {
-			int flash_ret = flash_erase(fdev,
-					  SUIT_STORAGE_OFFSET +
-						  offsetof(struct suit_storage, envelopes[index]),
-					  eb_size);
+			int flash_ret =
+				flash_erase(fdev,
+					    SUIT_STORAGE_OFFSET +
+						    offsetof(struct suit_storage, envelopes[index]),
+					    eb_size);
 			if (flash_ret != 0) {
 				LOG_ERR("Unable to erase unsupported envelope at index %d (er: %d)",
 					index, ret);
@@ -435,13 +435,13 @@ suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id
 		return err;
 	}
 
-	if (suit_plat_decode_manifest_class_id(&envelope.suit_manifest_component_id, &class_id)
-	    != SUIT_PLAT_SUCCESS) {
+	if (suit_plat_decode_manifest_class_id(&envelope.suit_manifest_component_id, &class_id) !=
+	    SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Unable to install envelope: class ID not decoded");
 		return SUIT_PLAT_ERR_INVAL;
 	}
 
-	if (SUIT_PLAT_SUCCESS != suit_mci_suit_uuid_compare(id, class_id)) {
+	if (SUIT_PLAT_SUCCESS != suit_metadata_uuid_compare(id, class_id)) {
 		LOG_ERR("Unable to install envelope: class ID does not match");
 		return SUIT_PLAT_ERR_INVAL;
 	}
@@ -457,17 +457,17 @@ suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id
 	size_t header_len = 0;
 
 	err = suit_storage_bstr_kv_header_len(SUIT_AUTHENTICATION_WRAPPER_TAG,
-					      envelope.suit_authentication_wrapper.len, &header_len);
-	if (err != SUIT_PLAT_SUCCESS)
-	{
+					      envelope.suit_authentication_wrapper.len,
+					      &header_len);
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 	encoding_overhead += header_len;
 
-	err = suit_storage_bstr_kv_header_len(SUIT_MANIFEST_TAG, envelope.suit_manifest.len, &header_len);
+	err = suit_storage_bstr_kv_header_len(SUIT_MANIFEST_TAG, envelope.suit_manifest.len,
+					      &header_len);
 
-	if (err != SUIT_PLAT_SUCCESS)
-	{
+	if (err != SUIT_PLAT_SUCCESS) {
 		return err;
 	}
 	encoding_overhead += header_len;

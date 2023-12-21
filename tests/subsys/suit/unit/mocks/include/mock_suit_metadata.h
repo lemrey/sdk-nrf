@@ -13,7 +13,8 @@
 #include <suit_metadata.h>
 
 /* suit_metadata.c */
-FAKE_VALUE_FUNC(suit_plat_err_t, suit_metadata_version_from_array, suit_version_t *, int *, size_t);
+FAKE_VALUE_FUNC(suit_plat_err_t, suit_metadata_version_from_array, suit_version_t *, int32_t *,
+		size_t);
 
 static inline void mock_suit_metadata_reset(void)
 {
