@@ -186,19 +186,12 @@ static int boot_envelope(const suit_manifest_class_id_t *class_id)
 	}
 	LOG_INF("Booting from manifest version: 0x%x", seq_num);
 
-#if CONFIG_SUIT_DIGEST_CACHE
-	suit_plat_digest_cache_unlock();
-#endif
-
 	err = suit_process_sequence(installed_envelope_address, installed_envelope_size,
 				    SUIT_SEQ_VALIDATE);
 	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to execute suit-validate: %d", err);
 		return enter_emergency_recovery();
 	}
-#if CONFIG_SUIT_DIGEST_CACHE
-	suit_plat_digest_cache_lock();
-#endif
 
 	LOG_DBG("Processed suit-validate");
 
@@ -292,9 +285,7 @@ int suit_orchestrator_entry(void)
 	suit_plat_err_t err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
 
 #if CONFIG_SUIT_DIGEST_CACHE
-	suit_plat_digest_cache_unlock();
 	suit_plat_digest_cache_remove_all();
-	suit_plat_digest_cache_lock();
 #endif
 
 	if ((err == SUIT_PLAT_SUCCESS) && (update_regions_len > 0)) {

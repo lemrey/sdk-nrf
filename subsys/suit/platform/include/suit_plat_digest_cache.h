@@ -33,28 +33,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Enable modifications of the the cache.
- *
- * @note By default the cache is in "locked" state, which means no modifications are possible.
- */
-void suit_plat_digest_cache_unlock(void);
-
-/**
- * @brief Disable modifications of the the cache.
- *
- * @note By default the cache is in "locked" state, which means no modifications are possible.
- */
-void suit_plat_digest_cache_lock(void);
-
-/**
- * @brief Check if the cache is unlocked and its contents can be modified.
- *
- * @retval true  The contents of the cache can be modified.
- * @retval false The contents of the cache cannot be modified.
- */
-bool suit_plat_digest_cache_is_unlocked(void);
-
-/**
  * @brief Add a (component_id, digest) pair to the cache.
  *        If the given component_id is already present in the cache, update the cached digest.
  *
@@ -69,7 +47,6 @@ bool suit_plat_digest_cache_is_unlocked(void);
  * @param[in] digest       CBOR string containing the digest for the given Component ID.
  *
  * @retval SUIT_SUCCESS                   Entry added or updated successfully
- * @retval SUIT_ERR_UNSUPPORTED_COMMAND   The cache is locked
  * @retval SUIT_ERR_UNSUPPORTED_PARAMETER One of the parameters is not a valid pointer
  * @retval SUIT_ERR_OVERFLOW              The cache is full
  */
@@ -82,7 +59,6 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose
  * @param[in] component_id CBOR string containing the Component ID data.
  *
  * @retval SUIT_SUCCESS	                Invalidating the element was successful
- * @retval SUIT_ERR_UNSUPPORTED_COMMAND The cache is locked
  */
 int suit_plat_digest_cache_remove(struct zcbor_string *component_id);
 
@@ -108,7 +84,6 @@ int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
  * @brief Invalidate all elements in the cache,
  *
  * @retval SUIT_SUCCESS	                Invalidating the cache was successful
- * @retval SUIT_ERR_UNSUPPORTED_COMMAND The cache is locked
  */
 int suit_plat_digest_cache_remove_all(void);
 
@@ -121,7 +96,6 @@ int suit_plat_digest_cache_remove_all(void);
  * @retval SUIT_SUCCESS	                     Invalidating the element was successful
  * @retval SUIT_ERR_UNSUPPORTED_COMPONENT_ID The handle does not correspond to a valid
  *                                           Component ID.
- * @retval SUIT_ERR_UNSUPPORTED_COMMAND      The cache is locked
  */
 int suit_plat_digest_cache_remove_by_handle(suit_component_t handle);
 

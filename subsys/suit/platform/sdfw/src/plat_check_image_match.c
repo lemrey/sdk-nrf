@@ -192,7 +192,7 @@ int suit_plat_check_image_match(suit_component_t component, enum suit_cose_alg a
 	}
 
 #if CONFIG_SUIT_DIGEST_CACHE
-	if (err == SUIT_SUCCESS && suit_plat_digest_cache_is_unlocked())
+	if (err == SUIT_SUCCESS)
 	{
 		int ret;
 

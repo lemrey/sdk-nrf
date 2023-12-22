@@ -19,7 +19,7 @@ static uint8_t component_ids_mem[][4] = {
 
 static size_t component_id_lengths[] = {4, 3, 4, 4, 4};
 
-static uint8_t component_id_copies_mem[sizeof(component_ids_mem)/sizeof(component_ids_mem[0])][4];
+static uint8_t component_id_copies_mem[ARRAY_SIZE(component_ids_mem)][4];
 
 static uint8_t digests_mem[][8] = {
 	{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88},
@@ -31,7 +31,7 @@ static uint8_t digests_mem[][8] = {
 
 static size_t digest_lengths[] = {8, 7, 8, 8, 8};
 
-static uint8_t digest_copies_mem[sizeof(digests_mem)/sizeof(digests_mem[0])][8];
+static uint8_t digest_copies_mem[ARRAY_SIZE(digests_mem)][8];
 
 static struct zcbor_string m_component_id_for_fake;
 
@@ -40,7 +40,6 @@ static void test_before(void *data)
 	/* Reset mocks */
 	mocks_reset();
 	suit_plat_digest_cache_remove_all();
-	suit_plat_digest_cache_lock();
 
 	/* Reset common FFF internal structures */
 	FFF_RESET_HISTORY();
@@ -172,45 +171,9 @@ static int suit_plat_component_id_get_correct_fake_func(suit_component_t handle,
 	return SUIT_SUCCESS;
 }
 
-ZTEST(suit_plat_digest_cache_tests, test_cache_unlock)
-{
-	bool was_enabled;
-	suit_plat_digest_cache_unlock();
-
-	was_enabled = suit_plat_digest_cache_is_unlocked();
-
-	zassert_true(was_enabled, "Enabling the SUIT digest cache failed");
-}
-
-ZTEST(suit_plat_digest_cache_tests, test_cache_lock)
-{
-	bool was_enabled;
-
-	suit_plat_digest_cache_unlock();
-	suit_plat_digest_cache_lock();
-	was_enabled = suit_plat_digest_cache_is_unlocked();
-
-	zassert_false(was_enabled, "Disabling the SUIT digest cache failed");
-}
-
-ZTEST(suit_plat_digest_cache_tests, test_cache_reunlock)
-{
-	bool was_enabled;
-
-	suit_plat_digest_cache_unlock();
-	suit_plat_digest_cache_lock();
-	suit_plat_digest_cache_unlock();
-
-	was_enabled = suit_plat_digest_cache_is_unlocked();
-
-	zassert_true(was_enabled, "Reenabling the SUIT digest cache failed");
-}
-
 ZTEST(suit_plat_digest_cache_tests, test_cache_add_single)
 {
 	int ret;
-
-	suit_plat_digest_cache_unlock();
 
 	ret = add_digest_for_component(0);
 	zassert_equal(SUIT_SUCCESS, ret, "Adding element to cache failed");
@@ -220,7 +183,6 @@ ZTEST(suit_plat_digest_cache_tests, test_cache_add_single)
 
 ZTEST(suit_plat_digest_cache_tests, test_cache_fill)
 {
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	verify_matching_component_in_cache(0);
@@ -232,7 +194,6 @@ ZTEST(suit_plat_digest_cache_tests, test_cache_add_when_full)
 {
 	int ret;
 
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	ret = add_digest_for_component(3);
@@ -244,7 +205,6 @@ ZTEST(suit_plat_digest_cache_tests, test_cache_add_when_full)
 
 ZTEST(suit_plat_digest_cache_tests, test_get_uncached_element)
 {
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	verify_component_missing_from_cache(3);
@@ -255,7 +215,6 @@ ZTEST(suit_plat_digest_cache_tests, test_add_null_digest)
 	int ret;
 	struct zcbor_string component_id;
 
-	suit_plat_digest_cache_unlock();
 	component_id.len = component_id_lengths[0];
 	component_id.value = component_ids_mem[0];
 
@@ -271,7 +230,6 @@ ZTEST(suit_plat_digest_cache_tests, test_add_null_component_id)
 	int ret;
 	struct zcbor_string digest;
 
-	suit_plat_digest_cache_unlock();
 	digest.len = digest_lengths[0];
 	digest.value = digests_mem[0];
 
@@ -289,7 +247,6 @@ ZTEST(suit_plat_digest_cache_tests, test_replace_existing_component)
 	struct zcbor_string digest;
 	struct zcbor_string digest_copy;
 
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	component_id.len = component_id_lengths[1];
@@ -317,7 +274,6 @@ ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_length)
 	component_id.len = component_id_lengths[0];
 	component_id.value = component_ids_mem[0];
 
-	suit_plat_digest_cache_unlock();
 	ret = add_digest_for_component(0);
 	zassert_equal(SUIT_SUCCESS, ret, "Adding element to cache failed");
 
@@ -338,7 +294,6 @@ ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_content_different_len
 	component_id.len = component_id_lengths[0];
 	component_id.value = component_ids_mem[0];
 
-	suit_plat_digest_cache_unlock();
 	ret = add_digest_for_component(0);
 	zassert_equal(SUIT_SUCCESS, ret, "Adding element to cache failed");
 
@@ -355,7 +310,6 @@ ZTEST(suit_plat_digest_cache_tests, test_remove_single)
 {
 	int ret;
 
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	ret = remove_digest(1);
@@ -368,7 +322,6 @@ ZTEST(suit_plat_digest_cache_tests, test_removing_from_full_cache_frees_slot)
 {
 	int ret;
 
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	ret = remove_digest(1);
@@ -380,38 +333,9 @@ ZTEST(suit_plat_digest_cache_tests, test_removing_from_full_cache_frees_slot)
 	verify_matching_component_in_cache(3);
 }
 
-ZTEST(suit_plat_digest_cache_tests, test_locked_cache_add)
-{
-	int ret;
-
-	ret = add_digest_for_component(0);
-
-	zassert_equal(SUIT_ERR_UNSUPPORTED_COMMAND, ret,
-			  "Adding to locked cache returns incorrect status");
-
-	verify_component_missing_from_cache(1);
-}
-
-ZTEST(suit_plat_digest_cache_tests, test_locked_cache_remove)
-{
-	int ret;
-
-	suit_plat_digest_cache_unlock();
-	fill_cache();
-	suit_plat_digest_cache_lock();
-
-	ret = remove_digest(1);
-
-	zassert_equal(SUIT_ERR_UNSUPPORTED_COMMAND, ret,
-			  "Removing from locked cache returns incorrect status");
-
-	verify_matching_component_in_cache(1);
-}
-
 ZTEST(suit_plat_digest_cache_tests, test_remove_all)
 {
 	int ret;
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	ret = suit_plat_digest_cache_remove_all();
@@ -420,28 +344,9 @@ ZTEST(suit_plat_digest_cache_tests, test_remove_all)
 	verify_cache_is_empty();
 }
 
-ZTEST(suit_plat_digest_cache_tests, test_locked_cache_remove_all)
-{
-	int ret;
-
-	suit_plat_digest_cache_unlock();
-	fill_cache();
-	suit_plat_digest_cache_lock();
-
-	ret = suit_plat_digest_cache_remove_all();
-
-	zassert_equal(SUIT_ERR_UNSUPPORTED_COMMAND, ret,
-			  "Removing all elements from locked cache returns incorrect status");
-
-	verify_matching_component_in_cache(0);
-	verify_matching_component_in_cache(1);
-	verify_matching_component_in_cache(2);
-}
-
 ZTEST(suit_plat_digest_cache_tests, test_remove_all_one_by_one)
 {
 	int ret;
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	ret = remove_digest(0);
@@ -462,7 +367,6 @@ ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle
 	int dummy = 0;
 	suit_component_t handle = (intptr_t) &dummy; // just ensure that it's a valid address
 
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	suit_plat_component_id_get_fake.return_val = SUIT_ERR_MISSING_COMPONENT;
@@ -483,7 +387,6 @@ ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle
 	int dummy = 0;
 	suit_component_t handle = (intptr_t) &dummy; // just ensure that it's a valid address
 
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
@@ -510,7 +413,6 @@ ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle
 	int dummy = 0;
 	suit_component_t handle = (intptr_t) &dummy; // just ensure that it's a valid address
 
-	suit_plat_digest_cache_unlock();
 	fill_cache();
 
 	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;

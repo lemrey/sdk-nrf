@@ -14,7 +14,6 @@ typedef struct
 	struct zcbor_string digest;
 } suit_plat_digest_cache_entry_t;
 
-static bool unlocked;
 static suit_plat_digest_cache_entry_t cache[CONFIG_SUIT_DIGEST_CACHE_SIZE];
 
 /**
@@ -36,30 +35,10 @@ static int find_entry(const struct zcbor_string *component_id, suit_plat_digest_
 	return SUIT_ERR_MISSING_COMPONENT;
 }
 
-void suit_plat_digest_cache_unlock(void)
-{
-	unlocked = true;
-}
-
-void suit_plat_digest_cache_lock(void)
-{
-	unlocked = false;
-}
-
-bool suit_plat_digest_cache_is_unlocked(void)
-{
-	return unlocked;
-}
-
 int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose_alg alg_id,
 			       struct zcbor_string *digest)
 {
 	size_t i;
-
-	if (!unlocked)
-	{
-		return SUIT_ERR_UNSUPPORTED_COMMAND;
-	}
 
 	if (component_id == NULL || digest == NULL)
 	{
@@ -87,11 +66,6 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose
 int suit_plat_digest_cache_remove(struct zcbor_string *component_id)
 {
 	suit_plat_digest_cache_entry_t *entry;
-
-	if (!unlocked)
-	{
-		return SUIT_ERR_UNSUPPORTED_COMMAND;
-	}
 
 	if (find_entry(component_id, &entry) == SUIT_SUCCESS)
 	{
@@ -132,11 +106,6 @@ int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
 int suit_plat_digest_cache_remove_all(void)
 {
 	size_t i;
-
-	if (!unlocked)
-	{
-		return SUIT_ERR_UNSUPPORTED_COMMAND;
-	}
 
 	for (i = 0; i < CONFIG_SUIT_DIGEST_CACHE_SIZE; i++)
 	{

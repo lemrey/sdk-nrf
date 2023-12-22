@@ -184,9 +184,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 
 #if CONFIG_SUIT_DIGEST_CACHE
 	/* Invalidate the cache entry of the digest for the destination. */
-	suit_plat_digest_cache_unlock();
-	(void)suit_plat_digest_cache_remove_by_handle(dst_handle);
-	suit_plat_digest_cache_lock();
+	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
 #endif
 
 	/* Select source based on component type */
