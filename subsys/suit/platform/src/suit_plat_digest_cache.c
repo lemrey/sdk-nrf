@@ -6,6 +6,9 @@
 
 #include "suit_plat_digest_cache.h"
 #include <suit_platform_internal.h>
+#include <zephyr/kernel.h>
+
+#define MAX_MUTEX_LOCK_TIME_MS (100U)
 
 typedef struct
 {
@@ -15,6 +18,8 @@ typedef struct
 } suit_plat_digest_cache_entry_t;
 
 static suit_plat_digest_cache_entry_t cache[CONFIG_SUIT_DIGEST_CACHE_SIZE];
+
+K_MUTEX_DEFINE(cache_mutex);
 
 /**
  * @brief Get the cache entry index for the given component id
@@ -45,6 +50,19 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose
 		return SUIT_ERR_UNSUPPORTED_PARAMETER;
 	}
 
+	/* It may seem a waste to lock the mutex for the whole duration of the loop,
+	   however the probability of functions from this file being reentered from a different
+	   thread is low (IPC request from two different cores in a very short time gap)
+	   and could only occur a few times after the system is booted up.
+	   On the other hand there are multiple potential ways of memory corruption by another
+	   thread, including for example changing the entry for a given component just before
+	   the mutex is locked.
+	   Taking this to account, it does not seem beneficial to complicate the code in order
+	   to shorten the time when the mutex is locked. */
+	if (k_mutex_lock(&cache_mutex, K_MSEC(MAX_MUTEX_LOCK_TIME_MS)) != 0) {
+		return SUIT_ERR_CRASH;
+	}
+
 	for (i = 0; i < CONFIG_SUIT_DIGEST_CACHE_SIZE; i++)
 	{
 		if (cache[i].component_id.value == NULL
@@ -56,9 +74,13 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose
 			cache[i].digest.len = digest->len;
 			cache[i].digest.value = digest->value;
 
+			k_mutex_unlock(&cache_mutex);
 			return SUIT_SUCCESS;
 		}
+
 	}
+
+	k_mutex_unlock(&cache_mutex);
 
 	return SUIT_ERR_OVERFLOW;
 }
@@ -66,6 +88,10 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose
 int suit_plat_digest_cache_remove(struct zcbor_string *component_id)
 {
 	suit_plat_digest_cache_entry_t *entry;
+
+	if (k_mutex_lock(&cache_mutex, K_MSEC(MAX_MUTEX_LOCK_TIME_MS)) != 0) {
+		return SUIT_ERR_CRASH;
+	}
 
 	if (find_entry(component_id, &entry) == SUIT_SUCCESS)
 	{
@@ -76,6 +102,8 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id)
 		entry->digest.value = NULL;
 	}
 
+	k_mutex_unlock(&cache_mutex);
+
 	return SUIT_SUCCESS;
 }
 
@@ -85,6 +113,10 @@ int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
 {
 	int ret;
 	suit_plat_digest_cache_entry_t *entry;
+
+	if (k_mutex_lock(&cache_mutex, K_MSEC(MAX_MUTEX_LOCK_TIME_MS)) != 0) {
+		return SUIT_ERR_CRASH;
+	}
 
 	ret = find_entry(component_id, &entry);
 
@@ -100,12 +132,18 @@ int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
 		}
 	}
 
+	k_mutex_unlock(&cache_mutex);
+
 	return ret;
 }
 
 int suit_plat_digest_cache_remove_all(void)
 {
 	size_t i;
+
+	if (k_mutex_lock(&cache_mutex, K_MSEC(MAX_MUTEX_LOCK_TIME_MS)) != 0) {
+		return SUIT_ERR_CRASH;
+	}
 
 	for (i = 0; i < CONFIG_SUIT_DIGEST_CACHE_SIZE; i++)
 	{
@@ -114,6 +152,8 @@ int suit_plat_digest_cache_remove_all(void)
 		cache[i].digest.len = 0;
 		cache[i].digest.value = NULL;
 	}
+
+	k_mutex_unlock(&cache_mutex);
 
 	return SUIT_SUCCESS;
 }

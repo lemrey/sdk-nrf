@@ -34,6 +34,10 @@
 #include <mock_suit_crypto.h>
 #endif
 
+#ifdef CONFIG_MOCK_SUIT_KERNEL
+#include <mock_suit_kernel.h>
+#endif
+
 #ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 #include <mock_suit_plat_component_compatibility.h>
 #endif /* CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY */
@@ -70,6 +74,10 @@ static inline void mocks_reset(void)
 
 #ifdef CONFIG_MOCK_SUIT_CRYPTO
 	mock_suit_crypto_reset();
+#endif
+
+#ifdef CONFIG_MOCK_SUIT_KERNEL
+	mock_suit_kernel_reset();
 #endif
 
 #ifdef CONFIG_MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY

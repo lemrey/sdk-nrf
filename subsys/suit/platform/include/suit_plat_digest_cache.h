@@ -49,6 +49,7 @@ extern "C" {
  * @retval SUIT_SUCCESS                   Entry added or updated successfully
  * @retval SUIT_ERR_UNSUPPORTED_PARAMETER One of the parameters is not a valid pointer
  * @retval SUIT_ERR_OVERFLOW              The cache is full
+ * @retval SUIT_ERR_CRASH                 Crash - failed to acquire mutex to store data
  */
 int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose_alg alg_id,
 			       struct zcbor_string *digest);
@@ -59,6 +60,7 @@ int suit_plat_digest_cache_add(struct zcbor_string *component_id, enum suit_cose
  * @param[in] component_id CBOR string containing the Component ID data.
  *
  * @retval SUIT_SUCCESS	                Invalidating the element was successful
+ * @retval SUIT_ERR_CRASH               Crash - failed to acquire mutex to store data
  */
 int suit_plat_digest_cache_remove(struct zcbor_string *component_id);
 
@@ -75,6 +77,7 @@ int suit_plat_digest_cache_remove(struct zcbor_string *component_id);
  * @retval SUIT_FAIL_CONDITION            The provided digest does not match the digest stored
  *                                        for the given Component ID
  * @retval SUIT_ERR_MISSING_COMPONENT     The given Component ID was not found in the cache
+ * @retval SUIT_ERR_CRASH                 Crash - failed to acquire mutex to store data
  */
 int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
 				   enum suit_cose_alg alg_id,
@@ -84,6 +87,7 @@ int suit_plat_digest_cache_compare(const struct zcbor_string *component_id,
  * @brief Invalidate all elements in the cache,
  *
  * @retval SUIT_SUCCESS	                Invalidating the cache was successful
+ * @retval SUIT_ERR_CRASH               Crash - failed to acquire mutex to store data
  */
 int suit_plat_digest_cache_remove_all(void);
 
@@ -96,6 +100,7 @@ int suit_plat_digest_cache_remove_all(void);
  * @retval SUIT_SUCCESS	                     Invalidating the element was successful
  * @retval SUIT_ERR_UNSUPPORTED_COMPONENT_ID The handle does not correspond to a valid
  *                                           Component ID.
+ * @retval SUIT_ERR_CRASH                    Crash - failed to acquire mutex to store data
  */
 int suit_plat_digest_cache_remove_by_handle(suit_component_t handle);
 

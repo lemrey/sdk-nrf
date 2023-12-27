@@ -150,7 +150,10 @@ int suit_plat_fetch(suit_component_t dst_handle, struct zcbor_string *uri)
 
 	/* Invalidate the cache entry of the digest for the destination. */
 #if CONFIG_SUIT_DIGEST_CACHE
-	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
+	ret = suit_plat_digest_cache_remove_by_handle(dst_handle);
+	if (ret != SUIT_SUCCESS) {
+		return ret;
+	}
 #endif
 
 	/* Get dst_sink - final destination sink */
@@ -305,7 +308,11 @@ int suit_plat_fetch_integrated(suit_component_t dst_handle, struct zcbor_string 
 
 	/* Invalidate the cache entry of the digest for the destination. */
 #if CONFIG_SUIT_DIGEST_CACHE
-	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
+	ret = suit_plat_digest_cache_remove_by_handle(dst_handle);
+
+	if (ret != SUIT_SUCCESS) {
+		return ret;
+	}
 #endif
 
 #ifdef CONFIG_SUIT_STREAM_SOURCE_MEMPTR

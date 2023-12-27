@@ -179,6 +179,8 @@ ZTEST(suit_plat_digest_cache_tests, test_cache_add_single)
 	zassert_equal(SUIT_SUCCESS, ret, "Adding element to cache failed");
 
 	verify_matching_component_in_cache(0);
+	/* Ensure the mutex was locked the same number of times as it was unlocked*/
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_cache_fill)
@@ -188,6 +190,8 @@ ZTEST(suit_plat_digest_cache_tests, test_cache_fill)
 	verify_matching_component_in_cache(0);
 	verify_matching_component_in_cache(1);
 	verify_matching_component_in_cache(2);
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_cache_add_when_full)
@@ -201,6 +205,8 @@ ZTEST(suit_plat_digest_cache_tests, test_cache_add_when_full)
 			  "Adding element to full cache does not return overflow");
 
 	verify_component_missing_from_cache(3);
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_get_uncached_element)
@@ -208,6 +214,8 @@ ZTEST(suit_plat_digest_cache_tests, test_get_uncached_element)
 	fill_cache();
 
 	verify_component_missing_from_cache(3);
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_add_null_digest)
@@ -223,6 +231,8 @@ ZTEST(suit_plat_digest_cache_tests, test_add_null_digest)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_PARAMETER, ret,
 		      "Passing NULL digest parameter to suit_plat_digest_cache_add"
 		      " does not report correctly");
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_add_null_component_id)
@@ -238,6 +248,8 @@ ZTEST(suit_plat_digest_cache_tests, test_add_null_component_id)
 	zassert_equal(SUIT_ERR_UNSUPPORTED_PARAMETER, ret,
 		      "Passing NULL component_id parameter to suit_plat_digest_cache_add"
 		      " does not report correctly");
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_replace_existing_component)
@@ -263,6 +275,8 @@ ZTEST(suit_plat_digest_cache_tests, test_replace_existing_component)
 	ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, &digest_copy);
 
 	zassert_equal(SUIT_SUCCESS, ret, "Verifying the replaced component ID failed");
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_length)
@@ -283,6 +297,8 @@ ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_length)
 	ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, &mismatched_digest);
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Comparing against a mismatched digest"
 						" does not return the correct error code");
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_content_different_length)
@@ -303,6 +319,8 @@ ZTEST(suit_plat_digest_cache_tests, test_not_matching_same_content_different_len
 	ret = suit_plat_digest_cache_compare(&component_id, suit_cose_sha256, &mismatched_digest);
 	zassert_equal(SUIT_FAIL_CONDITION, ret, "Comparing against a mismatched digest"
 						" does not return the correct error code");
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 
@@ -316,6 +334,8 @@ ZTEST(suit_plat_digest_cache_tests, test_remove_single)
 	zassert_equal(SUIT_SUCCESS, ret, "Removing element from cache failed");
 
 	verify_component_missing_from_cache(1);
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_removing_from_full_cache_frees_slot)
@@ -331,6 +351,8 @@ ZTEST(suit_plat_digest_cache_tests, test_removing_from_full_cache_frees_slot)
 	zassert_equal(SUIT_SUCCESS, ret, "Adding element to cache failed");
 
 	verify_matching_component_in_cache(3);
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_remove_all)
@@ -342,6 +364,8 @@ ZTEST(suit_plat_digest_cache_tests, test_remove_all)
 	zassert_equal(SUIT_SUCCESS, ret, "Removing all elements from cache failed");
 
 	verify_cache_is_empty();
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_remove_all_one_by_one)
@@ -359,6 +383,8 @@ ZTEST(suit_plat_digest_cache_tests, test_remove_all_one_by_one)
 	zassert_equal(SUIT_SUCCESS, ret, "Removing element from cache failed");
 
 	verify_cache_is_empty();
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle_invalid_handle)
@@ -379,6 +405,8 @@ ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle
 		      "Incorrect number of suit_plat_component_id_get() calls");
 	zassert_equal(suit_plat_component_id_get_fake.arg0_val, handle,
 			  "Incorrect handle passed to suit_plat_component_id_get()");
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle)
@@ -405,6 +433,8 @@ ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle
 
 	verify_component_missing_from_cache(0);
 	verify_matching_component_in_cache(1); // Verify other components were not deleted
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
 }
 
 ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle_2)
@@ -430,4 +460,100 @@ ZTEST(suit_plat_digest_cache_tests, test_suit_plat_digest_cache_remove_by_handle
 			  "Incorrect handle passed to suit_plat_component_id_get()");
 
 	verify_component_missing_from_cache(1);
+
+	zassert_equal(k_mutex_lock_fake.call_count, k_mutex_unlock_fake.call_count);
+}
+
+ZTEST(suit_plat_digest_cache_tests, test_add_mutex_lock_failed)
+{
+	int ret = 0;
+
+	k_mutex_lock_fake.return_val = -EAGAIN;
+
+	ret = add_digest_for_component(0);
+
+	zassert_equal(SUIT_ERR_CRASH, ret, "Failing to lock mutex did not result in correct error");
+
+	/* Do not fail locking the mutex on calls used to verify cache state */
+	k_mutex_lock_fake.return_val = 0;
+	verify_component_missing_from_cache(0);
+}
+
+ZTEST(suit_plat_digest_cache_tests, test_remove_mutex_lock_failed)
+{
+	int ret = 0;
+
+	fill_cache();
+
+	k_mutex_lock_fake.return_val = -EAGAIN;
+
+	ret = remove_digest(0);
+
+	zassert_equal(SUIT_ERR_CRASH, ret, "Failing to lock mutex did not result in correct error");
+
+	/* Do not fail locking the mutex on calls used to verify cache state */
+	k_mutex_lock_fake.return_val = 0;
+	verify_matching_component_in_cache(0);
+}
+
+ZTEST(suit_plat_digest_cache_tests, test_remove_all_mutex_lock_failed)
+{
+	int ret = 0;
+
+	fill_cache();
+
+	k_mutex_lock_fake.return_val = -EAGAIN;
+
+	ret = suit_plat_digest_cache_remove_all();
+
+	zassert_equal(SUIT_ERR_CRASH, ret, "Failing to lock mutex did not result in correct error");
+
+	/* Do not fail locking the mutex on calls used to verify cache state */
+	k_mutex_lock_fake.return_val = 0;
+	verify_matching_component_in_cache(0);
+	verify_matching_component_in_cache(1);
+	verify_matching_component_in_cache(2);
+}
+
+ZTEST(suit_plat_digest_cache_tests, test_remove_by_handle_mutex_lock_failed)
+{
+	int ret = 0;
+	int dummy = 0;
+	suit_component_t handle = (intptr_t) &dummy; // just ensure that it's a valid address
+
+	fill_cache();
+	suit_plat_component_id_get_fake.custom_fake = suit_plat_component_id_get_correct_fake_func;
+
+	m_component_id_for_fake.len = component_id_lengths[0];
+	m_component_id_for_fake.value = component_ids_mem[0];
+
+	k_mutex_lock_fake.return_val = -EAGAIN;
+
+	ret = suit_plat_digest_cache_remove_by_handle(handle);
+
+	zassert_equal(SUIT_ERR_CRASH, ret, "Failing to lock mutex did not result in correct error");
+
+	/* Do not fail locking the mutex on calls used to verify cache state */
+	k_mutex_lock_fake.return_val = 0;
+	verify_matching_component_in_cache(0);
+}
+
+ZTEST(suit_plat_digest_cache_tests, test_compare_mutex_lock_failed)
+{
+	int ret = 0;
+	struct zcbor_string component_id_copy;
+	struct zcbor_string digest_copy;
+
+	fill_cache();
+
+	component_id_copy.len = component_id_lengths[0];
+	component_id_copy.value = component_id_copies_mem[0];
+	digest_copy.len = digest_lengths[0];
+	digest_copy.value = digest_copies_mem[0];
+
+	k_mutex_lock_fake.return_val = -EAGAIN;
+
+	ret = suit_plat_digest_cache_compare(&component_id_copy, suit_cose_sha256, &digest_copy);
+
+	zassert_equal(SUIT_ERR_CRASH, ret, "Failing to lock mutex did not result in correct error");
 }

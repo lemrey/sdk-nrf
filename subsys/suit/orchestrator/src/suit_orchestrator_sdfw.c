@@ -285,7 +285,10 @@ int suit_orchestrator_entry(void)
 	suit_plat_err_t err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
 
 #if CONFIG_SUIT_DIGEST_CACHE
-	suit_plat_digest_cache_remove_all();
+	if (suit_plat_digest_cache_remove_all() != SUIT_SUCCESS)
+	{
+		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(SUIT_ERR_CRASH);
+	}
 #endif
 
 	if ((err == SUIT_PLAT_SUCCESS) && (update_regions_len > 0)) {

@@ -49,6 +49,9 @@ config MOCK_SUIT_LOG
 config MOCK_SUIT_CRYPTO
 	bool "Mock PSA crypto API"
 
+config MOCK_SUIT_KERNEL
+	bool "Mock zephyr kernel API"
+
 config MOCK_SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
 	bool "Mock suit_plat_component_compatibility_check"
 
