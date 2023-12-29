@@ -41,7 +41,7 @@ ZTEST(suit_memptr_storage_tests, test_suit_memptr_storage_get_NOK)
 	err = suit_memptr_storage_get(NULL);
 	zassert_not_equal(err, 0, "suit_memptr_storage_get should have failed - handle == NULL");
 
-	err = suit_memptr_storage_get(handles[CONFIG_SUIT_MAX_NUMBER_OF_INTEGRATED_PAYLOADS]);
+	err = suit_memptr_storage_get(&handles[CONFIG_SUIT_MAX_NUMBER_OF_INTEGRATED_PAYLOADS]);
 	zassert_not_equal(
 		err, 0,
 		"suit_memptr_storage_get %u should have failed - max number or memptr records reached",
@@ -94,6 +94,10 @@ ZTEST(suit_memptr_storage_tests, test_memptr_storage_save_NOK)
 
 	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "suit_memptr_storage_release failed - error %i", err);
+
+	err = suit_memptr_storage_ptr_store(handle, test_data, TEST_DATA_SIZE);
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+		"memptr_suit_memptr_storage_ptr_store should have failed - unallocated record");
 }
 
 ZTEST(suit_memptr_storage_tests, test_memptr_storage_get_OK)
@@ -145,4 +149,8 @@ ZTEST(suit_memptr_storage_tests, test_memptr_storage_get_NOK)
 
 	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "suit_memptr_storage_release failed - error %i", err);
+
+	err = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
+	zassert_not_equal(err, 0,
+		"suit_memptr_storage_ptr_get should have failed - unallocated record");
 }
