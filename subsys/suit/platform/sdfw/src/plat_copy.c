@@ -66,7 +66,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 
 	/* Check if destination component type is supported */
 	if ((dst_component_type != SUIT_COMPONENT_TYPE_MEM) &&
-			(dst_component_type != SUIT_COMPONENT_TYPE_SOC_SPEC)) {
+	    (dst_component_type != SUIT_COMPONENT_TYPE_SOC_SPEC)) {
 		LOG_ERR("Unsupported destination component type");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -80,7 +80,7 @@ int suit_plat_check_copy(suit_component_t dst_handle, suit_component_t src_handl
 
 	/* Check if source component type is supported */
 	if ((src_component_type != SUIT_COMPONENT_TYPE_MEM) &&
-			(src_component_type != SUIT_COMPONENT_TYPE_CAND_IMG)) {
+	    (src_component_type != SUIT_COMPONENT_TYPE_CAND_IMG)) {
 		LOG_ERR("Unsupported source component type");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -152,7 +152,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 
 	/* Check if destination component type is supported */
 	if ((dst_component_type != SUIT_COMPONENT_TYPE_MEM) &&
-			(dst_component_type != SUIT_COMPONENT_TYPE_SOC_SPEC)) {
+	    (dst_component_type != SUIT_COMPONENT_TYPE_SOC_SPEC)) {
 		LOG_ERR("Unsupported destination component type");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -166,7 +166,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 
 	/* Check if source component type is supported */
 	if ((src_component_type != SUIT_COMPONENT_TYPE_MEM) &&
-			(src_component_type != SUIT_COMPONENT_TYPE_CAND_IMG)) {
+	    (src_component_type != SUIT_COMPONENT_TYPE_CAND_IMG)) {
 		LOG_ERR("Unsupported source component type");
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -185,7 +185,7 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 #if CONFIG_SUIT_DIGEST_CACHE
 	/* Invalidate the cache entry of the digest for the destination. */
 	suit_plat_digest_cache_unlock();
-	(void) suit_plat_digest_cache_remove_by_handle(dst_handle);
+	(void)suit_plat_digest_cache_remove_by_handle(dst_handle);
 	suit_plat_digest_cache_lock();
 #endif
 
@@ -208,6 +208,17 @@ int suit_plat_copy(suit_component_t dst_handle, suit_component_t src_handle)
 			LOG_ERR("suit_memptr_storage_ptr_get failed - error %i", ret);
 			release_sink(&dst_sink);
 			return suit_plat_err_to_processor_err_convert(ret);
+		}
+
+		if (dst_sink.erase != NULL) {
+			ret = dst_sink.erase(dst_sink.ctx);
+			if (ret != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Failed to erase destination sink: %d", ret);
+				release_sink(&dst_sink);
+				return suit_plat_err_to_processor_err_convert(ret);
+			} else {
+				LOG_DBG("dst_sink erased");
+			}
 		}
 
 		ret = suit_memptr_streamer_stream(payload_ptr, payload_size, &dst_sink);
