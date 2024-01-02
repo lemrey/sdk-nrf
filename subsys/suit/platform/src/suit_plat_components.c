@@ -94,6 +94,11 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 	suit_memptr_storage_err_t err;
 	struct suit_plat_component *component = NULL;
 
+	if (component_id == NULL || component_handle == NULL)
+	{
+		return SUIT_ERR_UNSUPPORTED_PARAMETER;
+	}
+
 	for (size_t i = 0; i < SUIT_MAX_NUM_COMPONENT_PARAMS; i++) {
 		if (components[i].in_use == false) {
 			component = &components[i];
@@ -112,7 +117,6 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 	/* Store component ID and keys, so the selected implementation can use it in the future. */
 	component->component_id.value = component_id->value;
 	component->component_id.len = component_id->len;
-	component->in_use = true;
 
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
@@ -145,19 +149,22 @@ int suit_plat_create_component_handle(struct zcbor_string *component_id,
 		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to get memptr_storage: %d", err);
 
-			suit_plat_err_to_processor_err_convert(err);
+			return suit_plat_err_to_processor_err_convert(err);
 		}
 
 		/* Set the address as in component id but set size with 0 */
 		size = 0;
-		suit_memptr_storage_err_t err = suit_memptr_storage_ptr_store(component->impl_data, 
+		suit_memptr_storage_err_t err = suit_memptr_storage_ptr_store(component->impl_data,
 						(uint8_t *)address, size);
 		if (err != SUIT_PLAT_SUCCESS) {
+			suit_memptr_storage_release(component->impl_data);
+			component->impl_data = NULL;
 			LOG_ERR("Failed to store memptr ptr: %d", err);
 			return SUIT_ERR_CRASH;
 		}
 	}
 
+	component->in_use = true;
 	return SUIT_SUCCESS;
 }
 
@@ -241,7 +248,7 @@ int suit_plat_override_image_size(suit_component_t handle, size_t size)
 		size_t payload_size = 0;
 
 		err = suit_memptr_storage_ptr_get(impl_data, &payload_ptr, &payload_size);
-		if (err != SUIT_PLAT_SUCCESS) {			
+		if (err != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Failed to get memptr: %i", err);
 			return SUIT_ERR_CRASH;
 		}
