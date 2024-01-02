@@ -137,6 +137,21 @@ static int psa_verify_message_correct_fake_func(mbedtls_svc_key_id_t key, psa_al
 	return PSA_SUCCESS;
 }
 
+static int psa_verify_message_correct_eddsa_fake_func(mbedtls_svc_key_id_t key, psa_algorithm_t alg,
+						      const uint8_t *input, size_t input_length,
+						      const uint8_t *signature,
+						      size_t signature_length)
+{
+	zassert_equal(key, sample_integer_key_id, "Invalid key ID value");
+	zassert_equal(alg, PSA_ALG_ED25519PH, "Invalid alg value");
+	zassert_equal(input, valid_data.value, "Invalid input value");
+	zassert_equal(input_length, valid_data.len, "Invalid input length");
+	zassert_equal(signature, valid_signature.value, "Invalid signature value");
+	zassert_equal(signature_length, valid_signature.len, "Invalid signature length");
+
+	return PSA_SUCCESS;
+}
+
 static int psa_verify_message_invalid_fake_func(mbedtls_svc_key_id_t key, psa_algorithm_t alg,
 						const uint8_t *input, size_t input_length,
 						const uint8_t *signature, size_t signature_length)
@@ -486,6 +501,65 @@ ZTEST(suit_platform_crypto_psa_authenticate_tests, test_OK)
 	zassert_equal(suit_mci_signing_key_id_validate_fake.call_count, 1,
 		      "Incorrect number of suit_mci_signing_key_id_validate() calls");
 	zassert_equal(psa_verify_message_fake.call_count, 1,
+		      "Incorrect number of psa_verify_message() calls");
+}
+
+ZTEST(suit_platform_crypto_psa_authenticate_tests, test_OK_EdDSA)
+{
+	suit_plat_decode_manifest_class_id_fake.custom_fake =
+		suit_plat_decode_manifest_class_id_correct_fake_func;
+	suit_mci_manifest_class_id_validate_fake.custom_fake =
+		suit_mci_manifest_class_id_validate_correct_fake_func;
+	suit_plat_decode_key_id_fake.custom_fake = suit_plat_decode_key_id_correct_fake_func;
+	suit_mci_signing_key_id_validate_fake.custom_fake =
+		suit_mci_signing_key_id_validate_correct_fake_func;
+	psa_verify_message_fake.custom_fake = psa_verify_message_correct_eddsa_fake_func;
+
+	int ret = suit_plat_authenticate_manifest(
+		&valid_manifest_component_id, // struct zcbor_string *manifest_component_id
+		suit_cose_EdDSA,		      // enum suit_cose_alg alg_id
+		&valid_key_id,		      // struct zcbor_string *key_id
+		&valid_signature,	      // struct zcbor_string *signature
+		&valid_data);		      // struct zcbor_string *data
+
+	/* Manifest authentication succeeds */
+	zassert_equal(SUIT_SUCCESS, ret, "Authentication should have succeeded");
+
+	/* Check expected call counts for fake functions */
+	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,
+		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
+	zassert_equal(suit_plat_decode_key_id_fake.call_count, 1,
+		      "Incorrect number of suit_plat_decode_key_id_fake() calls");
+	zassert_equal(suit_mci_signing_key_id_validate_fake.call_count, 1,
+		      "Incorrect number of suit_mci_signing_key_id_validate() calls");
+	zassert_equal(psa_verify_message_fake.call_count, 1,
+		      "Incorrect number of psa_verify_message() calls");
+}
+
+ZTEST(suit_platform_crypto_psa_authenticate_tests, test_unsupported_alg)
+{
+	int ret = suit_plat_authenticate_manifest(
+		&valid_manifest_component_id, // struct zcbor_string *manifest_component_id
+		0xAA,		              // enum suit_cose_alg alg_id
+		&valid_key_id,		      // struct zcbor_string *key_id
+		&valid_signature,	      // struct zcbor_string *signature
+		&valid_data);		      // struct zcbor_string *data
+
+	/* Manifest authentication succeeds */
+	zassert_equal(SUIT_ERR_DECODING, ret, "Authentication should have failed");
+
+	/* Check expected call counts for fake functions */
+	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 0,
+		      "Incorrect number of suit_plat_decode_manifest_class_id() calls");
+	zassert_equal(suit_mci_manifest_class_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_manifest_class_id_validate() calls");
+	zassert_equal(suit_plat_decode_key_id_fake.call_count, 0,
+		      "Incorrect number of suit_plat_decode_key_id_fake() calls");
+	zassert_equal(suit_mci_signing_key_id_validate_fake.call_count, 0,
+		      "Incorrect number of suit_mci_signing_key_id_validate() calls");
+	zassert_equal(psa_verify_message_fake.call_count, 0,
 		      "Incorrect number of psa_verify_message() calls");
 }
 

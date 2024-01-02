@@ -34,6 +34,13 @@ static suit_plat_err_t suit_plat_decode_component_type_fake_false(struct zcbor_s
 	return SUIT_PLAT_ERR_CRASH;
 }
 
+static suit_plat_err_t suit_plat_decode_component_type_fake_cand_img_ok(struct zcbor_string *component_id,
+								   suit_component_type_t *type)
+{
+	*type = SUIT_COMPONENT_TYPE_CAND_IMG;
+	return SUIT_PLAT_SUCCESS;
+}
+
 static suit_plat_err_t suit_plat_decode_address_size_fake_ok(struct zcbor_string *component_id,
 							     intptr_t *run_address, size_t *size)
 {
@@ -155,6 +162,74 @@ ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_siz
 	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
 	/* THEN appropriate error code is returned */
 	int expected_error = SUIT_ERR_CRASH;
+	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
+		      expected_error);
+}
+
+ZTEST(suit_platform_override_image_size_tests, test_suit_plat_override_image_size_component_released)
+{
+	/* GIVEN a released MEM-type component */
+	suit_memptr_storage_release_fake.return_val = SUIT_PLAT_SUCCESS;
+	suit_plat_release_component_handle(component);
+
+	/* WHEN size override is called */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
+	/* THEN appropriate error code is returned */
+	int expected_error = SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
+		      expected_error);
+
+	/* Cleanup: create component to satisfy test_after */
+	suit_plat_decode_component_type_fake.custom_fake =
+		suit_plat_decode_component_type_fake_mem_ok;
+	suit_plat_decode_address_size_fake.custom_fake = suit_plat_decode_address_size_fake_ok;
+	err = suit_plat_create_component_handle(&component_id, &component);
+	zassert_equal(SUIT_SUCCESS, err, "test setup error - create_component_handle failed: %d",
+		      err);
+}
+
+ZTEST(suit_platform_override_image_size_tests,
+	test_suit_plat_override_image_size_unsupported_component_type)
+{
+	/* GIVEN a MEM-type component (created in test setup step)*/
+	/* WHEN an unsupported component type is used */
+	suit_plat_decode_component_type_fake.custom_fake =
+		suit_plat_decode_component_type_fake_cand_img_ok;
+
+	/* WHEN size override is called */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
+	/* THEN appropriate error code is returned */
+	int expected_error = SUIT_ERR_UNSUPPORTED_COMMAND;
+
+	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
+		      expected_error);
+}
+
+ZTEST(suit_platform_override_image_size_tests,
+	test_suit_plat_override_image_size_fail_decode_address_size)
+{
+	/* GIVEN a MEM-type component (created in test setup step)*/
+	/* WHEN internal function is going to fail */
+	suit_plat_decode_address_size_fake.custom_fake = NULL;
+	suit_plat_decode_address_size_fake.return_val = SUIT_PLAT_ERR_CBOR_DECODING;
+	/* WHEN size override is called */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE);
+	/* THEN appropriate error code is returned */
+	int expected_error = SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+
+	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
+		      expected_error);
+}
+
+ZTEST(suit_platform_override_image_size_tests,
+	test_suit_plat_override_image_size_exceeding_size)
+{
+	/* GIVEN a MEM-type component (created in test setup step)*/
+	/* WHEN size override is called with size exceeding the boundaries */
+	int err = suit_plat_override_image_size(component, TEST_FAKE_SIZE + 1);
+	/* THEN appropriate error code is returned */
+	int expected_error = SUIT_ERR_UNSUPPORTED_PARAMETER;
+
 	zassert_equal(expected_error, err, "Unexpected error code: %d instead of %d", err,
 		      expected_error);
 }
