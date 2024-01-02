@@ -107,6 +107,10 @@ ZTEST(memptr_sink_tests, test_memptr_sink_write_NOK)
 
 	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "memptr_sink.release failed - error %i", err);
+
+	payload_size = TEST_DATA_SIZE;
+	err = memptr_sink.write(memptr_sink.ctx, test_data, &payload_size);
+	zassert_not_equal(err, 0, "memptr_sink.write should have failed - storage released");
 }
 
 ZTEST(memptr_sink_tests, test_memptr_sink_used_storage_OK)
@@ -157,4 +161,7 @@ ZTEST(memptr_sink_tests, test_memptr_sink_used_storage_NOK)
 
 	err = suit_memptr_storage_release(handle);
 	zassert_equal(err, 0, "memptr_sink.release failed - error %i", err);
+
+	err = memptr_sink.used_storage(memptr_sink.ctx, &size);
+	zassert_not_equal(err, 0, "memptr_sink.used_storage should have failed - storage released");
 }

@@ -10,6 +10,7 @@
 #include <sink.h>
 
 #define TEST_DATA_SIZE 64
+#define SUIT_MAX_RAM_COMPONENTS 1 /* Currently only one component allowed */
 
 static uint8_t test_data[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
 			      16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
@@ -47,6 +48,30 @@ ZTEST(ram_sink_tests, test_suit_ram_sink_get_NOK)
 
 	err = suit_ram_sink_get(&ram_sink, dst_buffer, 0);
 	zassert_not_equal(err, 0, "suit_ram_sink_get should have failed - offset_limit == 0");
+}
+
+ZTEST(ram_sink_tests, test_suit_ram_sink_get_out_of_contexts)
+{
+	struct stream_sink ram_sinks[SUIT_MAX_RAM_COMPONENTS + 1];
+	suit_plat_err_t err;
+
+	for (size_t i = 0; i < SUIT_MAX_RAM_COMPONENTS; i++)
+	{
+		err = suit_ram_sink_get(&ram_sinks[i], dst_buffer, sizeof(dst_buffer));
+		zassert_equal(err, SUIT_PLAT_SUCCESS, "Unexpected error code");
+	}
+
+	err = suit_ram_sink_get(&ram_sinks[SUIT_MAX_RAM_COMPONENTS], dst_buffer,
+				sizeof(dst_buffer));
+
+
+	zassert_equal(err, SUIT_PLAT_ERR_NO_RESOURCES, "Unexpected error code");
+
+	for (size_t i = 0; i < SUIT_MAX_RAM_COMPONENTS; i++)
+	{
+		err = ram_sinks[i].release(ram_sinks[i].ctx);
+		zassert_equal(err, 0, "ram_sink.release failed - error %i", err);
+	}
 }
 
 ZTEST(ram_sink_tests, test_ram_sink_release_NOK)
@@ -178,6 +203,28 @@ ZTEST(ram_sink_tests, test_ram_sink_write_NOK)
 	err = ram_sink.write(ram_sink.ctx, NULL, &input_size);
 	zassert_not_equal(err, 0, "ram_sink.write should have failed - buf == NULL");
 
+	input_size = sizeof(dst_buffer) + 1;
+	err = ram_sink.write(ram_sink.ctx, test_data, &input_size);
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "ram_sink.write should have failed - size out of bounds");
+
 	err = ram_sink.release(ram_sink.ctx);
 	zassert_equal(err, 0, "ram_sink.release failed - error %i", err);
+}
+
+ZTEST(ram_sink_tests, test_ram_sink_erase_OK)
+{
+	struct stream_sink ram_sink;
+
+	int err = suit_ram_sink_get(&ram_sink, dst_buffer, sizeof(dst_buffer));
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_ram_sink_get failed - error %i", err);
+
+	err = ram_sink.erase(ram_sink.ctx);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "ram_sink.erase failed - error %i", err);
+
+	err = ram_sink.erase(NULL);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "ram_sink.erase failed - error %i", err);
+
+	err = ram_sink.release(ram_sink.ctx);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "ram_sink.release failed - error %i", err);
 }
