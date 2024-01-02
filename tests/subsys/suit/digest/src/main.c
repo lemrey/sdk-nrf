@@ -30,9 +30,19 @@ const static uint8_t valid_digest_value[] = {0x5f, 0x78, 0xc3, 0x32, 0x74, 0xe4,
 					     0x25, 0xc0, 0x37, 0x22, 0xdc, 0xb0, 0xb8, 0xd2,
 					     0x7d, 0xb8, 0xd5, 0xfe, 0xaa, 0x81, 0x39, 0x53};
 
+const static uint8_t invalid_digest_value[] = {0x5f, 0x78, 0xc3, 0x32, 0x74, 0xe4, 0x3f, 0xa9,
+					       0xde, 0x56, 0x59, 0x26, 0x5c, 0x1d, 0x91, 0x7e,
+					       0x25, 0xc0, 0x37, 0x22, 0xdc, 0xb0, 0xb8, 0xd2,
+					       0x7d, 0xb8, 0xd5, 0xfe, 0xaa, 0x81, 0x39, 0x54};
+
 static struct zcbor_string digest_valid = {
 	.value = valid_digest_value,
 	.len = sizeof(valid_digest_value),
+};
+
+static struct zcbor_string digest_invalid = {
+	.value = invalid_digest_value,
+	.len = sizeof(invalid_digest_value),
 };
 
 static struct zcbor_string digest_wrong_length = {
@@ -169,4 +179,22 @@ ZTEST(digest_tests, test_digest_match)
 
 	/* THEN operation ends with success */
 	zassert_equal(err, SUIT_SUCCESS, "Unexpected error code");
+}
+
+ZTEST(digest_tests, test_digest_mismatch)
+{
+	/* GIVEN supported digest algorithm... */
+	enum suit_cose_alg algorithm = valid_algorithm;
+
+	/* ...an invalid digest */
+	struct zcbor_string *expected_digest = &digest_invalid;
+
+	/* ...and a valid payload */
+	struct zcbor_string *payload = &payload_valid;
+
+	/* WHEN a digest is checked */
+	int err = suit_plat_check_digest(algorithm, expected_digest, payload);
+
+	/* THEN operation ends with condition failure */
+	zassert_equal(err, SUIT_FAIL_CONDITION, "Unexpected error code");
 }
