@@ -15,12 +15,12 @@
 	 * This memory area placement and size cannot by modified by the application configuration. */
 	mram0_reserved: mram@e000000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
-		reg = <0xe000000 DT_SIZE_K(336)>;
+		reg = <0xe000000 DT_SIZE_K(408)>;
 	};
 
-	mram0_cpurad: mram@e054000 {
+	mram0_cpurad: mram@e066000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
-		reg = <0xe054000 DT_SIZE_K(256)>;
+		reg = <0xe066000 DT_SIZE_K(256)>;
 		#address-cells = <1>;
 		#size-cells = <1>;
 		erase-block-size = <4096>;
@@ -33,16 +33,16 @@
 			compatible = "fixed-partitions";
 			#address-cells = <1>;
 			#size-cells = <1>;
-			cpurad_slot0_partition: partition@54000 {
+			cpurad_slot0_partition: partition@66000 {
 				label = "cpurad-image-0";
-				reg = <0x54000 DT_SIZE_K(256)>;
+				reg = <0x66000 DT_SIZE_K(256)>;
 			};
 		};
 	};
 
-	mram0_cpuapp: mram@e094000 {
+	mram0_cpuapp: mram@e0a6000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
-		reg = <0xe094000 DT_SIZE_K(320)>;
+		reg = <0xe0a6000 DT_SIZE_K(320)>;
 		#address-cells = <0x1>;
 		#size-cells = <0x1>;
 		erase-block-size = <128>;
@@ -56,17 +56,17 @@
 			compatible = "fixed-partitions";
 			#address-cells = <0x1>;
 			#size-cells = <0x1>;
-			cpuapp_slot0_partition: partition@94000 {
+			cpuapp_slot0_partition: partition@a6000 {
 				label = "cpuapp-image-0";
-				reg = <0x94000 DT_SIZE_K(320)>;
+				reg = <0xa6000 DT_SIZE_K(320)>;
 			};
 		};
 	};
 
 	/* Reserved for future usage by the application. */
-	mram0_future_usage: mram@e0e4000 {
+	mram0_future_usage: mram@e0f6000 {
 		compatible = "nordic,allocatable-mram", "soc-nv-flash";
-		reg = <0xe0e4000 DT_SIZE_K(112)>;
+		reg = <0xe0f6000 DT_SIZE_K(40)>;
 	};
 
 	/* MRAM_11 */
