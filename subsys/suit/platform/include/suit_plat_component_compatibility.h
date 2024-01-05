@@ -7,7 +7,7 @@
 #ifndef SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY_H__
 #define SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY_H__
 
-#include <suit_mci.h>
+#include <suit_metadata.h>
 #include <zcbor_common.h>
 
 #ifdef __cplusplus
