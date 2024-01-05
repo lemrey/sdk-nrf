@@ -22,8 +22,8 @@ When using the Modem library in |NCS|, the library must be initialized and shutd
 
 .. _mlil_callbacks:
 
-Callbacks
-*********
+Modem library callbacks
+***********************
 
 Modem initialization and shutdown
 =================================
