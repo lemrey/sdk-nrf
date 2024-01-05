@@ -63,8 +63,8 @@ Following are the available configuration files for the nRF54H20 PDK:
 
 * :file:`nrf54h20dk_nrf54h20_cpuapp_ppr.conf` is used to test transmission between ``cpuapp`` and ``cpuppr`` build targets with an ICMSG backend.
 * :file:`nrf54h20dk_nrf54h20_cpuapp_rad.conf` is used to test transmission between ``cpuapp`` and ``cpurad`` build targets with ICMSG and RPMSG backends.
-* :file:`nrf54h20dk_nrf54h20_cpuapp_sys.conf` is used to test transmission between ``cpuapp`` and ``cpusys`` build targets with ICMSG and RPMSG backends.
-* :file:`nrf54h20dk_nrf54h20_cpurad_sys.conf` is used to test transmission between ``cpurad`` and ``cpusys`` build targets with ICMSG and RPMSG backends.
+* :file:`nrf54h20dk_nrf54h20_cpuapp_sys.conf` is used to test transmission between ``cpuapp`` and ``cpusys`` build targets with an ICMSG backend.
+* :file:`nrf54h20dk_nrf54h20_cpurad_sys.conf` is used to test transmission between ``cpurad`` and ``cpusys`` build targets with an ICMSG backend.
 
 For the nRF54H20 PDK, select any one of the configuration files.
 When using the command line, add any of these file names with the ``-DOVERLAY_CONFIG=boards/`` and ``-Dremote_OVERLAY_CONFIG=boards/`` prefixes to the build command for local and remote applications, respectively.
@@ -75,9 +75,7 @@ Following are the available devicetree overlay files for the nRF54H20 PDK:
 * :file:`nrf54h20dk_nrf54h20_cpuapp_rad_icmsg.overlay` is used for ``cpuapp`` and ``cpurad`` configurations with ICMSG backends.
 * :file:`nrf54h20dk_nrf54h20_cpuapp_rad.overlay` is used for ``cpuapp`` and ``cpurad`` configurations, RPMSG.
 * :file:`nrf54h20dk_nrf54h20_cpuapp_sys_icmsg.overlay` is used for ``cpuapp`` and ``cpusys`` configurations with ICMSG backends.
-* :file:`nrf54h20dk_nrf54h20_cpuapp_sys.overlay` is used for ``cpuapp`` and ``cpusys`` configurations with RPMSG backends.
 * :file:`nrf54h20dk_nrf54h20_cpurad_sys_icmsg.overlay` is used for ``cpurad`` and ``cpusys`` configurations with ICMSG backends.
-* :file:`nrf54h20dk_nrf54h20_cpurad_sys.overlay` is used for ``cpurad`` and ``cpusys`` configurations with RPMSG backends.
 
 Select the file with the name corresponding to the configuration overlay and IPC backend you have selected.
 When using the command line, along with parameters of configuration files, add the file name with the ``-DDTC_OVERLAY_FILE=boards/`` and ``-Dremote_OVERLAY_CONFIG=boards/-Dremote_DTC_OVERLAY_FILE=boards/`` prefixes to the build command for local and remote applications, respectively.

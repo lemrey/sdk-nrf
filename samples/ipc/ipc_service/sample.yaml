@@ -127,22 +127,6 @@ tests:
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys_icmsg.overlay
 
-  sample.ipc.ipc_service.nrf54_app_sys_rpmsg:
-    build_only: true
-    platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
-    integration_platforms:
-      - nrf54h20dk_nrf54h20_cpuapp@soc1
-    tags: ipc
-    extra_args:
-      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
-      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpuapp_sys.overlay
-      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=30
-      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpusys.conf;boards/nrf54h20dk_nrf54h20_cpuapp_sys.conf
-    extra_configs:
-      - CONFIG_SECDOM_USE_SYSTICK=y
-      - CONFIG_SECDOM_SYSCTRL_ALIGNMENT=n
-
   sample.ipc.ipc_service.nrf54_rad_sys_icmsg:
     build_only: true
     platform_allow: nrf54h20dk_nrf54h20_cpurad@soc1
@@ -153,22 +137,6 @@ tests:
       CONF_FILE=prj_icmsg.conf
       OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
       DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys_icmsg.overlay
-
-  sample.ipc.ipc_service.nrf54_rad_sys_rpmsg:
-    build_only: true
-    platform_allow: nrf54h20dk_nrf54h20_cpurad@soc1
-    integration_platforms:
-      - nrf54h20dk_nrf54h20_cpurad@soc1
-    tags: ipc
-    extra_args:
-      OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
-      DTC_OVERLAY_FILE=boards/nrf54h20dk_nrf54h20_cpurad_sys.overlay
-      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
-      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
-      remote_OVERLAY_CONFIG=boards/nrf54h20dk_nrf54h20_cpusys.conf;boards/nrf54h20dk_nrf54h20_cpurad_sys.conf
-    extra_configs:
-      - CONFIG_SECDOM_USE_SYSTICK=y
-      - CONFIG_SECDOM_SYSCTRL_ALIGNMENT=n
 
   sample.ipc.ipc_service.nrf71_app_ppr_icmsg:
     build_only: true
@@ -257,34 +225,6 @@ tests:
       DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_rad.overlay
       CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
       remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
-      remote_CONFIG_EMULATOR_FPGA=y
-      CONFIG_EMULATOR_FPGA=y
-
-  sample.ipc.ipc_service.nrf92_app_sys_rpmsg:
-    build_only: true
-    platform_allow: nrf9230dk_nrf9230_cpuapp
-    integration_platforms:
-      - nrf9230dk_nrf9230_cpuapp
-    tags: ipc
-    extra_args:
-      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpuapp_sys.conf
-      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpuapp_sys.overlay
-      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=30
-      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
-      remote_CONFIG_EMULATOR_FPGA=y
-      CONFIG_EMULATOR_FPGA=y
-
-  sample.ipc.ipc_service.nrf92_rad_sys_rpmsg:
-    build_only: true
-    platform_allow: nrf9230dk_nrf9230_cpurad
-    integration_platforms:
-      - nrf9230dk_nrf9230_cpurad
-    tags: ipc
-    extra_args:
-      OVERLAY_CONFIG=boards/nrf9230dk_nrf9230_cpurad_sys.conf
-      DTC_OVERLAY_FILE=boards/nrf9230dk_nrf9230_cpurad_sys.overlay
-      CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=100
-      remote_CONFIG_APP_IPC_SERVICE_SEND_INTERVAL=1500
       remote_CONFIG_EMULATOR_FPGA=y
       CONFIG_EMULATOR_FPGA=y
 
