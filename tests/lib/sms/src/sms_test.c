@@ -1942,7 +1942,7 @@ void test_recv_loop(void)
 /* This is needed because AT Monitor library is initialized in SYS_INIT. */
 static int sms_test_sys_init(void)
 {
-	__cmock_nrf_modem_at_notif_handler_set_ExpectAnyArgsAndReturn(0);
+	__cmock_nrf_modem_at_notif_handler_set_ExpectAnyArgs();
 
 	return 0;
 }

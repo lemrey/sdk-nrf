@@ -107,10 +107,7 @@ static int at_monitor_sys_init(void)
 {
 	int err;
 
-	err = nrf_modem_at_notif_handler_set(at_monitor_dispatch);
-	if (err) {
-		LOG_ERR("Failed to hook the dispatch function, err %d", err);
-	}
+	nrf_modem_at_notif_handler_set(at_monitor_dispatch);
 
 	return 0;
 }

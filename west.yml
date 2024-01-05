@@ -39,6 +39,8 @@ manifest:
       url-base: https://github.com/BabbleSim
     - name: bosch
       url-base: https://github.com/boschsensortec
+    - name: lemrey
+      url-base: https://github.com/lemrey
 
   # If not otherwise specified, the projects below should be obtained
   # from the ncs remote.
@@ -141,7 +143,8 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib
       path: nrfxlib
-      revision: 6db09621d01fd246d21010adc6ac8bdcb2a0e16a
+      remote: lemrey
+      revision: pull/35/head
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m

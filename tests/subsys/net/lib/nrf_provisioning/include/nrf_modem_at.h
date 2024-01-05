@@ -86,10 +86,8 @@ struct nrf_modem_at_cmd_filter {
  *	 Take care to offload any processing as appropriate.
  *
  * @param callback The AT notification callback. Use @c NULL to unset handler.
- *
- * @retval 0 On success.
  */
-int nrf_modem_at_notif_handler_set(nrf_modem_at_notif_handler_t callback);
+void nrf_modem_at_notif_handler_set(nrf_modem_at_notif_handler_t callback);
 
 /**
  * @brief Send a formatted AT command to the modem.

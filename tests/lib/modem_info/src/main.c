@@ -19,7 +19,7 @@
 
 DEFINE_FFF_GLOBALS;
 
-FAKE_VALUE_FUNC(int, nrf_modem_at_notif_handler_set, nrf_modem_at_notif_handler_t);
+FAKE_VOID_FUNC(nrf_modem_at_notif_handler_set, nrf_modem_at_notif_handler_t);
 FAKE_VALUE_FUNC(int, at_params_list_init, struct at_param_list *, size_t);
 FAKE_VALUE_FUNC_VARARG(int, nrf_modem_at_scanf, const char *, const char *, ...);
 
