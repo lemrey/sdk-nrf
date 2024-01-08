@@ -324,7 +324,7 @@ static suit_plat_err_t partition_initialize(struct dfu_cache_partition_ext *part
 			}
 
 			ret = write_to_sink(part->offset, (uint8_t *)header, &header_size);
-			if (ret != 0) {
+			if (ret != SUIT_PLAT_SUCCESS) {
 				LOG_ERR("Writing header and end marker failed. %i", ret);
 				return SUIT_PLAT_ERR_IO;
 			}
@@ -387,8 +387,7 @@ static suit_plat_err_t cache_free_space_check(struct dfu_cache_partition_ext *pa
 			return SUIT_PLAT_SUCCESS;
 		}
 
-		ret = suit_dfu_cache_rw_slot_drop(slot);
-		if (ret != SUIT_PLAT_SUCCESS) {
+		if (suit_dfu_cache_rw_slot_drop(slot) != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Clearing recovering corrupted cache pool failed: %i", ret);
 			return SUIT_PLAT_ERR_CRASH;
 		}
@@ -576,7 +575,7 @@ suit_plat_err_t suit_dfu_cache_rw_slot_close(struct suit_cache_slot *slot, size_
 
 		/* Add indefinite map, end marker 0xFF */
 		if (write_to_sink(slot->slot_offset + slot->data_offset + data_end_offset,
-				  (uint8_t *)&tmp, &tmp_size) != 0) {
+				  (uint8_t *)&tmp, &tmp_size) != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Writing CBOR map end marker to cache partition failed.");
 			return SUIT_PLAT_ERR_IO;
 		}
@@ -650,7 +649,7 @@ suit_plat_err_t suit_dfu_cache_rw_slot_drop(struct suit_cache_slot *slot)
 		for (size_t offset = erase_offset; offset < erase_max_offset;
 		     offset += slot->eb_size) {
 			int ret = erase_on_sink(erase_offset, slot->eb_size);
-			if (ret != 0) {
+			if (ret != SUIT_PLAT_SUCCESS) {
 				LOG_ERR("Erasing cache failed: %i", ret);
 				return SUIT_PLAT_ERR_IO;
 			}
@@ -660,7 +659,7 @@ suit_plat_err_t suit_dfu_cache_rw_slot_drop(struct suit_cache_slot *slot)
 			LOG_DBG("Restore area (0x%x - 0x%x)", erase_offset, slot->slot_offset);
 			size_t write_size = slot->slot_offset - erase_offset;
 			int ret = write_to_sink(erase_offset, erase_swap_buffer, &write_size);
-			if (ret != 0) {
+			if (ret != SUIT_PLAT_SUCCESS) {
 				LOG_ERR("Unable to restore slot after erase: %i", ret);
 				return SUIT_PLAT_ERR_IO;
 			}
@@ -671,7 +670,7 @@ suit_plat_err_t suit_dfu_cache_rw_slot_drop(struct suit_cache_slot *slot)
 
 		/* Add indefinite map, end marker 0xFF */
 		size_t write_size = 1;
-		if (write_to_sink(slot->slot_offset, &tmp, &write_size) != 0) {
+		if (write_to_sink(slot->slot_offset, &tmp, &write_size) != SUIT_PLAT_SUCCESS) {
 			LOG_ERR("Writing CBOR map end marker to cache partition failed.");
 			return SUIT_PLAT_ERR_IO;
 		}

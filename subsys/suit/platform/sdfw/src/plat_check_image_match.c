@@ -24,7 +24,7 @@ static int suit_plat_check_image_match_mem_mapped(suit_component_t component,
 {
 	void *impl_data = NULL;
 	int err = suit_plat_component_impl_data_get(component, &impl_data);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to get implementation data: %d", err);
 		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
 	}
@@ -151,7 +151,7 @@ int suit_plat_check_image_match(suit_component_t component, enum suit_cose_alg a
 	suit_component_type_t component_type = SUIT_COMPONENT_TYPE_UNSUPPORTED;
 
 	int err = suit_plat_component_id_get(component, &component_id);
-	if (err) {
+	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to get component id: %d", err);
 		return err;
 	}

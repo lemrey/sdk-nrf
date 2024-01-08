@@ -258,7 +258,7 @@ int suit_plat_check_fetch_integrated(suit_component_t dst_handle, struct zcbor_s
 	 */
 
 	ret = release_sink(&dst_sink);
-	return ret;
+	return suit_plat_err_to_processor_err_convert(ret);
 #else
 	return SUIT_ERR_UNSUPPORTED_COMMAND;
 #endif /* CONFIG_SUIT_STREAM */

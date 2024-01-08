@@ -85,7 +85,7 @@ static int update_path(void)
 
 	err = validate_update_candidate_address_and_size(update_regions[0].mem,
 							 update_regions[0].size);
-	if (err != SUIT_SUCCESS) {
+	if (err != 0) {
 		LOG_INF("Invalid update candidate: %d", err);
 
 		err = suit_storage_update_cand_set(NULL, 0);
@@ -102,7 +102,7 @@ static int update_path(void)
 
 	err = validate_update_candidate_manifest((uint8_t *)update_regions[0].mem,
 						 update_regions[0].size);
-	if (err != SUIT_SUCCESS) {
+	if (err != 0) {
 		LOG_ERR("Failed to validate update candidate manifest: %d", err);
 		err = suit_storage_update_cand_set(NULL, 0);
 		if (err != SUIT_PLAT_SUCCESS) {
@@ -230,7 +230,7 @@ static int boot_path(void)
 {
 	const suit_manifest_class_id_t *class_ids_to_boot[CONFIG_SUIT_STORAGE_N_ENVELOPES] = {NULL};
 	size_t class_ids_to_boot_len = ARRAY_SIZE(class_ids_to_boot);
-	int ret = SUIT_SUCCESS;
+	int ret = 0;
 	mci_err_t mci_ret = suit_mci_invoke_order_get(
 		(const suit_manifest_class_id_t **)&class_ids_to_boot, &class_ids_to_boot_len);
 	if (mci_ret != SUIT_PLAT_SUCCESS) {
@@ -240,14 +240,14 @@ static int boot_path(void)
 
 	for (size_t i = 0; i < class_ids_to_boot_len; i++) {
 		ret = boot_envelope((const suit_manifest_class_id_t *)class_ids_to_boot[i]);
-		if (ret != SUIT_SUCCESS) {
+		if (ret != 0) {
 			LOG_ERR("Booting %d manifest failed (%d)", i, ret);
 		} else {
 			LOG_DBG("Manifest %d booted", i);
 		}
 	}
 
-	return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(ret);
+	return ret;
 }
 
 int suit_orchestrator_init(void)

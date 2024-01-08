@@ -60,7 +60,7 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 		}
 
 		ret = suit_plat_component_impl_data_get(dst_handle, &handle);
-		if (ret != 0) {
+		if (ret != SUIT_SUCCESS) {
 			LOG_ERR("Unable to get component data for candidate image (err: %d)", ret);
 			return ret;
 		}

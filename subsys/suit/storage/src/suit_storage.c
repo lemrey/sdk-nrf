@@ -212,10 +212,10 @@ static suit_plat_err_t find_manifest_index(const suit_manifest_class_id_t *id, s
 	for (index = 0; index < CONFIG_SUIT_STORAGE_N_ENVELOPES; index++) {
 		suit_envelope_hdr_t envelope;
 
-		int ret = suit_storage_decode_envelope_header(
+		suit_plat_err_t ret = suit_storage_decode_envelope_header(
 			(const uint8_t *)&storage->envelopes[index].envelope_encoded,
 			CONFIG_SUIT_STORAGE_ENVELOPE_SIZE, &envelope);
-		if (ret != 0) {
+		if (ret != SUIT_PLAT_SUCCESS) {
 			*free = index;
 			continue;
 		}

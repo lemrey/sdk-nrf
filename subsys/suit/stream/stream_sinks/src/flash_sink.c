@@ -168,10 +168,10 @@ suit_plat_err_t erase(void *ctx)
 		LOG_DBG("flash_sink_init_mem size %u", size);
 
 		/* Erase requested area in preparation for data. */
-		suit_plat_err_t res = flash_erase(flash_ctx->fdev, flash_ctx->ptr, size);
-		if (res != SUIT_PLAT_SUCCESS) {
+		int res = flash_erase(flash_ctx->fdev, flash_ctx->ptr, size);
+		if (res != 0) {
 			LOG_ERR("Failed to erase requested memory area: %i", res);
-			return res;
+			return SUIT_PLAT_ERR_IO;
 		}
 
 		return SUIT_PLAT_SUCCESS;
@@ -378,16 +378,20 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 
 		if ((flash_ctx->offset_limit - (size_t)flash_ctx->ptr) >= size_left) {
 			if (flash_ctx->flash_write_size == 1) {
-				suit_plat_err_t ret = flash_write(flash_ctx->fdev,
-								  WRITE_OFFSET(flash_ctx),
-								  buf, size_left);
+				int ret = flash_write(flash_ctx->fdev,
+						      WRITE_OFFSET(flash_ctx),
+						      buf, size_left);
 
-				if (ret == SUIT_PLAT_SUCCESS) {
+				if (ret == 0) {
 					ret = register_write(flash_ctx, size_left);
 					if (ret != SUIT_PLAT_SUCCESS) {
 						LOG_ERR("Failed to update size after write");
 						return ret;
 					}
+				}
+				else
+				{
+					ret = SUIT_PLAT_ERR_IO;
 				}
 
 				return ret;
