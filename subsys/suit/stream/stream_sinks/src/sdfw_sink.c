@@ -198,10 +198,12 @@ static suit_plat_err_t check_urot_none(uint8_t *buf, size_t size)
 		if (err == SDFW_SINK_ERR_AGAIN) {
 			/* Update scheduled, continue after reboot */
 			reboot_to_continue();
-			/* If this code is reached, it means that reboot did not work. */
-			/* In such case report an error and convert the error code. */
-			LOG_ERR("Expected reboot did not happen");
-			err = SUIT_PLAT_ERR_UNREACHABLE_PATH;
+			if (IS_ENABLED(CONFIG_SUIT_UPDATE_REBOOT_ENABLED)) {
+				/* If this code is reached, it means that reboot did not work. */
+				/* In such case report an error and convert the error code. */
+				LOG_ERR("Expected reboot did not happen");
+				err = SUIT_PLAT_ERR_UNREACHABLE_PATH;
+			}
 		}
 
 		return err;
