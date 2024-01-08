@@ -136,15 +136,15 @@ manifest:
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
-      revision: ab85c204984ee9815844fed76606241be76d1e15
+      revision: 6612aaf0762ccf0325889503a0e826bf9b76120f
       groups:
       - doc-internal
     - name: ic-next
       repo-path: sdk-ic-next
       path: modules/ic-next
-      revision: a7c4a9d5417baee21699560c883eea021100ccba
+      revision: 9d3e97c4f2093c9eed7a416e8b62e491b19121ce
     - name: sdk-secdom
-      revision: 2a5d24f61bf8458aca5ea5361f5e81e1165b971c
+      revision: bcad1ab216e5e63491bdc76ec43916d7c28bed9d
       path: core_fw/secdom
     - name: nrf-regtool
       revision: v4.3.0
