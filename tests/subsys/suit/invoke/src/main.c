@@ -30,7 +30,7 @@ ZTEST(invoke_tests, test_invoke_OK)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	ret = suit_plat_invoke(handle, NULL);
 	zassert_not_equal(ret, SUIT_ERR_UNSUPPORTED_PARAMETER, "suit_plat_invoke failed - error %i",
@@ -52,7 +52,7 @@ ZTEST(invoke_tests, test_invoke_NOK_unsupported_component_type)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	ret = suit_plat_invoke(handle, NULL);
 	zassert_equal(ret, SUIT_ERR_UNSUPPORTED_COMPONENT_ID,
@@ -72,7 +72,7 @@ ZTEST(invoke_tests, test_invoke_NOK_unsupported_cpu_id)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	ret = suit_plat_invoke(handle, NULL);
 	zassert_equal(ret, SUIT_ERR_UNSUPPORTED_PARAMETER,

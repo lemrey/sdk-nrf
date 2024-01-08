@@ -78,18 +78,19 @@ static void setup_update_candidate(const uint8_t *buf, size_t len)
 	setup_erased_flash();
 
 	int err = suit_mci_init();
-	zassert_equal(0, err, "Failed to initialize MCI (%d)", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to initialize MCI (%d)", err);
 
 	err = suit_mci_supported_manifest_class_ids_get(
 		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
-	zassert_equal(0, err, "Failed to get list of supported manifest class IDs (%d)", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err,
+		      "Failed to get list of supported manifest class IDs (%d)", err);
 
 	err = suit_storage_init(supported_class_ids, supported_class_ids_len);
-	zassert_equal(0, err, "Failed to init suit storage (%d)", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init suit storage (%d)", err);
 
 	err = suit_storage_update_cand_set(update_candidate, ARRAY_SIZE(update_candidate));
-	zassert_equal(0, err, "Unable to set correct DFU before test execution (0x%x, %d)", buf,
-		      len);
+	zassert_equal(SUIT_PLAT_SUCCESS, err,
+		      "Unable to set correct DFU before test execution (0x%x, %d)", buf, len);
 }
 
 static void setup_store_update_candidate_data(void *data, size_t len)
@@ -136,7 +137,8 @@ ZTEST(orchestrator_tests, test_update_path_successful_update)
 	zassert_equal(0, err, "Unexpected error code");
 	/* ... and the envelope get installed */
 	err = suit_storage_installed_envelope_get(&supported_class_id, &addr, &size);
-	zassert_equal(0, err, "The envelope was not installed after successful update");
+	zassert_equal(SUIT_PLAT_SUCCESS, err,
+		      "The envelope was not installed after successful update");
 }
 
 ZTEST(orchestrator_tests, test_boot_path_successful_boot)
@@ -154,7 +156,8 @@ ZTEST(orchestrator_tests, test_boot_path_successful_boot)
 	zassert_equal(0, suit_orchestrator_entry(), "Unsuccessful first orchestrator launch");
 	/* ... and the bootable envelope is installed */
 	int err = suit_storage_installed_envelope_get(&supported_class_id, &addr_boot, &size_boot);
-	zassert_equal(0, err, "The envelope was not installed after successful update");
+	zassert_equal(SUIT_PLAT_SUCCESS, err,
+		      "The envelope was not installed after successful update");
 
 	/* WHEN when orchestrator is initialized again (reboot simulation)... */
 	zassert_equal(0, suit_orchestrator_init(), "Orchestrator not initialized second time");
@@ -165,7 +168,8 @@ ZTEST(orchestrator_tests, test_boot_path_successful_boot)
 	zassert_equal(0, err, "Unexpected error code");
 	/* ... and the envelope remains installed */
 	err = suit_storage_installed_envelope_get(&supported_class_id, &addr_update, &size_update);
-	zassert_equal(0, err, "The envelope was not installed after successful update");
+	zassert_equal(SUIT_PLAT_SUCCESS, err,
+		      "The envelope was not installed after successful update");
 	/* .. and the same index in SUIT storage is used */
 	zassert_equal(addr_boot, addr_update,
 		      "The envelope was not installed in the same SUIT storage slot");

@@ -77,7 +77,7 @@ static void test_suite_before(void *f)
 	zassert_equal(rc, 0, "Unable to erase memory before test execution");
 
 	rc = suit_storage_init(supported_classes, ARRAY_SIZE(supported_classes));
-	zassert_equal(rc, 0, "Failed to initialize SUIT storage module (%d).", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize SUIT storage module (%d).", rc);
 }
 
 ZTEST_SUITE(suit_storage_envelopes_tests, NULL, NULL, test_suite_before, NULL, NULL);
@@ -90,35 +90,35 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_get)
 
 	for (size_t i = 0; i < ARRAY_SIZE(classes); i++) {
 		rc = suit_storage_installed_envelope_get(NULL, NULL, NULL);
-		zassert_not_equal(rc, 0, "Arguments are incorrect, but %d envelope was received",
-				  i);
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
+				  "Arguments are incorrect, but %d envelope was received", i);
 
 		rc = suit_storage_installed_envelope_get(NULL, NULL, &size);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Arguments are incorrect, but %d envelope was received (%d)", i,
 				  size);
 
 		rc = suit_storage_installed_envelope_get(NULL, &addr, NULL);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Arguments are incorrect, but %d envelope was received (0x%x)", i,
 				  addr);
 
 		rc = suit_storage_installed_envelope_get(&classes[i], NULL, NULL);
-		zassert_not_equal(rc, 0, "Arguments are incorrect, but %d envelope was received",
-				  i);
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
+				  "Arguments are incorrect, but %d envelope was received", i);
 
 		rc = suit_storage_installed_envelope_get(&classes[i], NULL, &size);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Arguments are incorrect, but %d envelope was received (%d)", i,
 				  size);
 
 		rc = suit_storage_installed_envelope_get(&classes[i], &addr, NULL);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Arguments are incorrect, but %d envelope was received (0x%x)", i,
 				  addr);
 
 		rc = suit_storage_installed_envelope_get(&classes[i], &addr, &size);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Suit storage is empty, but %d envelope was received (0x%x, %d)",
 				  i, addr, size);
 	}
@@ -151,17 +151,18 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set)
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
 		rc = suit_storage_installed_envelope_get(supported_classes[i], &addr, &size);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Envelope %d was not installed, but was returned (0x%x, %d)", i,
 				  addr, size);
 
 		rc = suit_storage_install_envelope(supported_classes[i],
 						   (uint8_t *)envelopes[i].mem, envelopes[i].size);
-		zassert_equal(rc, 0, "Unable to install envelope %d", i);
+		zassert_equal(rc, SUIT_PLAT_SUCCESS, "Unable to install envelope %d", i);
 
 		rc = suit_storage_installed_envelope_get(supported_classes[i], &addr, &size);
-		zassert_equal(rc, 0, "Envelope %d was installed, but was not returned (0x%x, %d)",
-			      i, addr, size);
+		zassert_equal(rc, SUIT_PLAT_SUCCESS,
+			      "Envelope %d was installed, but was not returned (0x%x, %d)", i, addr,
+			      size);
 		zassert_true(size < (envelopes[i].size - 256),
 			     "Envelope %d was installed, but the size was not reduced (%d >= %d)",
 			     i, size, envelopes[i].size);
@@ -196,7 +197,7 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 	/* Verify that envelopes are not installed. */
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
 		rc = suit_storage_installed_envelope_get(supported_classes[i], &addr, &size);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Envelope %d was not installed, but was returned (0x%x, %d)", i,
 				  addr, size);
 	}
@@ -205,11 +206,12 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
 		rc = suit_storage_install_envelope(supported_classes[i],
 						   (uint8_t *)envelopes[i].mem, envelopes[i].size);
-		zassert_equal(rc, 0, "Unable to install envelope %d", i);
+		zassert_equal(rc, SUIT_PLAT_SUCCESS, "Unable to install envelope %d", i);
 
 		rc = suit_storage_installed_envelope_get(supported_classes[i], &addr, &size);
-		zassert_equal(rc, 0, "Envelope %d was installed, but was not returned (0x%x, %d)",
-			      i, addr, size);
+		zassert_equal(rc, SUIT_PLAT_SUCCESS,
+			      "Envelope %d was installed, but was not returned (0x%x, %d)", i, addr,
+			      size);
 	}
 
 	/* Install new version of the envelopes. */
@@ -235,11 +237,12 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes_v2); i++) {
 		rc = suit_storage_install_envelope(
 			supported_classes[i], (uint8_t *)envelopes_v2[i].mem, envelopes_v2[i].size);
-		zassert_equal(rc, 0, "Unable to install envelope %d", i);
+		zassert_equal(rc, SUIT_PLAT_SUCCESS, "Unable to install envelope %d", i);
 
 		rc = suit_storage_installed_envelope_get(supported_classes[i], &addr, &size);
-		zassert_equal(rc, 0, "Envelope %d was installed, but was not returned (0x%x, %d)",
-			      i, addr, size);
+		zassert_equal(rc, SUIT_PLAT_SUCCESS,
+			      "Envelope %d was installed, but was not returned (0x%x, %d)", i, addr,
+			      size);
 	}
 }
 
@@ -263,10 +266,11 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_unsupported_classes)
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
 		rc = suit_storage_install_envelope(unsupported_classes[i],
 						   (uint8_t *)envelopes[i].mem, envelopes[i].size);
-		zassert_not_equal(rc, 0, "Envelope with unsupported class ID shall fail %d", i);
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
+				  "Envelope with unsupported class ID shall fail %d", i);
 
 		rc = suit_storage_installed_envelope_get(unsupported_classes[i], &addr, &size);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Envelope %d was not installed, but was returned (0x%x, %d)", i,
 				  addr, size);
 	}
@@ -292,10 +296,11 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_class_mismatch)
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
 		rc = suit_storage_install_envelope(supported_classes[i],
 						   (uint8_t *)envelopes[i].mem, envelopes[i].size);
-		zassert_not_equal(rc, 0, "Envelope with unmatched class ID shall fail %d", i);
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
+				  "Envelope with unmatched class ID shall fail %d", i);
 
 		rc = suit_storage_installed_envelope_get(supported_classes[i], &addr, &size);
-		zassert_not_equal(rc, 0,
+		zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 				  "Envelope %d was not installed, but was returned (0x%x, %d)", i,
 				  addr, size);
 	}

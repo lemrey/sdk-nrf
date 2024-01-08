@@ -54,8 +54,8 @@ static void test_suite_before(void *f)
 	dfu_caches.pools[1].size = (size_t)cache2_len;
 	dfu_caches.pools_count = 2;
 
-	int rc = suit_dfu_cache_initialize(&dfu_caches);
-	zassert_equal(rc, 0, "Failed to initialize cache: %i", rc);
+	suit_plat_err_t rc = suit_dfu_cache_initialize(&dfu_caches);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize cache: %i", rc);
 }
 
 static void test_suite_after(void *f)
@@ -73,7 +73,7 @@ ZTEST(cache_tests, test_suit_dfu_cache_search_ok)
 	size_t uri_size = sizeof("http://databucket.com");
 
 	int ret = suit_dfu_cache_search(ok_uri, uri_size, &payload, &payload_size);
-	zassert_equal(ret, 0, "\nGet from cache failed");
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "\nGet from cache failed");
 }
 
 ZTEST(cache_tests, test_suit_dfu_cache_search_hash_ok)
@@ -84,7 +84,7 @@ ZTEST(cache_tests, test_suit_dfu_cache_search_hash_ok)
 	size_t uri_size = sizeof("#file.bin");
 
 	int ret = suit_dfu_cache_search(ok_uri, uri_size, &payload, &payload_size);
-	zassert_equal(ret, 0, "\nGet from cache failed");
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "\nGet from cache failed");
 }
 
 ZTEST(cache_tests, test_suit_dfu_cache_search_nok)
@@ -95,7 +95,7 @@ ZTEST(cache_tests, test_suit_dfu_cache_search_nok)
 	size_t uri_size = sizeof("http://data123.com");
 
 	int ret = suit_dfu_cache_search(nok_uri, uri_size, &payload, &payload_size);
-	zassert_not_equal(ret, 0, "\nGet from cache should have failed");
+	zassert_not_equal(ret, SUIT_PLAT_SUCCESS, "\nGet from cache should have failed");
 }
 
 ZTEST(cache_tests, test_suit_dfu_cache_search_nok_uri_null)
@@ -104,7 +104,7 @@ ZTEST(cache_tests, test_suit_dfu_cache_search_nok_uri_null)
 	size_t payload_size = 0;
 
 	int ret = suit_dfu_cache_search(NULL, 10, &payload, &payload_size);
-	zassert_not_equal(ret, 0, "\nGet from cache should have failed");
+	zassert_not_equal(ret, SUIT_PLAT_SUCCESS, "\nGet from cache should have failed");
 }
 
 ZTEST(cache_tests, test_suit_dfu_cache_search_nok_uri_size_zero)
@@ -115,7 +115,7 @@ ZTEST(cache_tests, test_suit_dfu_cache_search_nok_uri_size_zero)
 	size_t uri_size = 0;
 
 	int ret = suit_dfu_cache_search(ok_uri, uri_size, &payload, &payload_size);
-	zassert_not_equal(ret, 0, "\nGet from cache should have failed");
+	zassert_not_equal(ret, SUIT_PLAT_SUCCESS, "\nGet from cache should have failed");
 }
 
 ZTEST(cache_tests, test_suit_dfu_cache_search_key_is_substring)
@@ -126,7 +126,7 @@ ZTEST(cache_tests, test_suit_dfu_cache_search_key_is_substring)
 	size_t uri_size = sizeof("http://databucket.com/subdir/");
 
 	int ret = suit_dfu_cache_search(ok_uri, uri_size, &payload, &payload_size);
-	zassert_not_equal(ret, 0, "\nGet from cache should have failed");
+	zassert_not_equal(ret, SUIT_PLAT_SUCCESS, "\nGet from cache should have failed");
 }
 
 ZTEST(cache_tests, test_suit_dfu_cache_search_empty)
@@ -139,5 +139,5 @@ ZTEST(cache_tests, test_suit_dfu_cache_search_empty)
 	suit_dfu_cache_deinitialize();
 
 	int ret = suit_dfu_cache_search(ok_uri, uri_size, &payload, &payload_size);
-	zassert_not_equal(ret, 0, "\nGet from cache should have failed");
+	zassert_not_equal(ret, SUIT_PLAT_SUCCESS, "\nGet from cache should have failed");
 }

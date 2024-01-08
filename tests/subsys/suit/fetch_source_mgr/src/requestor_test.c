@@ -60,9 +60,9 @@ typedef struct {
 static K_SEM_DEFINE(chunk_status_changed_sem, 0, 1);
 static image_request_info_t request_info;
 
-static int wait_for_buffer_state_change(image_request_info_t *ri)
+static suit_plat_err_t wait_for_buffer_state_change(image_request_info_t *ri)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	suit_ipc_streamer_chunk_info_t injected_chunks[BUFFER_COUNT];
 	size_t chunk_info_count = BUFFER_COUNT;
 
@@ -75,7 +75,7 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 			 *  one of next calls will be successful.
 			 */
 
-		} else if (err < 0) {
+		} else if (err != SUIT_PLAT_SUCCESS) {
 
 			return err;
 		} else {
@@ -87,7 +87,8 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 				if (ENQUEUED == bm->buffer_state) {
 					bool still_enqueued = false;
 					for (int j = 0; j < chunk_info_count; j++) {
-						suit_ipc_streamer_chunk_info_t *ci = &injected_chunks[j];
+						suit_ipc_streamer_chunk_info_t *ci =
+							&injected_chunks[j];
 						if (ci->chunk_id == bm->chunk_id &&
 						    PENDING == ci->status) {
 							still_enqueued = true;
@@ -103,7 +104,7 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 			}
 
 			if (chunk_released) {
-				return 0;
+				return SUIT_PLAT_SUCCESS;
 			}
 		}
 
@@ -115,10 +116,10 @@ static int wait_for_buffer_state_change(image_request_info_t *ri)
 	return err;
 }
 
-static int find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t **bm,
-				   uint8_t **buffer)
+static suit_plat_err_t find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t **bm,
+					       uint8_t **buffer)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	*bm = NULL;
 	*buffer = NULL;
 
@@ -134,7 +135,7 @@ static int find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t *
 
 		if (NULL == *bm) {
 			err = wait_for_buffer_state_change(ri);
-			if (err < 0) {
+			if (err != SUIT_PLAT_SUCCESS) {
 				return err;
 			}
 		}
@@ -143,10 +144,10 @@ static int find_buffer_for_enqueue(image_request_info_t *ri, buffer_metadata_t *
 	return err;
 }
 
-static int chunk_enqueue(image_request_info_t *ri, uint32_t chunk_id, uint32_t offset,
-			 uint8_t *address, uint32_t size, bool last_chunk)
+static suit_plat_err_t chunk_enqueue(image_request_info_t *ri, uint32_t chunk_id, uint32_t offset,
+				     uint8_t *address, uint32_t size, bool last_chunk)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 
 	while (true) {
 		err = suit_ipc_streamer_chunk_enqueue(ri->stream_session_id, chunk_id, offset,
@@ -155,7 +156,7 @@ static int chunk_enqueue(image_request_info_t *ri, uint32_t chunk_id, uint32_t o
 			/* Not enough space in requestor, try again later
 			 */
 			err = wait_for_buffer_state_change(ri);
-			if (err < 0) {
+			if (err != SUIT_PLAT_SUCCESS) {
 				return err;
 			}
 		} else {
@@ -164,15 +165,15 @@ static int chunk_enqueue(image_request_info_t *ri, uint32_t chunk_id, uint32_t o
 	}
 }
 
-static int chunk_enqueue_and_push(void *ctx, uint8_t *source_bufer, size_t *size)
+static suit_plat_err_t chunk_enqueue_and_push(void *ctx, uint8_t *source_bufer, size_t *size)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	size_t source_offset = 0;
 	size_t source_remaining = *size;
 
 	image_request_info_t *ri = &request_info;
 	if (ri->stream_session_id != (uintptr_t)ctx) {
-		return -1;
+		return SUIT_PLAT_ERR_CRASH;
 	}
 
 	while (source_remaining) {
@@ -180,7 +181,7 @@ static int chunk_enqueue_and_push(void *ctx, uint8_t *source_bufer, size_t *size
 		buffer_metadata_t *bm = NULL;
 		uint8_t *buffer = NULL;
 		err = find_buffer_for_enqueue(ri, &bm, &buffer);
-		if (err) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			return err;
 		}
 
@@ -201,7 +202,7 @@ static int chunk_enqueue_and_push(void *ctx, uint8_t *source_bufer, size_t *size
 
 		err = chunk_enqueue(ri, bm->chunk_id, bm->offset_in_image, buffer, bm->chunk_size,
 				    false);
-		if (err) {
+		if (err != SUIT_PLAT_SUCCESS) {
 			break;
 		}
 		ri->requested_image_offset += bm->chunk_size;
@@ -211,12 +212,12 @@ static int chunk_enqueue_and_push(void *ctx, uint8_t *source_bufer, size_t *size
 	return err;
 }
 
-static int last_chunk_enqueue_and_push(void *ctx)
+static suit_plat_err_t last_chunk_enqueue_and_push(void *ctx)
 {
-	int err = 0;
+	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	image_request_info_t *ri = &request_info;
 	if (ri->stream_session_id != (uintptr_t)ctx) {
-		return -1;
+		return SUIT_PLAT_ERR_CRASH;
 	}
 
 	err = chunk_enqueue(ri, 0, ri->requested_image_offset, 0, 0, true);
@@ -246,7 +247,7 @@ static void injector_entry_point(void *stream_session_id, void *p2, void *p3)
 }
 
 static K_SEM_DEFINE(delay_simulator_sem, 0, 1);
-static int ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
+static suit_plat_err_t ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
 {
 	received_bytes += *size;
 
@@ -258,11 +259,12 @@ static int ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
 	 *  cannot use k_sleep in posix tests!
 	 */
 	k_sem_take(&delay_simulator_sem, K_MSEC(10));
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int missing_image_notify_fn(const uint8_t *resource_id, size_t resource_id_length,
-				   uint32_t stream_session_id, void *context)
+static suit_plat_err_t missing_image_notify_fn(const uint8_t *resource_id,
+					       size_t resource_id_length,
+					       uint32_t stream_session_id, void *context)
 {
 	zassert_equal(context, missing_image_notify_requested_ctx, "context (%08x)", context);
 	zassert_equal(resource_id_length, strlen(requested_resource_id), "resource_id_length (%d)",
@@ -280,14 +282,14 @@ static int missing_image_notify_fn(const uint8_t *resource_id, size_t resource_i
 				INJECTOR_THREAD_PRIORITY, 0, K_NO_WAIT);
 	}
 	missing_image_notify_count++;
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
-static int chunk_status_notify_fn(uint32_t stream_session_id, void *context)
+static suit_plat_err_t chunk_status_notify_fn(uint32_t stream_session_id, void *context)
 {
 	zassert_equal(context, chunk_status_notify_requested_ctx, "context (%08x)", context);
 	k_sem_give(&chunk_status_changed_sem);
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
 void test_ipc_streamer_requestor(void)
@@ -304,24 +306,26 @@ void test_ipc_streamer_requestor(void)
 
 	uint32_t inter_chunk_timeout_ms = 10000;
 	uint32_t requesting_period_ms = 1000;
-	int rc = 0;
+	suit_plat_err_t rc = SUIT_PLAT_SUCCESS;
 
 	rc = suit_ipc_streamer_requestor_init();
-	zassert_equal(rc, 0, "suit_ipc_streamer_requestor_init returned (%d)", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "suit_ipc_streamer_requestor_init returned (%d)", rc);
 
 	suit_ipc_streamer_chunk_status_evt_unsubscribe();
 	rc = suit_ipc_streamer_chunk_status_evt_subscribe(chunk_status_notify_fn,
-						     chunk_status_notify_requested_ctx);
-	zassert_equal(rc, 0, "suit_ipc_streamer_chunk_status_evt_subscribe returned (%d)", rc);
+							  chunk_status_notify_requested_ctx);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS,
+		      "suit_ipc_streamer_chunk_status_evt_subscribe returned (%d)", rc);
 
 	suit_ipc_streamer_missing_image_evt_unsubscribe();
 	rc = suit_ipc_streamer_missing_image_evt_subscribe(missing_image_notify_fn,
-						      missing_image_notify_requested_ctx);
-	zassert_equal(rc, 0, "suit_ipc_streamer_missing_image_evt_unsubscribe returned (%d)", rc);
+							   missing_image_notify_requested_ctx);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS,
+		      "suit_ipc_streamer_missing_image_evt_unsubscribe returned (%d)", rc);
 
 	rc = suit_ipc_streamer_stream(requested_resource_id, strlen(requested_resource_id),
 				      &test_sink, inter_chunk_timeout_ms, requesting_period_ms);
-	zassert_equal(rc, 0, "suit_ipc_streamer_stream returned (%d)", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "suit_ipc_streamer_stream returned (%d)", rc);
 	zassert_equal(expected_bytes, received_bytes, "%d vs %d", expected_bytes, received_bytes);
 	zassert_equal(expected_checksum, received_checksum, "%d vs %d", expected_checksum,
 		      received_checksum);

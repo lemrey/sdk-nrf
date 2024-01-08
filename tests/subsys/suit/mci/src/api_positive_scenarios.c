@@ -75,7 +75,7 @@ static void test_suit_mci_signing_key_id_validate(void)
 		uint32_t key_id = 0;
 
 		rc = suit_mci_signing_key_id_validate(result_uuid[i], key_id);
-		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
+		zassert_true((MCI_ERR_NOACCESS == rc || SUIT_PLAT_SUCCESS == rc),
 			     "suit_mci_signing_key_id_validate returned (%d)", rc);
 	}
 }
@@ -93,7 +93,7 @@ static void test_suit_mci_processor_start_rights_validate(void)
 		int processor_id = 0;
 
 		rc = suit_mci_processor_start_rights_validate(result_uuid[i], processor_id);
-		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
+		zassert_true((MCI_ERR_NOACCESS == rc || SUIT_PLAT_SUCCESS == rc),
 			     "suit_mci_processor_start_rights_validate returned (%d)", rc);
 	}
 }
@@ -112,7 +112,7 @@ static void test_suit_mci_memory_access_rights_validate(void)
 		size_t mem_size = sizeof(void *);
 
 		rc = suit_mci_memory_access_rights_validate(result_uuid[i], address, mem_size);
-		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
+		zassert_true((MCI_ERR_NOACCESS == rc || SUIT_PLAT_SUCCESS == rc),
 			     "suit_mci_memory_access_rights_validate returned (%d)", rc);
 	}
 }
@@ -131,8 +131,9 @@ static void test_suit_mci_platform_specific_component_rights_validate(void)
 
 		rc = suit_mci_platform_specific_component_rights_validate(
 			result_uuid[i], platform_specific_component_number);
-		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
-			     "suit_mci_platform_specific_component_rights_validate returned (%d)", rc);
+		zassert_true((MCI_ERR_NOACCESS == rc || SUIT_PLAT_SUCCESS == rc),
+			     "suit_mci_platform_specific_component_rights_validate returned (%d)",
+			     rc);
 	}
 }
 
@@ -148,7 +149,7 @@ static void test_suit_mci_manifest_parent_child_validate(void)
 	for (int i = 0; i < output_size; ++i) {
 
 		rc = suit_mci_manifest_parent_child_validate(result_uuid[0], result_uuid[i]);
-		zassert_true((MCI_ERR_NOACCESS == rc || 0 == rc),
+		zassert_true((MCI_ERR_NOACCESS == rc || SUIT_PLAT_SUCCESS == rc),
 			     "suit_mci_manifest_parent_child_validate returned (%d)", rc);
 	}
 }

@@ -58,7 +58,7 @@ static void test_suite_before(void *f)
 	dfu_caches.pools_count = 2;
 
 	int rc = suit_dfu_cache_initialize(&dfu_caches);
-	zassert_equal(rc, 0, "Failed to initialize cache: %i", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize cache: %i", rc);
 }
 
 static void test_suite_after(void *f)
@@ -78,19 +78,20 @@ ZTEST(cache_streamer_tests, test_cache_streamer_ok)
 	size_t payload_size = 0;
 
 	int ret = suit_memptr_storage_get(&handle);
-	zassert_equal(ret, 0, "suit_memptr_storage_get failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", ret);
 
 	ret = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(ret, 0, "suit_memptr_sink_get failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", ret);
 
 	ret = suit_dfu_cache_streamer_stream(ok_uri, ok_uri_len, &memptr_sink);
-	zassert_equal(ret, 0, "suit_dfu_cache_streamer_stream failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "suit_dfu_cache_streamer_stream failed - error %i",
+		      ret);
 
 	ret = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
-	zassert_equal(ret, 0, "memptr_storage.get failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "memptr_storage.get failed - error %i", ret);
 
 	ret = suit_memptr_storage_release(handle);
-	zassert_equal(ret, 0, "memptr_storage.release failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "memptr_storage.release failed - error %i", ret);
 }
 
 ZTEST(cache_streamer_tests, test_cache_streamer_nok)
@@ -103,10 +104,10 @@ ZTEST(cache_streamer_tests, test_cache_streamer_nok)
 	size_t nok_uri_len = sizeof("http://data123.com");
 
 	int ret = suit_memptr_storage_get(&handle);
-	zassert_equal(ret, 0, "suit_memptr_storage_get failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", ret);
 
 	ret = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(ret, 0, "suit_memptr_sink_get failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", ret);
 
 	ret = suit_dfu_cache_streamer_stream(NULL, ok_uri_len, &memptr_sink);
 	zassert_equal(ret, SUIT_PLAT_ERR_INVAL,
@@ -125,5 +126,5 @@ ZTEST(cache_streamer_tests, test_cache_streamer_nok)
 		      "suit_dfu_cache_streamer_stream failed - error %i", ret);
 
 	ret = suit_memptr_storage_release(handle);
-	zassert_equal(ret, 0, "memptr_storage.release failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "memptr_storage.release failed - error %i", ret);
 }

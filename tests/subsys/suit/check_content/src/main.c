@@ -37,7 +37,6 @@ static struct zcbor_string not_matching_content_mem = {
 
 ZTEST_SUITE(suit_check_content_tests, NULL, NULL, NULL, NULL, NULL);
 
-
 ZTEST(suit_check_content_tests, test_mem_matching)
 {
 	/* GIVEN a MEM component pointing to the data */
@@ -59,7 +58,8 @@ ZTEST(suit_check_content_tests, test_mem_matching)
 
 	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data_mem,
 					    sizeof(data_mem));
-	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d",
+		      err);
 
 	/* WHEN a check content function is called */
 	err = suit_plat_check_content(component, &matching_content_mem);
@@ -72,7 +72,6 @@ ZTEST(suit_check_content_tests, test_mem_matching)
 	zassert_equal(SUIT_SUCCESS, err, "test error - failed to cleanup component handle: %d",
 		      err);
 }
-
 
 ZTEST(suit_check_content_tests, test_mem_different_size)
 {
@@ -96,7 +95,8 @@ ZTEST(suit_check_content_tests, test_mem_different_size)
 	/* ... but indicating wrong data size */
 	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data_mem,
 					    sizeof(data_mem) - 1);
-	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d",
+		      err);
 
 	/* WHEN a check content function is called */
 	err = suit_plat_check_content(component, &matching_content_mem);
@@ -131,7 +131,8 @@ ZTEST(suit_check_content_tests, test_mem_not_matching)
 
 	err = suit_memptr_storage_ptr_store((memptr_storage_handle_t)impl_data, data_mem,
 					    sizeof(data_mem));
-	zassert_equal(SUIT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "test error - suit_memptr_storage_ptr_store: %d",
+		      err);
 
 	/* WHEN a check content function is called */
 	err = suit_plat_check_content(component, &not_matching_content_mem);

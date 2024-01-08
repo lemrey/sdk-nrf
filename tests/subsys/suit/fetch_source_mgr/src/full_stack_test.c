@@ -23,7 +23,7 @@ static void *stream_sink_requested_ctx = (void *)0xabcd0001;
 
 static K_SEM_DEFINE(delay_simulator_sem_1, 0, 1);
 static K_SEM_DEFINE(delay_simulator_sem_2, 0, 1);
-static int ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
+static suit_plat_err_t ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
 {
 	received_bytes += *size;
 
@@ -35,7 +35,7 @@ static int ipc_stream_write_chunk(void *ctx, uint8_t *buf, size_t *size)
 	 *  cannot use k_sleep in posix tests!
 	 */
 	k_sem_take(&delay_simulator_sem_1, K_MSEC(10));
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
 typedef struct {
@@ -44,7 +44,8 @@ typedef struct {
 
 } access_pattern_t;
 
-static int fetch_request_fn(const uint8_t *uri, size_t uri_length, struct stream_sink *sink)
+static suit_plat_err_t fetch_request_fn(const uint8_t *uri, size_t uri_length,
+					struct stream_sink *sink)
 {
 	zassert_equal(uri_length, strlen(requested_resource_id), "uri_length (%d)", uri_length);
 	zassert_mem_equal(uri, requested_resource_id, strlen(requested_resource_id));
@@ -58,7 +59,7 @@ static int fetch_request_fn(const uint8_t *uri, size_t uri_length, struct stream
 		{.chunk_size = 8192, .sleep_ms = 100}, {.chunk_size = 4096, .sleep_ms = 200},
 		{.chunk_size = 4096, .sleep_ms = 10},  {.chunk_size = 4096, .sleep_ms = 10}};
 
-	int rc = 0;
+	suit_plat_err_t rc = SUIT_PLAT_SUCCESS;
 	int pattern_idx = 0;
 
 	for (int buf_iter = 0; buf_iter < ITERATIONS; buf_iter++) {
@@ -74,7 +75,7 @@ static int fetch_request_fn(const uint8_t *uri, size_t uri_length, struct stream
 			}
 
 			rc = sink->write(sink->ctx, test_buf + offset_in_buffer, &to_be_copied);
-			if (rc) {
+			if (rc != SUIT_PLAT_SUCCESS) {
 				return rc;
 			}
 
@@ -89,7 +90,7 @@ static int fetch_request_fn(const uint8_t *uri, size_t uri_length, struct stream
 		}
 	}
 
-	return 0;
+	return SUIT_PLAT_SUCCESS;
 }
 
 void test_full_stack(void)
@@ -110,13 +111,13 @@ void test_full_stack(void)
 	suit_ipc_streamer_chunk_status_evt_unsubscribe();
 	suit_ipc_streamer_missing_image_evt_unsubscribe();
 
-	int rc = 0;
+	suit_plat_err_t rc = SUIT_PLAT_SUCCESS;
 
 	rc = suit_ipc_streamer_provider_init();
-	zassert_equal(rc, 0, "suit_ipc_streamer_provider_init returned (%d)", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "suit_ipc_streamer_provider_init returned (%d)", rc);
 
 	rc = suit_fetch_source_register(fetch_request_fn);
-	zassert_equal(rc, 0, "fetch_source_register returned (%d)", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "fetch_source_register returned (%d)", rc);
 
 	struct stream_sink test_sink = {
 		.write = ipc_stream_write_chunk,
@@ -135,5 +136,5 @@ void test_full_stack(void)
 	zassert_equal(expected_bytes, received_bytes, "%d vs %d", expected_bytes, received_bytes);
 	zassert_equal(expected_checksum, received_checksum, "%d vs %d", expected_checksum,
 		      received_checksum);
-	zassert_equal(rc, 0, "suit_ipc_streamer_stream returned (%d)", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "suit_ipc_streamer_stream returned (%d)", rc);
 }

@@ -26,16 +26,16 @@ ZTEST(memptr_streamer_tests, test_memptr_streamer_OK)
 	memptr_storage_handle_t handle = NULL;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(err, 0, "suit_memptr_sink_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", err);
 
 	err = suit_memptr_streamer_stream(test_data, TEST_DATA_SIZE, &memptr_sink);
-	zassert_equal(err, 0, "memptr_streamer failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_streamer failed - error %i", err);
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.release failed - error %i", err);
 }
 
 ZTEST(memptr_streamer_tests, test_memptr_streamer_NOK)
@@ -44,20 +44,22 @@ ZTEST(memptr_streamer_tests, test_memptr_streamer_NOK)
 	memptr_storage_handle_t handle = NULL;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(err, 0, "suit_memptr_sink_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", err);
 
 	err = suit_memptr_streamer_stream(NULL, TEST_DATA_SIZE, &memptr_sink);
-	zassert_not_equal(err, 0, "memptr_streamer should have failed - payload == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_streamer should have failed - payload == NULL");
 
 	err = suit_memptr_streamer_stream(test_data, 0, &memptr_sink);
-	zassert_not_equal(err, 0, "memptr_streamer should have failed - size == 0");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS, "memptr_streamer should have failed - size == 0");
 
 	err = suit_memptr_streamer_stream(test_data, TEST_DATA_SIZE, NULL);
-	zassert_not_equal(err, 0, "memptr_streamer should have failed - sink == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_streamer should have failed - sink == NULL");
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.release failed - error %i", err);
 }

@@ -49,8 +49,9 @@ find_manifest_config(const suit_manifest_class_id_t *manifest_class_id)
 	for (int i = 0; i < sizeof(supported_manifests) / sizeof(manifest_config_t); ++i) {
 		const manifest_config_t *manifest_config = &supported_manifests[i];
 
-		if (0 == suit_metadata_uuid_compare(manifest_config->manifest_class_id,
-						    manifest_class_id)) {
+		if (SUIT_PLAT_SUCCESS ==
+		    suit_metadata_uuid_compare(manifest_config->manifest_class_id,
+					       manifest_class_id)) {
 			return manifest_config;
 		}
 	}
@@ -58,7 +59,7 @@ find_manifest_config(const suit_manifest_class_id_t *manifest_class_id)
 }
 
 #if defined(CONFIG_MBEDTLS) || defined(CONFIG_NRF_SECURITY)
-static int load_keys(uint32_t *key_id)
+static suit_plat_err_t load_keys(uint32_t *key_id)
 {
 	const uint8_t public_key[] = {
 		0x04, /* POINT_CONVERSION_UNCOMPRESSED */
@@ -72,7 +73,7 @@ static int load_keys(uint32_t *key_id)
 	/* Initialize PSA Crypto */
 	psa_status = psa_crypto_init();
 	if (psa_status != PSA_SUCCESS) {
-		return psa_status;
+		return SUIT_PLAT_ERR_CRASH;
 	}
 
 	/* Add keys */
@@ -84,7 +85,7 @@ static int load_keys(uint32_t *key_id)
 
 	psa_status = psa_import_key(&key_attributes, public_key, sizeof(public_key), key_id);
 	if (psa_status != PSA_SUCCESS) {
-		return psa_status;
+		return SUIT_PLAT_ERR_CRASH;
 	}
 
 	return SUIT_PLAT_SUCCESS;
@@ -197,12 +198,14 @@ int suit_mci_processor_start_rights_validate(const suit_manifest_class_id_t *cla
 		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	if (0 == suit_metadata_uuid_compare(&nordic_root_manifest_class_id, class_id)) {
+	if (SUIT_PLAT_SUCCESS ==
+	    suit_metadata_uuid_compare(&nordic_root_manifest_class_id, class_id)) {
 		/* Root manifest - ability to start any cpu are intentionally blocked
 		 */
 		return MCI_ERR_NOACCESS;
 
-	} else if (0 == suit_metadata_uuid_compare(&nordic_app_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS ==
+		   suit_metadata_uuid_compare(&nordic_app_manifest_class_id, class_id)) {
 		/* Application manifest. Use "0" as CPU ID in tests
 		 */
 		if (0 == processor_id) {
@@ -228,12 +231,14 @@ int suit_mci_memory_access_rights_validate(const suit_manifest_class_id_t *class
 		return MCI_ERR_MANIFESTCLASSID;
 	}
 
-	if (0 == suit_metadata_uuid_compare(&nordic_root_manifest_class_id, class_id)) {
+	if (SUIT_PLAT_SUCCESS ==
+	    suit_metadata_uuid_compare(&nordic_root_manifest_class_id, class_id)) {
 		/* Root manifest - ability to operate on memory ranges intentionally blocked
 		 */
 		return MCI_ERR_NOACCESS;
 
-	} else if (0 == suit_metadata_uuid_compare(&nordic_app_manifest_class_id, class_id)) {
+	} else if (SUIT_PLAT_SUCCESS ==
+		   suit_metadata_uuid_compare(&nordic_app_manifest_class_id, class_id)) {
 		/* Application manifest - allow to overwrite any address
 		 */
 		return SUIT_PLAT_SUCCESS;
@@ -297,7 +302,7 @@ int suit_mci_init(void)
 #if defined(CONFIG_MBEDTLS) || defined(CONFIG_NRF_SECURITY)
 	if (supported_manifests[0].signing_key_bits == 0) {
 		int ret = load_keys(&supported_manifests[0].signing_key_bits);
-		if (ret != 0) {
+		if (ret != SUIT_PLAT_SUCCESS) {
 			return ret;
 		}
 

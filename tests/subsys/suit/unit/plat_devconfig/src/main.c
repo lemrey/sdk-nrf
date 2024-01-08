@@ -955,7 +955,7 @@ ZTEST(suit_platform_devconfig_completed_tests, test_install_seq_storage_succeed)
 					       0);
 
 	/* THEN manifest is accepted... */
-	zassert_equal(0, ret, "Manifest not accepted");
+	zassert_equal(SUIT_SUCCESS, ret, "Manifest not accepted");
 
 	/* ... and manifest class ID is decoded from the manifest component ID */
 	zassert_equal(suit_plat_decode_manifest_class_id_fake.call_count, 1,

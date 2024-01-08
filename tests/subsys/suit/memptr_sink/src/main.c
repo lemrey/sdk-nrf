@@ -25,13 +25,13 @@ ZTEST(memptr_sink_tests, test_suit_memptr_sink_get_OK)
 	memptr_storage_handle_t handle = NULL;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(err, 0, "suit_memptr_sink_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", err);
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.release failed - error %i", err);
 }
 
 ZTEST(memptr_sink_tests, test_suit_memptr_sink_get_NOK)
@@ -40,16 +40,18 @@ ZTEST(memptr_sink_tests, test_suit_memptr_sink_get_NOK)
 	memptr_storage_handle_t handle = NULL;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(NULL, handle);
-	zassert_not_equal(err, 0, "suit_memptr_sink_get should have failed - memptr_sink == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "suit_memptr_sink_get should have failed - memptr_sink == NULL");
 
 	err = suit_memptr_sink_get(&memptr_sink, NULL);
-	zassert_not_equal(err, 0, "suit_memptr_sink_get should have failed - storage == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "suit_memptr_sink_get should have failed - storage == NULL");
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.release failed - error %i", err);
 }
 
 ZTEST(memptr_sink_tests, test_memptr_sink_write_OK)
@@ -60,24 +62,24 @@ ZTEST(memptr_sink_tests, test_memptr_sink_write_OK)
 	memptr_storage_handle_t handle = NULL;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(err, 0, "suit_memptr_sink_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", err);
 
 	err = memptr_sink.write(memptr_sink.ctx, test_data, &payload_size);
-	zassert_equal(err, 0, "memptr_storage.save failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.save failed - error %i", err);
 
 	payload_size = 0;
 	err = suit_memptr_storage_ptr_get(handle, &payload_ptr, &payload_size);
-	zassert_equal(err, 0, "memptr_storage.get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.get failed - error %i", err);
 	zassert_equal(payload_ptr, test_data,
 		      "memptr_storage.get, payload_ptr and data address mismatch");
 	zassert_equal(payload_size, TEST_DATA_SIZE,
 		      "memptr_storage.get, payload_size and data size mismatch");
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_storage.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.release failed - error %i", err);
 }
 
 ZTEST(memptr_sink_tests, test_memptr_sink_write_NOK)
@@ -87,30 +89,35 @@ ZTEST(memptr_sink_tests, test_memptr_sink_write_NOK)
 	size_t payload_size = TEST_DATA_SIZE;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(err, 0, "suit_memptr_sink_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", err);
 
 	err = memptr_sink.write(NULL, test_data, &payload_size);
-	zassert_not_equal(err, 0, "memptr_sink.write should have failed - ctx == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.write should have failed - ctx == NULL");
 
 	err = memptr_sink.write(memptr_sink.ctx, NULL, &payload_size);
-	zassert_not_equal(err, 0, "memptr_sink.write should have failed - payload_ptr == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.write should have failed - payload_ptr == NULL");
 
 	err = memptr_sink.write(memptr_sink.ctx, test_data, NULL);
-	zassert_not_equal(err, 0, "memptr_sink.write should have failed - payload_size == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.write should have failed - payload_size == NULL");
 
 	payload_size = 0;
 	err = memptr_sink.write(memptr_sink.ctx, test_data, &payload_size);
-	zassert_not_equal(err, 0, "memptr_sink.write should have failed - payload_size == 0");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.write should have failed - payload_size == 0");
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_sink.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_sink.release failed - error %i", err);
 
 	payload_size = TEST_DATA_SIZE;
 	err = memptr_sink.write(memptr_sink.ctx, test_data, &payload_size);
-	zassert_not_equal(err, 0, "memptr_sink.write should have failed - storage released");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.write should have failed - storage released");
 }
 
 ZTEST(memptr_sink_tests, test_memptr_sink_used_storage_OK)
@@ -121,24 +128,25 @@ ZTEST(memptr_sink_tests, test_memptr_sink_used_storage_OK)
 	size_t payload_size = TEST_DATA_SIZE;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(err, 0, "suit_memptr_sink_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", err);
 
 	err = memptr_sink.used_storage(memptr_sink.ctx, &size);
-	zassert_equal(err, 0, "memptr_sink.used_storage failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_sink.used_storage failed - error %i", err);
 	zassert_equal(size, 0, "used_storage should return 0 if nothing was written to storage");
 
 	err = memptr_sink.write(memptr_sink.ctx, test_data, &payload_size);
-	zassert_equal(err, 0, "memptr_storage.save failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_storage.save failed - error %i", err);
 
 	err = memptr_sink.used_storage(memptr_sink.ctx, &size);
-	zassert_equal(err, 0, "memptr_sink.used_storage failed - error %i", err);
-	zassert_equal(size, TEST_DATA_SIZE, "used_storage should return 1 if something was written to storage");
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_sink.used_storage failed - error %i", err);
+	zassert_equal(size, TEST_DATA_SIZE,
+		      "used_storage should return 1 if something was written to storage");
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_sink.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_sink.release failed - error %i", err);
 }
 
 ZTEST(memptr_sink_tests, test_memptr_sink_used_storage_NOK)
@@ -148,20 +156,23 @@ ZTEST(memptr_sink_tests, test_memptr_sink_used_storage_NOK)
 	size_t size = 0;
 
 	int err = suit_memptr_storage_get(&handle);
-	zassert_equal(err, 0, "suit_memptr_storage_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_storage_get failed - error %i", err);
 
 	err = suit_memptr_sink_get(&memptr_sink, handle);
-	zassert_equal(err, 0, "suit_memptr_sink_get failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "suit_memptr_sink_get failed - error %i", err);
 
 	err = memptr_sink.used_storage(NULL, &size);
-	zassert_not_equal(err, 0, "memptr_sink.used_storage should have failed - ctx == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.used_storage should have failed - ctx == NULL");
 
 	err = memptr_sink.used_storage(memptr_sink.ctx, NULL);
-	zassert_not_equal(err, 0, "memptr_sink.used_storage should have failed - size == NULL");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.used_storage should have failed - size == NULL");
 
 	err = suit_memptr_storage_release(handle);
-	zassert_equal(err, 0, "memptr_sink.release failed - error %i", err);
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "memptr_sink.release failed - error %i", err);
 
 	err = memptr_sink.used_storage(memptr_sink.ctx, &size);
-	zassert_not_equal(err, 0, "memptr_sink.used_storage should have failed - storage released");
+	zassert_not_equal(err, SUIT_PLAT_SUCCESS,
+			  "memptr_sink.used_storage should have failed - storage released");
 }

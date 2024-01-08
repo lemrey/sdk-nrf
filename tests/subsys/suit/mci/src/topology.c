@@ -18,11 +18,12 @@ static int compare_manifest_class_id(const suit_manifest_class_id_t *manifest_cl
 
 static void test_duplicate_ids_in_supported_manifest(void)
 {
-	int rc = 0;
+	int rc = SUIT_PLAT_SUCCESS;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
 	rc = suit_mci_supported_manifest_class_ids_get(result_uuid, &output_size);
-	zassert_equal(rc, 0, "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS,
+		      "suit_mci_supported_manifest_class_ids_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		for (int j = i + 1; j < output_size; ++j) {
@@ -34,11 +35,11 @@ static void test_duplicate_ids_in_supported_manifest(void)
 
 static void test_duplicate_ids_in_invoke_order(void)
 {
-	int rc = 0;
+	int rc = SUIT_PLAT_SUCCESS;
 	size_t output_size = OUTPUT_MAX_SIZE;
 
 	rc = suit_mci_invoke_order_get(result_uuid, &output_size);
-	zassert_equal(rc, 0, "suit_mci_invoke_order_get returned (%d)", rc);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "suit_mci_invoke_order_get returned (%d)", rc);
 
 	for (int i = 0; i < output_size; ++i) {
 		for (int j = i + 1; j < output_size; ++j) {

@@ -26,7 +26,7 @@ extern const size_t manifest_len;
 static void *test_suit_setup(void)
 {
 	int err = suit_mci_init();
-	zassert_equal(err, 0, "Unable to initialize MCI module");
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "Unable to initialize MCI module");
 
 #ifdef CONFIG_ARCH_POSIX
 	static const struct device *const flash_dev =
@@ -52,27 +52,29 @@ ZTEST(fetch_integrated_payoad_flash_tests, test_suit_process)
 	int err = SUIT_SUCCESS;
 
 	err = suit_processor_init();
-	zassert_equal(err, 0, "Unable to initialise SUIT processor (err: %d)", err);
+	zassert_equal(err, SUIT_SUCCESS, "Unable to initialise SUIT processor (err: %d)", err);
 
 	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
 	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
 
 	err = suit_mci_supported_manifest_class_ids_get(
 		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
-	zassert_equal(0, err, "Failed to get list of supported manifest class IDs (%d)", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err,
+		      "Failed to get list of supported manifest class IDs (%d)", err);
 
 	err = suit_storage_init(supported_class_ids, supported_class_ids_len);
-	zassert_equal(0, err, "Failed to init suit storage (%d)", err);
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init suit storage (%d)", err);
 
 	err = suit_process_sequence(manifest_buf, manifest_len, SUIT_SEQ_PARSE);
-	zassert_equal(err, 0, "Parsing SUIT envelope failed (err: %d)", err);
+	zassert_equal(err, SUIT_SUCCESS, "Parsing SUIT envelope failed (err: %d)", err);
 
-	for (enum suit_command_sequence i = SUIT_SEQ_PARSE + 1; (i < SUIT_SEQ_MAX) && (err == 0);
-	     i++) {
+	for (enum suit_command_sequence i = SUIT_SEQ_PARSE + 1;
+	     (i < SUIT_SEQ_MAX) && (err == SUIT_SUCCESS); i++) {
 		err = suit_process_sequence(manifest_buf, manifest_len, i);
 		if (err == SUIT_ERR_UNAVAILABLE_COMMAND_SEQ) {
-			err = 0;
+			err = SUIT_SUCCESS;
 		}
-		zassert_equal(err, 0, "Processing SUIT sequence %d failed with error %i", i, err);
+		zassert_equal(err, SUIT_SUCCESS, "Processing SUIT sequence %d failed with error %i",
+			      i, err);
 	}
 }

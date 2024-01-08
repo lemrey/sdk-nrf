@@ -65,8 +65,8 @@ static void setup_cache_with_sample_entries(void)
 	dfu_caches.pools[1].size = (size_t)cache2_len;
 	dfu_caches.pools_count = 2;
 
-	int rc = suit_dfu_cache_initialize(&dfu_caches);
-	zassert_equal(rc, 0, "Failed to initialize cache: %i", rc);
+	suit_plat_err_t rc = suit_dfu_cache_initialize(&dfu_caches);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize cache: %i", rc);
 }
 
 ZTEST_SUITE(fetch_tests, NULL, NULL, NULL, NULL, NULL);
@@ -86,25 +86,26 @@ ZTEST(fetch_tests, test_integrated_fetch_to_memptr_OK)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &component_handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	ret = suit_plat_fetch_integrated(component_handle, &source);
-	zassert_equal(ret, 0, "suit_plat_fetch failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "suit_plat_fetch failed - error %i", ret);
 
 	ret = suit_plat_component_impl_data_get(component_handle, &handle);
-	zassert_equal(ret, 0, "suit_plat_component_impl_data_get failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "suit_plat_component_impl_data_get failed - error %i",
+		      ret);
 
 	uint8_t *payload;
 	size_t payload_size = 0;
 
 	ret = suit_memptr_storage_ptr_get(handle, &payload, &payload_size);
-	zassert_equal(ret, 0, "storage.get failed - error %i", ret);
+	zassert_equal(ret, SUIT_PLAT_SUCCESS, "storage.get failed - error %i", ret);
 	zassert_equal(test_data, payload, "Retrieved payload doesn't mach test_data");
 	zassert_equal(sizeof(test_data), payload_size,
 		      "Retrieved payload_size doesn't mach size of test_data");
 
 	ret = suit_plat_release_component_handle(component_handle);
-	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "Handle release failed - error %i", ret);
 }
 
 ZTEST(fetch_tests, test_fetch_to_memptr_OK)
@@ -122,15 +123,15 @@ ZTEST(fetch_tests, test_fetch_to_memptr_OK)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &component_handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	setup_cache_with_sample_entries();
 
 	ret = suit_plat_fetch(component_handle, &uri);
-	zassert_equal(ret, 0, "suit_plat_fetch failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "suit_plat_fetch failed - error %i", ret);
 
 	ret = suit_plat_release_component_handle(component_handle);
-	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "Handle release failed - error %i", ret);
 
 	suit_dfu_cache_deinitialize();
 }
@@ -150,16 +151,16 @@ ZTEST(fetch_tests, test_fetch_to_memptr_NOK_uri_not_in_cache)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &component_handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	setup_cache_with_sample_entries();
 
 	ret = suit_plat_fetch(component_handle, &uri);
-	zassert_not_equal(ret, 0, "suit_plat_fetch should fail - supplied uri is not in cache",
-			  ret);
+	zassert_not_equal(ret, SUIT_SUCCESS,
+			  "suit_plat_fetch should fail - supplied uri is not in cache", ret);
 
 	ret = suit_plat_release_component_handle(component_handle);
-	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "Handle release failed - error %i", ret);
 }
 
 ZTEST(fetch_tests, test_fetch_to_memptr_NOK_invalid_component_id)
@@ -177,15 +178,16 @@ ZTEST(fetch_tests, test_fetch_to_memptr_NOK_invalid_component_id)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &component_handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	setup_cache_with_sample_entries();
 
 	ret = suit_plat_fetch(component_handle, &uri);
-	zassert_not_equal(ret, 0, "suit_plat_fetch should have failed - invalid component_id");
+	zassert_not_equal(ret, SUIT_SUCCESS,
+			  "suit_plat_fetch should have failed - invalid component_id");
 
 	ret = suit_plat_release_component_handle(component_handle);
-	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "Handle release failed - error %i", ret);
 }
 
 ZTEST(fetch_tests, test_integrated_fetch_to_memptr_NOK_data_ptr_NULL)
@@ -202,13 +204,14 @@ ZTEST(fetch_tests, test_integrated_fetch_to_memptr_NOK_data_ptr_NULL)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &component_handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	ret = suit_plat_fetch_integrated(component_handle, &source);
-	zassert_not_equal(ret, 0, "suit_plat_fetch should have failed - NULL data pointer");
+	zassert_not_equal(ret, SUIT_SUCCESS,
+			  "suit_plat_fetch should have failed - NULL data pointer");
 
 	ret = suit_plat_release_component_handle(component_handle);
-	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "Handle release failed - error %i", ret);
 }
 
 ZTEST(fetch_tests, test_integrated_fetch_to_memptr_NOK_data_size_zero)
@@ -225,13 +228,13 @@ ZTEST(fetch_tests, test_integrated_fetch_to_memptr_NOK_data_size_zero)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &component_handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	ret = suit_plat_fetch_integrated(component_handle, &source);
-	zassert_not_equal(ret, 0, "suit_plat_fetch should have failed - data size 0");
+	zassert_not_equal(ret, SUIT_SUCCESS, "suit_plat_fetch should have failed - data size 0");
 
 	ret = suit_plat_release_component_handle(component_handle);
-	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "Handle release failed - error %i", ret);
 }
 
 ZTEST(fetch_tests, test_integrated_fetch_to_memptr_NOK_handle_NULL)
@@ -248,17 +251,18 @@ ZTEST(fetch_tests, test_integrated_fetch_to_memptr_NOK_handle_NULL)
 	};
 
 	int ret = suit_plat_create_component_handle(&valid_component_id, &component_handle);
-	zassert_equal(ret, 0, "create_component_handle failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
 
 	ret = suit_plat_fetch_integrated(component_handle, &source);
-	zassert_equal(ret, 0, "suit_plat_fetch failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "suit_plat_fetch failed - error %i", ret);
 
 	uint8_t *payload;
 	size_t payload_size = 0;
 
 	ret = suit_memptr_storage_ptr_get(NULL, &payload, &payload_size);
-	zassert_not_equal(ret, 0, "suit_memptr_storage_get should failed - handle NULL");
+	zassert_not_equal(ret, SUIT_PLAT_SUCCESS,
+			  "suit_memptr_storage_get should failed - handle NULL");
 
 	ret = suit_plat_release_component_handle(component_handle);
-	zassert_equal(ret, 0, "Handle release failed - error %i", ret);
+	zassert_equal(ret, SUIT_SUCCESS, "Handle release failed - error %i", ret);
 }
