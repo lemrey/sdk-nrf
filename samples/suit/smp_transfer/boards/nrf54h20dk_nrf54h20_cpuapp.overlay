@@ -22,16 +22,6 @@
 		};
 	};
 
-	ipc_to_cpusec: ipc_to_cpusec {
-		 compatible = "zephyr,ipc-icmsg";
-		 tx-region = <&ipc_shm_cpuapp_cpusec>;
-		 rx-region = <&ipc_shm_cpusec_cpuapp>;
-		 mboxes = <&bellboard_cpusec 12>,
-			  <&bellboard_cpuapp 0>;
-		 mbox-names = "tx", "rx";
-		 status = "okay";
-	 };
-
 	rng_sim: rng_sim {
 		status = "okay";
 		compatible = "nordic,entropy-prng";
@@ -87,4 +77,8 @@
 			};
 		};
 	};
+};
+
+&ipc_to_cpusec {
+	status = "okay";
 };

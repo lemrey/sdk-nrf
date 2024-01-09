@@ -11,18 +11,6 @@
 		zephyr,console = &uart136;
 	};
 
-	/* The application core communicates with the system controller
-	 * through the NRFS service regarding USBHS peripheral. */
-	ipc_to_cpusys: ipc_to_cpusys {
-		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&ipc_shm_cpuapp_cpusys>;
-		rx-region = <&ipc_shm_cpusys_cpuapp>;
-		mboxes = <&vevif_cpusys 12>,
-			 <&bellboard_cpuapp 6>;
-		mbox-names = "tx", "rx";
-		status = "okay";
-	};
-
 	/* Redefine leds to fit CAF requirements. */
 	/delete-node/ leds;
 
@@ -74,6 +62,12 @@
 /* The application core communicates with the secure domain to perform
  * the SUIT DFU. */
 &ipc_to_cpusec {
+	status = "okay";
+};
+
+/* The application core communicates with the system controller
+ * through the NRFS service regarding USBHS peripheral. */
+&ipc_to_cpusys {
 	status = "okay";
 };
 

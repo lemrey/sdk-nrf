@@ -24,16 +24,6 @@
 		};
 	};
 
-	ipc0: ipc0 {
-		compatible = "zephyr,ipc-icmsg";
-		tx-region = <&ipc_shm_cpuapp_cpuppr>;
-		rx-region = <&ipc_shm_cpuppr_cpuapp>;
-		mboxes = <&vevif_cpuppr 12>,
-			 <&bellboard_cpuapp 12>;
-		mbox-names = "tx", "rx";
-		status = "okay";
-	};
-
 	sensor_stub: sensor_stub {
 		compatible = "nordic,sensor-stub";
 		generator = "sensor_stub_gen";
@@ -55,6 +45,10 @@
 };
 
 &vevif_cpuppr {
+	status = "okay";
+};
+
+ipc0: &ipc_to_cpuppr {
 	status = "okay";
 };
 

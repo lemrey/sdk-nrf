@@ -28,6 +28,7 @@
 
 /* Remove shared area node and use its space for extending cpuppr_sram */
 /delete-node/ &ipc_shm_area_cpuapp_cpuppr;
+/delete-node/ &ipc_to_cpuppr;
 
 &ppr_code {
 	reg = <0xe126000 DT_SIZE_K(28)>;
