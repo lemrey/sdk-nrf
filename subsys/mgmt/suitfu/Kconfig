@@ -9,16 +9,11 @@ menu "SUIT-based Firmware Update Management"
 config MGMT_SUITFU
 	bool "Serial SUIT Firmware Update support"
 	depends on MCUMGR
-	# The IMG MGMT group is substituted, not extended by the SUIT variant
-	depends on !MCUMGR_CMD_IMG_MGMT
 	depends on SSF_SUIT_SERVICE_ENABLED
 	depends on FLASH
 	depends on MCUMGR_SMP_LEGACY_RC_BEHAVIOUR
 	select MCUMGR_SMP_CBOR_MIN_DECODING_LEVEL_5
 
-config MGMT_SUITFU_IMAGE_NUMBER
-	int "Image number representing SUIT envelope"
-	default 0
 
 config MGMT_SUITFU_TRIGGER_UPDATE_RESET_DELAY_MS
 	int "Delay between update trigger and the last firmware chunk, in ms"
@@ -32,6 +27,49 @@ config MGMT_SUITFU_AUTO_REGISTER_HANDLERS
 	help
 	  Use MCUMGR_HANDLER_DEFINE to automatically register SUIT Firmware
 	  Update handlers during boot.
+
+config MGMT_SUITFU_GRP_IMG
+	bool "SUIT over Application, software image management group"
+	default y
+	# The IMG MGMT group is substituted, not extended by the SUIT variant
+	depends on !MCUMGR_CMD_IMG_MGMT
+
+
+if MGMT_SUITFU_GRP_IMG
+
+config MGMT_SUITFU_IMAGE_NUMBER
+	int "Image number representing SUIT envelope"
+	default 0
+
+endif # MGMT_SUITFU_GRP_IMG
+
+
+config MGMT_SUITFU_GRP_SUIT
+	bool "Extended SUIT commands over USER group"
+	default y
+
+if MGMT_SUITFU_GRP_SUIT
+
+config MGMT_GROUP_ID_SUIT
+	int "SUIT Manangement Group ID"
+	default 66
+
+config MGMT_SUITFU_GRP_SUIT_CAND_ENV_UPLOAD
+	bool "Candidate envelope upload"
+	default y
+
+config MGMT_SUITFU_GRP_SUIT_IMAGE_FETCH
+	bool "Candidate image fetch"
+	depends on SUIT_STREAM_FETCH_SOURCE_MGR
+	default y
+
+config MGMT_SUITFU_GRP_SUIT_IMAGE_FETCH_TIMEOUT_MS
+	int "Inter-chunk timeout for image fetching, in ms"
+	default 5000
+
+
+endif # MGMT_SUITFU_GRP_SUIT
+
 
 module=MGMT_SUITFU
 module-dep=LOG

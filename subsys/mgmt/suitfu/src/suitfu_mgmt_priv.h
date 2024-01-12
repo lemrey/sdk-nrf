@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include <zcbor_common.h>
+#include <zephyr/mgmt/mcumgr/smp/smp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,15 +51,87 @@ extern "C" {
 #define IMG_MGMT_ID_CORELOAD 4
 #define IMG_MGMT_ID_ERASE    5
 
-/** Represents an individual upload request. */
-struct img_mgmt_upload_req {
-	uint32_t image; /* 0 by default. */
-	size_t off;	/* SIZE_MAX if unspecified. */
-	size_t size;	/* SIZE_MAX if unspecified. */
-	struct zcbor_string img_data;
-	struct zcbor_string data_sha;
-	bool upgrade; /* Only allow greater version numbers. */
-} __packed;
+/*
+ * Command IDs for suit management group.
+ */
+#define SUIT_MGMT_ID_MANIFESTS_STATE	  0
+#define SUIT_MGMT_ID_ENVELOPE_UPLOAD	  1
+#define SUIT_MGMT_ID_MISSING_IMAGE_STATE  2
+#define SUIT_MGMT_ID_MISSING_IMAGE_UPLOAD 3
+
+/**
+ * @brief	Verifies if the device associated to DFU partition is ready for use
+ *
+ * @return MGMT_ERR_EOK on success
+ *		MGMT_ERR_EBADSTATE if the device is not ready for use
+ *
+ */
+int suitfu_mgmt_is_dfu_partition_ready(void);
+
+/**
+ * @brief	Returns size of DFU partition, in bytes
+ *
+ */
+size_t suitfu_mgmt_get_dfu_partition_size(void);
+
+/**
+ * @brief	Erases first num_bytes of DFU partition rounded up to the end of erase
+ * block size
+ *
+ * @return MGMT_ERR_EOK on success
+ *		MGMT_ERR_ENOMEM if DFU partition is smaller than num_bytes
+ *		MGMT_ERR_EUNKNOWN if erase operation has failed
+ */
+int suitfu_mgmt_erase_dfu_partition(size_t num_bytes);
+
+/**
+ * @brief	Writes image chunk to DFU partition
+ *
+ * @return MGMT_ERR_EOK on success
+ *		MGMT_ERR_EUNKNOWN if write operation has failed
+ */
+int suitfu_mgmt_write_dfu_image_data(unsigned int req_offset, const void *addr, unsigned int size,
+				     bool flush);
+
+/**
+ * @brief	Called once entire update candidate is written to DFU partition
+ * Implementation triggers further processing of the candidate
+ *
+ * @return MGMT_ERR_EOK on success
+ *		MGMT_ERR_EBUSY on candidate processing error
+ */
+int suitfu_mgmt_candidate_envelope_stored(size_t image_size);
+
+/**
+ * @brief	Process Candidate Envelope Upload Request
+ *
+ */
+int suitfu_mgmt_suit_envelope_upload(struct smp_streamer *ctx);
+
+/**
+ * @brief	Initialization of Image Fetch functionality
+ *
+ */
+void suitfu_mgmt_suit_image_fetch_init(void);
+
+/**
+ * @brief	Process Get Missing Image State Request.
+ *
+ * @note	SMP Client sends that request periodically,
+ *		getting requested image identifier (i.e. image name)
+ *		as response
+ *
+ */
+int suitfu_mgmt_suit_missing_image_state_read(struct smp_streamer *ctx);
+
+/**
+ * @brief	Process Image Upload Request
+ *
+ * @note	Executed as result of Get Missing Image State Request.
+ * It delivers chunks of image requested by the device
+ *
+ */
+int suitfu_mgmt_suit_missing_image_upload(struct smp_streamer *ctx);
 
 #ifdef __cplusplus
 }

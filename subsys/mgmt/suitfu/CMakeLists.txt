@@ -14,6 +14,18 @@ if(CONFIG_SSF_SUIT_SERVICE_ENABLED)
   zephyr_library_link_libraries(suit_utils)
 endif()
 
+if(CONFIG_SUIT_STREAM_FETCH_SOURCE_MGR)
+  zephyr_library_link_libraries(suit_stream_sources_interface)
+  zephyr_library_link_libraries(suit_stream_sinks_interface)
+endif()
+
 zephyr_library_sources(
   src/suitfu_mgmt.c
-  )
+)
+
+
+zephyr_library_sources_ifdef(CONFIG_MGMT_SUITFU_GRP_IMG src/suitfu_mgmt_img.c)
+
+zephyr_library_sources_ifdef(CONFIG_MGMT_SUITFU_GRP_SUIT src/suitfu_mgmt_suit.c)
+zephyr_library_sources_ifdef(CONFIG_MGMT_SUITFU_GRP_SUIT_CAND_ENV_UPLOAD src/suitfu_mgmt_suit_cand_env_upload.c)
+zephyr_library_sources_ifdef(CONFIG_MGMT_SUITFU_GRP_SUIT_IMAGE_FETCH src/suitfu_mgmt_suit_image_fetch.c)

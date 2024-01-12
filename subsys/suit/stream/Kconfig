@@ -118,14 +118,14 @@ config SUIT_STREAM_IPC_PROVIDER_BUFFER_SIZE
 	depends on SUIT_STREAM_IPC_PROVIDER
 
 config SUIT_STREAM_IPC_STREAMER_REQUESTING_PERIOD
-  int "Image request repetition period"
-  range 0 10000
-  default 200 
+  int "Image request repetition period in milliseconds"
+  range 100 10000
+  default 1000
 
 config SUIT_STREAM_IPC_STREAMER_CHUNK_TIMEOUT
-  int "Max streamer provider inactivity before timeout"
-  range 0 10000
-  default 200
+  int "Max streamer provider inactivity before timeout in milliseconds"
+  range 1000 60000
+  default 10000
 
 endif # SUIT_STREAM_SOURCE_IPC
 

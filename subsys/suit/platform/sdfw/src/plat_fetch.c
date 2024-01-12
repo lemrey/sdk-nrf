@@ -21,6 +21,9 @@
 #include <memptr_streamer.h>
 #include <memptr_sink.h>
 #endif /* CONFIG_SUIT_STREAM_SOURCE_MEMPTR */
+#ifdef CONFIG_SUIT_STREAM_IPC_REQUESTOR
+#include <ipc_streamer.h>
+#endif /* CONFIG_SUIT_STREAM_IPC_REQUESTOR */
 
 #include <stdbool.h>
 #include <suit_platform.h>
