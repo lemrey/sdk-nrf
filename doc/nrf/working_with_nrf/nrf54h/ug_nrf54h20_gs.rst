@@ -74,21 +74,21 @@ You need the nRF Command Line Tools specific to the limited sampling release of 
 
 To install the nRF Command Line Tools, you need to download and install the version corresponding to your system:
 
-* `10.22.3_cs3 64-bit Windows, executable`_
-* `10.22.3_cs3 macOS, zip archive`_
+* `10.23.3_ec 64-bit Windows, executable`_
+* `10.23.3_ec macOS, zip archive`_
 * 64-bit Linux:
 
-  * `10.22.3_cs3 x86 system, deb format`_
-  * `10.22.3_cs3 x86 system, RPM`_
-  * `10.22.3_cs3 x86 system, tar archive`_
+  * `10.23.3_ec x86 system, deb format`_
+  * `10.23.3_ec x86 system, RPM`_
+  * `10.23.3_ec x86 system, tar archive`_
 
-  * `10.22.3_cs3 ARM64 system, deb format`_
-  * `10.22.3_cs3 ARM64 system, RPM`_
-  * `10.22.3_cs3 ARM64 system, tar archive`_
+  * `10.23.3_ec ARM64 system, deb format`_
+  * `10.23.3_ec ARM64 system, RPM`_
+  * `10.23.3_ec ARM64 system, tar archive`_
 
 * 32-bit Linux:
 
-  * `10.22.3_cs3 ARMHF system, zip archive`_
+  * `10.23.3_ec ARMHF system, zip archive`_
 
 .. _nrf54h20_install_toolchain:
 

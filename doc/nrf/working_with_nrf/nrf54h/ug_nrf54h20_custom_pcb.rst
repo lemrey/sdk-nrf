@@ -101,7 +101,8 @@ You can start from this file when editing the values of the devicetree propertie
 Generating the BICR binary
 ==========================
 
-When running ``west build``, the build system runs the BICR devicetree node through `nrf-regtool`_ to create the relevant HEX file (:file:`bicr.hex`) at build time.
+To generate the BICR binary, you must first set the Kconfig option :kconfig:option:`CONFIG_INCLUDE_BICR` to ``y``.
+When running ``west build``, the build system then runs the BICR devicetree node through `nrf-regtool`_ to create the relevant HEX file (:file:`bicr.hex`) at build time.
 Based on the peripheral definition extracted from the nRF54H20 SVD file, the modified registers from the configuration are mapped into their relevant position in memory.
 
 .. note::
@@ -118,8 +119,67 @@ The content of BICR should be loaded to the SoC only once and should not be eras
 To manually flash the generated :file:`bicr.hex` file to the SoC, use ``nrfjprog`` as follows::
 
     nrfjprog --snr ${FPGA_SEGGER_ID} --coprocessor CP_SECURE -f nrf54h --program bicr.hex --verify
+    nrfjprog --coprocessor CP_SECURE --erasepage 0xfff8000
+    nrfjprog --coprocessor CP_SECURE --erasepage 0xfffa000
 
 You need to follow this flashing process only one time, as the PCB configuration will not change.
+
+Verify the Life Cycle State (LCS) of the SoC
+********************************************
+
+To successfully run your custom application on your custom board, the SoC must have its Lifecycle State (LCS) set to ``RoT`` (meaning Root of Trust).
+To verify that, run nrfjprog from the nRF Command Line Tools version 10.23.3_ec as follows::
+
+   nrfjprog -s <serial_number> --memrd 0x0E000084 --w 32 --n 8
+
+If nrfjprog returns ``0x2000`` twice, the LCS of the SoC is set to ``RoT``.
+If nrfjprog returns ``0x1000`` twice, the LCS of the SoC is set to ``EMPTY``, meaning no LCS is set, and it needs to be switched to ``RoT``.
+
+If you get the following error, the SoC is in ROM boot mode::
+
+   [error] [ Client] - Encountered error -90: Command read_memory_descriptors executed for 1 milliseconds with result -90
+   [error] [ Worker] - Ap-protect is enabled, can't read memory descriptors.
+   [error] [ Client] - Encountered error -90: Command read executed for 80 milliseconds with result -90
+   [error] [haltium] - Device responded to command with error status in ADAC packet: INVALID_COMMAND (0x7FFF).
+   [error] [ Worker] - Access protection is enabled, can't access memory.
+   ERROR: The operation attempted is unavailable due to readback protection in
+   ERROR: your device. Please use --recover to unlock the device.
+   NOTE: For additional output, try running again with logging enabled (--log).
+   NOTE: Any generated log error messages will be displayed.
+
+Switch to ``NORMAL`` mode first, then run again the previous command::
+
+   nrfjprog -s <serial_number> --bootmode NORMAL
+   nrfjprog -s <serial_number> --memrd 0x0E000084 --w 32 --n 8
+
+Switch LCS to RoT
+=================
+
+To transition the LCS to ``RoT``, do the following:
+
+1. Program BICR and secdom::
+
+      nrfjprog -f nrf54h --coprocessor CP_SECURE --program /*insert_path_to_your_build_directory_here*/secdom/src/secdom-build/zephyr/zephyr.hex --verify
+      nrfjprog -f nrf54h --coprocessor CP_SECURE --program bicr.hex --verify
+
+#. Run these commands::
+
+      nrfjprog --coprocessor CP_SECURE --memwr 0x0E000108 --val 0x40000
+      nrfjprog --coprocessor CP_SECURE --memwr 0x0E00010C --val 0x0E003000
+
+      nrfjprog --family nrf54h --bootmode ROM
+      nrfjprog --family nrf54h --adac lcs_change PSA_ROT_PROVISIONING --single-step
+      nrfjprog --family nrf54h --bootmode NORMAL
+
+#. Flash your application using west::
+
+      west flash
+
+#. Verify if the LCS is set to ``RoT``::
+
+      nrfjprog --memrd 0x0E000084 --w 32 --n 8
+
+   If nrfjprog returns ``0x2000`` twice, the LCS of the SoC is correctly set to ``RoT``.
 
 Create or modify your application for your custom board
 *******************************************************
