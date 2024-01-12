@@ -29,7 +29,7 @@ set (CMAKE_CXX_FLAGS
 	"-DOPENTHREAD_PROJECT_CORE_CONFIG_FILE=\\\"openthread-core-zephyr-config.h\\\""
 	${CMAKE_CXX_FLAGS})
 
-add_subdirectory_ifdef(CONFIG_NRF_TBR_ROUTE_IPV4 src/net)
+add_subdirectory(src/net)
 
 target_sources(app PRIVATE
 	src/border_agent.c

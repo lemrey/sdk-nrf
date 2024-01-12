@@ -76,3 +76,36 @@ module-dep = LOG
 module-str = NAT
 source "subsys/logging/Kconfig.template.log_config"
 endif # NRF_TBR_NAT
+
+config NRF_TBR_MDNS_SERVER_NUM_LISTENERS
+    int "Maximum number of mDNS listeners"
+    default 1
+    help
+      Defines a number of listeners that can be started for mDNS
+      server. There can be only one listener per network interface.
+
+config NRF_TBR_MDNS_SERVER_NUM_RECORDS
+    int "Maximum number of mDNS records"
+    default 24
+    help
+      Defines a number of mDNS records that can be allocated.
+
+config NRF_TBR_MDNS_SERVER_DATA_BUFFER_COUNT
+    int "Number of buffers available for mDNS records"
+    default 64
+    help
+      Defines a number of data buffers to be used for storage of mDNS
+      records' names and data - hostnames, addresses etc.
+
+config NRF_TBR_MDNS_SERVER_DATA_BUFFER_SIZE
+    int "Size of a single data buffer for mDNS records"
+    default 16
+    help
+      Defines a size of a single data buffer used during allocation of
+      mDNS records. The buffer size should be chosen to match needs
+      of the application.
+
+module = NRF_TBR_MDNS_SERVER
+module-dep = LOG
+module-str = mDNS server
+source "subsys/logging/Kconfig.template.log_config"

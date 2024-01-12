@@ -38,8 +38,6 @@ void mdns_publisher_init()
 
 		dns_sd_rec_content[i].sd_record_ptr = &dns_sd_rec_pool[i];
 	}
-
-	mdns_responder_set_ext_records(dns_sd_rec_pool, RECORDS_NUM);
 }
 
 void mdns_publisher_record_update(struct mdns_publisher_rec *record,

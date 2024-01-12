@@ -24,9 +24,8 @@ menuconfig NRF_TBR
     imply NET_IPV6_MLD
     imply NET_IPV6_ND
     imply NET_IPV6_NBR_CACHE
-    imply NET_HOSTNAME_ENABLE
-    imply MDNS_RESPONDER
     imply DNS_SD
+    imply NET_IPV4_IGMP
     imply NET_PKT_FILTER # This should be removed after next upmerge
     imply NET_PKT_FILTER_IPV6_HOOK # This should be removed after next upmerge
 

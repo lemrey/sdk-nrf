@@ -12,6 +12,7 @@
 #include "tbr.h"
 #include "backbone/backbone_agent.h"
 #include "platform/infra_if.h"
+#include "net/mdns_server.h"
 
 #include <ipv6.h>
 
@@ -206,6 +207,7 @@ static int init_application(void)
 	context->ot = openthread_get_default_context();
 
 	infra_if_init();
+	mdns_server_init();
 	backbone_agent_init();
 
 	net_mgmt_init_event_callback(&net_event_cb,
@@ -263,9 +265,10 @@ static struct openthread_state_changed_cb ot_state_chaged_cb = { .state_changed_
 
 int main(void)
 {
-#if defined(CONFIG_WIFI_NRF700X)
 	int err;
+	struct mdns_server_listener_config mdns_config = { 0 };
 
+#if defined(CONFIG_WIFI_NRF700X)
 	/* Add temporary fix to prevent using Wi-Fi before WPA supplicant is ready. */
 	k_sleep(K_SECONDS(1));
 
@@ -298,6 +301,16 @@ int main(void)
 	otPlatInfraIfStateChanged(context->ot->instance,
 				  net_if_get_by_iface(context->backbone_iface),
 				  true);
+
+	mdns_config.iface = context->backbone_iface;
+	mdns_config.setup_ipv6 = true;
+	mdns_config.setup_ipv4 = true;
+
+	err = mdns_server_listener_start(&mdns_config);
+
+	if (err) {
+		LOG_ERR("Failed to start mDNS sever: %d", err);
+	}
 
 	border_agent_init();
 
