@@ -14,6 +14,7 @@
 #include <suit_platform.h>
 #include <suit_storage.h>
 #include <suit_plat_mem_util.h>
+#include <suit_mci.h>
 #include <suit_plat_digest_cache.h>
 #include "suit_plat_err.h"
 
@@ -245,25 +246,13 @@ static int boot_path(void)
 
 int suit_orchestrator_init(void)
 {
-	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES] = {
-		NULL};
-	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
-
-	suit_plat_err_t plat_err;
 	int err = suit_processor_init();
 	if (err != SUIT_SUCCESS) {
 		LOG_ERR("Failed to initialize suit processor: %d", err);
 		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(err);
 	}
 
-	plat_err = suit_mci_supported_manifest_class_ids_get(
-		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
-	if (plat_err != SUIT_PLAT_SUCCESS) {
-		LOG_ERR("Failed to get list of supported manifest class IDs: MCI err %d", plat_err);
-		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(plat_err);
-	}
-
-	plat_err = suit_storage_init(supported_class_ids, supported_class_ids_len);
+	suit_plat_err_t plat_err = suit_storage_init();
 	if (plat_err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to init suit storage: %d", plat_err);
 		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(plat_err);
@@ -285,8 +274,7 @@ int suit_orchestrator_entry(void)
 	suit_plat_err_t err = suit_storage_update_cand_get(&update_regions, &update_regions_len);
 
 #if CONFIG_SUIT_DIGEST_CACHE
-	if (suit_plat_digest_cache_remove_all() != SUIT_SUCCESS)
-	{
+	if (suit_plat_digest_cache_remove_all() != SUIT_SUCCESS) {
 		return SUIT_PROCESSOR_ERR_TO_ZEPHYR_ERR(SUIT_ERR_CRASH);
 	}
 #endif

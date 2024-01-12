@@ -822,7 +822,7 @@ static void handle_image_info_request(uint8_t *data, size_t *size)
 	unsigned int seq_num = 0;
 
 	int err = suit_get_installed_manifest_info((suit_manifest_class_id_t *)&manifest_class_id,
-						   &seq_num, NULL, NULL, NULL, NULL, NULL);
+						   &seq_num, NULL, NULL, NULL, NULL);
 
 	if (!err) {
 		uint8_t flash_area_id = 0;

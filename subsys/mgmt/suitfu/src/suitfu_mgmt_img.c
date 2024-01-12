@@ -156,7 +156,7 @@ static int suitfu_mgmt_img_state_read(struct smp_streamer *ctx)
 	if (ok) {
 		/* Let's proceed installed envelope */
 		int err = suit_get_installed_manifest_info(
-			(suit_manifest_class_id_t *)&manifest_class_id, &seq_num, NULL, NULL, NULL,
+			(suit_manifest_class_id_t *)&manifest_class_id, &seq_num, NULL, NULL,
 			&alg_id, &hash_mreg);
 		if (err != 0) {
 			LOG_ERR("Unable to read the current manifest data: %d", err);

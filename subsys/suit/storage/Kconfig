@@ -8,7 +8,6 @@ menuconfig SUIT_STORAGE
 	bool "Enable SUIT storage module"
 	depends on ZCBOR
 	depends on ZCBOR_CANONICAL
-	depends on SUIT_MCI
 	depends on SUIT_METADATA
 	depends on SUIT_UTILS
 	depends on FLASH
@@ -23,7 +22,8 @@ config SUIT_STORAGE_N_UPDATE_REGIONS
 
 config SUIT_STORAGE_N_ENVELOPES
 	int "Number of envelopes, possible to store in SUIT storage"
-	default 8 if SOC_NRF54H20
+	default 11 if SOC_NRF54H20 && !SUIT_STORAGE_LEGACY_FORMAT
+	default 8 if SOC_NRF54H20 && SUIT_STORAGE_LEGACY_FORMAT
 	default 5 if SOC_NRF52840
 	default 5 if SOC_POSIX
 	help
@@ -31,21 +31,30 @@ config SUIT_STORAGE_N_ENVELOPES
 	  is deployed, use larger value than it is necessary.
 
 	  For nRF54H20 the following envelopes may be defined:
-	    - SecDom + SysCtlr: firmware
-	    - SecDom + SysCtlr: recovery
+	    - Nordic Top
+	    - SecDom: firmware + recovery
+	    - SysCtlr: firmware
+	    - Radio: recovery
+	    * Radio: firmware (A)
+	    * Radio: firmware (B)
 	    - ROOT
-	    - Radio: firmware
-	    - Application: firmware
 	    - Application: recovery
-	    - Application: user data
-	    - spare slot
+	    - Application: firmware (A)
+	    - Application: firmware (B)
+	    * Application: user data
+
+	  Manifests marked with (*) are not available in legacy SUIT storage format.
 
 	  For debug and test platforms (POSIX, nRF52840) the following envelopes may be defined:
 	    - ROOT
-	    - Application: firmware
 	    - Application: recovery
+	    - Application: firmware (A)
+	    - Application: firmware (B)
 	    - Application: user data
-	    - spare slot
+
+config SUIT_STORAGE_LEGACY_FORMAT
+	bool "Use legacy SUIT storage memory layout"
+	default y
 
 config SUIT_STORAGE_ENVELOPE_SIZE
 	int "The maximum size of envelope that can be stored in a single SUIT storage slot"

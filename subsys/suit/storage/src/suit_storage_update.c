@@ -14,28 +14,31 @@
 
 LOG_MODULE_REGISTER(suit_storage_update, CONFIG_SUIT_LOG_LEVEL);
 
-static const struct device *fdev;
-
 /** @brief Update the candidate info structure.
  *
- * @param[in]  info  Update candidate info to write.
+ * @param[in]   info  Update candidate info to write.
+ * @param[in]   addr  Address of erase-block aligned memory containing update candidate info.
+ * @param[in]   size  Size of erase-block aligned memory, containing update candidate info.
  *
- * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
+ * @retval SUIT_PLAT_SUCCESS           if update candidate successfully updated.
+ * @retval SUIT_PLAT_ERR_IO            if unable to change NVM contents.
+ * @retval SUIT_PLAT_ERR_HW_NOT_READY  if NVM controller is unavailable.
  */
-static suit_plat_err_t save_update_info(struct update_candidate_info *info)
+static suit_plat_err_t save_update_info(const struct update_candidate_info *info, uint8_t *addr,
+					size_t size)
 {
-	if (fdev == NULL) {
+	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+
+	if (!device_is_ready(fdev)) {
 		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
-	int err = flash_erase(fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update),
-			      sizeof(((struct suit_storage *)0)->update.erase_block));
+	int err = flash_erase(fdev, suit_plat_mem_nvm_offset_get(addr), size);
 	if (err != 0) {
 		return SUIT_PLAT_ERR_IO;
 	}
 
-	err = flash_write(fdev, SUIT_STORAGE_OFFSET + offsetof(struct suit_storage, update), info,
-			  sizeof(*info));
+	err = flash_write(fdev, suit_plat_mem_nvm_offset_get(addr), info, sizeof(*info));
 	if (err != 0) {
 		return SUIT_PLAT_ERR_IO;
 	}
@@ -45,27 +48,29 @@ static suit_plat_err_t save_update_info(struct update_candidate_info *info)
 
 suit_plat_err_t suit_storage_update_init(void)
 {
-	fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
 
 	if (!device_is_ready(fdev)) {
 		fdev = NULL;
-		return SUIT_PLAT_ERR_HW_NOT_READY ;
+		return SUIT_PLAT_ERR_HW_NOT_READY;
 	}
 
 	return SUIT_PLAT_SUCCESS;
 }
 
-suit_plat_err_t suit_storage_update_cand_get(const suit_plat_mreg_t **regions, size_t *len)
+suit_plat_err_t suit_storage_update_get(const uint8_t *addr, size_t size,
+					const suit_plat_mreg_t **regions, size_t *len)
 {
-	struct suit_storage *storage = (struct suit_storage *)SUIT_STORAGE_ADDRESS;
-	struct update_candidate_info *info = &(storage->update.update);
+	struct update_candidate_info *info = (struct update_candidate_info *)addr;
 
-	if (fdev == NULL) {
-		return SUIT_PLAT_ERR_HW_NOT_READY;
+	if ((addr == NULL) || (regions == NULL) || (len == NULL)) {
+		return SUIT_PLAT_ERR_INVAL;
 	}
 
-	if ((regions == NULL) || (len == NULL)) {
-		return SUIT_PLAT_ERR_INVAL;
+	if (size < sizeof(struct update_candidate_info)) {
+		LOG_ERR("Incorrect update candidate area size (%d != %d)", size,
+			sizeof(struct update_candidate_info));
+		return SUIT_PLAT_ERR_SIZE;
 	}
 
 	if ((info->update_magic_value != UPDATE_MAGIC_VALUE_AVAILABLE_CBOR) ||
@@ -80,18 +85,32 @@ suit_plat_err_t suit_storage_update_cand_get(const suit_plat_mreg_t **regions, s
 	return SUIT_PLAT_SUCCESS;
 }
 
-suit_plat_err_t suit_storage_update_cand_set(suit_plat_mreg_t *regions, size_t len)
+suit_plat_err_t suit_storage_update_set(uint8_t *addr, size_t size, const suit_plat_mreg_t *regions,
+					size_t len)
 {
 	struct update_candidate_info info;
 
 	memset(&info, 0, sizeof(info));
 
-	if (((len != 0) && (regions == NULL)) || (len > CONFIG_SUIT_STORAGE_N_UPDATE_REGIONS)) {
+	if ((addr == NULL) || ((len != 0) && (regions == NULL))) {
 		return SUIT_PLAT_ERR_INVAL;
 	}
 
+	if (size < sizeof(struct update_candidate_info)) {
+		LOG_ERR("Incorrect update candidate area size (%d != %d)", size,
+			sizeof(struct update_candidate_info));
+		return SUIT_PLAT_ERR_SIZE;
+	}
+
 	if ((regions != NULL) && ((regions[0].mem == NULL) || (regions[0].size == 0))) {
+		LOG_ERR("Invalid update candidate regions provided (%p)", (void *)regions);
 		return SUIT_PLAT_ERR_INVAL;
+	}
+
+	if (len > CONFIG_SUIT_STORAGE_N_UPDATE_REGIONS) {
+		LOG_ERR("Too many update regions (%d > %d)", len,
+			CONFIG_SUIT_STORAGE_N_UPDATE_REGIONS);
+		return SUIT_PLAT_ERR_SIZE;
 	}
 
 	info.update_magic_value = UPDATE_MAGIC_VALUE_AVAILABLE_CBOR;
@@ -100,5 +119,5 @@ suit_plat_err_t suit_storage_update_cand_set(suit_plat_mreg_t *regions, size_t l
 		memcpy(&info.update_regions, regions, sizeof(regions[0]) * len);
 	}
 
-	return save_update_info(&info);
+	return save_update_info(&info, addr, size);
 }

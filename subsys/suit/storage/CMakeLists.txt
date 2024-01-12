@@ -6,13 +6,15 @@
 
 zephyr_interface_library_named(suit_storage_interface)
 target_include_directories(suit_storage_interface INTERFACE include)
-target_link_libraries(suit_storage_interface INTERFACE suit_mci)
+target_link_libraries(suit_storage_interface INTERFACE suit_metadata)
 target_link_libraries(suit_storage_interface INTERFACE suit_platform_err)
 
 zephyr_library()
-zephyr_library_sources(src/suit_storage.c)
+zephyr_library_sources_ifdef(CONFIG_SUIT_STORAGE_LEGACY_FORMAT src/suit_storage_legacy.c)
 zephyr_library_sources(src/suit_storage_update.c)
 zephyr_library_sources(src/suit_storage_encode.c)
+zephyr_library_sources(src/suit_storage_envelope.c)
+zephyr_library_sources(src/suit_storage_mpi.c)
 
 zephyr_library_link_libraries(suit_utils)
 zephyr_library_link_libraries(suit_storage_interface)
