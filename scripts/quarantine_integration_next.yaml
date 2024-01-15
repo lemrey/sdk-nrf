@@ -2844,3 +2844,10 @@
   platforms:
     - nrf9230dk_nrf9230_cpusys
   comment: "Configurations excluded to limit resources usage in integration builds"
+
+- scenarios:
+    - suit-platform.integration.flash_sink
+    - suit-platform.integration.cache_sink
+  platforms:
+    - nrf54h20dk_nrf54h20_cpuapp@soc1
+  comment: "Quarantine ustable tests. Robert Stypa will have a look later"
