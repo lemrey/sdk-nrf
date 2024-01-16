@@ -26,6 +26,7 @@
  * by the streamer provider
  */
 #include <sink.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
