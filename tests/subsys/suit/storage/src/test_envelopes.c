@@ -34,6 +34,11 @@ extern const size_t manifest_app_posix_len;
 extern uint8_t manifest_root_posix_buf[];
 extern const size_t manifest_root_posix_len;
 
+extern uint8_t manifest_app_posix_v2_buf[];
+extern const size_t manifest_app_posix_v2_len;
+extern uint8_t manifest_root_posix_v2_buf[];
+extern const size_t manifest_root_posix_v2_len;
+
 static const suit_manifest_class_id_t classes[] = {
 	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_root') */
 	{{0x3f, 0x6a, 0x3a, 0x4d, 0xcd, 0xfa, 0x58, 0xc5, 0xac, 0xce, 0xf9, 0xf5, 0x84, 0xc4, 0x11,
@@ -44,17 +49,18 @@ static const suit_manifest_class_id_t classes[] = {
 	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_rad') */
 	{{0x81, 0x6a, 0xa0, 0xa0, 0xaf, 0x11, 0x5e, 0xf2, 0x85, 0x8a, 0xfe, 0xb6, 0x68, 0xb2, 0xe9,
 	  0xc9}},
-	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sec_sys') */
-	{{0x75, 0x81, 0x1f, 0x10, 0x09, 0x94, 0x57, 0x72, 0xad, 0xf7, 0x71, 0x88, 0xbc, 0x8c, 0x5b,
-	  0x73}},
-	/* RFC4122 uuid5(nordic_vid, 'posix_sample_root') */
-	{{0xc8, 0x36, 0x30, 0xf5, 0x9e, 0x0f, 0x5f, 0xe4, 0x8e, 0xff, 0x34, 0x27, 0xd3, 0x64, 0x7d,
-	  0x97}},
-	/* RFC4122 uuid5(nordic_vid, 'posix_sample_app') */
-	{{0x56, 0xdc, 0x9a, 0x14, 0x28, 0xd8, 0x52, 0xd3, 0xbd, 0x62, 0xe7, 0x7a, 0x08, 0xbc, 0x8b,
-	  0x91}},
+	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sys') */
+	{{0xc0, 0x8a, 0x25, 0xd7, 0x35, 0xe6, 0x59, 0x2c, 0xb7, 0xad, 0x43, 0xac, 0xc8, 0xd1, 0xd1,
+	  0xc8}},
+	/* RFC4122 uuid5(nordic_vid, 'test_sample_root') */
+	{{0x97, 0x05, 0x48, 0x23, 0x4c, 0x3d, 0x59, 0xa1, 0x89, 0x86, 0xa5, 0x46, 0x60, 0xa1, 0x4b,
+	  0x0a}},
+	/* RFC4122 uuid5(nordic_vid, 'test_sample_app') */
+	{{0x5b, 0x46, 0x9f, 0xd1, 0x90, 0xee, 0x53, 0x9c, 0xa3, 0x18, 0x68, 0x1b, 0x03, 0x69, 0x5e,
+	  0x36}},
 };
 
+#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
 static const suit_manifest_class_id_t *supported_classes[] = {
 	&classes[0],
 	&classes[1],
@@ -66,6 +72,19 @@ static const suit_manifest_class_id_t *unsupported_classes[] = {
 	&classes[4],
 	&classes[5],
 };
+#else  /* CONFIG_SOC_NRF54H20 */
+static const suit_manifest_class_id_t *supported_classes[] = {
+	&classes[4],
+	&classes[5],
+};
+
+static const suit_manifest_class_id_t *unsupported_classes[] = {
+	&classes[0],
+	&classes[1],
+	&classes[2],
+	&classes[3],
+};
+#endif /* CONFIG_SOC_NRF54H20 */
 
 static void test_suite_before(void *f)
 {
@@ -76,7 +95,7 @@ static void test_suite_before(void *f)
 	int rc = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
 	zassert_equal(rc, 0, "Unable to erase memory before test execution");
 
-	rc = suit_storage_init(supported_classes, ARRAY_SIZE(supported_classes));
+	rc = suit_storage_init();
 	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize SUIT storage module (%d).", rc);
 }
 
@@ -131,6 +150,7 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
+#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
 		{
 			.mem = manifest_root_buf,
 			.size = manifest_root_len,
@@ -147,6 +167,16 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set)
 			.mem = manifest_sys_buf,
 			.size = manifest_sys_len,
 		},
+#else  /* CONFIG_SOC_NRF54H20 */
+		{
+			.mem = manifest_root_posix_buf,
+			.size = manifest_root_posix_len,
+		},
+		{
+			.mem = manifest_app_posix_buf,
+			.size = manifest_app_posix_len,
+		},
+#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
@@ -176,6 +206,7 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
+#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
 		{
 			.mem = manifest_root_buf,
 			.size = manifest_root_len,
@@ -192,6 +223,16 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 			.mem = manifest_sys_buf,
 			.size = manifest_sys_len,
 		},
+#else  /* CONFIG_SOC_NRF54H20 */
+		{
+			.mem = manifest_root_posix_buf,
+			.size = manifest_root_posix_len,
+		},
+		{
+			.mem = manifest_app_posix_buf,
+			.size = manifest_app_posix_len,
+		},
+#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	/* Verify that envelopes are not installed. */
@@ -216,6 +257,7 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 
 	/* Install new version of the envelopes. */
 	suit_plat_mreg_t envelopes_v2[] = {
+#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
 		{
 			.mem = manifest_root_v2_buf,
 			.size = manifest_root_v2_len,
@@ -232,6 +274,16 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 			.mem = manifest_sys_buf,
 			.size = manifest_sys_len,
 		},
+#else  /* CONFIG_SOC_NRF54H20 */
+		{
+			.mem = manifest_root_posix_v2_buf,
+			.size = manifest_root_posix_v2_len,
+		},
+		{
+			.mem = manifest_app_posix_v2_buf,
+			.size = manifest_app_posix_v2_len,
+		},
+#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes_v2); i++) {
@@ -253,6 +305,7 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_unsupported_classes)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
+#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
 		{
 			.mem = manifest_root_posix_buf,
 			.size = manifest_root_posix_len,
@@ -261,6 +314,16 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_unsupported_classes)
 			.mem = manifest_app_posix_buf,
 			.size = manifest_app_posix_len,
 		},
+#else  /* CONFIG_SOC_NRF54H20 */
+		{
+			.mem = manifest_root_buf,
+			.size = manifest_root_len,
+		},
+		{
+			.mem = manifest_app_buf,
+			.size = manifest_app_len,
+		},
+#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
@@ -283,6 +346,7 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_class_mismatch)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
+#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
 		{
 			.mem = manifest_root_posix_buf,
 			.size = manifest_root_posix_len,
@@ -291,6 +355,16 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_class_mismatch)
 			.mem = manifest_app_posix_buf,
 			.size = manifest_app_posix_len,
 		},
+#else  /* CONFIG_SOC_NRF54H20 */
+		{
+			.mem = manifest_root_buf,
+			.size = manifest_root_len,
+		},
+		{
+			.mem = manifest_app_buf,
+			.size = manifest_app_len,
+		},
+#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {

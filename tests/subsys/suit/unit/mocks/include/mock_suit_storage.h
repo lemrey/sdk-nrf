@@ -13,7 +13,7 @@
 #include <suit_storage.h>
 
 /* suit_storage.c */
-FAKE_VALUE_FUNC(int, suit_storage_init, const suit_manifest_class_id_t **, size_t);
+FAKE_VALUE_FUNC(int, suit_storage_init);
 FAKE_VALUE_FUNC(int, suit_storage_installed_envelope_get, const suit_manifest_class_id_t *,
 		uint8_t **, size_t *);
 FAKE_VALUE_FUNC(int, suit_storage_install_envelope, const suit_manifest_class_id_t *, uint8_t *,

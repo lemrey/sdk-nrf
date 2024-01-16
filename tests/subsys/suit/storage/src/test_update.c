@@ -23,14 +23,6 @@
 		      "Test precondition not met: update is not available (0x%x).",                \
 		      *((uint32_t *)SUIT_STORAGE_ADDRESS));
 
-/* RFC4122 uuid5(nordic_vid, 'unspecified_class') */
-static const suit_manifest_class_id_t unspecified_class_id = {{0xca, 0xd8, 0x52, 0x3a, 0xf8, 0x29,
-							       0x5a, 0x9a, 0xba, 0x85, 0x2e, 0xa0,
-							       0xb2, 0xf5, 0x77, 0xc9}};
-static const suit_manifest_class_id_t *supported_classes[] = {
-	&unspecified_class_id,
-};
-
 static void test_suite_before(void *f)
 {
 	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
@@ -46,7 +38,7 @@ static void test_suite_before(void *f)
 	int rc = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
 	zassert_equal(rc, 0, "Unable to erase memory before test execution");
 
-	rc = suit_storage_init(supported_classes, ARRAY_SIZE(supported_classes));
+	rc = suit_storage_init();
 	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize SUIT storage module (%d).", rc);
 }
 

@@ -4,7 +4,7 @@ SUIT_Envelope_Tagged:
       suit-digest-algorithm-id: cose-alg-sha-256
   suit-manifest:
     suit-manifest-version: 1
-    suit-manifest-sequence-number: 1
+    suit-manifest-sequence-number: 2
     suit-common:
       suit-components:
       - - CAND_MFST
@@ -72,7 +72,7 @@ SUIT_Envelope_Tagged:
         suit-parameter-image-digest:
           suit-digest-algorithm-id: cose-alg-sha-256
           suit-digest-bytes:
-            file: app_posix.suit
+            file: app_posix_v2.suit
     - suit-directive-fetch:
       - suit-send-record-failure
     - suit-condition-image-match:
@@ -109,4 +109,4 @@ SUIT_Envelope_Tagged:
       suit-text-component-description: Sample root manifest
       suit-text-component-version: v1.0.0
   suit-integrated-payloads:
-    '#app.suit': app_posix.suit
+    '#app.suit': app_posix_v2.suit

@@ -18,7 +18,7 @@ SUIT_Envelope_Tagged:
           suit-parameter-class-identifier:
             RFC4122_UUID:
               namespace: nordicsemi.com
-              name: nRF54H20_sec_sys
+              name: nRF54H20_sys
           suit-parameter-image-digest:
             suit-digest-algorithm-id: cose-alg-sha-256
             suit-digest-bytes:
@@ -60,7 +60,7 @@ SUIT_Envelope_Tagged:
     - INSTLD_MFST
     - RFC4122_UUID:
         namespace: nordicsemi.com
-        name: nRF54H20_sec_sys
+        name: nRF54H20_sys
   suit-text:
     '["MEM", 12, 235159552, 65536]':
       suit-text-vendor-name: Nordic Semiconductor ASA

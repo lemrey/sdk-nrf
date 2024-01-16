@@ -9,6 +9,7 @@
 #include <suit_orchestrator.h>
 
 #include <suit_storage.h>
+#include <suit_mci.h>
 #include <suit_types.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
@@ -65,9 +66,6 @@ static void setup_erased_flash(void)
 
 static void setup_update_candidate(const uint8_t *buf, size_t len)
 {
-	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
-	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
-
 	zassert_not_null(buf, "NULL buf");
 
 	suit_plat_mreg_t update_candidate[1] = {{
@@ -80,12 +78,7 @@ static void setup_update_candidate(const uint8_t *buf, size_t len)
 	int err = suit_mci_init();
 	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to initialize MCI (%d)", err);
 
-	err = suit_mci_supported_manifest_class_ids_get(
-		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
-	zassert_equal(SUIT_PLAT_SUCCESS, err,
-		      "Failed to get list of supported manifest class IDs (%d)", err);
-
-	err = suit_storage_init(supported_class_ids, supported_class_ids_len);
+	err = suit_storage_init();
 	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init suit storage (%d)", err);
 
 	err = suit_storage_update_cand_set(update_candidate, ARRAY_SIZE(update_candidate));

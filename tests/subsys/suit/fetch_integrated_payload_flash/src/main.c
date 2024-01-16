@@ -39,7 +39,7 @@ static void *test_suit_setup(void)
 	return NULL;
 }
 
-ZTEST_SUITE(fetch_integrated_payoad_flash_tests, NULL, test_suit_setup, NULL, NULL, NULL);
+ZTEST_SUITE(fetch_integrated_payload_flash_tests, NULL, test_suit_setup, NULL, NULL, NULL);
 
 /** @brief Authenticate, validate and execute all command sequences from the sample SUIT envelope.
  *
@@ -47,22 +47,14 @@ ZTEST_SUITE(fetch_integrated_payoad_flash_tests, NULL, test_suit_setup, NULL, NU
  * implementation. If the platform design requires it, please update the envelope payload, defined
  * at the beginning of this file.
  */
-ZTEST(fetch_integrated_payoad_flash_tests, test_suit_process)
+ZTEST(fetch_integrated_payload_flash_tests, test_suit_process)
 {
 	int err = SUIT_SUCCESS;
 
 	err = suit_processor_init();
 	zassert_equal(err, SUIT_SUCCESS, "Unable to initialise SUIT processor (err: %d)", err);
 
-	const suit_manifest_class_id_t *supported_class_ids[CONFIG_SUIT_STORAGE_N_ENVELOPES];
-	size_t supported_class_ids_len = ARRAY_SIZE(supported_class_ids);
-
-	err = suit_mci_supported_manifest_class_ids_get(
-		(const suit_manifest_class_id_t **)&supported_class_ids, &supported_class_ids_len);
-	zassert_equal(SUIT_PLAT_SUCCESS, err,
-		      "Failed to get list of supported manifest class IDs (%d)", err);
-
-	err = suit_storage_init(supported_class_ids, supported_class_ids_len);
+	err = suit_storage_init();
 	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init suit storage (%d)", err);
 
 	err = suit_process_sequence(manifest_buf, manifest_len, SUIT_SEQ_PARSE);
