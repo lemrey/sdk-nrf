@@ -168,11 +168,11 @@ otError otPlatInfraIfDiscoverNat64Prefix(uint32_t aInfraIfIndex)
 	k_work_submit(&nat64_discover_prefix_work);
 
 	if (ret) {
-		LOG_WRN("getaddrinfo failed %s\n", gai_strerror(ret));
+		LOG_INF("getaddrinfo failed %s", gai_strerror(ret));
 		return OT_ERROR_FAILED;
 	}
 
-	NET_DBG("getaddrinfo request for %s\n", ipv4_known_host);
+	NET_DBG("getaddrinfo request for %s", ipv4_known_host);
 
 	return OT_ERROR_NONE;
 }
