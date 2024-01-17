@@ -11,10 +11,12 @@ target_link_libraries(suit_storage_interface INTERFACE suit_platform_err)
 
 zephyr_library()
 zephyr_library_sources_ifdef(CONFIG_SUIT_STORAGE_LEGACY_FORMAT src/suit_storage_legacy.c)
+zephyr_library_sources_ifndef(CONFIG_SUIT_STORAGE_LEGACY_FORMAT src/suit_storage_nrf54h20.c)
 zephyr_library_sources(src/suit_storage_update.c)
 zephyr_library_sources(src/suit_storage_encode.c)
 zephyr_library_sources(src/suit_storage_envelope.c)
 zephyr_library_sources(src/suit_storage_mpi.c)
+zephyr_library_sources(src/suit_storage_nvv.c)
 
 zephyr_library_link_libraries(suit_utils)
 zephyr_library_link_libraries(suit_storage_interface)

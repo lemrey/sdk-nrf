@@ -16,7 +16,7 @@ if SUIT_STORAGE
 
 config SUIT_STORAGE_N_UPDATE_REGIONS
 	int "Maximum number of memory regions, describing the update candidate"
-	default 1
+	default 7
 	help
 	  The memory region may describe SUIT envelope as well as the SUIT cache.
 

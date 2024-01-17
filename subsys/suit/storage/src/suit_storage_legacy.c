@@ -10,6 +10,10 @@
 
 LOG_MODULE_REGISTER(suit_storage, CONFIG_SUIT_LOG_LEVEL);
 
+#define SUIT_STORAGE_ADDRESS suit_plat_mem_nvm_ptr_get(SUIT_STORAGE_OFFSET)
+#define SUIT_STORAGE_OFFSET  FIXED_PARTITION_OFFSET(suit_storage)
+#define SUIT_STORAGE_SIZE    FIXED_PARTITION_SIZE(suit_storage)
+
 /* Update candidate metadata, aligned to the erase block size. */
 union suit_update_candidate_entry {
 	struct update_candidate_info update;

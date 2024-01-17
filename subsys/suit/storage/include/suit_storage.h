@@ -98,6 +98,33 @@ suit_plat_err_t suit_storage_installed_envelope_get(const suit_manifest_class_id
 suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id, uint8_t *addr,
 					      size_t size);
 
+/**
+ * @brief Get the value of manifest non-volatile variable.
+ *
+ * @param[in]   index      Index of the variable.
+ * @param[out]  value      Pointer to store the value.
+ *
+ * @retval SUIT_PLAT_SUCCESS        if the value was successfully read.
+ * @retval SUIT_PLAT_ERR_INVAL      if one of the input arguments is invalid (i.e. NULL).
+ * @retval SUIT_PLAT_ERR_SIZE       unable to read NVVs from the provided area.
+ * @retval SUIT_PLAT_ERR_NOT_FOUND  if the index value is too big.
+ */
+suit_plat_err_t suit_storage_var_get(size_t index, uint32_t *value);
+
+/**
+ * @brief Set the value of manifest non-volatile variable.
+ *
+ * @param[in]  index      Index of the variable.
+ * @param[in]  value      Value to set.
+ *
+ * @retval SUIT_PLAT_SUCCESS           if the value was successfully updated.
+ * @retval SUIT_PLAT_ERR_SIZE          unable to store NVVs inside the configured area.
+ * @retval SUIT_PLAT_ERR_NOT_FOUND     if the index value is too big.
+ * @retval SUIT_PLAT_ERR_HW_NOT_READY  if NVM controller is unavailable.
+ * @retval SUIT_PLAT_ERR_IO            if unable to change NVM contents.
+ */
+suit_plat_err_t suit_storage_var_set(size_t index, uint32_t value);
+
 #ifdef __cplusplus
 }
 #endif

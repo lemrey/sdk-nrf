@@ -48,7 +48,7 @@ suit_plat_err_t suit_storage_mpi_configuration_load(suit_manifest_role_t role, c
 			(const suit_manifest_class_id_t *)ex_mpi->class_id;
 
 		if (entries[i].role == role) {
-			LOG_ERR("Manifest with given role already configured at index %d", i);
+			LOG_ERR("Manifest with role 0x%x already configured at index %d", role, i);
 			return SUIT_PLAT_ERR_EXISTS;
 		}
 
@@ -65,8 +65,8 @@ suit_plat_err_t suit_storage_mpi_configuration_load(suit_manifest_role_t role, c
 		return SUIT_PLAT_ERR_SIZE;
 	}
 
-	LOG_DBG("Add manifest class ID at index %d:", entries_len);
-	LOG_DBG("\t%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+	LOG_INF("Add manifest with role 0x%x and class ID at index %d:", role, entries_len);
+	LOG_INF("\t%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
 		new_class_id->raw[0], new_class_id->raw[1], new_class_id->raw[2],
 		new_class_id->raw[3], new_class_id->raw[4], new_class_id->raw[5],
 		new_class_id->raw[6], new_class_id->raw[7], new_class_id->raw[8],

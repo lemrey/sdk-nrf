@@ -29,12 +29,17 @@
 extern "C" {
 #endif
 
-#define SUIT_STORAGE_ADDRESS	       suit_plat_mem_nvm_ptr_get(SUIT_STORAGE_OFFSET)
-#define SUIT_STORAGE_OFFSET	       FIXED_PARTITION_OFFSET(suit_storage)
-#define SUIT_STORAGE_SIZE	       FIXED_PARTITION_SIZE(suit_storage)
-#define SUIT_STORAGE_WRITE_SIZE	       FLASH_AREA_WRITE_BLOCK_SIZE(suit_storage)
-#define SUIT_STORAGE_EB_SIZE	       FLASH_AREA_ERASE_BLOCK_SIZE(suit_storage)
-#define SUIT_STORAGE_ACCESS_BLOCK_SIZE 4096
+#define SUIT_STORAGE_NVM_NODE                                                                      \
+	COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(secdom_nvs)), (DT_NODELABEL(secdom_nvs)),          \
+		    (DT_CHOSEN(zephyr_flash)))
+#define SUIT_STORAGE_WRITE_SIZE DT_PROP(SUIT_STORAGE_NVM_NODE, write_block_size)
+#define SUIT_STORAGE_EB_SIZE	DT_PROP(SUIT_STORAGE_NVM_NODE, erase_block_size)
+#define SUIT_STORAGE_ACCESS_BLOCK_SIZE                                                             \
+	(COND_CODE_1(DT_NODE_EXISTS(DT_NODELABEL(mpc110)),                                         \
+		     (COND_CODE_1(DT_NODE_HAS_PROP(DT_NODELABEL(mpc110), override_granularity),    \
+				  (DT_PROP(DT_NODELABEL(mpc110), override_granularity)),           \
+				  (SUIT_STORAGE_EB_SIZE))),                                        \
+		     (SUIT_STORAGE_EB_SIZE)))
 
 #define CEIL_DIV(a, b) ((((a)-1) / (b)) + 1)
 #define EB_ALIGN(size) (CEIL_DIV(size, SUIT_STORAGE_EB_SIZE) * SUIT_STORAGE_EB_SIZE)
