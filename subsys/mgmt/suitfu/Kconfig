@@ -51,7 +51,7 @@ config MGMT_SUITFU_GRP_SUIT
 if MGMT_SUITFU_GRP_SUIT
 
 config MGMT_GROUP_ID_SUIT
-	int "SUIT Manangement Group ID"
+	int "SUIT Management Group ID"
 	default 66
 
 config MGMT_SUITFU_GRP_SUIT_CAND_ENV_UPLOAD
