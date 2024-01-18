@@ -285,7 +285,7 @@ void nrf_modem_os_event_notify(uint32_t context)
 
 	/* Wake up all sleeping threads. */
 	SYS_SLIST_FOR_EACH_CONTAINER(&sleeping_threads, thread, node) {
-		if ((thread->context == context) || (context == 0)) {
+		if ((thread->context == context) || (context == 0) || (thread->context == 0)) {
 			k_sem_give(&thread->sem);
 		}
 	}
