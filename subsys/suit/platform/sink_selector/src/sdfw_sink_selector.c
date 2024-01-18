@@ -17,6 +17,9 @@
 #ifdef CONFIG_SUIT_STREAM_SINK_FLASH
 #include <flash_sink.h>
 #endif /* CONFIG_SUIT_STREAM_SINK_FLASH */
+#ifdef CONFIG_SUIT_STREAM_SINK_RAM
+#include <ram_sink.h>
+#endif /* CONFIG_SUIT_STREAM_SINK_RAM */
 #ifdef CONFIG_SUIT_STREAM_SINK_SDFW
 #include <sdfw_sink.h>
 #endif /* CONFIG_SUIT_STREAM_SINK_SDFW */
@@ -70,8 +73,8 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 	} break;
 #endif /* CONFIG_SUIT_STREAM_SINK_MEMPTR */
 
-#ifdef CONFIG_SUIT_STREAM_SINK_FLASH
-	case SUIT_COMPONENT_TYPE_MEM: { /* flash_sink */
+#if defined(CONFIG_SUIT_STREAM_SINK_FLASH) || defined(CONFIG_SUIT_STREAM_SINK_RAM)
+	case SUIT_COMPONENT_TYPE_MEM: { /* flash_sink or ram_sink */
 		intptr_t run_address;
 		size_t size;
 
@@ -92,16 +95,39 @@ int suit_sink_select(suit_component_t dst_handle, struct stream_sink *sink)
 		 * Select sink based on detected memory configuration.
 		 */
 
+#ifdef CONFIG_SUIT_STREAM_SINK_FLASH
 		/* Internal MRAM/Flash on single controller */
-		sink_get_err = suit_flash_sink_get(sink, (uint8_t *)run_address, size);
-		if (sink_get_err != SUIT_PLAT_SUCCESS) {
-			LOG_ERR("Failed to get flash sink: %i", sink_get_err);
-			return suit_plat_err_to_processor_err_convert(sink_get_err);
+		if (suit_flash_sink_is_address_supported((uint8_t *)run_address)) {
+			sink_get_err = suit_flash_sink_get(sink, (uint8_t *)run_address, size);
+			if (sink_get_err != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Failed to get flash sink: %i", sink_get_err);
+				return suit_plat_err_to_processor_err_convert(sink_get_err);
+			}
+
+			return SUIT_SUCCESS;
 		}
 
-		return SUIT_SUCCESS;
-	} break;
+		LOG_INF("Address not in Flash");
 #endif /* CONFIG_SUIT_STREAM_SINK_FLASH */
+
+#ifdef CONFIG_SUIT_STREAM_SINK_RAM
+		/* Internal RAM */
+		if (suit_ram_sink_is_address_supported((uint8_t *)run_address)) {
+			sink_get_err = suit_ram_sink_get(sink, (uint8_t *)run_address, size);
+			if (sink_get_err != SUIT_PLAT_SUCCESS) {
+				LOG_ERR("Failed to get RAM sink: %i", sink_get_err);
+				return suit_plat_err_to_processor_err_convert(sink_get_err);
+			}
+
+			return SUIT_SUCCESS;
+		}
+
+		LOG_INF("Address not in RAM");
+#endif /* CONFIG_SUIT_STREAM_SINK_RAM */
+
+		return SUIT_ERR_UNSUPPORTED_COMPONENT_ID;
+	} break;
+#endif /* CONFIG_SUIT_STREAM_SINK_FLASH  || CONFIG_SUIT_STREAM_SINK_RAM */
 #ifdef CONFIG_SUIT_STREAM_SINK_SDFW
 	case SUIT_COMPONENT_TYPE_SOC_SPEC: { /* sdfw_sink */
 		uint32_t number;

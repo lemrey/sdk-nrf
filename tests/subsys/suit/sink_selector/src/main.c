@@ -62,6 +62,28 @@ ZTEST(sink_selector_tests, test_select_flash_sink_OK)
 		      err);
 }
 
+ZTEST(sink_selector_tests, test_select_ram_sink_OK)
+{
+	suit_component_t handle;
+
+	/* ['MEM', h'02', h'1A20000000', h'1A00001000'] */
+	uint8_t valid_value[] = {0x84, 0x44, 0x63, 'M',	 'E',  'M',  0x41, 0x02, 0x45, 0x1A,
+				 0x20, 0x00, 0x00, 0x00, 0x45, 0x1A, 0x00, 0x00, 0x10, 0x00};
+
+	struct zcbor_string valid_component_id = {
+		.value = valid_value,
+		.len = sizeof(valid_value),
+	};
+	struct stream_sink sink;
+
+	int ret = suit_plat_create_component_handle(&valid_component_id, &handle);
+	zassert_equal(ret, SUIT_SUCCESS, "create_component_handle failed - error %i", ret);
+
+	int err = suit_sink_select(handle, &sink);
+	zassert_equal(err, SUIT_SUCCESS, "sink_selector: selecting flash_sink failed - error %i",
+		      err);
+}
+
 #if SOC_NRF54H20 && !HW_REVISION_SOC1
 ZTEST(sink_selector_tests, test_select_sdfw_sink_OK)
 {

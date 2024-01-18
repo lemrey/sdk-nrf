@@ -75,6 +75,14 @@ uintptr_t suit_plat_mem_nvm_offset_get(uint8_t *ptr);
  */
 uint8_t *suit_plat_mem_nvm_ptr_get(uintptr_t offset);
 
+/**
+ * @brief In case of platform native_posix translate address to point to emulated RAM
+ *
+ * @param ptr Address in platform defined RAM range
+ * @return uint8_t* On native_posix, translated address in emulated RAM, otherwise unchanged address
+ */
+uint8_t *suit_plat_mem_ram_address_get(uint8_t *address);
+
 #ifdef __cplusplus
 }
 #endif

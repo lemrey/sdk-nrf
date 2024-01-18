@@ -23,6 +23,15 @@ extern "C" {
  */
 suit_plat_err_t suit_ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size);
 
+/**
+ * @brief Check if given address lays in assigned RAM
+ *
+ * @param address Address to be checked
+ * @return true If given address lays in RAM
+ * @return false If given address is out of bounds of assigned RAM
+ */
+bool suit_ram_sink_is_address_supported(uint8_t *address);
+
 #ifdef __cplusplus
 }
 #endif

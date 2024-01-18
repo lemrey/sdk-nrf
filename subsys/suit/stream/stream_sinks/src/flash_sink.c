@@ -72,7 +72,7 @@ struct flash_ctx {
 
 static struct flash_ctx ctx[SUIT_MAX_FLASH_COMPONENTS];
 
-/* List of nonvolatile memories accessible for flash)sink */
+/* List of nonvolatile memories accessible for flash_sink */
 static const struct nvm_area nvm_area_map[] = {
 	{
 		.na_start = INTERNAL_NVM_START,
@@ -157,6 +157,16 @@ static size_t flash_write_size_get(const struct device *fdev)
 	const struct flash_parameters *parameters = flash_get_parameters(fdev);
 
 	return parameters->write_block_size;
+}
+
+bool suit_flash_sink_is_address_supported(uint8_t *address)
+{
+	if ((address == NULL) || (nvm_area_get(address) == NULL)) {
+		LOG_INF("Failed to find nvm area corresponding to address: %p", address);
+		return false;
+	}
+
+	return true;
 }
 
 suit_plat_err_t erase(void *ctx)

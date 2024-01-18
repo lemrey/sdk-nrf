@@ -15,14 +15,27 @@ uint8_t *suit_plat_mem_ptr_get(uintptr_t address)
 	static uint8_t *f_base_address = NULL;
 
 	if (f_base_address == NULL) {
-		size_t f_size;
+		size_t f_size = 0;
 		static const struct device *fdev =
 			DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
 
 		f_base_address = flash_simulator_get_memory(fdev, &f_size);
 	}
 
-	return (uint8_t *)(address + (uintptr_t)f_base_address);
+	/* Address is validated against range defined in dts for flash0 and for that range
+	 * it is translated to the emulated flash address range.
+	 * Address in the range defined for sram0 is not translated.
+	 * Address that do not fit in any of the mentioned ranges is treated as invalid.
+	 */
+	if ((address >= DT_REG_ADDR(DT_NODELABEL(flash0))) &&
+		(address < (DT_REG_ADDR(DT_NODELABEL(flash0)) + DT_REG_SIZE(DT_NODELABEL(flash0))))) {
+		return (uint8_t *)(address + (uintptr_t)f_base_address);
+	} else if ((address >= (DT_REG_ADDR(DT_NODELABEL(sram0)))) &&
+			(address < (DT_REG_ADDR(DT_NODELABEL(sram0)) + DT_REG_SIZE(DT_NODELABEL(sram0))))) {
+		return (uint8_t *)address;
+	}
+
+	return NULL;
 #else  /* CONFIG_FLASH_SIMULATOR */
 	return (uint8_t *)address;
 #endif /* CONFIG_FLASH_SIMULATOR */
@@ -69,4 +82,31 @@ uint8_t *suit_plat_mem_nvm_ptr_get(uintptr_t offset)
 #endif
 
 	return suit_plat_mem_ptr_get(address);
+}
+
+
+/* In case of tests on native_posix RAM emulation is used and visible below
+ * mem_for_sim_ram is used as the buffer for emulation. It is here to allow not only
+ * write but also read operations with emulated RAM. Address is translated to point to
+ * the buffer. Size is taken from dts so it is required that the sram0 node is defined.
+ */
+#if (DT_NODE_EXISTS(DT_NODELABEL(sram0))) && defined(CONFIG_BOARD_NATIVE_POSIX)
+uint8_t mem_for_sim_ram[DT_REG_SIZE(DT_NODELABEL(sram0))];
+#endif
+
+uint8_t *suit_plat_mem_ram_address_get(uint8_t *address)
+{
+#if (DT_NODE_EXISTS(DT_NODELABEL(sram0))) && defined(CONFIG_BOARD_NATIVE_POSIX)
+	if (((uintptr_t)address >= (DT_REG_ADDR(DT_NODELABEL(sram0)))) &&
+			((uintptr_t)address < (DT_REG_ADDR(DT_NODELABEL(sram0)) +
+											DT_REG_SIZE(DT_NODELABEL(sram0))))) {
+		uintptr_t offset = (uintptr_t)address - DT_REG_ADDR(DT_NODELABEL(sram0));
+
+		return (uint8_t *)(mem_for_sim_ram + offset);
+	}
+
+	return NULL;
+#else
+	return (uint8_t *)address;
+#endif
 }

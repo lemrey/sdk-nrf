@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <ram_sink.h>
+#include <suit_plat_mem_util.h>
 
 /* Set to more than one to allow multiple contexts in case of parallel execution */
 #define SUIT_MAX_RAM_COMPONENTS 1
@@ -20,6 +21,34 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size);
 static suit_plat_err_t seek(void *ctx, size_t offset);
 static suit_plat_err_t used_storage(void *ctx, size_t *size);
 static suit_plat_err_t release(void *ctx);
+
+struct ram_area {
+	uint8_t *ra_start;
+	size_t ra_size;
+};
+
+/* List of RAM memories accessible for ram_sink */
+static struct ram_area ram_area_map[] = {
+#if (DT_NODE_EXISTS(DT_NODELABEL(ram0x))) /* nrf54H20 */
+	{
+		.ra_start = (uint8_t *)DT_REG_ADDR(DT_NODELABEL(ram0x)),
+		.ra_size = DT_REG_SIZE(DT_NODELABEL(ram0x)),
+	},
+#endif					  /* ram0x */
+#if (DT_NODE_EXISTS(DT_NODELABEL(ram20))) /* nrf54H20 */
+	{
+		.ra_start = (uint8_t *)DT_REG_ADDR(DT_NODELABEL(ram20)),
+		.ra_size = DT_REG_SIZE(DT_NODELABEL(ram20)),
+	},
+#endif					  /* ram20 */
+#if (DT_NODE_EXISTS(DT_NODELABEL(sram0))) /* nrf52 or simulator */
+	{
+		.ra_start = (uint8_t *)DT_REG_ADDR(DT_NODELABEL(sram0)),
+		.ra_size = DT_REG_SIZE(DT_NODELABEL(sram0)),
+	},
+#endif /* sram0 */
+};
+const uint8_t ram_area_map_size = ARRAY_SIZE(ram_area_map);
 
 struct ram_ctx {
 	size_t size_used;
@@ -47,10 +76,51 @@ static struct ram_ctx *get_new_ctx()
 	return NULL; /* No free ctx */
 }
 
+/**
+ * @brief Get the ram area object corresponding to given address
+ *
+ * @param address Address to look for in registered areas
+ * @return const struct ram_area* Pointer to ram area or NULL in case of fail
+ */
+static const struct ram_area *ram_area_get(uint8_t *address)
+{
+	for (size_t i = 0; i < ram_area_map_size; i++) {
+		if ((address >= ram_area_map[i].ra_start) &&
+		    (address < (ram_area_map[i].ra_start + ram_area_map[i].ra_size))) {
+			return &ram_area_map[i];
+		}
+	}
+
+	LOG_DBG("ram_area: Not found");
+	return NULL;
+}
+
+bool suit_ram_sink_is_address_supported(uint8_t *address)
+{
+	if ((address == NULL) || (ram_area_get(address) == NULL)) {
+		LOG_INF("Failed to find RAM area corresponding to address: %p", address);
+		return false;
+	}
+
+	return true;
+}
+
 suit_plat_err_t suit_ram_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size)
 {
 	if ((dst != NULL) && (size > 0)) {
 		struct ram_ctx *ctx = get_new_ctx();
+		const struct ram_area *ra = ram_area_get(dst);
+
+		if (ra == NULL) {
+			LOG_ERR("Failed to find RAM area corresponding to address: %p", dst);
+			return SUIT_PLAT_ERR_HW_NOT_READY;
+		}
+
+		/* Check if requested area fits in found RAM */
+		if ((dst + size) > (ra->ra_start + ra->ra_size)) {
+			LOG_ERR("Requested memory area (%p) out of bounds of corresponding RAM(%p)", (dst + size), (ra->ra_start + ra->ra_size));
+			return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+		}
 
 		if (ctx != NULL) {
 			ctx->offset = 0;
@@ -84,7 +154,13 @@ static suit_plat_err_t erase(void *ctx)
 		struct ram_ctx *ram_ctx = (struct ram_ctx *)ctx;
 		size_t size = ram_ctx->offset_limit - (size_t)ram_ctx->ptr;
 
-		memset(ram_ctx->ptr, 0, size);
+		uint8_t *dst = suit_plat_mem_ram_address_get(ram_ctx->ptr);
+
+		if (dst == NULL) {
+			return SUIT_PLAT_ERR_INVAL;
+		}
+
+		memset(dst, 0, size);
 	}
 
 	return SUIT_PLAT_SUCCESS;
@@ -96,7 +172,13 @@ static suit_plat_err_t write(void *ctx, uint8_t *buf, size_t *size)
 		struct ram_ctx *ram_ctx = (struct ram_ctx *)ctx;
 
 		if ((ram_ctx->offset_limit - (size_t)ram_ctx->ptr) >= *size) {
-			memcpy(ram_ctx->ptr, buf, *size);
+			uint8_t *dst = suit_plat_mem_ram_address_get(ram_ctx->ptr);
+
+			if (dst == NULL) {
+				return SUIT_PLAT_ERR_INVAL;
+			}
+
+			memcpy(dst, buf, *size);
 			ram_ctx->offset += *size;
 
 			if (ram_ctx->offset > ram_ctx->size_used) {

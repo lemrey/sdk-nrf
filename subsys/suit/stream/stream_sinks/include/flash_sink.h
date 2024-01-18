@@ -24,6 +24,15 @@ extern "C" {
  */
 suit_plat_err_t suit_flash_sink_get(struct stream_sink *sink, uint8_t *dst, size_t size);
 
+/**
+ * @brief Check if given address lays in nvm
+ *
+ * @param address Address to be checked
+ * @return true If given address lays in nvm
+ * @return false If given address is out of bounds of nvm
+ */
+bool suit_flash_sink_is_address_supported(uint8_t *address);
+
 #ifdef __cplusplus
 }
 #endif
