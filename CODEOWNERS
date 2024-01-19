@@ -230,6 +230,7 @@ Kconfig*                                  @tejlmand
 /modules/trusted-firmware-m/              @frkv @Vge0rge @vili-nordic @joerchan @SebastianBoe @mswarowsky
 /subsys/zigbee/                           @sebastiandraus
 /subsys/suit/                             @tomchy
+/suit_provisioning/                       @tomchy
 /tests/                                   @gopiotr
 /tests/bluetooth/tester/                  @carlescufi @ludvigsj
 /tests/bluetooth/iso/                     @koffes @alexsven @erikrobstad @rick1082 @gWacey @Frodevan
