@@ -9,18 +9,64 @@ menuconfig SUIT
 
 if SUIT
 
-config SUIT_PLATFORM_VARIANT_APP
-	bool "Set platform variant to application domain"
-	default y if SUIT_ENABLE_DEFAULTS_APP
+config SUIT_DFU
+	bool "Enable SUIT DFU - the interface for SUIT for the user application"
+	default y if !IS_SECURE_DOMAIN_FW && !ZTEST
 
-choice SUIT_ENABLE_DEFAULTS
-	prompt "Enable default SUIT modules"
-	default SUIT_ENABLE_DEFAULTS_NONE if ZTEST
-	default SUIT_ENABLE_DEFAULTS_SDFW if IS_SECURE_DOMAIN_FW
-	default SUIT_ENABLE_DEFAULTS_APP if !IS_SECURE_DOMAIN_FW
+choice SUIT_PLATFORM_VARIANT
+	prompt "SUIT platform implementation variant"
+	default SUIT_PLATFORM_VARIANT_SDFW if IS_SECURE_DOMAIN_FW
+	default SUIT_PLATFORM_VARIANT_APP if !IS_SECURE_DOMAIN_FW && !ZTEST
+
+config SUIT_PLATFORM_VARIANT_SDFW
+	bool "Set SUIT platform variant to Secure domain"
+
+config SUIT_PLATFORM_VARIANT_APP
+	bool "Set SUIT platform variant to application domain"
+
+endchoice # SUIT_PLATFORM_VARIANT
+
+if SUIT_DFU
+
+choice SUIT_DFU_CANDIDATE_PROCESSING_LEVEL
+	prompt "Select the level of SUIT candidate processing inside the user application"
+
+config SUIT_DFU_CANDIDATE_PROCESSING_MINIMAL
+	bool "Application defaults for minimal SUIT candidate processing"
+	help
+		This configuration can be used to allow update using SUIT when no interpretation
+		of the SUIT envelope is needed by the local domain apart from basic format checking.
+		This is equivalent to a situation where it is known that none of the manifests
+		(the top manifest nor its dependecies) contains a suit-payload-fetch sequence.
+		The only role of the application core is store the SUIT candidate envelope
+		followed by passing the control to the Secure Domain.
+		If the application needs to additionally store detached payloads in DFU cache
+		partitions, CONFIG_SUIT_CACHE must be set apart from this option.
+	imply SUIT_ORCHESTRATOR_APP
+	imply SUIT_ORCHESTRATOR_APP_CANDIDATE_PROCESSING
+	imply SUIT_ENVELOPE_INFO
+	imply SUIT_UTILS
+	imply SUIT_METADATA
+	imply SSF_SUIT_SERVICE_ENABLED
+
+config SUIT_DFU_CANDIDATE_PROCESSING_NONE
+	bool "Disable any processing of the SUIT candidate envelope"
+	help
+		If this configuration is used no processing of the SUIT envelope will be performed.
+		It will not be possible to start the update from inside the application using the
+		SUIT DFU API.
+		In a general use case this Kconfig option will only be use for companion images
+		used by the Secure Domain to fetch additional data with the use of the application
+		core.
+	imply SUIT_ORCHESTRATOR_APP
+
+endchoice # SUIT_APP_ENVELOPE_PROCESSING_LEVEL
+
+endif # SUIT_DFU
 
 config SUIT_ENABLE_DEFAULTS_SDFW
-	bool "SDFW"
+	bool "SDFW SUIT defaults"
+	default y if IS_SECURE_DOMAIN_FW
 	imply SUIT_CRYPTO
 	imply SUIT_DEVCONFIG
 	imply SUIT_PLAT_CHECK_COMPONENT_COMPATIBILITY
@@ -47,26 +93,17 @@ config SUIT_ENABLE_DEFAULTS_SDFW
 	imply SUIT_STORAGE
 	imply SUIT_SINK_SELECTOR
 
-config SUIT_ENABLE_DEFAULTS_APP
-	bool "Application"
-	imply SUIT_UTILS
-	imply SUIT_METADATA
-	imply SSF_SUIT_SERVICE_ENABLED
-
-config SUIT_ENABLE_DEFAULTS_NONE
-	bool "None"
-
-endchoice # SUIT_ENABLE_DEFAULTS
-
 rsource "cache/Kconfig"
 rsource "mci/Kconfig"
 rsource "metadata/Kconfig"
 rsource "storage/Kconfig"
 rsource "orchestrator/Kconfig"
+rsource "orchestrator_app/Kconfig"
 rsource "memptr_storage/Kconfig"
 rsource "platform/Kconfig"
 rsource "stream/Kconfig"
 rsource "utils/Kconfig"
+rsource "envelope_info/Kconfig"
 
 # Configure SUIT_LOG_LEVEL
 module = SUIT

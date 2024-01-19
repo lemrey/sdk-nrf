@@ -62,17 +62,6 @@ suit_plat_err_t suit_dfu_cache_rw_slot_create(uint8_t cache_partition_id,
 					      const uint8_t *uri, size_t uri_size);
 
 /**
- * @brief Closes slot by updating bstring header with size of data that was written
- *        and moves CBOB indefinite map end marker to new end of cache partition.
- *
- * @param slot Structure containing info about opened slot
- * @param data_end_offset Offset pointing to the end of data written in slot
- *
- * @return SUIT_PLAT_SUCCESS in case of success, otherwise error code
- */
-suit_plat_err_t suit_dfu_cache_rw_slot_commit(struct suit_cache_slot *slot, size_t data_end_offset);
-
-/**
  * @brief Commits changes written to slot by updating cbor header for the cache slot
  *
  * @param slot Pointer to opened cache slot
