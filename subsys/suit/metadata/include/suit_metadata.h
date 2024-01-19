@@ -60,6 +60,12 @@ typedef struct {
 	int32_t pre_release_number;
 } suit_version_t;
 
+/* Raw semantic version, as defined by the SUIT specification. */
+typedef struct {
+	int32_t raw[5];
+	size_t len;
+} suit_semver_raw_t;
+
 /* Manifest role encoded as two nibbles: <domain ID> <index>. */
 typedef enum {
 	/** Manifest role uninitialized (invalid). */
