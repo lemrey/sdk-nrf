@@ -37,6 +37,11 @@ if(CONFIG_BUILD_WITH_TFM)
   zephyr_include_directories(
     ${TFM_BINARY_DIR}/install/interface/include
   )
+
+  if(CONFIG_SOC_NRF54L15)
+	# TODO: Remove this CMake code when MLT-8314 is fixed in the MDK
+	zephyr_compile_definitions(NRF_SKIP_GLITCHDETECTOR_DISABLE)
+  endif()
 else()
   # Use the standard memory_buffer_alloc.c
   if (CONFIG_MBEDTLS_ENABLE_HEAP)

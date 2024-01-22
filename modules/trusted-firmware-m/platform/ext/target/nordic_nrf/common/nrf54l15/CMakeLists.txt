@@ -50,6 +50,9 @@ target_sources(platform_ns
 
 target_compile_definitions(platform_ns
     PUBLIC
+	    # TODO: Remove this CMake code when MLT-8314 is fixed in the MDK
+        NRF_SKIP_GLITCHDETECTOR_DISABLE
+
         NRF_TRUSTZONE_NONSECURE
         DOMAIN_NS=1
 )
