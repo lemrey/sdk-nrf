@@ -2,41 +2,41 @@ sample:
   name: nRF Thread Border Router
   description: nRF Thread Border Router application
 tests:
-  applications.thread_border_router.application.debug:
+  applications.thread_border_router.debug:
     build_only: true
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: nRF_TBR TBR_app
-  applications.thread_border_router.application.release:
+  applications.thread_border_router.release:
     build_only: true
     extra_args: CONF_FILE=prj_release.conf
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: nRF_TBR TBR_app
-  applications.thrad_border_router.application.release.wifi:
+  applications.thread_border_router.release.wifi:
     build_only: true
     extra_args: CONF_FILE=prj_release.conf BACKBONE_WIFI=1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: nRF_TBR TBR_app TBR_app_wifi
-  applications.thrad_border_router.application.debug.wifi:
+  applications.thread_border_router.debug.wifi:
     build_only: true
     extra_args: BACKBONE_WIFI=1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: nRF_TBR TBR_app TBR_app_wifi
-  applications.thrad_border_router.application.release.wifi.static_cred:
+  applications.thread_border_router.release.wifi.static_cred:
     build_only: true
     extra_args: CONF_FILE=prj_release.conf OVERLAY_CONFIG=overlay-static_credentials.conf BACKBONE_WIFI=1
     integration_platforms:
       - nrf54h20dk_nrf54h20_cpuapp@soc1
     platform_allow: nrf54h20dk_nrf54h20_cpuapp@soc1
     tags: nRF_TBR TBR_app TBR_app_wifi static_credentials
-  applications.thrad_border_router.application.debug.wifi.static_cred:
+  applications.thread_border_router.debug.wifi.static_cred:
     build_only: true
     extra_args: OVERLAY_CONFIG=overlay-static_credentials.conf BACKBONE_WIFI=1
     integration_platforms:
