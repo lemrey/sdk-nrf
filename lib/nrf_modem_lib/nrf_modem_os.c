@@ -243,6 +243,10 @@ int nrf_modem_os_sem_init(void **sem,
 	__ASSERT(used < NRF_MODEM_OS_NUM_SEM_REQUIRED,
 		 "Not enough semaphores in glue layer");
 
+	if (used >= NRF_MODEM_OS_NUM_SEM_REQUIRED) {
+		return -NRF_ENOMEM;
+	}
+
 	*sem = &nrf_modem_os_sems[used++];
 
 recycle:
