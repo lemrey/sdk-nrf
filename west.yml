@@ -94,7 +94,6 @@ manifest:
           - nrf_hw_models
           - open-amp
           - picolibc
-          - psa-arch-tests
           - sdk-hal_nordic-next
           - segger
           - tinycbor
@@ -159,6 +158,10 @@ manifest:
       repo-path: sdk-trusted-firmware-m-next
       path: modules/tee/tf-m/trusted-firmware-m
       revision: 3ee76c83eadb1ff413eea8632737570a18a5b11f
+    - name: psa-arch-tests
+      repo-path: sdk-psa-arch-tests
+      path: modules/tee/tf-m/psa-arch-tests
+      revision: 2102e16a0108cd903c8ac6b91e1d72f23b06479f
     - name: matter
       repo-path: sdk-connectedhomeip-next
       path: modules/lib/matter
