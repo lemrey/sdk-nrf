@@ -53,7 +53,7 @@ jobs:
           # add credential
           echo "https://x-access-token:${{ secrets.NCS_GITHUB_TOKEN }}@github.com" >> ~/.git-credentials
           west init -l nrf
-          west update --narrow mcuboot zephyr sdk-secdom
+          west update --narrow mcuboot zephyr sdk-secdom nrf-regtool
           rm ~/.git-credentials
 
       - name: Execute script diff action
@@ -110,6 +110,7 @@ jobs:
                 zephyr/scripts/requirements.txt  \
                 core_fw/secdom/scripts/imprimatur/requirements.txt  \
                 core_fw/secdom/scripts/requirements.txt  \
+                modules/lib/nrf-regtool/scripts/requirements-base.txt  \
                 nrf/scripts/requirements.txt \
                 nrf/scripts/requirements-ci.txt \
                 nrf/scripts/requirements-extra.txt
