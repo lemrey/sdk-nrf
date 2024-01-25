@@ -171,22 +171,22 @@ static suit_plat_err_t find_mpi_area(suit_manifest_role_t role, uint8_t **addr, 
 	const suit_storage_mpi_t *mpi_config = mpi_nRF54H20_sample;
 
 	switch (role) {
-	case SUIT_MANIFEST_APP_ROOT:
+	case SUIT_MANIFEST_SEC_TOP:
 		index = 0;
 		break;
-	case SUIT_MANIFEST_APP_LOCAL_1:
+	case SUIT_MANIFEST_SEC_SDFW:
 		index = 1;
 		break;
-	case SUIT_MANIFEST_RAD_LOCAL_1:
+	case SUIT_MANIFEST_SEC_SYSCTRL:
 		index = 2;
 		break;
-	case SUIT_MANIFEST_SEC_TOP:
+	case SUIT_MANIFEST_APP_ROOT:
 		index = 3;
 		break;
-	case SUIT_MANIFEST_SEC_SDFW:
+	case SUIT_MANIFEST_APP_LOCAL_1:
 		index = 4;
 		break;
-	case SUIT_MANIFEST_SEC_SYSCTRL:
+	case SUIT_MANIFEST_RAD_LOCAL_1:
 		index = 5;
 		break;
 	default:
@@ -228,29 +228,23 @@ static suit_plat_err_t find_manifest_area(suit_manifest_role_t role, uint8_t **a
 
 #if defined(CONFIG_SOC_NRF54H20) && !defined(CONFIG_SUIT_MCI_IMPL_CUSTOM)
 	switch (role) {
-	case SUIT_MANIFEST_SEC_TOP:
+	case SUIT_MANIFEST_APP_ROOT:
 		index = 0;
 		break;
-	case SUIT_MANIFEST_SEC_SDFW:
+	case SUIT_MANIFEST_APP_LOCAL_1:
 		index = 1;
 		break;
-	case SUIT_MANIFEST_SEC_SYSCTRL:
+	case SUIT_MANIFEST_RAD_LOCAL_1:
 		index = 2;
 		break;
-	case SUIT_MANIFEST_APP_ROOT:
+	case SUIT_MANIFEST_SEC_TOP:
 		index = 3;
 		break;
-	case SUIT_MANIFEST_APP_RECOVERY:
+	case SUIT_MANIFEST_SEC_SDFW:
 		index = 4;
 		break;
-	case SUIT_MANIFEST_APP_LOCAL_1:
+	case SUIT_MANIFEST_SEC_SYSCTRL:
 		index = 5;
-		break;
-	case SUIT_MANIFEST_APP_LOCAL_2:
-		index = 6;
-		break;
-	case SUIT_MANIFEST_RAD_LOCAL_1:
-		index = 7;
 		break;
 	default:
 		index = -1;
