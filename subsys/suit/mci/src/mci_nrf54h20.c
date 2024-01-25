@@ -28,9 +28,21 @@ static const suit_manifest_class_id_t nordic_rad_manifest_class_id = {
 	{0x81, 0x6a, 0xa0, 0xa0, 0xaf, 0x11, 0x5e, 0xf2, 0x85, 0x8a, 0xfe, 0xb6, 0x68, 0xb2, 0xe9,
 	 0xc9}};
 
+/* RFC4122 uuid5(nordic_vid, 'nRF54H20_nordic_top')
+ */
+static const suit_manifest_class_id_t nordic_top_manifest_class_id = {
+	{0xf0, 0x3d, 0x38, 0x5e, 0xa7, 0x31, 0x56, 0x05, 0xb1, 0x5d, 0x03, 0x7f, 0x6d, 0xa6, 0x09,
+	 0x7f}};
+
+/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sec')
+ */
+static const suit_manifest_class_id_t nordic_sec_manifest_class_id = {
+	{0xd9, 0x6b, 0x40, 0xb7, 0x09, 0x2b, 0x5c, 0xd1, 0xa5, 0x9f, 0x9a, 0xf8, 0x0c, 0x33, 0x7e,
+	 0xba}};
+
 /* RFC4122 uuid5(nordic_vid, 'nRF54H20_sys')
  */
-static const suit_manifest_class_id_t nordic_sec_sys_manifest_class_id = {
+static const suit_manifest_class_id_t nordic_sys_manifest_class_id = {
 	{0xc0, 0x8a, 0x25, 0xd7, 0x35, 0xe6, 0x59, 0x2c, 0xb7, 0xad, 0x43, 0xac, 0xc8, 0xd1, 0xd1,
 	 0xc8}};
 
@@ -47,8 +59,20 @@ static const manifest_config_t supported_manifests[] = {
 	 /* signing_key_mask equal to 0 means signing is not required
 	  */
 	 0x00000000, 0x00000000},
-	{&nordic_sec_sys_manifest_class_id, &nordic_root_manifest_class_id,
-	 DOWNGRADE_PREVENTION_DISABLED,
+	{&nordic_top_manifest_class_id, &nordic_root_manifest_class_id,
+	 DOWNGRADE_PREVENTION_ENABLED,
+	 /* signing_key_mask equal to 0 means signing is not required
+	  */
+	 0x00000000, 0x00000000},
+	/* TODO: Change parent to nordic_top_manifest_class_id once it is supported */
+	{&nordic_sec_manifest_class_id, &nordic_root_manifest_class_id,
+	 DOWNGRADE_PREVENTION_ENABLED,
+	 /* signing_key_mask equal to 0 means signing is not required
+	  */
+	 0x00000000, 0x00000000},
+	/* TODO: Change parent to nordic_top_manifest_class_id once it is supported */
+	{&nordic_sys_manifest_class_id, &nordic_root_manifest_class_id,
+	 DOWNGRADE_PREVENTION_ENABLED,
 	 /* signing_key_mask equal to 0 means signing is not required
 	  */
 	 0x00000000, 0x00000000},
@@ -187,13 +211,26 @@ mci_err_t suit_mci_processor_start_rights_validate(const suit_manifest_class_id_
 
 	if (SUIT_PLAT_SUCCESS ==
 	    suit_metadata_uuid_compare(&nordic_root_manifest_class_id, class_id)) {
-		/* Root manifest - ability to start any cpu are intentionally blocked
+		/* Root manifest - ability to start any cpu is intentionally blocked
 		 */
 		return MCI_ERR_NOACCESS;
 
 	} else if (SUIT_PLAT_SUCCESS ==
-		   suit_metadata_uuid_compare(&nordic_sec_sys_manifest_class_id, class_id)) {
-		/* Sec manifest
+		   suit_metadata_uuid_compare(&nordic_top_manifest_class_id, class_id)) {
+		/* Nordic top manifest - ability to start any cpu is intentionally blocked
+		 */
+		return MCI_ERR_NOACCESS;
+
+	} else if (SUIT_PLAT_SUCCESS ==
+		   suit_metadata_uuid_compare(&nordic_sec_manifest_class_id, class_id)) {
+		/* Sec manifest - ability to start any cpu is intentionally blocked
+		 */
+
+		return MCI_ERR_NOACCESS;
+
+	} else if (SUIT_PLAT_SUCCESS ==
+		   suit_metadata_uuid_compare(&nordic_sys_manifest_class_id, class_id)) {
+		/* Sys manifest
 		 */
 		if (NRF_PROCESSOR_SYSCTRL == processor_id) {
 			/* SysCtrl
@@ -259,8 +296,20 @@ mci_err_t suit_mci_memory_access_rights_validate(const suit_manifest_class_id_t 
 		return MCI_ERR_NOACCESS;
 
 	} else if (SUIT_PLAT_SUCCESS ==
-		   suit_metadata_uuid_compare(&nordic_sec_sys_manifest_class_id, class_id)) {
-		/* Sec and sysctrl manifest - TODO - implement checks based on UICR/SICR
+		   suit_metadata_uuid_compare(&nordic_top_manifest_class_id, class_id)) {
+		/* Nordic top manifest - ability to operate on memory ranges intentionally blocked
+		 */
+		return MCI_ERR_NOACCESS;
+
+	} else if (SUIT_PLAT_SUCCESS ==
+		   suit_metadata_uuid_compare(&nordic_sec_manifest_class_id, class_id)) {
+		/* Sec manifest - TODO - implement checks based on UICR/SICR
+		 */
+		return SUIT_PLAT_SUCCESS;
+
+	} else if (SUIT_PLAT_SUCCESS ==
+		   suit_metadata_uuid_compare(&nordic_sys_manifest_class_id, class_id)) {
+		/* Sysctrl manifest - TODO - implement checks based on UICR/SICR
 		 */
 		return SUIT_PLAT_SUCCESS;
 
@@ -295,7 +344,7 @@ suit_mci_platform_specific_component_rights_validate(const suit_manifest_class_i
 	}
 
 	if (SUIT_PLAT_SUCCESS ==
-	    suit_metadata_uuid_compare(&nordic_sec_sys_manifest_class_id, class_id)) {
+	    suit_metadata_uuid_compare(&nordic_sec_manifest_class_id, class_id)) {
 		/* The only manifest with ability to control platform specific components is secdom.
 		 * 0 - SDFW Firmware
 		 * 1 - SDFW Recovery Firmware
