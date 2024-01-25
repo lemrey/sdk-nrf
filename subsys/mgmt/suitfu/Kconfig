@@ -46,13 +46,26 @@ endif # MGMT_SUITFU_GRP_IMG
 
 config MGMT_SUITFU_GRP_SUIT
 	bool "Extended SUIT commands over USER group"
-	default y
+	default n
 
 if MGMT_SUITFU_GRP_SUIT
 
 config MGMT_GROUP_ID_SUIT
 	int "SUIT Management Group ID"
 	default 66
+
+config MGMT_SUITFU_GRP_SUIT_MFSTS_STATE
+	bool "Manifests state get"
+	default y
+	help
+	  Gets information about UUIDs of manifests supported by the device
+	  and selected attributes of installed manifests.
+
+config MGMT_SUITFU_GRP_SUIT_MFSTS_STATE_MFSTS_COUNT
+	int "Amount manifest entries for Manifests state get"
+	default 15
+	help
+	  Shall not be lower than amount of manifests supported by the device
 
 config MGMT_SUITFU_GRP_SUIT_CAND_ENV_UPLOAD
 	bool "Candidate envelope upload"

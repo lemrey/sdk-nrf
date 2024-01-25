@@ -26,6 +26,14 @@ LOG_MODULE_DECLARE(suitfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
 
 static const struct mgmt_handler suit_mgmt_handlers[] = {
 
+#ifdef CONFIG_MGMT_SUITFU_GRP_SUIT_MFSTS_STATE
+	[SUIT_MGMT_ID_MANIFESTS_LIST] = {.mh_read = suitfu_mgmt_suit_manifests_list,
+					 .mh_write = NULL},
+
+	[SUIT_MGMT_ID_MANIFEST_STATE] = {.mh_read = suitfu_mgmt_suit_manifest_state_read,
+					 .mh_write = NULL},
+#endif
+
 #ifdef CONFIG_MGMT_SUITFU_GRP_SUIT_CAND_ENV_UPLOAD
 	[SUIT_MGMT_ID_ENVELOPE_UPLOAD] = {.mh_read = NULL,
 					  .mh_write = suitfu_mgmt_suit_envelope_upload},

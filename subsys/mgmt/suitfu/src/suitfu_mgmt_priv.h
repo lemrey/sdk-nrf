@@ -38,8 +38,7 @@ extern "C" {
  */
 #define MAX_IMG_CHARACTERISTICS	 15
 #define IMG_MGMT_HASH_STR	 48
-#define IMG_MGMT_HASH_LEN	 32
-#define IMG_MGMT_DATA_SHA_LEN	 32 /* SHA256 */
+#define IMG_MGMT_HASH_LEN	 64 /* SHA512 */
 
 /*
  * Command IDs for image management group.
@@ -54,10 +53,11 @@ extern "C" {
 /*
  * Command IDs for suit management group.
  */
-#define SUIT_MGMT_ID_MANIFESTS_STATE	  0
-#define SUIT_MGMT_ID_ENVELOPE_UPLOAD	  1
-#define SUIT_MGMT_ID_MISSING_IMAGE_STATE  2
-#define SUIT_MGMT_ID_MISSING_IMAGE_UPLOAD 3
+#define SUIT_MGMT_ID_MANIFESTS_LIST	  0
+#define SUIT_MGMT_ID_MANIFEST_STATE	  1
+#define SUIT_MGMT_ID_ENVELOPE_UPLOAD	  2
+#define SUIT_MGMT_ID_MISSING_IMAGE_STATE  3
+#define SUIT_MGMT_ID_MISSING_IMAGE_UPLOAD 4
 
 /**
  * @brief	Verifies if the device associated to DFU partition is ready for use
@@ -101,6 +101,18 @@ int suitfu_mgmt_write_dfu_image_data(unsigned int req_offset, const void *addr, 
  *		MGMT_ERR_EBUSY on candidate processing error
  */
 int suitfu_mgmt_candidate_envelope_stored(size_t image_size);
+
+/**
+ * @brief	Process Manifests List Get Request
+ *
+ */
+int suitfu_mgmt_suit_manifests_list(struct smp_streamer *ctx);
+
+/**
+ * @brief	Process Manifest State Get Request
+ *
+ */
+int suitfu_mgmt_suit_manifest_state_read(struct smp_streamer *ctx);
 
 /**
  * @brief	Process Candidate Envelope Upload Request

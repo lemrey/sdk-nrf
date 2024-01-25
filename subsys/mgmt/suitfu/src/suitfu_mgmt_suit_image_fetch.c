@@ -159,7 +159,7 @@ int suitfu_mgmt_suit_missing_image_upload(struct smp_streamer *ctx)
 
 	if (zcbor_map_decode_bulk(zsd, image_upload_decode, ARRAY_SIZE(image_upload_decode),
 				  &decoded) != 0) {
-		LOG_ERR("Decoding image upload rerquest failed");
+		LOG_ERR("Decoding image upload request failed");
 		return MGMT_ERR_EINVAL;
 	}
 
