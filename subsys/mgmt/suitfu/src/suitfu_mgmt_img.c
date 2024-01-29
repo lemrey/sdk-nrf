@@ -24,6 +24,8 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(suitfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
 
+#include <dfu/suit_dfu.h>
+
 #define ENCODE_FLAG(zse, flag, value) (zcbor_tstr_put_lit(zse, flag) && zcbor_bool_put(zse, value))
 
 /** Represents an individual upload request. */
@@ -212,18 +214,10 @@ static int suitfu_mgmt_img_state_read(struct smp_streamer *ctx)
 
 static int suitfu_mgmt_img_erase(struct smp_streamer *ctx)
 {
-	size_t dfu_partition_size = suitfu_mgmt_get_dfu_partition_size();
-
-	int rc = suitfu_mgmt_is_dfu_partition_ready();
-	if (rc != MGMT_ERR_EOK) {
-		LOG_ERR("DFU Partition in not ready");
-		return rc;
-	}
-
-	rc = suitfu_mgmt_erase_dfu_partition(dfu_partition_size);
-	if (rc != MGMT_ERR_EOK) {
+	int rc = suit_dfu_cleanup();
+	if (rc != 0) {
 		LOG_ERR("Erasing DFU partition failed");
-		return rc;
+		return MGMT_ERR_EBADSTATE;
 	}
 
 	return MGMT_ERR_EOK;

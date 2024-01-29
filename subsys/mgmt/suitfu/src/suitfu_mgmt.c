@@ -8,10 +8,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifdef CONFIG_SSF_SUIT_SERVICE_ENABLED
-#include <sdfw_services/suit_service.h>
-#endif /* CONFIG_SSF_SUIT_SERVICE_ENABLED */
-
 #include <zephyr/mgmt/mcumgr/mgmt/mgmt.h>
 
 #include "suitfu_mgmt_priv.h"
@@ -21,6 +17,9 @@
 #include <zephyr/storage/flash_map.h>
 
 #include <zephyr/logging/log.h>
+
+#include <dfu/suit_dfu.h>
+
 LOG_MODULE_REGISTER(suitfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
 
 #if (!(DT_NODE_EXISTS(DT_NODELABEL(dfu_partition))))
@@ -40,7 +39,6 @@ LOG_MODULE_REGISTER(suitfu_mgmt, CONFIG_MGMT_SUITFU_LOG_LEVEL);
 #define DFU_PARTITION_WRITE_SIZE FIXED_PARTITION_WRITE_BLOCK_SIZE(DFU_PARTITION_LABEL)
 #define DFU_PARTITION_DEVICE	 FIXED_PARTITION_DEVICE(DFU_PARTITION_LABEL)
 
-#ifdef CONFIG_SSF_SUIT_SERVICE_ENABLED
 struct system_update_work {
 	struct k_work_delayable work;
 	size_t image_size;
@@ -48,25 +46,24 @@ struct system_update_work {
 
 static void schedule_system_update(struct k_work *item)
 {
-
-	struct system_update_work *suw = CONTAINER_OF(item, struct system_update_work, work);
-
-	suit_plat_mreg_t update_candidate[] = {
-		{
-			.mem = DFU_PARTITION_ADDRESS,
-			.size = suw->image_size,
-		},
-	};
-
-	(void)suit_trigger_update(update_candidate, ARRAY_SIZE(update_candidate));
+	(void) suit_dfu_update_start();
 }
-#endif /* CONFIG_SSF_SUIT_SERVICE_ENABLED */
 
 int suitfu_mgmt_candidate_envelope_stored(size_t image_size)
 {
 	int rc = MGMT_ERR_EOK;
 
-#ifdef CONFIG_SSF_SUIT_SERVICE_ENABLED
+	int ret = 0;
+	ret = suit_dfu_candidate_envelope_stored();
+	if (ret < 0) {
+		LOG_ERR("Envelope decoding error");
+		return MGMT_ERR_EBUSY;
+	}
+	ret = suit_dfu_candidate_preprocess();
+	if (ret < 0) {
+		LOG_ERR("Envelope processing error");
+		return MGMT_ERR_EBUSY;
+	}
 
 	static struct system_update_work suw;
 
@@ -74,14 +71,12 @@ int suitfu_mgmt_candidate_envelope_stored(size_t image_size)
 	k_work_init_delayable(&suw.work, schedule_system_update);
 	suw.image_size = image_size;
 
-	int ret = k_work_schedule(&suw.work,
-				  K_MSEC(CONFIG_MGMT_SUITFU_TRIGGER_UPDATE_RESET_DELAY_MS));
+	ret = k_work_schedule(&suw.work,
+			      K_MSEC(CONFIG_MGMT_SUITFU_TRIGGER_UPDATE_RESET_DELAY_MS));
 	if (ret < 0) {
 		LOG_ERR("Unable to reboot the system");
 		rc = MGMT_ERR_EBUSY;
 	}
-
-#endif /* CONFIG_SSF_SUIT_SERVICE_ENABLED */
 
 	return rc;
 }
@@ -216,3 +211,10 @@ int suitfu_mgmt_write_dfu_image_data(unsigned int req_offset, const void *addr, 
 
 	return (err == 0 ? MGMT_ERR_EOK : MGMT_ERR_EUNKNOWN);
 }
+
+int suitfu_mgmt_init()
+{
+	return suit_dfu_initialize();
+}
+
+SYS_INIT(suitfu_mgmt_init, APPLICATION, 0);
