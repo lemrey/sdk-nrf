@@ -82,7 +82,7 @@ static int update_path(void)
 		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
 	}
 
-	LOG_DBG("Update candidate address: %p", update_regions[0].mem);
+	LOG_DBG("Update candidate address: %p", (void *)update_regions[0].mem);
 	LOG_DBG("Update candidate size: %d", update_regions[0].size);
 
 	err = validate_update_candidate_address_and_size(update_regions[0].mem,
@@ -254,6 +254,12 @@ int suit_orchestrator_init(void)
 	if (plat_err != SUIT_PLAT_SUCCESS) {
 		LOG_ERR("Failed to init suit storage: %d", plat_err);
 		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(plat_err);
+	}
+
+	mci_err_t mci_err = suit_mci_init();
+	if (mci_err != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Failed to init MCI: %d", mci_err);
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(mci_err);
 	}
 
 	LOG_DBG("SUIT orchestrator init ok");
