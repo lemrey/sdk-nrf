@@ -17,9 +17,14 @@
 #include <update_magic_values.h>
 #include <dfu_cache.h>
 
+#if DT_NODE_EXISTS(DT_NODELABEL(suit_storage_app))
+#define SUIT_STORAGE_OFFSET FIXED_PARTITION_OFFSET(suit_storage_app)
+#define SUIT_STORAGE_SIZE   FIXED_PARTITION_SIZE(suit_storage_app)
+#else
+#define SUIT_STORAGE_OFFSET FIXED_PARTITION_OFFSET(suit_storage)
+#define SUIT_STORAGE_SIZE   FIXED_PARTITION_SIZE(suit_storage)
+#endif
 #define SUIT_STORAGE_ADDRESS suit_plat_mem_nvm_ptr_get(SUIT_STORAGE_OFFSET)
-#define SUIT_STORAGE_OFFSET  FIXED_PARTITION_OFFSET(suit_storage)
-#define SUIT_STORAGE_SIZE    FIXED_PARTITION_SIZE(suit_storage)
 
 const suit_manifest_class_id_t supported_class_id = {{0x5b, 0x46, 0x9f, 0xd1, 0x90, 0xee, 0x53,
 						      0x9c, 0xa3, 0x18, 0x68, 0x1b, 0x03, 0x69,
@@ -51,17 +56,16 @@ extern const size_t manifest_different_key_len;
 
 static void setup_erased_flash(void)
 {
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
+	/* Execute SUIT storage init, so the MPI area is copied into a backup region. */
+	int err = suit_storage_init();
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init and backup suit storage (%d)", err);
 
-	if (*storage == UPDATE_MAGIC_VALUE_EMPTY) {
-		return;
-	}
-
+	/* Clear the whole application area */
 	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-	zassert_not_null(fdev, "Unable to find a driver to erase area");
+	zassert_not_null(fdev, "Unable to find a driver to erase storage area");
 
-	int err = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
-	zassert_equal(0, err, "Unable to erase memory before test execution");
+	err = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
+	zassert_equal(0, err, "Unable to erase storage before test execution");
 }
 
 static void setup_update_candidate(const uint8_t *buf, size_t len)
@@ -75,24 +79,12 @@ static void setup_update_candidate(const uint8_t *buf, size_t len)
 
 	setup_erased_flash();
 
-	int err = suit_mci_init();
-	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to initialize MCI (%d)", err);
-
-	err = suit_storage_init();
+	int err = suit_storage_init();
 	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init suit storage (%d)", err);
 
 	err = suit_storage_update_cand_set(update_candidate, ARRAY_SIZE(update_candidate));
 	zassert_equal(SUIT_PLAT_SUCCESS, err,
-		      "Unable to set correct DFU before test execution (0x%x, %d)", buf, len);
-}
-
-static void setup_store_update_candidate_data(void *data, size_t len)
-{
-	setup_erased_flash();
-	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-	zassert_not_null(fdev, "Unable to find a flash driver");
-	zassert_equal(0, flash_write(fdev, (off_t)SUIT_STORAGE_OFFSET, data, len),
-		      "Unable to write data to flash");
+		      "Unable to set update candidate before test execution (0x%x, %d)", buf, len);
 }
 
 ZTEST_SUITE(orchestrator_tests, NULL, NULL, NULL, NULL, NULL);
@@ -170,6 +162,9 @@ ZTEST(orchestrator_tests, test_boot_path_successful_boot)
 
 ZTEST(orchestrator_tests, test_update_path_size_zero)
 {
+	const suit_plat_mreg_t *regions = NULL;
+	size_t len = 0;
+
 	/* GIVEN suit storage contains envelope with component id's size field set to zero... */
 	setup_update_candidate(manifest_zero_size_buf, manifest_zero_size_len);
 	/* ... and orchestrator is initialized */
@@ -179,16 +174,18 @@ ZTEST(orchestrator_tests, test_update_path_size_zero)
 	int err = suit_orchestrator_entry();
 
 	/* THEN candidate availability flag is cleared... */
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
-	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
-		      "Update candidate flag changed");
-	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	suit_plat_err_t ret = suit_storage_update_cand_get(&regions, &len);
+	zassert_equal(SUIT_PLAT_ERR_NOT_FOUND, ret, "Update candidate presence not cleared");
+
 	/* ... and orchestrator returns success */
 	zassert_equal(0, err, "Unexpected error code");
 }
 
 ZTEST(orchestrator_tests, test_update_path_manipulated_envelope)
 {
+	const suit_plat_mreg_t *regions = NULL;
+	size_t len = 0;
+
 	/* GIVEN suit storage contains envelope with one of its byte changed to different value...
 	 */
 	setup_update_candidate(manifest_manipulated_buf, manifest_manipulated_len);
@@ -199,24 +196,23 @@ ZTEST(orchestrator_tests, test_update_path_manipulated_envelope)
 	int err = suit_orchestrator_entry();
 
 	/* THEN candidate availability flag is cleared... */
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
-	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
-		      "Update candidate flag changed");
-	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	suit_plat_err_t ret = suit_storage_update_cand_get(&regions, &len);
+	zassert_equal(SUIT_PLAT_ERR_NOT_FOUND, ret, "Update candidate presence not cleared");
+
 	/* ... and orchestrator returns success */
 	zassert_equal(0, err, "Unexpected error code");
 }
 
 ZTEST(orchestrator_tests, test_update_path_candidate_invalid_address_and_size)
 {
+	const suit_plat_mreg_t *regions = NULL;
+
 	/* GIVEN suit storage indicates presence of update candidate... */
-	uint32_t data[3];
-	data[0] = (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE;
 	/* ... but has empty address field...*/
-	data[1] = (uint32_t)UPDATE_MAGIC_VALUE_EMPTY;
+	const uint8_t *buf = (const uint8_t *)UPDATE_MAGIC_VALUE_EMPTY;
 	/* ... and has empty size field... */
-	data[2] = (uint32_t)UPDATE_MAGIC_VALUE_EMPTY;
-	setup_store_update_candidate_data((void *)data, sizeof(data));
+	size_t len = (size_t)UPDATE_MAGIC_VALUE_EMPTY;
+	setup_update_candidate(buf, len);
 
 	/* ... and orchestrator is initialized */
 	zassert_equal(0, suit_orchestrator_init(), "Orchestrator not initialized");
@@ -225,24 +221,23 @@ ZTEST(orchestrator_tests, test_update_path_candidate_invalid_address_and_size)
 	int err = suit_orchestrator_entry();
 
 	/* THEN candidate availability flag is cleared... */
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
-	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
-		      "Update candidate flag changed");
-	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	suit_plat_err_t ret = suit_storage_update_cand_get(&regions, &len);
+	zassert_equal(SUIT_PLAT_ERR_NOT_FOUND, ret, "Update candidate presence not cleared");
+
 	/* ... and orchestrator returns success */
 	zassert_equal(0, err, "Unexpected error code");
 }
 
 ZTEST(orchestrator_tests, test_update_path_candidate_empty_size)
 {
+	const suit_plat_mreg_t *regions = NULL;
+
 	/* GIVEN suit storage has update candidate flag set... */
-	uint32_t data[3];
-	data[0] = (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE;
 	/* ...and some non-empty and non-zero address field...*/
-	data[1] = (uint32_t)0xDEADBEEF;
+	const uint8_t *buf = (const uint8_t *)0xDEADBEEF;
 	/* ... but empty size field... */
-	data[2] = (uint32_t)UPDATE_MAGIC_VALUE_EMPTY;
-	setup_store_update_candidate_data((void *)data, sizeof(data));
+	size_t len = (size_t)UPDATE_MAGIC_VALUE_EMPTY;
+	setup_update_candidate(buf, len);
 
 	/* ... and orchestrator is initialized */
 	zassert_equal(0, suit_orchestrator_init(), "Orchestrator not initialized");
@@ -251,16 +246,18 @@ ZTEST(orchestrator_tests, test_update_path_candidate_empty_size)
 	int err = suit_orchestrator_entry();
 
 	/* THEN candidate availability flag is cleared... */
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
-	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
-		      "Update candidate flag changed");
-	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	suit_plat_err_t ret = suit_storage_update_cand_get(&regions, &len);
+	zassert_equal(SUIT_PLAT_ERR_NOT_FOUND, ret, "Update candidate presence not cleared");
+
 	/* ... and orchestrator returns success */
 	zassert_equal(0, err, "Unexpected error code");
 }
 
 ZTEST(orchestrator_tests, test_update_path_unsupported_component)
 {
+	const suit_plat_mreg_t *regions = NULL;
+	size_t len = 0;
+
 	/* GIVEN suit storage contains update candidate with unsupported component... */
 	setup_update_candidate(manifest_unsupported_component_buf,
 			       manifest_unsupported_component_len);
@@ -271,16 +268,18 @@ ZTEST(orchestrator_tests, test_update_path_unsupported_component)
 	int err = suit_orchestrator_entry();
 
 	/* THEN candidate availability flag is cleared... */
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
-	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
-		      "Update candidate flag changed");
-	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	suit_plat_err_t ret = suit_storage_update_cand_get(&regions, &len);
+	zassert_equal(SUIT_PLAT_ERR_NOT_FOUND, ret, "Update candidate presence not cleared");
+
 	/* ... and orchestrator returns success */
 	zassert_equal(0, err, "Unexpected error code");
 }
 
 ZTEST(orchestrator_tests, test_update_path_wrong_manifest_version)
 {
+	const suit_plat_mreg_t *regions = NULL;
+	size_t len = 0;
+
 	/* GIVEN suit storage contains update candidate with invalid manifest version... */
 	setup_update_candidate(manifest_wrong_version_buf, manifest_wrong_version_len);
 
@@ -291,16 +290,18 @@ ZTEST(orchestrator_tests, test_update_path_wrong_manifest_version)
 	int err = suit_orchestrator_entry();
 
 	/* THEN candidate availability flag is cleared... */
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
-	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
-		      "Update candidate flag changed");
-	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	suit_plat_err_t ret = suit_storage_update_cand_get(&regions, &len);
+	zassert_equal(SUIT_PLAT_ERR_NOT_FOUND, ret, "Update candidate presence not cleared");
+
 	/* ... and orchestrator returns success */
 	zassert_equal(0, err, "Unexpected error code");
 }
 
 ZTEST(orchestrator_tests, test_update_path_signed_with_different_key)
 {
+	const suit_plat_mreg_t *regions = NULL;
+	size_t len = 0;
+
 	/* GIVEN suit storage contains update candidate with invalid manifest version... */
 	setup_update_candidate(manifest_different_key_buf, manifest_different_key_len);
 
@@ -311,10 +312,9 @@ ZTEST(orchestrator_tests, test_update_path_signed_with_different_key)
 	int err = suit_orchestrator_entry();
 
 	/* THEN candidate availability flag is cleared... */
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
-	zassert_equal(storage[0], (uint32_t)UPDATE_MAGIC_VALUE_AVAILABLE,
-		      "Update candidate flag changed");
-	zassert_equal(storage[1], 0, "Update candidate presence not cleared");
+	suit_plat_err_t ret = suit_storage_update_cand_get(&regions, &len);
+	zassert_equal(SUIT_PLAT_ERR_NOT_FOUND, ret, "Update candidate presence not cleared");
+
 	/* ... and orchestrator returns success */
 	zassert_equal(0, err, "Unexpected error code");
 }
