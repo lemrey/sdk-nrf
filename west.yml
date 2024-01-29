@@ -131,7 +131,7 @@ manifest:
     - name: nrfxlib
       repo-path: sdk-nrfxlib-next
       path: nrfxlib
-      revision: 1c1e4a9a43cc0590646bedf51c5aa1791d2eec8c
+      revision: 8a70b48496880109097d7f2e85307a4821fa6907
     - name: doc-internal
       repo-path: doc-internal
       path: modules/doc-internal
