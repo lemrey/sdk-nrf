@@ -54,7 +54,7 @@ typedef struct {
 	int32_t major;
 	/* Minor number. */
 	int32_t minor;
-	/* Patch or pre-release number.*/
+	/* Patch number.*/
 	int32_t patch;
 	/* Pre-release number. Always set to zero for regular releases. */
 	int32_t pre_release_number;
