@@ -9,37 +9,30 @@
 #include <suit_plat_mem_util.h>
 #include <update_magic_values.h>
 
+#if DT_NODE_EXISTS(DT_NODELABEL(suit_storage_app))
+#define SUIT_STORAGE_OFFSET FIXED_PARTITION_OFFSET(suit_storage_app)
+#define SUIT_STORAGE_SIZE   FIXED_PARTITION_SIZE(suit_storage_app)
+#else
+#define SUIT_STORAGE_OFFSET FIXED_PARTITION_OFFSET(suit_storage)
+#define SUIT_STORAGE_SIZE   FIXED_PARTITION_SIZE(suit_storage)
+#endif
 #define SUIT_STORAGE_ADDRESS suit_plat_mem_nvm_ptr_get(SUIT_STORAGE_OFFSET)
-#define SUIT_STORAGE_OFFSET  FIXED_PARTITION_OFFSET(suit_storage)
-#define SUIT_STORAGE_SIZE    FIXED_PARTITION_SIZE(suit_storage)
-
-#define zassert_area_empty()                                                                       \
-	zassert_equal(*((uint32_t *)SUIT_STORAGE_ADDRESS), UPDATE_MAGIC_VALUE_EMPTY,               \
-		      "Test precondition not met: area is not empty (0x%x).",                      \
-		      *((uint32_t *)SUIT_STORAGE_ADDRESS));
-
-#define zassert_area_update_available()                                                            \
-	zassert_equal(*((uint32_t *)SUIT_STORAGE_ADDRESS), UPDATE_MAGIC_VALUE_AVAILABLE,           \
-		      "Test precondition not met: update is not available (0x%x).",                \
-		      *((uint32_t *)SUIT_STORAGE_ADDRESS));
 
 static void test_suite_before(void *f)
 {
-	uint32_t *storage = (uint32_t *)SUIT_STORAGE_ADDRESS;
+	/* Execute SUIT storage init, so the MPI area is copied into a backup region. */
+	int err = suit_storage_init();
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init and backup suit storage (%d)", err);
 
-	if (*storage == UPDATE_MAGIC_VALUE_EMPTY) {
-		return;
-	}
-
-	/* Erase the area, to met the preconditions in the next test. */
+	/* Clear the whole application area */
 	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-	zassert_not_null(fdev, "Unable to find a driver to erase area");
+	zassert_not_null(fdev, "Unable to find a driver to erase storage area");
 
-	int rc = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
-	zassert_equal(rc, 0, "Unable to erase memory before test execution");
+	err = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
+	zassert_equal(0, err, "Unable to erase storage before test execution");
 
-	rc = suit_storage_init();
-	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize SUIT storage module (%d).", rc);
+	err = suit_storage_init();
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "Failed to initialize SUIT storage module (%d).", err);
 }
 
 ZTEST_SUITE(suit_storage_update_tests, NULL, NULL, test_suite_before, NULL, NULL);
@@ -51,8 +44,6 @@ ZTEST(suit_storage_update_tests, test_empty_update_available)
 
 	int rc = suit_storage_update_cand_get(&update_regions, &update_regions_len);
 
-	zassert_area_empty();
-
 	zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
 			  "Storage is empty, but update availability is reported (0x%x, %d).",
 			  update_regions, update_regions_len);
@@ -63,8 +54,6 @@ ZTEST(suit_storage_update_tests, test_empty_update_get)
 	const suit_plat_mreg_t *update_regions = NULL;
 	size_t update_regions_len = 0;
 	int rc = SUIT_PLAT_SUCCESS;
-
-	zassert_area_empty();
 
 	rc = suit_storage_update_cand_get(NULL, NULL);
 	zassert_not_equal(rc, SUIT_PLAT_SUCCESS,
@@ -88,8 +77,6 @@ ZTEST(suit_storage_update_tests, test_empty_update_get)
 
 ZTEST(suit_storage_update_tests, test_empty_update_clear)
 {
-	zassert_area_empty();
-
 	int rc = suit_storage_update_cand_set(NULL, 0);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Unable to clear empty partition (%d)", rc);
 }
@@ -156,15 +143,11 @@ void verify_storage_updates(void)
 
 ZTEST(suit_storage_update_tests, test_empty_update_set)
 {
-	zassert_area_empty();
-
 	verify_storage_updates();
 }
 
 ZTEST(suit_storage_update_tests, test_cleared_update_set)
 {
-	zassert_area_empty();
-
 	int rc = suit_storage_update_cand_set(NULL, 0);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Unable to clear empty partition (%d)", rc);
 
@@ -173,8 +156,6 @@ ZTEST(suit_storage_update_tests, test_cleared_update_set)
 
 ZTEST(suit_storage_update_tests, test_cleared_update_clear)
 {
-	zassert_area_empty();
-
 	int rc = suit_storage_update_cand_set(NULL, 0);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Unable to clear empty partition (%d)", rc);
 
@@ -184,8 +165,6 @@ ZTEST(suit_storage_update_tests, test_cleared_update_clear)
 
 ZTEST(suit_storage_update_tests, test_valid_update_clear)
 {
-	zassert_area_empty();
-
 	suit_plat_mreg_t update_candidate[1] = {{
 		.mem = (uint8_t *)0xCAFEFECA,
 		.size = 2044,
@@ -195,7 +174,14 @@ ZTEST(suit_storage_update_tests, test_valid_update_clear)
 		      "Unable to set correct DFU before test execution (0x%x, %d).", 0xCAFEFECA,
 		      2044);
 
-	zassert_area_update_available();
+	const suit_plat_mreg_t *update_regions = NULL;
+	size_t update_regions_len = 0;
+	rc = suit_storage_update_cand_get(&update_regions, &update_regions_len);
+	zassert_equal(rc, SUIT_PLAT_SUCCESS,
+		      "Set succeeded, but update availability is not reported.");
+	zassert_equal(update_regions_len, 1,
+		      "Set succeeded, but length of update candidate regions is invalid (%d).",
+		      update_regions_len);
 
 	rc = suit_storage_update_cand_set(NULL, 0);
 	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Unable to clear empty partition (%d)", rc);
@@ -203,8 +189,6 @@ ZTEST(suit_storage_update_tests, test_valid_update_clear)
 
 ZTEST(suit_storage_update_tests, test_update_with_caches)
 {
-	zassert_area_empty();
-
 	suit_plat_mreg_t update_candidate[3] = {
 		{
 			.mem = (uint8_t *)0xCAFEFECA,
@@ -242,8 +226,6 @@ ZTEST(suit_storage_update_tests, test_update_with_caches)
 
 ZTEST(suit_storage_update_tests, test_update_with_too_many_caches)
 {
-	zassert_area_empty();
-
 	suit_plat_mreg_t update_candidate[CONFIG_SUIT_STORAGE_N_UPDATE_REGIONS + 1];
 	for (size_t i = 0; i < ARRAY_SIZE(update_candidate); i++) {
 		update_candidate[i].mem = (uint8_t *)0xCAFEFECA;

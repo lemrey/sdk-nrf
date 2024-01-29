@@ -8,9 +8,14 @@
 #include <suit_storage.h>
 #include <suit_plat_mem_util.h>
 
+#if DT_NODE_EXISTS(DT_NODELABEL(suit_storage_app))
+#define SUIT_STORAGE_OFFSET FIXED_PARTITION_OFFSET(suit_storage_app)
+#define SUIT_STORAGE_SIZE   FIXED_PARTITION_SIZE(suit_storage_app)
+#else
+#define SUIT_STORAGE_OFFSET FIXED_PARTITION_OFFSET(suit_storage)
+#define SUIT_STORAGE_SIZE   FIXED_PARTITION_SIZE(suit_storage)
+#endif
 #define SUIT_STORAGE_ADDRESS suit_plat_mem_nvm_ptr_get(SUIT_STORAGE_OFFSET)
-#define SUIT_STORAGE_OFFSET  FIXED_PARTITION_OFFSET(suit_storage)
-#define SUIT_STORAGE_SIZE    FIXED_PARTITION_SIZE(suit_storage)
 
 /* The SUIT envelopes are defined inside the respective manfest_*.c files. */
 extern uint8_t manifest_root_buf[];
@@ -19,15 +24,6 @@ extern uint8_t manifest_app_buf[];
 extern const size_t manifest_app_len;
 extern uint8_t manifest_rad_buf[];
 extern const size_t manifest_rad_len;
-extern uint8_t manifest_sys_buf[];
-extern const size_t manifest_sys_len;
-
-extern uint8_t manifest_root_v2_buf[];
-extern const size_t manifest_root_v2_len;
-extern uint8_t manifest_app_v2_buf[];
-extern const size_t manifest_app_v2_len;
-extern uint8_t manifest_rad_v2_buf[];
-extern const size_t manifest_rad_v2_len;
 
 extern uint8_t manifest_app_posix_buf[];
 extern const size_t manifest_app_posix_len;
@@ -49,9 +45,6 @@ static const suit_manifest_class_id_t classes[] = {
 	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_rad') */
 	{{0x81, 0x6a, 0xa0, 0xa0, 0xaf, 0x11, 0x5e, 0xf2, 0x85, 0x8a, 0xfe, 0xb6, 0x68, 0xb2, 0xe9,
 	  0xc9}},
-	/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sys') */
-	{{0xc0, 0x8a, 0x25, 0xd7, 0x35, 0xe6, 0x59, 0x2c, 0xb7, 0xad, 0x43, 0xac, 0xc8, 0xd1, 0xd1,
-	  0xc8}},
 	/* RFC4122 uuid5(nordic_vid, 'test_sample_root') */
 	{{0x97, 0x05, 0x48, 0x23, 0x4c, 0x3d, 0x59, 0xa1, 0x89, 0x86, 0xa5, 0x46, 0x60, 0xa1, 0x4b,
 	  0x0a}},
@@ -60,43 +53,32 @@ static const suit_manifest_class_id_t classes[] = {
 	  0x36}},
 };
 
-#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
-static const suit_manifest_class_id_t *supported_classes[] = {
-	&classes[0],
-	&classes[1],
-	&classes[2],
-	&classes[3],
-};
-
-static const suit_manifest_class_id_t *unsupported_classes[] = {
-	&classes[4],
-	&classes[5],
-};
-#else  /* CONFIG_SOC_NRF54H20 */
-static const suit_manifest_class_id_t *supported_classes[] = {
-	&classes[4],
-	&classes[5],
-};
-
 static const suit_manifest_class_id_t *unsupported_classes[] = {
 	&classes[0],
 	&classes[1],
 	&classes[2],
-	&classes[3],
 };
-#endif /* CONFIG_SOC_NRF54H20 */
+
+static const suit_manifest_class_id_t *supported_classes[] = {
+	&classes[3],
+	&classes[4],
+};
 
 static void test_suite_before(void *f)
 {
-	/* Erase the area, to met the preconditions in the next test. */
+	/* Execute SUIT storage init, so the MPI area is copied into a backup region. */
+	int err = suit_storage_init();
+	zassert_equal(SUIT_PLAT_SUCCESS, err, "Failed to init and backup suit storage (%d)", err);
+
+	/* Clear the whole application area */
 	const struct device *fdev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
-	zassert_not_null(fdev, "Unable to find a driver to erase area");
+	zassert_not_null(fdev, "Unable to find a driver to erase storage area");
 
-	int rc = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
-	zassert_equal(rc, 0, "Unable to erase memory before test execution");
+	err = flash_erase(fdev, SUIT_STORAGE_OFFSET, SUIT_STORAGE_SIZE);
+	zassert_equal(0, err, "Unable to erase storage before test execution");
 
-	rc = suit_storage_init();
-	zassert_equal(rc, SUIT_PLAT_SUCCESS, "Failed to initialize SUIT storage module (%d).", rc);
+	err = suit_storage_init();
+	zassert_equal(err, SUIT_PLAT_SUCCESS, "Failed to initialize SUIT storage module (%d).", err);
 }
 
 ZTEST_SUITE(suit_storage_envelopes_tests, NULL, NULL, test_suite_before, NULL, NULL);
@@ -150,24 +132,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
-#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
-		{
-			.mem = manifest_root_buf,
-			.size = manifest_root_len,
-		},
-		{
-			.mem = manifest_app_buf,
-			.size = manifest_app_len,
-		},
-		{
-			.mem = manifest_rad_buf,
-			.size = manifest_rad_len,
-		},
-		{
-			.mem = manifest_sys_buf,
-			.size = manifest_sys_len,
-		},
-#else  /* CONFIG_SOC_NRF54H20 */
 		{
 			.mem = manifest_root_posix_buf,
 			.size = manifest_root_posix_len,
@@ -176,7 +140,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set)
 			.mem = manifest_app_posix_buf,
 			.size = manifest_app_posix_len,
 		},
-#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
@@ -206,24 +169,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
-#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
-		{
-			.mem = manifest_root_buf,
-			.size = manifest_root_len,
-		},
-		{
-			.mem = manifest_app_buf,
-			.size = manifest_app_len,
-		},
-		{
-			.mem = manifest_rad_buf,
-			.size = manifest_rad_len,
-		},
-		{
-			.mem = manifest_sys_buf,
-			.size = manifest_sys_len,
-		},
-#else  /* CONFIG_SOC_NRF54H20 */
 		{
 			.mem = manifest_root_posix_buf,
 			.size = manifest_root_posix_len,
@@ -232,7 +177,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 			.mem = manifest_app_posix_buf,
 			.size = manifest_app_posix_len,
 		},
-#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	/* Verify that envelopes are not installed. */
@@ -257,24 +201,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 
 	/* Install new version of the envelopes. */
 	suit_plat_mreg_t envelopes_v2[] = {
-#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
-		{
-			.mem = manifest_root_v2_buf,
-			.size = manifest_root_v2_len,
-		},
-		{
-			.mem = manifest_app_v2_buf,
-			.size = manifest_app_v2_len,
-		},
-		{
-			.mem = manifest_rad_v2_buf,
-			.size = manifest_rad_v2_len,
-		},
-		{
-			.mem = manifest_sys_buf,
-			.size = manifest_sys_len,
-		},
-#else  /* CONFIG_SOC_NRF54H20 */
 		{
 			.mem = manifest_root_posix_v2_buf,
 			.size = manifest_root_posix_v2_len,
@@ -283,7 +209,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_override)
 			.mem = manifest_app_posix_v2_buf,
 			.size = manifest_app_posix_v2_len,
 		},
-#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes_v2); i++) {
@@ -305,16 +230,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_unsupported_classes)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
-#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
-		{
-			.mem = manifest_root_posix_buf,
-			.size = manifest_root_posix_len,
-		},
-		{
-			.mem = manifest_app_posix_buf,
-			.size = manifest_app_posix_len,
-		},
-#else  /* CONFIG_SOC_NRF54H20 */
 		{
 			.mem = manifest_root_buf,
 			.size = manifest_root_len,
@@ -323,7 +238,10 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_unsupported_classes)
 			.mem = manifest_app_buf,
 			.size = manifest_app_len,
 		},
-#endif /* CONFIG_SOC_NRF54H20 */
+		{
+			.mem = manifest_rad_buf,
+			.size = manifest_rad_len,
+		},
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {
@@ -346,16 +264,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_class_mismatch)
 	int rc = 0;
 
 	suit_plat_mreg_t envelopes[] = {
-#ifndef CONFIG_SUIT_MCI_IMPL_CUSTOM
-		{
-			.mem = manifest_root_posix_buf,
-			.size = manifest_root_posix_len,
-		},
-		{
-			.mem = manifest_app_posix_buf,
-			.size = manifest_app_posix_len,
-		},
-#else  /* CONFIG_SOC_NRF54H20 */
 		{
 			.mem = manifest_root_buf,
 			.size = manifest_root_len,
@@ -364,7 +272,6 @@ ZTEST(suit_storage_envelopes_tests, test_empty_envelope_set_class_mismatch)
 			.mem = manifest_app_buf,
 			.size = manifest_app_len,
 		},
-#endif /* CONFIG_SOC_NRF54H20 */
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(envelopes); i++) {

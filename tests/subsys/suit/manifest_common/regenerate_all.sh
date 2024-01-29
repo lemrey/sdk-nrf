@@ -26,18 +26,14 @@ declare -A envelopes_wrong_key=(
 
 declare -A dependency_envelopes=(
   ["../storage/manifest/manifest_app.yaml"]="../storage/src/manifest_app.c"
-  ["../storage/manifest/manifest_app_v2.yaml"]="../storage/src/manifest_app_v2.c"
   ["../storage/manifest/manifest_app_posix.yaml"]="../storage/src/manifest_app_posix.c"
   ["../storage/manifest/manifest_app_posix_v2.yaml"]="../storage/src/manifest_app_posix_v2.c"
   ["../storage/manifest/manifest_rad.yaml"]="../storage/src/manifest_rad.c"
-  ["../storage/manifest/manifest_rad_v2.yaml"]="../storage/src/manifest_rad_v2.c"
-  ["../storage/manifest/manifest_sys.yaml"]="../storage/src/manifest_sys.c"
   ["../orchestrator/manifest/sample_valid_54.yaml"]="../orchestrator/src/manifest_valid_app_54.c"
   ["../orchestrator/manifest/sample_valid.yaml"]="../orchestrator/src/manifest_valid_app.c"
 )
 declare -A root_envelopes=(
   ["../storage/manifest/manifest_root.yaml"]="../storage/src/manifest_root.c"
-  ["../storage/manifest/manifest_root_v2.yaml"]="../storage/src/manifest_root_v2.c"
   ["../storage/manifest/manifest_root_posix.yaml"]="../storage/src/manifest_root_posix.c"
   ["../storage/manifest/manifest_root_posix_v2.yaml"]="../storage/src/manifest_root_posix_v2.c"
   ["../orchestrator/manifest/sample_valid_root_54.yaml"]="../orchestrator/src/manifest_valid_54.c"
@@ -45,14 +41,10 @@ declare -A root_envelopes=(
 )
 declare -A envelope_dependency_names=(
   ["../storage/manifest/manifest_app.yaml"]="app.suit"
-  ["../storage/manifest/manifest_app_v2.yaml"]="app_v2.suit"
   ["../storage/manifest/manifest_app_posix.yaml"]="app_posix.suit"
   ["../storage/manifest/manifest_app_posix_v2.yaml"]="app_posix_v2.suit"
   ["../storage/manifest/manifest_rad.yaml"]="rad.suit"
-  ["../storage/manifest/manifest_rad_v2.yaml"]="rad_v2.suit"
-  ["../storage/manifest/manifest_sys.yaml"]="sys.suit"
   ["../storage/manifest/manifest_root.yaml"]="root.suit"
-  ["../storage/manifest/manifest_root_v2.yaml"]="root_v2.suit"
   ["../storage/manifest/manifest_root_posix.yaml"]="root_posix.suit"
   ["../storage/manifest/manifest_root_posix_v2.yaml"]="root_posix_v2.suit"
   ["../orchestrator/manifest/sample_valid_54.yaml"]="sample_app.suit"
