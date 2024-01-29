@@ -60,86 +60,6 @@ struct suit_storage {
 	union suit_envelope_entry envelopes[CONFIG_SUIT_STORAGE_N_ENVELOPES];
 };
 
-#if defined(CONFIG_SOC_NRF54H20) && !defined(CONFIG_SUIT_MCI_IMPL_CUSTOM)
-static const suit_storage_mpi_t mpi_nRF54H20_sample[] = {
-	{
-		.version = SUIT_MPI_INFO_VERSION,
-		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_ENABLED,
-		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_ALLOWED,
-		.signature_verification_policy =
-			SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE_AND_BOOT,
-		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
-		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
-			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
-		/* RFC4122 uuid5(nordic_vid, 'nRF54H20_nordic_top') */
-		.class_id = {0xf0, 0x3d, 0x38, 0x5e, 0xa7, 0x31, 0x56, 0x05, 0xb1, 0x5d, 0x03, 0x7f,
-			     0x6d, 0xa6, 0x09, 0x7f},
-	},
-	{
-		.version = SUIT_MPI_INFO_VERSION,
-		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_ENABLED,
-		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_DENIED,
-		.signature_verification_policy =
-			SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE_AND_BOOT,
-		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
-		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
-			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
-		/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sec') */
-		.class_id = {0xd9, 0x6b, 0x40, 0xb7, 0x09, 0x2b, 0x5c, 0xd1, 0xa5, 0x9f, 0x9a, 0xf8,
-			     0x0c, 0x33, 0x7e, 0xba},
-	},
-	{
-		.version = SUIT_MPI_INFO_VERSION,
-		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_ENABLED,
-		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_DENIED,
-		.signature_verification_policy =
-			SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE_AND_BOOT,
-		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
-		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
-			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
-		/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sys') */
-		.class_id = {0xc0, 0x8a, 0x25, 0xd7, 0x35, 0xe6, 0x59, 0x2c, 0xb7, 0xad, 0x43, 0xac,
-			     0xc8, 0xd1, 0xd1, 0xc8},
-	},
-	{
-		.version = SUIT_MPI_INFO_VERSION,
-		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_DISABLED,
-		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_ALLOWED,
-		.signature_verification_policy = SUIT_MPI_SIGNATURE_CHECK_DISABLED,
-		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
-		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
-			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
-		/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_root') */
-		.class_id = {0x3f, 0x6a, 0x3a, 0x4d, 0xcd, 0xfa, 0x58, 0xc5, 0xac, 0xce, 0xf9, 0xf5,
-			     0x84, 0xc4, 0x11, 0x24},
-	},
-	{
-		.version = SUIT_MPI_INFO_VERSION,
-		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_DISABLED,
-		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_DENIED,
-		.signature_verification_policy = SUIT_MPI_SIGNATURE_CHECK_DISABLED,
-		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
-		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
-			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
-		/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_app') */
-		.class_id = {0x08, 0xc1, 0xb5, 0x99, 0x55, 0xe8, 0x5f, 0xbc, 0x9e, 0x76, 0x7b, 0xc2,
-			     0x9c, 0xe1, 0xb0, 0x4d},
-	},
-	{
-		.version = SUIT_MPI_INFO_VERSION,
-		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_DISABLED,
-		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_DENIED,
-		.signature_verification_policy = SUIT_MPI_SIGNATURE_CHECK_DISABLED,
-		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
-		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
-			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
-		/* RFC4122 uuid5(nordic_vid, 'nRF54H20_sample_rad') */
-		.class_id = {0x81, 0x6a, 0xa0, 0xa0, 0xaf, 0x11, 0x5e, 0xf2, 0x85, 0x8a, 0xfe, 0xb6,
-			     0x68, 0xb2, 0xe9, 0xc9},
-	}};
-#endif /* CONFIG_SOC_NRF54H20 && !CONFIG_SUIT_MCI_IMPL_CUSTOM */
-
-#ifdef CONFIG_SUIT_MCI_IMPL_CUSTOM
 static const suit_storage_mpi_t mpi_test_sample[] = {
 	{
 		.version = SUIT_MPI_INFO_VERSION,
@@ -165,41 +85,11 @@ static const suit_storage_mpi_t mpi_test_sample[] = {
 		.class_id = {0x5b, 0x46, 0x9f, 0xd1, 0x90, 0xee, 0x53, 0x9c, 0xa3, 0x18, 0x68, 0x1b,
 			     0x03, 0x69, 0x5e, 0x36},
 	}};
-#endif /* CONFIG_SUIT_MCI_IMPL_CUSTOM */
 
 static suit_plat_err_t find_mpi_area(suit_manifest_role_t role, uint8_t **addr, size_t *size)
 {
 	int index = -1;
 
-#if defined(CONFIG_SOC_NRF54H20) && !defined(CONFIG_SUIT_MCI_IMPL_CUSTOM)
-	const suit_storage_mpi_t *mpi_config = mpi_nRF54H20_sample;
-
-	switch (role) {
-	case SUIT_MANIFEST_SEC_TOP:
-		index = 0;
-		break;
-	case SUIT_MANIFEST_SEC_SDFW:
-		index = 1;
-		break;
-	case SUIT_MANIFEST_SEC_SYSCTRL:
-		index = 2;
-		break;
-	case SUIT_MANIFEST_APP_ROOT:
-		index = 3;
-		break;
-	case SUIT_MANIFEST_APP_LOCAL_1:
-		index = 4;
-		break;
-	case SUIT_MANIFEST_RAD_LOCAL_1:
-		index = 5;
-		break;
-	default:
-		index = -1;
-		break;
-	}
-#endif /* CONFIG_SOC_NRF54H20 && !CONFIG_SUIT_MCI_IMPL_CUSTOM */
-
-#ifdef CONFIG_SUIT_MCI_IMPL_CUSTOM
 	const suit_storage_mpi_t *mpi_config = mpi_test_sample;
 
 	switch (role) {
@@ -213,7 +103,6 @@ static suit_plat_err_t find_mpi_area(suit_manifest_role_t role, uint8_t **addr, 
 		index = -1;
 		break;
 	}
-#endif /* CONFIG_SUIT_MCI_IMPL_CUSTOM */
 
 	if (index == -1) {
 		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
@@ -230,33 +119,6 @@ static suit_plat_err_t find_manifest_area(suit_manifest_role_t role, uint8_t **a
 	struct suit_storage *storage = (struct suit_storage *)SUIT_STORAGE_ADDRESS;
 	int index = -1;
 
-#if defined(CONFIG_SOC_NRF54H20) && !defined(CONFIG_SUIT_MCI_IMPL_CUSTOM)
-	switch (role) {
-	case SUIT_MANIFEST_APP_ROOT:
-		index = 0;
-		break;
-	case SUIT_MANIFEST_APP_LOCAL_1:
-		index = 1;
-		break;
-	case SUIT_MANIFEST_RAD_LOCAL_1:
-		index = 2;
-		break;
-	case SUIT_MANIFEST_SEC_TOP:
-		index = 3;
-		break;
-	case SUIT_MANIFEST_SEC_SDFW:
-		index = 4;
-		break;
-	case SUIT_MANIFEST_SEC_SYSCTRL:
-		index = 5;
-		break;
-	default:
-		index = -1;
-		break;
-	}
-#endif /* CONFIG_SOC_NRF54H20 && !CONFIG_SUIT_MCI_IMPL_CUSTOM */
-
-#ifdef CONFIG_SUIT_MCI_IMPL_CUSTOM
 	switch (role) {
 	case SUIT_MANIFEST_APP_ROOT:
 		index = 0;
@@ -268,7 +130,6 @@ static suit_plat_err_t find_manifest_area(suit_manifest_role_t role, uint8_t **a
 		index = -1;
 		break;
 	}
-#endif /* CONFIG_SUIT_MCI_IMPL_CUSTOM */
 
 	if (index == -1) {
 		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
@@ -284,8 +145,8 @@ suit_plat_err_t suit_storage_init(void)
 {
 	suit_plat_err_t err = SUIT_PLAT_SUCCESS;
 	suit_manifest_role_t roles[] = {
-		SUIT_MANIFEST_SEC_TOP,	SUIT_MANIFEST_SEC_SDFW,	   SUIT_MANIFEST_SEC_SYSCTRL,
-		SUIT_MANIFEST_APP_ROOT, SUIT_MANIFEST_APP_LOCAL_1, SUIT_MANIFEST_RAD_LOCAL_1,
+		SUIT_MANIFEST_APP_ROOT,
+		SUIT_MANIFEST_APP_LOCAL_1,
 	};
 
 	if (sizeof(struct suit_storage) > SUIT_STORAGE_SIZE) {
@@ -361,19 +222,19 @@ suit_plat_err_t suit_storage_installed_envelope_get(const suit_manifest_class_id
 
 	err = find_manifest_area(role, addr, size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_INF("Unable to find area for envelope with role %d.", role);
+		LOG_INF("Unable to find area for envelope with role 0x%x.", role);
 		return err;
 	}
 
-	LOG_DBG("Decode envelope with role: %d address: 0x%lx", role, (intptr_t)(*addr));
+	LOG_DBG("Decode envelope with role: 0x%x address: 0x%lx", role, (intptr_t)(*addr));
 
 	err = suit_storage_envelope_get(*addr, *size, id, addr, size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_ERR("Unable to parse envelope with role %d", role);
+		LOG_WRN("Unable to parse envelope with role 0x%x", role);
 		return err;
 	}
 
-	LOG_INF("Valid envelope with given class ID and role %d found", role);
+	LOG_INF("Valid envelope with given class ID and role 0x%x found", role);
 
 	return err;
 }
@@ -398,17 +259,17 @@ suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id
 
 	err = find_manifest_area(role, &area_addr, &area_size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_INF("Unable to find area for envelope with role %d.", role);
+		LOG_INF("Unable to find area for envelope with role 0x%x.", role);
 		return err;
 	}
 
 	err = suit_storage_envelope_install(area_addr, area_size, id, addr, size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_INF("Failed to install envelope with role %d.", role);
+		LOG_INF("Failed to install envelope with role 0x%x.", role);
 		return err;
 	}
 
-	LOG_INF("Envelope with role %d saved.", role);
+	LOG_INF("Envelope with role 0x%x saved.", role);
 
 	return err;
 }

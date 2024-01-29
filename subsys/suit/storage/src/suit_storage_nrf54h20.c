@@ -8,8 +8,6 @@
 #include <suit_storage_nvv.h>
 #include <suit_storage_internal.h>
 #include <zephyr/logging/log.h>
-#include <suit_plat_decode_util.h>
-#include <suit_platform.h>
 #include <psa/crypto.h>
 
 LOG_MODULE_REGISTER(suit_storage, CONFIG_SUIT_LOG_LEVEL);
@@ -511,9 +509,13 @@ static suit_plat_err_t digest_struct_validate(uint8_t *area_addr, uint8_t *backu
 		}
 
 		/* We have a valid entry and backup digest does not match or differ. */
+		LOG_INF("Backup area 0x%lx -> 0x%lx", (uintptr_t)area_addr, (uintptr_t)backup_addr);
+
 		return flash_cpy(backup_addr, area_addr, area_with_digest_size);
 	} else if (backup_status == SUIT_PLAT_SUCCESS) {
 		/* Regular entry broken - restore from backup. */
+		LOG_INF("Use backup 0x%lx -> 0x%lx", (uintptr_t)backup_addr, (uintptr_t)area_addr);
+
 		return flash_cpy(area_addr, backup_addr, area_with_digest_size);
 	}
 
@@ -616,10 +618,11 @@ static suit_plat_err_t configure_manifests(suit_manifest_role_t *roles, size_t n
 		ret = find_mpi_area(roles[i], &mpi_addr, &mpi_size);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			if (ignore_missing) {
-				LOG_INF("Skip MPI area for role %d. Area not found.", roles[i]);
+				LOG_INF("Skip MPI area for role 0x%x. Area not found.", roles[i]);
 				continue;
 			} else {
-				LOG_ERR("Failed to locate MPI area for role %d: %d", roles[i], ret);
+				LOG_ERR("Failed to locate MPI area for role 0x%x: %d", roles[i],
+					ret);
 				return ret;
 			}
 		}
@@ -627,10 +630,10 @@ static suit_plat_err_t configure_manifests(suit_manifest_role_t *roles, size_t n
 		ret = suit_storage_mpi_configuration_load(roles[i], mpi_addr, mpi_size);
 		if (ret != SUIT_PLAT_SUCCESS) {
 			if (ignore_missing) {
-				LOG_INF("Skip MPI area for role %d. Area load failed.", roles[i]);
+				LOG_INF("Skip MPI area for role 0x%x. Area load failed.", roles[i]);
 				continue;
 			} else {
-				LOG_WRN("Failed to load MPI configuration for role %d: %d",
+				LOG_WRN("Failed to load MPI configuration for role 0x%x: %d",
 					roles[i], ret);
 				return ret;
 			}
@@ -728,7 +731,7 @@ suit_plat_err_t suit_storage_init(void)
 
 	ret = suit_storage_nvv_init();
 	if (ret != SUIT_PLAT_SUCCESS) {
-		LOG_ERR("Failed to verify NVV: %d", ret);
+		LOG_ERR("Failed to init NVV: %d", ret);
 		return ret;
 	}
 
@@ -736,6 +739,7 @@ suit_plat_err_t suit_storage_init(void)
 				     (uint8_t *)&app_storage->app.nvv_bak,
 				     offsetof(struct suit_storage_nvv, digest));
 	if (ret == SUIT_PLAT_ERR_CRASH) {
+		LOG_WRN("Failed to verify NVV (%d), load default values", ret);
 		ret = nvv_init((uint8_t *)&app_storage->app.nvv,
 			       (uint8_t *)&app_storage->app.nvv_bak);
 	}
@@ -783,19 +787,19 @@ suit_plat_err_t suit_storage_installed_envelope_get(const suit_manifest_class_id
 
 	err = find_manifest_area(role, addr, size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_INF("Unable to find area for envelope with role %d.", role);
+		LOG_INF("Unable to find area for envelope with role 0x%x.", role);
 		return err;
 	}
 
-	LOG_DBG("Decode envelope with role: %d address: 0x%lx", role, (intptr_t)(*addr));
+	LOG_DBG("Decode envelope with role: 0x%x address: 0x%lx", role, (intptr_t)(*addr));
 
 	err = suit_storage_envelope_get(*addr, *size, id, addr, size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_ERR("Unable to parse envelope with role %d", role);
+		LOG_WRN("Unable to parse envelope with role 0x%x", role);
 		return err;
 	}
 
-	LOG_INF("Valid envelope with given class ID and role %d found", role);
+	LOG_INF("Valid envelope with given class ID and role 0x%x found", role);
 
 	return err;
 }
@@ -820,17 +824,17 @@ suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id
 
 	err = find_manifest_area(role, &area_addr, &area_size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_INF("Unable to find area for envelope with role %d.", role);
+		LOG_INF("Unable to find area for envelope with role 0x%x.", role);
 		return err;
 	}
 
 	err = suit_storage_envelope_install(area_addr, area_size, id, addr, size);
 	if (err != SUIT_PLAT_SUCCESS) {
-		LOG_INF("Failed to install envelope with role %d.", role);
+		LOG_INF("Failed to install envelope with role 0x%x.", role);
 		return err;
 	}
 
-	LOG_INF("Envelope with role %d saved.", role);
+	LOG_INF("Envelope with role 0x%x saved.", role);
 
 	return err;
 }

@@ -48,6 +48,7 @@ config SUIT_DFU_CANDIDATE_PROCESSING_MINIMAL
 	imply SUIT_UTILS
 	imply SUIT_METADATA
 	imply SSF_SUIT_SERVICE_ENABLED
+	imply SUIT_MPI_GENERATE
 
 config SUIT_DFU_CANDIDATE_PROCESSING_NONE
 	bool "Disable any processing of the SUIT candidate envelope"
@@ -59,6 +60,7 @@ config SUIT_DFU_CANDIDATE_PROCESSING_NONE
 		used by the Secure Domain to fetch additional data with the use of the application
 		core.
 	imply SUIT_ORCHESTRATOR_APP
+	imply SUIT_MPI_GENERATE
 
 endchoice # SUIT_APP_ENVELOPE_PROCESSING_LEVEL
 

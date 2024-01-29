@@ -12,9 +12,6 @@ menuconfig SUIT_PLATFORM
 
 if SUIT_PLATFORM
 
-config SUIT_LEGACY_PLATFORM
-	bool "DEPRECATED: Use legacy implementation of SUIT platform"
-
 config SUIT_DEVCONFIG
 	bool "Enable manifest authorization and installation"
 	depends on SUIT_STORAGE

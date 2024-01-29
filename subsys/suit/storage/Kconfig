@@ -14,6 +14,23 @@ menuconfig SUIT_STORAGE
 
 if SUIT_STORAGE
 
+choice SUIT_STORAGE_LAYOUT
+	prompt "MCU-specific layout of the SUIT storage"
+	default SUIT_STORAGE_LAYOUT_NRF54H20 if SOC_NRF54H20
+	default SUIT_STORAGE_LAYOUT_TEST if !SOC_NRF54H20
+
+config SUIT_STORAGE_LAYOUT_NRF54H20
+	bool "nRF54H20"
+	depends on SUIT_CRYPTO
+	select PSA_WANT_ALG_SHA_256
+
+config SUIT_STORAGE_LAYOUT_TEST
+	bool "tests"
+	help
+	  Configuration to be used for running SUIT tests
+
+endchoice # SUIT_STORAGE_LAYOUT
+
 config SUIT_STORAGE_N_UPDATE_REGIONS
 	int "Maximum number of memory regions, describing the update candidate"
 	default 7
@@ -22,8 +39,7 @@ config SUIT_STORAGE_N_UPDATE_REGIONS
 
 config SUIT_STORAGE_N_ENVELOPES
 	int "Number of envelopes, possible to store in SUIT storage"
-	default 11 if SOC_NRF54H20 && !SUIT_STORAGE_LEGACY_FORMAT
-	default 8 if SOC_NRF54H20 && SUIT_STORAGE_LEGACY_FORMAT
+	default 11 if SOC_NRF54H20
 	default 5 if SOC_NRF52840
 	default 5 if SOC_POSIX
 	help
@@ -51,10 +67,6 @@ config SUIT_STORAGE_N_ENVELOPES
 	    - Application: firmware (A)
 	    - Application: firmware (B)
 	    - Application: user data
-
-config SUIT_STORAGE_LEGACY_FORMAT
-	bool "Use legacy SUIT storage memory layout"
-	default y
 
 config SUIT_STORAGE_ENVELOPE_SIZE
 	int "The maximum size of envelope that can be stored in a single SUIT storage slot"
