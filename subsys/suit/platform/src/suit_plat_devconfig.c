@@ -80,6 +80,11 @@ int suit_plat_authorize_sequence_num(enum suit_command_sequence seq_name,
 	}
 
 	ret = suit_storage_installed_envelope_get(class_id, &envelope_addr, &envelope_size);
+	if ((ret == SUIT_PLAT_ERR_NOT_FOUND) || (ret == SUIT_PLAT_ERR_OUT_OF_BOUNDS)) {
+		LOG_ERR("Unable to find a role or slot for envelope (ret: %d)", ret);
+		return SUIT_ERR_AUTHENTICATION;
+	}
+
 	if (ret != SUIT_PLAT_SUCCESS) {
 		if ((seq_name == SUIT_SEQ_VALIDATE) || (seq_name == SUIT_SEQ_LOAD) ||
 		    (seq_name == SUIT_SEQ_INVOKE)) {

@@ -307,8 +307,8 @@ ZTEST(suit_platform_devconfig_seq_tests, test_update_no_installed_envelope)
 			suit_plat_decode_manifest_class_id_correct_fake_func;
 		/* ... and the manifest class ID is supported */
 		suit_mci_manifest_class_id_validate_fake.return_val = SUIT_PLAT_SUCCESS;
-		/* ... and the SUIT storage contains a valid envelope with given class ID */
-		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_ERR_NOT_FOUND;
+		/* ... and the SUIT storage contains an invalid envelope with given class ID */
+		suit_storage_installed_envelope_get_fake.return_val = SUIT_PLAT_ERR_CBOR_DECODING;
 		/* ... and the envelope from SUIT storage is decodeable */
 		suit_processor_get_manifest_metadata_fake.custom_fake =
 			suit_processor_get_manifest_metadata_seq_one_fake_func;
