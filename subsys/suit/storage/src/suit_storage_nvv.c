@@ -108,7 +108,7 @@ suit_plat_err_t suit_storage_nvv_set(uint8_t *area_addr, size_t area_size, size_
 		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
-	memcpy(area_addr, nvv_buf, sizeof(nvv_buf));
+	memcpy(nvv_buf, area_addr, sizeof(nvv_buf));
 	(*vars)[index] = value;
 
 	/* Override regular entry. */
