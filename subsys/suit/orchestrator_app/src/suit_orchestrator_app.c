@@ -120,10 +120,7 @@ int suit_dfu_update_start(void)
 	/* TODO: get update regions - caches, Ref: NCSDK-25701 */
 	LOG_INF("Reboot the system and trigger the update");
 
-	if (IS_ENABLED(CONFIG_LOG)) {
-		/* Flush all logs */
-		log_panic();
-	}
+	LOG_PANIC();
 
 #if CONFIG_SUIT_CACHE
 	suit_plat_mreg_t update_candidate[CONFIG_SUIT_CACHE_MAX_CACHES + 1];

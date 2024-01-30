@@ -137,10 +137,7 @@ static int update_path(void)
 	if (IS_ENABLED(CONFIG_SUIT_UPDATE_REBOOT_ENABLED)) {
 		LOG_INF("Reboot the system after update");
 
-		if (IS_ENABLED(CONFIG_LOG)) {
-			/* Flush all logs */
-			log_panic();
-		}
+		LOG_PANIC();
 
 		sys_reboot(SYS_REBOOT_COLD);
 	}
