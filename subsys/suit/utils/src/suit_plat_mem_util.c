@@ -27,13 +27,19 @@ uint8_t *suit_plat_mem_ptr_get(uintptr_t address)
 	 * Address in the range defined for sram0 is not translated.
 	 * Address that do not fit in any of the mentioned ranges is treated as invalid.
 	 */
+#if DT_NODE_EXISTS(DT_NODELABEL(flash0))
 	if ((address >= DT_REG_ADDR(DT_NODELABEL(flash0))) &&
 		(address < (DT_REG_ADDR(DT_NODELABEL(flash0)) + DT_REG_SIZE(DT_NODELABEL(flash0))))) {
 		return (uint8_t *)(address + (uintptr_t)f_base_address);
-	} else if ((address >= (DT_REG_ADDR(DT_NODELABEL(sram0)))) &&
+	}
+#endif /* DT_NODE_EXISTS(DT_NODELABEL(flash0)) */
+
+#if DT_NODE_EXISTS(DT_NODELABEL(sram0))
+	if ((address >= (DT_REG_ADDR(DT_NODELABEL(sram0)))) &&
 			(address < (DT_REG_ADDR(DT_NODELABEL(sram0)) + DT_REG_SIZE(DT_NODELABEL(sram0))))) {
 		return (uint8_t *)address;
 	}
+#endif /* DT_NODE_EXISTS(DT_NODELABEL(sram0)) */
 
 	return NULL;
 #else  /* CONFIG_FLASH_SIMULATOR */
