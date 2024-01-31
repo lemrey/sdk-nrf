@@ -37,7 +37,7 @@ config SUIT_DFU_CANDIDATE_PROCESSING_MINIMAL
 		This configuration can be used to allow update using SUIT when no interpretation
 		of the SUIT envelope is needed by the local domain apart from basic format checking.
 		This is equivalent to a situation where it is known that none of the manifests
-		(the top manifest nor its dependecies) contains a suit-payload-fetch sequence.
+		(the top manifest nor its dependencies) contains a suit-payload-fetch sequence.
 		The only role of the application core is store the SUIT candidate envelope
 		followed by passing the control to the Secure Domain.
 		If the application needs to additionally store detached payloads in DFU cache

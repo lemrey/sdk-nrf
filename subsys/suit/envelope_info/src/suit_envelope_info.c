@@ -47,7 +47,7 @@ suit_plat_err_t suit_envelope_info_candidate_stored(const uint8_t* address, size
 
 	zcbor_new_state(states, sizeof(states) / sizeof(zcbor_state_t), address, max_size, 1);
 
-	/* Expect SUIT evelope tag (107) and skip until the end of the envelope */
+	/* Expect SUIT envelope tag (107) and skip until the end of the envelope */
 	if (!zcbor_tag_expect(states, 107) || !zcbor_any_skip(states, NULL))
 	{
 		LOG_DBG("Malformed envelope");
