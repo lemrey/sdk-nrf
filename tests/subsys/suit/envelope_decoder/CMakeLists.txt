@@ -12,3 +12,4 @@ project(integration_test_envelope_decoder)
 include(../cmake/test_template.cmake)
 
 zephyr_library_link_libraries(suit_utils)
+zephyr_library_link_libraries(suit_storage_interface)

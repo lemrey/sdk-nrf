@@ -13,6 +13,7 @@
 #include <suit.h>
 #include <suit_platform.h>
 #include <suit_mci.h>
+#include <suit_storage.h>
 
 #define DFU_PARTITION_ADDRESS (suit_plat_mem_nvm_ptr_get(DFU_PARTITION_OFFSET))
 #define DFU_PARTITION_OFFSET  ((size_t)FIXED_PARTITION_OFFSET(dfu_partition))
@@ -20,7 +21,10 @@
 
 static void *test_suit_setup(void)
 {
-	int err = suit_mci_init();
+	int err = suit_storage_init();
+	zassert_equal(err, 0, "Unable to initialize storage module");
+
+	err = suit_mci_init();
 	zassert_equal(err, 0, "Unable to initialize MCI module");
 
 	err = suit_processor_init();
