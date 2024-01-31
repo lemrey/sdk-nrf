@@ -75,6 +75,8 @@ suit_plat_err_t suit_storage_mpi_init(void);
  * @retval SUIT_PLAT_ERR_EXISTS         manifest with given role already configured.
  * @retval SUIT_PLAT_ERR_OUT_OF_BOUNDS  unsupported manifest provisioning structure format.
  * @retval SUIT_PLAT_ERR_SIZE           unable to store more MPI configurations.
+ * @retval SUIT_PLAT_ERR_NOT_FOUND      manifest provisioning structure erased (0xFF).
+ * @retval SUIT_PLAT_ERR_UNSUPPORTED    MPI values are not supported in the provided role.
  */
 suit_plat_err_t suit_storage_mpi_configuration_load(suit_manifest_role_t role, const uint8_t *addr,
 						    size_t size);

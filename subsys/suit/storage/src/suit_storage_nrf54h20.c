@@ -141,6 +141,8 @@ static const suit_storage_mpi_t mpi_nordic[] = {
 		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_ALLOWED,
 		.signature_verification_policy =
 			SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE_AND_BOOT,
+		.reserved = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			     0xFF},
 		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
 		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
 			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
@@ -154,6 +156,8 @@ static const suit_storage_mpi_t mpi_nordic[] = {
 		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_DENIED,
 		.signature_verification_policy =
 			SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE_AND_BOOT,
+		.reserved = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			     0xFF},
 		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
 		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
 			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
@@ -167,6 +171,8 @@ static const suit_storage_mpi_t mpi_nordic[] = {
 		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_DENIED,
 		.signature_verification_policy =
 			SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE_AND_BOOT,
+		.reserved = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			     0xFF},
 		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
 		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
 			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
@@ -226,63 +232,6 @@ static suit_plat_err_t find_manifest_area(suit_manifest_role_t role, uint8_t **a
 	case SUIT_MANIFEST_APP_LOCAL_3:
 		*addr = app_storage->app.local_spare;
 		*size = sizeof(app_storage->app.local_spare);
-		break;
-	default:
-		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
-	}
-
-	return SUIT_PLAT_SUCCESS;
-}
-
-static suit_plat_err_t find_mpi_area(suit_manifest_role_t role, uint8_t **addr, size_t *size)
-{
-	struct suit_storage_rad *rad_storage = (struct suit_storage_rad *)SUIT_STORAGE_RAD_ADDRESS;
-	struct suit_storage_app *app_storage = (struct suit_storage_app *)SUIT_STORAGE_APP_ADDRESS;
-
-	switch (role) {
-	case SUIT_MANIFEST_SEC_TOP:
-		*addr = (uint8_t *)&mpi_nordic[0];
-		*size = sizeof(mpi_nordic[0]);
-		break;
-	case SUIT_MANIFEST_SEC_SDFW:
-		*addr = (uint8_t *)&mpi_nordic[1];
-		*size = sizeof(mpi_nordic[1]);
-		break;
-	case SUIT_MANIFEST_SEC_SYSCTRL:
-		*addr = (uint8_t *)&mpi_nordic[2];
-		*size = sizeof(mpi_nordic[2]);
-		break;
-	case SUIT_MANIFEST_RAD_RECOVERY:
-		*addr = rad_storage->rad.mpi.recovery;
-		*size = sizeof(rad_storage->rad.mpi.recovery);
-		break;
-	case SUIT_MANIFEST_RAD_LOCAL_1:
-		*addr = rad_storage->rad.mpi.local_a;
-		*size = sizeof(rad_storage->rad.mpi.local_a);
-		break;
-	case SUIT_MANIFEST_RAD_LOCAL_2:
-		*addr = rad_storage->rad.mpi.local_b;
-		*size = sizeof(rad_storage->rad.mpi.local_b);
-		break;
-	case SUIT_MANIFEST_APP_ROOT:
-		*addr = app_storage->app.mpi.root;
-		*size = sizeof(app_storage->app.mpi.root);
-		break;
-	case SUIT_MANIFEST_APP_RECOVERY:
-		*addr = app_storage->app.mpi.recovery;
-		*size = sizeof(app_storage->app.mpi.recovery);
-		break;
-	case SUIT_MANIFEST_APP_LOCAL_1:
-		*addr = app_storage->app.mpi.local_a;
-		*size = sizeof(app_storage->app.mpi.local_a);
-		break;
-	case SUIT_MANIFEST_APP_LOCAL_2:
-		*addr = app_storage->app.mpi.local_b;
-		*size = sizeof(app_storage->app.mpi.local_b);
-		break;
-	case SUIT_MANIFEST_APP_LOCAL_3:
-		*addr = app_storage->app.mpi.local_spare;
-		*size = sizeof(app_storage->app.mpi.local_spare);
 		break;
 	default:
 		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
@@ -458,6 +407,46 @@ static suit_plat_err_t flash_cpy(uint8_t *dst_addr, uint8_t *src_addr, size_t si
 	}
 }
 
+/** @brief Select the digest-protected area with valid sigest.
+ *
+ * @param[in,out]  area_addr    Address of the area.
+ * @param[in,out]  backup_addr  Address of the backup.
+ * @param[in]      area_size    Size of the area.
+ *
+ * @retval NULL         if area and backup are invalid.
+ * @retval area_addr    if area is valid.
+ * @retval backup_addr  if area is invalid, but backup is valid.
+ */
+static uint8_t *digest_struct_find(uint8_t *area_addr, uint8_t *backup_addr, size_t area_size)
+{
+	const suit_storage_digest_t *area_digest = NULL;
+	const suit_storage_digest_t *backup_digest = NULL;
+	suit_plat_err_t area_status = SUIT_PLAT_ERR_CRASH;
+	suit_plat_err_t backup_status = SUIT_PLAT_ERR_CRASH;
+
+	if ((area_addr == NULL) || (backup_addr == NULL) || (area_size == 0) ||
+	    (area_size != EB_ALIGN(area_size))) {
+		LOG_ERR("Invalid argument");
+		return NULL;
+	}
+
+	area_digest = (suit_storage_digest_t *)&area_addr[area_size];
+	area_status = sha256_check(area_addr, area_size, area_digest);
+
+	if (area_status == SUIT_PLAT_SUCCESS) {
+		return area_addr;
+	}
+
+	backup_digest = (suit_storage_digest_t *)&backup_addr[area_size];
+	backup_status = sha256_check(backup_addr, area_size, backup_digest);
+
+	if (backup_status == SUIT_PLAT_SUCCESS) {
+		return backup_addr;
+	}
+
+	return NULL;
+}
+
 /** @brief Validate the integrity of the digest-protected area in NVM.
  *
  * @details This function calculates and compares digests of the area and the assigned backup.
@@ -605,6 +594,95 @@ static suit_plat_err_t nvv_init(uint8_t *area_addr, uint8_t *backup_addr)
 	return digest_struct_commit(area_addr, backup_addr, area_size);
 }
 
+static suit_plat_err_t find_mpi_area(suit_manifest_role_t role, uint8_t **addr, size_t *size)
+{
+	struct suit_storage_nordic *nordic_storage =
+		(struct suit_storage_nordic *)SUIT_STORAGE_NORDIC_ADDRESS;
+	struct suit_storage_rad *rad_storage = (struct suit_storage_rad *)SUIT_STORAGE_RAD_ADDRESS;
+	struct suit_storage_app *app_storage = (struct suit_storage_app *)SUIT_STORAGE_APP_ADDRESS;
+	struct suit_storage_mpi_app *app_mpi = (struct suit_storage_mpi_app *)digest_struct_find(
+		(uint8_t *)&app_storage->app.mpi, (uint8_t *)&nordic_storage->nordic.app_mpi_bak,
+		offsetof(struct suit_storage_mpi_app, digest));
+	struct suit_storage_mpi_rad *rad_mpi = (struct suit_storage_mpi_rad *)digest_struct_find(
+		(uint8_t *)&rad_storage->rad.mpi, (uint8_t *)&nordic_storage->nordic.rad_mpi_bak,
+		offsetof(struct suit_storage_mpi_rad, digest));
+
+	switch (role) {
+	case SUIT_MANIFEST_SEC_TOP:
+		*addr = (uint8_t *)&mpi_nordic[0];
+		*size = sizeof(mpi_nordic[0]);
+		break;
+	case SUIT_MANIFEST_SEC_SDFW:
+		*addr = (uint8_t *)&mpi_nordic[1];
+		*size = sizeof(mpi_nordic[1]);
+		break;
+	case SUIT_MANIFEST_SEC_SYSCTRL:
+		*addr = (uint8_t *)&mpi_nordic[2];
+		*size = sizeof(mpi_nordic[2]);
+		break;
+	case SUIT_MANIFEST_RAD_RECOVERY:
+		if (rad_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = rad_mpi->recovery;
+		*size = sizeof(rad_mpi->recovery);
+		break;
+	case SUIT_MANIFEST_RAD_LOCAL_1:
+		if (rad_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = rad_mpi->local_a;
+		*size = sizeof(rad_mpi->local_a);
+		break;
+	case SUIT_MANIFEST_RAD_LOCAL_2:
+		if (rad_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = rad_mpi->local_b;
+		*size = sizeof(rad_mpi->local_b);
+		break;
+	case SUIT_MANIFEST_APP_ROOT:
+		if (app_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = app_mpi->root;
+		*size = sizeof(app_mpi->root);
+		break;
+	case SUIT_MANIFEST_APP_RECOVERY:
+		if (app_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = app_mpi->recovery;
+		*size = sizeof(app_mpi->recovery);
+		break;
+	case SUIT_MANIFEST_APP_LOCAL_1:
+		if (app_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = app_mpi->local_a;
+		*size = sizeof(app_mpi->local_a);
+		break;
+	case SUIT_MANIFEST_APP_LOCAL_2:
+		if (app_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = app_mpi->local_b;
+		*size = sizeof(app_mpi->local_b);
+		break;
+	case SUIT_MANIFEST_APP_LOCAL_3:
+		if (app_mpi == NULL) {
+			return SUIT_PLAT_ERR_NOT_FOUND;
+		}
+		*addr = app_mpi->local_spare;
+		*size = sizeof(app_mpi->local_spare);
+		break;
+	default:
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+	}
+
+	return SUIT_PLAT_SUCCESS;
+}
+
 /** @brief Iterate through roles and try to initialize MPI areas.
  */
 static suit_plat_err_t configure_manifests(suit_manifest_role_t *roles, size_t num_roles,
@@ -617,19 +695,13 @@ static suit_plat_err_t configure_manifests(suit_manifest_role_t *roles, size_t n
 	for (size_t i = 0; i < num_roles; i++) {
 		ret = find_mpi_area(roles[i], &mpi_addr, &mpi_size);
 		if (ret != SUIT_PLAT_SUCCESS) {
-			if (ignore_missing) {
-				LOG_INF("Skip MPI area for role 0x%x. Area not found.", roles[i]);
-				continue;
-			} else {
-				LOG_ERR("Failed to locate MPI area for role 0x%x: %d", roles[i],
-					ret);
-				return ret;
-			}
+			LOG_ERR("Failed to locate MPI area for role 0x%x: %d", roles[i], ret);
+			return ret;
 		}
 
 		ret = suit_storage_mpi_configuration_load(roles[i], mpi_addr, mpi_size);
 		if (ret != SUIT_PLAT_SUCCESS) {
-			if (ignore_missing) {
+			if ((ret == SUIT_PLAT_ERR_NOT_FOUND) && (ignore_missing)) {
 				LOG_INF("Skip MPI area for role 0x%x. Area load failed.", roles[i]);
 				continue;
 			} else {
@@ -726,7 +798,12 @@ suit_plat_err_t suit_storage_init(void)
 			return ret;
 		}
 	} else {
-		LOG_WRN("Failed to verify application MPI: %d", ret);
+		LOG_ERR("Failed to verify application MPI: %d", ret);
+		/* Lack of application MPI means lack of ROOT as well as recovery class IDs.
+		 * In such case, the system is unable to boot anything except manifests controlled
+		 * by Nordic.
+		 */
+		return ret;
 	}
 
 	ret = suit_storage_nvv_init();
@@ -842,8 +919,10 @@ suit_plat_err_t suit_storage_install_envelope(const suit_manifest_class_id_t *id
 suit_plat_err_t suit_storage_var_get(size_t index, uint32_t *value)
 {
 	struct suit_storage_app *app_storage = (struct suit_storage_app *)SUIT_STORAGE_APP_ADDRESS;
-	uint8_t *area_addr = (uint8_t *)&app_storage->app.nvv;
 	size_t area_size = offsetof(struct suit_storage_nvv, digest);
+	uint8_t *area_addr = (uint8_t *)digest_struct_find(
+		(uint8_t *)&app_storage->app.nvv, (uint8_t *)&app_storage->app.nvv_bak,
+		offsetof(struct suit_storage_nvv, digest));
 
 	return suit_storage_nvv_get(area_addr, area_size, index, value);
 }
@@ -851,9 +930,16 @@ suit_plat_err_t suit_storage_var_get(size_t index, uint32_t *value)
 suit_plat_err_t suit_storage_var_set(size_t index, uint32_t value)
 {
 	struct suit_storage_app *app_storage = (struct suit_storage_app *)SUIT_STORAGE_APP_ADDRESS;
-	uint8_t *area_addr = (uint8_t *)&app_storage->app.nvv;
-	uint8_t *backup_addr = (uint8_t *)&app_storage->app.nvv_bak;
 	size_t area_size = offsetof(struct suit_storage_nvv, digest);
+	uint8_t *backup_addr = (uint8_t *)&app_storage->app.nvv_bak;
+	uint8_t *area_addr =
+		(uint8_t *)digest_struct_find((uint8_t *)&app_storage->app.nvv, backup_addr,
+					      offsetof(struct suit_storage_nvv, digest));
+
+	/* It is not allowed to update NVVs if the area has incorrect digest. */
+	if (area_addr == backup_addr) {
+		return SUIT_PLAT_ERR_IO;
+	}
 
 	suit_plat_err_t err = suit_storage_nvv_set(area_addr, area_size, index, value);
 	if (err != SUIT_PLAT_SUCCESS) {

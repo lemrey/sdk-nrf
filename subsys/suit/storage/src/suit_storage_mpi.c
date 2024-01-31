@@ -18,6 +18,33 @@ typedef struct {
 static suit_storage_mpi_entry_t entries[CONFIG_SUIT_STORAGE_N_ENVELOPES];
 static size_t entries_len;
 
+/** @brief Detect if UUID contains only zeros or ones.
+ *
+ * @retval SUIT_PLAT_ERR_OUT_OF_BOUNDS  if the UUID contains only zeros or ones.
+ * @retval SUIT_PLAT_SUCCESS            if the UUID contains at least two different bits.
+ */
+static suit_plat_err_t uuid_validate(const uint8_t *uuid)
+{
+	bool zeros = true;
+	bool ones = true;
+
+	for (size_t i = 0; i < sizeof(suit_uuid_t); i++) {
+		if (uuid[i] != 0xFF) {
+			ones = false;
+		}
+
+		if (uuid[i] != 0x00) {
+			zeros = false;
+		}
+	}
+
+	if (zeros || ones) {
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+	}
+
+	return SUIT_PLAT_SUCCESS;
+}
+
 suit_plat_err_t suit_storage_mpi_init(void)
 {
 	memset(entries, 0, sizeof(entries));
@@ -37,7 +64,17 @@ suit_plat_err_t suit_storage_mpi_configuration_load(suit_manifest_role_t role, c
 	}
 
 	if (mpi->version != SUIT_MPI_INFO_VERSION) {
-		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+		/* Detect if the erea is erased. */
+		for (size_t i = 0; i < size; i++) {
+			if (addr[i] != 0xFF) {
+				return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+			}
+		}
+
+		/* Use the dedicated error code - in some cases, the caller may decide to continue
+		 * loading the MPI structures.
+		 */
+		return SUIT_PLAT_ERR_NOT_FOUND;
 	}
 
 	new_class_id = (const suit_manifest_class_id_t *)mpi->class_id;
@@ -63,6 +100,67 @@ suit_plat_err_t suit_storage_mpi_configuration_load(suit_manifest_role_t role, c
 	if (ARRAY_SIZE(entries) <= entries_len) {
 		LOG_ERR("Too small Manifest Provisioning Information array.");
 		return SUIT_PLAT_ERR_SIZE;
+	}
+
+	/* Validate downgrade prevention policy value. */
+	switch (mpi->downgrade_prevention_policy) {
+	case SUIT_MPI_DOWNGRADE_PREVENTION_DISABLED:
+	case SUIT_MPI_DOWNGRADE_PREVENTION_ENABLED:
+		break;
+	default:
+		LOG_ERR("Invalid downgrade prevention policy value for role 0x%x: %d", role,
+			mpi->downgrade_prevention_policy);
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+	}
+
+	/* Validate independent updateability policy value. */
+	switch (mpi->independent_updateability_policy) {
+	case SUIT_MPI_INDEPENDENT_UPDATE_DENIED:
+		if ((role == SUIT_MANIFEST_APP_ROOT) || (role == SUIT_MANIFEST_APP_RECOVERY)) {
+			LOG_ERR("It is incorrect to block independent updates for role %d", role);
+			return SUIT_PLAT_ERR_UNSUPPORTED;
+		}
+		break;
+	case SUIT_MPI_INDEPENDENT_UPDATE_ALLOWED:
+		break;
+	default:
+		LOG_ERR("Invalid independent updateability policy value for role 0x%x: %d", role,
+			mpi->independent_updateability_policy);
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+	}
+
+	/* Validate signature verification policy value. */
+	switch (mpi->signature_verification_policy) {
+	case SUIT_MPI_SIGNATURE_CHECK_DISABLED:
+	case SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE:
+	case SUIT_MPI_SIGNATURE_CHECK_ENABLED_ON_UPDATE_AND_BOOT:
+		break;
+	default:
+		LOG_ERR("Invalid signature verification policy value for role 0x%x: %d", role,
+			mpi->signature_verification_policy);
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+	}
+
+	/* Validate reserved field value. */
+	for (size_t i = 0; i < ARRAY_SIZE(mpi->reserved); i++) {
+		if (mpi->reserved[i] != 0xFF) {
+			LOG_ERR("Invalid value inside reserved field at index %d for role 0x%x "
+				"(0x%x)",
+				i, role, mpi->reserved[i]);
+			return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+		}
+	}
+
+	/* Validate vendor ID value. */
+	if (uuid_validate(mpi->vendor_id) != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Invalid vendor UUID configured for role 0x%x", role);
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
+	}
+
+	/* Validate class ID value. */
+	if (uuid_validate(mpi->class_id) != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Invalid class UUID configured for role 0x%x", role);
+		return SUIT_PLAT_ERR_OUT_OF_BOUNDS;
 	}
 
 	LOG_INF("Add manifest with role 0x%x and class ID at index %d:", role, entries_len);

@@ -66,6 +66,8 @@ static const suit_storage_mpi_t mpi_test_sample[] = {
 		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_DISABLED,
 		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_ALLOWED,
 		.signature_verification_policy = SUIT_MPI_SIGNATURE_CHECK_DISABLED,
+		.reserved = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			     0xFF},
 		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
 		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
 			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
@@ -78,6 +80,8 @@ static const suit_storage_mpi_t mpi_test_sample[] = {
 		.downgrade_prevention_policy = SUIT_MPI_DOWNGRADE_PREVENTION_DISABLED,
 		.independent_updateability_policy = SUIT_MPI_INDEPENDENT_UPDATE_DENIED,
 		.signature_verification_policy = SUIT_MPI_SIGNATURE_CHECK_DISABLED,
+		.reserved = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			     0xFF},
 		/* RFC4122 uuid5(uuid.NAMESPACE_DNS, 'nordicsemi.com') */
 		.vendor_id = {0x76, 0x17, 0xda, 0xa5, 0x71, 0xfd, 0x5a, 0x85, 0x8f, 0x94, 0xe2,
 			      0x8d, 0x73, 0x5c, 0xe9, 0xf4},
