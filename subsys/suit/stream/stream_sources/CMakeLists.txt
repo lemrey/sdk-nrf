@@ -7,6 +7,7 @@
 zephyr_interface_library_named(suit_stream_sources_interface)
 target_include_directories(suit_stream_sources_interface INTERFACE include)
 target_link_libraries(suit_stream_sources_interface INTERFACE suit_platform_err)
+target_link_libraries(suit_stream_sources_interface INTERFACE suit_stream_sinks_interface)
 
 zephyr_library()
 
@@ -17,6 +18,5 @@ zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_IPC_REQUESTOR src/ipc_streamer_r
 zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_IPC_PROVIDER src/ipc_streamer_provider.c)
 zephyr_library_sources_ifdef(CONFIG_SUIT_STREAM_FETCH_SOURCE_MGR src/fetch_source_mgr.c)
 
-zephyr_library_link_libraries(suit_stream_sinks_interface)
 zephyr_library_link_libraries(suit_stream_sources_interface)
 zephyr_library_link_libraries_ifdef(CONFIG_SUIT_STREAM_SOURCE_CACHE suit_cache_interface)

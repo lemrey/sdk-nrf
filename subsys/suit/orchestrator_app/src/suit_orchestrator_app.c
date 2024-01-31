@@ -16,6 +16,10 @@
 #include <suit_envelope_info.h>
 #include <suit_plat_mem_util.h>
 
+#if CONFIG_SUIT_STREAM_IPC_PROVIDER
+#include <ipc_streamer.h>
+#endif
+
 #define FIXED_PARTITION_ERASE_BLOCK_SIZE(label)                                                    \
 	DT_PROP(DT_GPARENT(DT_NODELABEL(label)), erase_block_size)
 
@@ -58,8 +62,11 @@ static int dfu_partition_erase(void)
 
 int suit_dfu_initialize(void)
 {
-	/* TODO: add any other needed initialization - DFU caches Ref: NCSDK-25349, Ref: NCSDK-25621,
-	   Ref: NCSDK-25701 */
+#if CONFIG_SUIT_STREAM_IPC_PROVIDER
+	suit_ipc_streamer_provider_init();
+#endif
+
+	/* TODO: add any other needed initialization - Ref: NCSDK-25349, Ref: NCSDK-25701 */
 
 	LOG_DBG("SUIT DFU module init ok");
 

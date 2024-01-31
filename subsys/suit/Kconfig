@@ -62,6 +62,26 @@ config SUIT_DFU_CANDIDATE_PROCESSING_NONE
 
 endchoice # SUIT_APP_ENVELOPE_PROCESSING_LEVEL
 
+config SUIT_STREAMING_REQUESTS_FROM_SDFW_SUPPORT
+	bool "Enable support for streaming requests coming from SDFW"
+	help
+		In some cases when the Secure Domain processes the SUIT manifests may need to fetch
+		additional data from outside the device. As the Secure Domain does not have access
+		to any transport it needs to communicate with an application (a "companion image")
+		running on one of the local domains to fetch data.
+		Setting this Kconfig option will enable all the modules needed for
+		such a local domain application.
+		The implementer of this application needs to initialize the needed subsystems
+		using suit_dfu_initialize and register transports as fetch sources.
+	imply SUIT_ORCHESTRATOR_APP
+	imply SUIT_UTILS
+	imply SUIT_METADATA
+	imply SSF_SUIT_SERVICE_ENABLED
+	imply SUIT_STREAM_FETCH_SOURCE_MGR
+	imply SUIT_STREAM_SOURCE_IPC
+	imply SUIT_STREAM
+	imply SUIT_STREAM_IPC_PROVIDER
+
 endif # SUIT_DFU
 
 config SUIT_ENABLE_DEFAULTS_SDFW
