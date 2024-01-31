@@ -92,6 +92,7 @@ config SUIT_ENABLE_DEFAULTS_SDFW
 	imply SUIT_CACHE
 	imply SUIT_STORAGE
 	imply SUIT_SINK_SELECTOR
+	imply SUIT_EXECUTION_MODE
 
 rsource "cache/Kconfig"
 rsource "mci/Kconfig"
@@ -104,6 +105,7 @@ rsource "platform/Kconfig"
 rsource "stream/Kconfig"
 rsource "utils/Kconfig"
 rsource "envelope_info/Kconfig"
+rsource "execution_mode/Kconfig"
 
 # Configure SUIT_LOG_LEVEL
 module = SUIT

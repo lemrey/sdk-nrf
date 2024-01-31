@@ -14,6 +14,6 @@ add_subdirectory_ifdef(CONFIG_SUIT_MCI mci)
 add_subdirectory_ifdef(CONFIG_SUIT_METADATA metadata)
 add_subdirectory_ifdef(CONFIG_SUIT_UTILS utils)
 add_subdirectory_ifdef(CONFIG_SUIT_CACHE cache)
-
 add_subdirectory_ifdef(CONFIG_SUIT_DFU orchestrator_app)
 add_subdirectory_ifdef(CONFIG_SUIT_ENVELOPE_INFO envelope_info)
+add_subdirectory_ifdef(CONFIG_SUIT_EXECUTION_MODE execution_mode)

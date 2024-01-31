@@ -17,6 +17,7 @@
 #include <suit_mci.h>
 #include <suit_plat_digest_cache.h>
 #include "suit_plat_err.h"
+#include <suit_execution_mode.h>
 
 LOG_MODULE_REGISTER(suit_orchestrator, CONFIG_SUIT_LOG_LEVEL);
 
@@ -278,9 +279,30 @@ int suit_orchestrator_entry(void)
 
 	if ((err == SUIT_PLAT_SUCCESS) && (update_regions_len > 0)) {
 		LOG_INF("Update path");
+
+		err = suit_execution_mode_set(EXECUTION_MODE_INSTALL);
+		if (err != SUIT_PLAT_SUCCESS) {
+			LOG_ERR("Setting execution mode failed: %i", err);
+			return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
+		}
+
 		return update_path();
 	}
 
 	LOG_INF("Boot path");
-	return boot_path();
+	err = suit_execution_mode_set(EXECUTION_MODE_INVOKE);
+	if (err != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Setting execution mode failed: %i", err);
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
+	}
+
+	suit_plat_err_t ret = boot_path();
+
+	err = suit_execution_mode_set(EXECUTION_MODE_POST_INVOKE);
+	if (err != SUIT_PLAT_SUCCESS) {
+		LOG_ERR("Setting execution mode failed: %i", err);
+		return SUIT_PLAT_ERR_TO_ZEPHYR_ERR(err);
+	}
+
+	return ret;
 }
