@@ -159,6 +159,7 @@ suit_plat_err_t suit_storage_mpi_class_ids_get(suit_manifest_class_info_t *class
 
 	for (size_t i = 0; i < entries_len; i++) {
 		suit_storage_mpi_t *mpi = (suit_storage_mpi_t *)entries[i].addr;
+		class_info[i].vendor_id = (const suit_manifest_class_id_t *)mpi->vendor_id;
 		class_info[i].class_id = (const suit_manifest_class_id_t *)mpi->class_id;
 		class_info[i].role = entries[i].role;
 	}

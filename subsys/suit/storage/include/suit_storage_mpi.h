@@ -49,6 +49,7 @@ typedef const struct {
 } suit_storage_mpi_t;
 
 typedef struct {
+	const suit_manifest_class_id_t *vendor_id;
 	const suit_manifest_class_id_t *class_id;
 	suit_manifest_role_t role;
 } suit_manifest_class_info_t;
