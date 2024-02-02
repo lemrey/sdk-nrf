@@ -80,9 +80,7 @@ static bool is_type_supported(suit_component_type_t component_type)
  */
 static bool is_type_supported_by_ipc(suit_component_type_t component_type)
 {
-	if ((component_type != SUIT_COMPONENT_TYPE_CAND_IMG) &&
-	    (component_type != SUIT_COMPONENT_TYPE_CAND_MFST) &&
-	    (component_type != SUIT_COMPONENT_TYPE_MEM)) {
+	if (component_type != SUIT_COMPONENT_TYPE_MEM) {
 		return false;
 	}
 
