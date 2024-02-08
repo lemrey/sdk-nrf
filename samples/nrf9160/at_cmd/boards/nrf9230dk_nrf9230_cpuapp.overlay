@@ -1,0 +1,7 @@
+/ {
+	chosen {
+
+		zephyr,shell-uart = &uart136;
+
+	};
+};
