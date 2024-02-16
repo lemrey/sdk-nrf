@@ -64,7 +64,7 @@ manifest:
     - name: zephyr
       repo-path: sdk-zephyr
       remote: lemrey
-      revision: 200b25f45db5fe5ebf0a70576919a5e36593e562
+      revision: 884037f236110f037e5853ff40553e77cd55cbee
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -146,7 +146,7 @@ manifest:
       repo-path: sdk-nrfxlib
       path: nrfxlib
       remote: lemrey
-      revision: b08950f399f436d5c7572cf5249ee6ce208a211c
+      revision: b8d98b17a6e6bfff43545ae0a0eb355fefc3d057
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m

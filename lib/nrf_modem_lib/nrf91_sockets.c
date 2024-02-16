@@ -198,6 +198,9 @@ static int z_to_nrf_optname(int z_in_level, int z_in_optname,
 		case SO_ERROR:
 			*nrf_out_optname = NRF_SO_ERROR;
 			break;
+		case SO_KEEPOPEN:
+			*nrf_out_optname = NRF_SO_KEEPOPEN;
+			break;
 		case SO_EXCEPTIONAL_DATA:
 			*nrf_out_optname = NRF_SO_EXCEPTIONAL_DATA;
 			break;
