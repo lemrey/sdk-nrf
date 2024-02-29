@@ -462,6 +462,12 @@ Debug samples
 
 |no_changes_yet_note|
 
+DECT samples
+------------
+
+* Added the :ref:`nrf_modem_dect_phy_hello` sample.
+
+
 Edge Impulse samples
 --------------------
 

@@ -1,0 +1,9 @@
+sample:
+  name: Dect NR+ PHY Hello
+tests:
+  sample.nrf9161.dect_phy_hello:
+    build_only: true
+    integration_platforms:
+      - nrf9161dk_nrf9161_ns
+    platform_allow: nrf9161dk_nrf9161_ns
+    tags: ci_build
