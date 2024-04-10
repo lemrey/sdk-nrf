@@ -292,7 +292,7 @@ This library uses the following |NCS| libraries:
 
 It uses the following `sdk-nrfxlib`_ library:
 
-* :ref:`nrfxlib:gnss_interface`
+* :ref:`nrfxlib:nrf_modem_gnss`
 
 It uses the following Zephyr subsystem:
 

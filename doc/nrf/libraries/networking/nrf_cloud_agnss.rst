@@ -146,7 +146,7 @@ This library uses the following |NCS| libraries:
 
 It uses the following `sdk-nrfxlib`_ library:
 
-* :ref:`nrfxlib:gnss_interface`
+* :ref:`nrfxlib:nrf_modem_gnss`
 
 API documentation
 *****************

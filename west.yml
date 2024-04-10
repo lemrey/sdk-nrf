@@ -23,6 +23,8 @@ manifest:
     # Third-party repository sources:
     - name: zephyrproject
       url-base: https://github.com/zephyrproject-rtos
+    - name: lemrey
+      url-base: https://github.com/lemrey
     - name: throwtheswitch
       url-base: https://github.com/ThrowTheSwitch
     - name: armmbed
@@ -145,7 +147,7 @@ manifest:
       repo-path: sdk-nrfxlib
       path: nrfxlib
       remote: lemrey
-      revision: 87a2677cf68b8866445b1bce1537442996073771
+      revision: 442ed3c93c9cec975f37a75fa967592f48b29026
     - name: trusted-firmware-m
       repo-path: sdk-trusted-firmware-m
       path: modules/tee/tf-m/trusted-firmware-m

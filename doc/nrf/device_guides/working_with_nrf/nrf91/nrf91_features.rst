@@ -285,10 +285,6 @@ Therefore, the performance is not ideal when there are obstructions overhead or 
 Customers who are developing their own hardware with the nRF9160 are strongly recommended to use the `nRF9160 Antenna and RF Interface Guidelines`_ as a reference.
 See `GPS interface and antenna`_ for more details on GNSS interface and antenna.
 
-.. note::
-
-   Starting from |NCS| v1.6.0 (Modem library v1.2.0), the GNSS socket is deprecated and replaced with the :ref:`GNSS interface <gnss_interface>`.
-
 Obtaining a fix
 ===============
 
