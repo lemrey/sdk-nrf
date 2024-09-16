@@ -20,6 +20,7 @@
 #include "app_error.h"
 #include "nrf_pwr_mgmt.h"
 #include <bsp/bsp.h>
+#include <fds.h>
 
 #include <nrf_fstorage.h>
 #include <nrf_fstorage_sd.h>
@@ -267,7 +268,8 @@ static uint32_t nrf5_flash_end_addr_get()
 }
 #endif
 
-static volatile bool erase = false;
+static volatile bool done = false;
+#if 0
 static void fstorage_evt_handler(nrf_fstorage_evt_t * p_evt)
 {
     if (p_evt->result != NRF_SUCCESS)
@@ -311,8 +313,16 @@ nrf_fstorage_t fstorage =
     .start_addr = 0x3e000,
     .end_addr   = 0x3ffff,
 };
+#endif
 
 static __aligned(4) char hello_world[] = "hello world";
+
+
+void fds_evt_handler(fds_evt_t const * p_evt)
+{
+	NRF_LOG_INFO("received event %d, result %d", p_evt->id, p_evt->result);
+	done = true;
+}
 
 int main(void)
 {
@@ -327,6 +337,7 @@ int main(void)
     NRF_LOG_INFO("Beacon example started.");
     advertising_start();
 
+#if 0
 	int rc;
      rc = nrf_fstorage_init(&fstorage, &nrf_fstorage_sd, NULL);
     APP_ERROR_CHECK(rc);
@@ -355,7 +366,88 @@ int main(void)
 		NRF_LOG_ERROR("failed to write, err %d", rc);
 		return -1;
     }
+#endif
 
+int err;
+
+
+	fds_record_desc_t desc = {0};
+	fds_find_token_t ftok = {0};
+	fds_flash_record_t flash_rec = {0};
+	static int counter = 0;
+	fds_record_t rec = {
+		.file_id = 0x1,
+		.key = 0xA,
+		.data.p_data = &counter,
+		.data.length_words = 1,
+	};
+
+	err = fds_register(fds_evt_handler);
+	if (err) {
+		NRF_LOG_ERROR("failed to register, err %d", err);
+		goto out;
+	}
+
+	err = fds_init();
+	if (err) {
+		NRF_LOG_ERROR("unable to init, err %d", err);
+		goto out;
+	}
+
+	while (!done) {
+		  idle_state_handle();
+	}
+
+	done = false;
+
+	err = fds_record_find(0x1, 0xA, &desc, &ftok);
+	if (err) {
+		// record not found; write it.
+		goto write;
+	}
+
+	err = fds_record_open(&desc, &flash_rec);
+	if (err) {
+		NRF_LOG_ERROR("could not open file, err %d", err);
+		goto out;
+	}
+
+	NRF_LOG_INFO("found record %x in file %x, record id %x, data %d",
+		flash_rec.p_header->record_key, flash_rec.p_header->file_id,
+		flash_rec.p_header->record_id, *((int*)flash_rec.p_data));
+
+	counter = *((int*)flash_rec.p_data) + 1;
+
+	rec.data.p_data = &counter;
+	rec.data.length_words = 1;
+
+	err = fds_record_update(&desc, &rec);
+	if (err) {
+		NRF_LOG_ERROR("unable to update %d", err);
+	}
+
+	while (!done) {
+		  idle_state_handle();
+	}
+
+	done = false;
+	goto out;
+
+write:
+	err = fds_record_write(&desc, &rec);
+	if (err) {
+		NRF_LOG_ERROR("unable to write, err %d", err);
+		goto out;
+	}
+
+
+	while (!done) {
+		  idle_state_handle();
+	}
+
+	done = false;
+
+out:
     // Enter main loop.
     for (;; )
     {

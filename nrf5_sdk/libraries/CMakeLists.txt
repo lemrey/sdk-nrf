@@ -20,3 +20,4 @@ zephyr_linker_sources(SECTIONS nrf_pwr_mgmt.ld)
 
 
 add_subdirectory(fstorage)
+add_subdirectory(fds)

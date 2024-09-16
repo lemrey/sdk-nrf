@@ -1,0 +1,53 @@
+# Copyright (c) 2019 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config FDS
+	bool "Flash Data Storage"
+	help
+	  Enable Flash Data Storage
+
+if FDS
+
+if FDS
+
+config FDS_VIRTUAL_PAGES
+	int "Number of pages"
+	default 2
+
+config FDS_VIRTUAL_PAGE_SIZE
+	int "Virtual page size, in bytes"
+	default 4096
+
+config FDS_VIRTUAL_PAGES_RESERVED
+	int "Reserved pages"
+	default 0
+
+config FDS_OP_QUEUE_SIZE
+	int "Queue size"
+	default 3
+
+config FDS_MAX_USERS
+	int "Max number of handlers"
+	default 3
+
+choice
+	prompt "FDS Backend"
+	default FDS_BACKEND_SD if NRF_FSTORAGE_SD
+	default FDS_BACKEND_NVMC if NRF_FSTORAGE_NVMC
+
+config FDS_BACKEND_SD
+	bool "Softdevice"
+config FDS_BACKEND_NVMC
+	bool "NVMC"
+endchoice
+
+config FDS_BACKEND
+	int
+	default 1 if NRF_FSTORAGE_NVMC
+	default 2 if NRF_FSTORAGE_SD
+
+endif # FDS
+
+endif
