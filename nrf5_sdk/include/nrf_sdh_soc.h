@@ -35,9 +35,7 @@ extern "C" {
  * @hideinitializer
  */
 #define NRF_SDH_SOC_OBSERVER(_name, _prio, _handler, _context)                                      \
-STATIC_ASSERT(NRF_SDH_SOC_ENABLED, "NRF_SDH_SOC_ENABLED not set!");                                 \
-STATIC_ASSERT(_prio < NRF_SDH_SOC_OBSERVER_PRIO_LEVELS, "Priority level unavailable.");             \
-NRF_SECTION_SET_ITEM_REGISTER(sdh_soc_observers, _prio, static nrf_sdh_soc_evt_observer_t _name) =  \
+NRF_SECTION_SET_ITEM_REGISTER(sdh_soc_observers, _prio, nrf_sdh_soc_evt_observer_t, _name) =  \
 {                                                                                                   \
     .handler   = _handler,                                                                          \
     .p_context = _context                                                                           \

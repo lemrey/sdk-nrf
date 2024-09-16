@@ -21,8 +21,12 @@
 #include "nrf_pwr_mgmt.h"
 #include <bsp/bsp.h>
 
+#include <nrf_fstorage.h>
+#include <nrf_fstorage_sd.h>
+
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
+#include "sys/cdefs.h"
 LOG_MODULE_REGISTER(app);
 
 
@@ -251,6 +255,65 @@ static void idle_state_handle(void)
     }
 }
 
+#if 0
+static uint32_t nrf5_flash_end_addr_get()
+{
+    uint32_t const bootloader_addr = BOOTLOADER_ADDRESS;
+    uint32_t const page_sz         = NRF_FICR->CODEPAGESIZE;
+    uint32_t const code_sz         = NRF_FICR->CODESIZE;
+
+    return (bootloader_addr != 0xFFFFFFFF ?
+            bootloader_addr : (code_sz * page_sz));
+}
+#endif
+
+static volatile bool erase = false;
+static void fstorage_evt_handler(nrf_fstorage_evt_t * p_evt)
+{
+    if (p_evt->result != NRF_SUCCESS)
+    {
+        NRF_LOG_INFO("--> Event received: ERROR while executing an fstorage operation.");
+        return;
+    }
+
+    switch (p_evt->id)
+    {
+        case NRF_FSTORAGE_EVT_WRITE_RESULT:
+        {
+            NRF_LOG_INFO("--> Event received: wrote %d bytes at address 0x%x.",
+                         p_evt->len, p_evt->addr);
+        } break;
+
+        case NRF_FSTORAGE_EVT_ERASE_RESULT:
+        {
+		erase = true;
+            NRF_LOG_INFO("--> Event received: erased %d page from address 0x%x.",
+                         p_evt->len, p_evt->addr);
+        } break;
+
+        default:
+            break;
+    }
+}
+
+
+#define DEST 0x3e000
+//NRF_FSTORAGE_DEF(nrf_fstorage_t fstorage) =
+nrf_fstorage_t fstorage =
+{
+    /* Set a handler for fstorage events. */
+    .evt_handler = fstorage_evt_handler,
+
+    /* These below are the boundaries of the flash space assigned to this instance of fstorage.
+     * You must set these manually, even at runtime, before nrf_fstorage_init() is called.
+     * The function nrf5_flash_end_addr_get() can be used to retrieve the last address on the
+     * last page of flash available to write data. */
+    .start_addr = 0x3e000,
+    .end_addr   = 0x3ffff,
+};
+
+static __aligned(4) char hello_world[] = "hello world";
+
 int main(void)
 {
     // Initialize.
@@ -263,6 +326,35 @@ int main(void)
     // Start execution.
     NRF_LOG_INFO("Beacon example started.");
     advertising_start();
+
+	int rc;
+     rc = nrf_fstorage_init(&fstorage, &nrf_fstorage_sd, NULL);
+    APP_ERROR_CHECK(rc);
+
+	rc = nrf_fstorage_read(&fstorage, DEST, hello_world, sizeof(hello_world));
+	if (rc) {
+		NRF_LOG_ERROR("failed to read, err %d", rc);
+		return -1;
+	}
+
+	NRF_LOG_INFO("Read %.*s", sizeof(hello_world), hello_world);
+
+	rc = nrf_fstorage_erase(&fstorage, DEST, 1, NULL);
+	if (rc) {
+		NRF_LOG_ERROR("failed to erase, err %d", rc);
+	}
+
+	while (!erase) {
+		  idle_state_handle();
+	}
+
+	strcpy(hello_world, "hello world");
+
+    rc = nrf_fstorage_write(&fstorage, DEST, hello_world, sizeof(hello_world), NULL);
+    if (rc) {
+		NRF_LOG_ERROR("failed to write, err %d", rc);
+		return -1;
+    }
 
     // Enter main loop.
     for (;; )

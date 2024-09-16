@@ -2,6 +2,7 @@
 #ifndef NRF_SECTION_H__
 #define NRF_SECTION_H__
 
+#include <zephyr/kernel.h>
 #include "nordic_common.h"
 
 #ifdef __cplusplus

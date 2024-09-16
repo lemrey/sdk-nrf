@@ -1,0 +1,37 @@
+# Copyright (c) 2019 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+config NRF_FSTORAGE
+	bool "fstorage"
+	help
+	  Enable fstorage
+
+if NRF_FSTORAGE
+
+choice
+	prompt "backend"
+config NRF_FSTORAGE_SD
+	bool "SoftDevice"
+config NRF_FSTORAGE_NVMC
+	bool "NVMC"
+endchoice
+
+if NRF_FSTORAGE_SD
+
+config NRF_FSTORAGE_SD_MAX_WRITE_SIZE
+	int "Maximum write size"
+	default 20
+
+config NRF_FSTORAGE_SD_QUEUE_SIZE
+	int "Queue size"
+	default 8
+
+config NRF_FSTORAGE_SD_MAX_RETRIES
+	int "Maximum number of retries for an operation"
+	default 3
+
+endif # NRF_FSTORAGE_SD
+
+endif

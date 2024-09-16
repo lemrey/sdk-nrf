@@ -12,3 +12,4 @@ config APP_BUTTON_HIGH_ACCURACY_ENABLED
     depends on APP_BUTTON
 
 rsource "Kconfig.irq_connect"
+rsource "fstorage/Kconfig"
