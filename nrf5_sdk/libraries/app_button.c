@@ -236,15 +236,20 @@ uint32_t app_button_init(app_button_cfg_t const *       p_buttons,
             .p_handler_config = &handler_config
     };
 
+/* TODO what? */
+#if HAXXXOR
     if (detection_delay < 2*APP_TIMER_MIN_TIMEOUT_TICKS)
     {
         return NRF_ERROR_INVALID_PARAM;
     }
+#endif
 
     if (!nrfx_gpiote_init_check(&gpiote))
     {
         err_code = nrfx_gpiote_init(&gpiote, 2);
-        VERIFY_SUCCESS(err_code);
+        if (err_code != NRFX_SUCCESS) {
+		return NRF_ERROR_INVALID_PARAM;
+	}
     }
 
     /* Save configuration. */

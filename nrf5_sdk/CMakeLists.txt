@@ -1,5 +1,8 @@
 if (CONFIG_NRF5_SDK)
   zephyr_include_directories(include)
+  zephyr_include_directories(include/ble)
+  zephyr_include_directories(include/boards)
+  zephyr_include_directories(include/bsp)
 
   add_subdirectory(softdevice)
   add_subdirectory(ble)

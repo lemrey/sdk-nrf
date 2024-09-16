@@ -86,7 +86,8 @@
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
+
+LOG_MODULE_REGISTER(app);
 
 
 #define SHIFT_BUTTON_ID                     1                                          /**< Button used as 'SHIFT' Key. */
@@ -218,7 +219,7 @@ STATIC_ASSERT(sizeof(buffer_list_t) % 4 == 0);
 
 APP_TIMER_DEF(m_battery_timer_id);                                  /**< Battery timer. */
 BLE_HIDS_DEF(m_hids,                                                /**< Structure used to identify the HID service. */
-             NRF_SDH_BLE_TOTAL_LINK_COUNT,
+             CONFIG_NRF_SDH_BLE_TOTAL_LINK_COUNT,
              INPUT_REPORT_KEYS_MAX_LEN,
              OUTPUT_REPORT_MAX_LEN,
              FEATURE_REPORT_MAX_LEN);
@@ -1348,6 +1349,8 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     }
 }
 
+    // Register a handler for BLE events.
+    NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 
 /**@brief Function for initializing the BLE stack.
  *
@@ -1370,8 +1373,7 @@ static void ble_stack_init(void)
     err_code = nrf_sdh_ble_enable(&ram_start);
     APP_ERROR_CHECK(err_code);
 
-    // Register a handler for BLE events.
-    NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
+
 }
 
 
@@ -1531,6 +1533,7 @@ static void buttons_leds_init(bool * p_erase_bonds)
 }
 
 
+#if 0
 /**@brief Function for initializing the nrf log module.
  */
 static void log_init(void)
@@ -1541,6 +1544,7 @@ static void log_init(void)
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 }
 
+#endif
 
 /**@brief Function for initializing power management.
  */
@@ -1573,7 +1577,7 @@ int main(void)
     bool erase_bonds;
 
     // Initialize.
-    log_init();
+    //log_init();
     timers_init();
     buttons_leds_init(&erase_bonds);
     power_management_init();

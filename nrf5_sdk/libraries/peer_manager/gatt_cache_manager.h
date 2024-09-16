@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 - 2021, Nordic Semiconductor ASA
+ * Copyright (c) 2015 - 2021, Nordic Semiconductor ASA
  *
  * All rights reserved.
  *
@@ -37,64 +37,77 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-/**@file
- *
- * @defgroup bsp_btn_ble BSP: BLE Button Module
- * @{
- * @ingroup bsp
- *
- * @brief Module for controlling BLE behavior through button actions.
- *
- * @details The application must propagate BLE events to the BLE Button Module.
- * Based on these events, the BLE Button Module configures the Board Support Package
- * to generate BSP events for certain button actions. These BSP events should then be
- * handled by the application's BSP event handler.
- *
- */
-
-#ifndef BSP_BTN_BLE_H__
-#define BSP_BTN_BLE_H__
+#ifndef GATT_CACHE_MANAGER_H__
+#define GATT_CACHE_MANAGER_H__
 
 #include <stdint.h>
+#include "sdk_errors.h"
 #include "ble.h"
-#include "bsp.h"
+#include "ble_gap.h"
+#include "peer_manager_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**@brief BLE Button Module error handler type. */
-typedef void (*bsp_btn_ble_error_handler_t) (uint32_t nrf_error);
 
-/**@brief Function for initializing the BLE Button Module.
- *
- * Before calling this function, the BSP module must be initialized with buttons.
- *
- * @param[out] error_handler      Error handler to call in case of internal errors in BLE Button
- *                                Module.
- * @param[out] p_startup_bsp_evt  If not a NULL pointer, the value is filled with an event
- *                                (or BSP_EVENT_NOTHING) derived from the buttons pressed on
- *                                startup. For example, if the bond delete wakeup button was pressed
- *                                to wake up the device, *p_startup_bsp_evt is set to
- *                                @ref BSP_EVENT_CLEAR_BONDING_DATA.
- *
- * @retval NRF_SUCCESS  If initialization was successful. Otherwise, a propagated error code is
- *                      returned.
- */
-uint32_t bsp_btn_ble_init(bsp_btn_ble_error_handler_t error_handler, bsp_event_t * p_startup_bsp_evt);
 
-/**@brief Function for setting up wakeup buttons before going into sleep mode.
- *
- * @retval NRF_SUCCESS  If the buttons were prepared successfully. Otherwise, a propagated error
- *                      code is returned.
+/**
+ * @cond NO_DOXYGEN
+ * @defgroup gatt_cache_manager GATT Cache Manager
+ * @ingroup peer_manager
+ * @{
+ * @brief An internal module of @ref peer_manager. A module for managing persistent storing of GATT
+ *        attributes.
  */
-uint32_t bsp_btn_ble_sleep_mode_prepare(void);
+
+
+/**@brief Function for initializing the GATT Cache Manager module.
+ *
+ * @retval NRF_SUCCESS         Initialization was successful.
+ * @retval NRF_ERROR_INTERNAL  If an internal error occurred.
+ */
+ret_code_t gcm_init(void);
+
+
+/**@brief Function for dispatching SoftDevice events to the GATT Cache Manager module.
+ *
+ * @param[in]  p_ble_evt  The SoftDevice event.
+ */
+void gcm_ble_evt_handler(ble_evt_t const * p_ble_evt);
+
+
+/**@brief Function for triggering local GATT database data to be stored persistently.
+ *
+ * @details Values are retrieved from SoftDevice and written to persistent storage.
+ *
+ * @note This operation happens asynchronously, so any errors are reported as events.
+ *
+ * @note This function is only needed when you want to override the regular functionality of the
+ *       module, e.g. to immediately store to flash instead of waiting for the native logic to
+ *       perform the update.
+ *
+ * @param[in]  conn_handle  Connection handle to perform update on.
+ *
+ * @retval NRF_SUCCESS                    Store operation started.
+ */
+ret_code_t gcm_local_db_cache_update(uint16_t conn_handle);
+
+
+/**@brief Function for manually informing that the local database has changed.
+ *
+ * @details This causes a service changed notification to be sent to all bonded peers that
+ *          subscribe to it.
+ */
+void gcm_local_database_has_changed(void);
+
+/** @}
+  * @endcond
+ */
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* BSP_BTN_BLE_H__ */
-
-/** @} */
+#endif /* GATT_CACHE_MANAGER_H__ */

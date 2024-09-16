@@ -132,7 +132,7 @@ NRF_SECTION_DEF(CONCAT_2(_name, _priority), _type);
  * @hideinitializer
  */
 #define NRF_SECTION_SET_ITEM_REGISTER(_name, _priority, _type, _var)                          \
-    TYPE_SECTION_ITERABLE(_type, _var, _name, _priority)
+    static TYPE_SECTION_ITERABLE(_type, _var, _name, _priority)
 
 
 /**@brief Function for initializing the section set iterator.

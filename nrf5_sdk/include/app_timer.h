@@ -48,6 +48,17 @@ typedef enum
 
 typedef void (*app_timer_timeout_handler_t)(void * p_context);
 
+
+/**@brief Structure passed to app_scheduler. */
+typedef struct
+{
+    app_timer_timeout_handler_t timeout_handler;
+    void *                      p_context;
+} app_timer_event_t;
+
+#define APP_TIMER_SCHED_EVENT_DATA_SIZE sizeof(app_timer_event_t) /**< Size of event data when scheduler is used. */
+
+
 struct k_app_timer {
     struct k_timer timer;
     app_timer_mode_t mode;

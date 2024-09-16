@@ -459,6 +459,9 @@ uint32_t bsp_init(uint32_t type, bsp_event_callback_t callback)
         for (num = 0; ((num < BUTTONS_NUMBER) && (err_code == NRF_SUCCESS)); num++)
         {
             err_code = bsp_event_to_button_action_assign(num, BSP_BUTTON_ACTION_PUSH, BSP_EVENT_DEFAULT);
+	    if (err_code) {
+		while(1);
+	    }
         }
 
         if (err_code == NRF_SUCCESS)
@@ -466,11 +469,17 @@ uint32_t bsp_init(uint32_t type, bsp_event_callback_t callback)
             err_code = app_button_init((app_button_cfg_t *)app_buttons,
                                        BUTTONS_NUMBER,
                                        APP_TIMER_TICKS(50));
+	if (err_code) {
+		while(1);
+	    }
         }
 
         if (err_code == NRF_SUCCESS)
         {
             err_code = app_button_enable();
+	    if (err_code) {
+		while(1);
+	    }
         }
 
         if (err_code == NRF_SUCCESS)
@@ -478,6 +487,9 @@ uint32_t bsp_init(uint32_t type, bsp_event_callback_t callback)
             err_code = app_timer_create(&m_bsp_button_tmr,
                                         APP_TIMER_MODE_SINGLE_SHOT,
                                         button_timer_handler);
+					if (err_code) {
+		while(1);
+	    }
         }
     }
 #elif (BUTTONS_NUMBER > 0) && (defined BSP_SIMPLE)
@@ -495,12 +507,18 @@ uint32_t bsp_init(uint32_t type, bsp_event_callback_t callback)
       {
           err_code =
               app_timer_create(&m_bsp_leds_tmr, APP_TIMER_MODE_SINGLE_SHOT, leds_timer_handler);
+	      if (err_code) {
+		while(1);
+	    }
       }
 
       if (err_code == NRF_SUCCESS)
       {
           err_code =
               app_timer_create(&m_bsp_alert_tmr, APP_TIMER_MODE_REPEATED, alert_timer_handler);
+	      if (err_code) {
+		while(1);
+	    }
       }
     }
 #endif // LEDS_NUMBER > 0 && !(defined BSP_SIMPLE)
