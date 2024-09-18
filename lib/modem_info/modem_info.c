@@ -466,7 +466,8 @@ int modem_info_short_get(enum modem_info info, uint16_t *buf)
 		return -EINVAL;
 	}
 
-	err = nrf_modem_at_cmd(recv_buf, CONFIG_MODEM_INFO_BUFFER_SIZE, modem_data[info]->cmd);
+	err = nrf_modem_at_cmd(recv_buf, CONFIG_MODEM_INFO_BUFFER_SIZE,
+			       "%s", modem_data[info]->cmd);
 	if (err != 0) {
 		return -EIO;
 	}
@@ -630,7 +631,8 @@ int modem_info_string_get(enum modem_info info, char *buf, const size_t buf_size
 
 	buf[0] = '\0';
 
-	err = nrf_modem_at_cmd(recv_buf, CONFIG_MODEM_INFO_BUFFER_SIZE, modem_data[info]->cmd);
+	err = nrf_modem_at_cmd(recv_buf, CONFIG_MODEM_INFO_BUFFER_SIZE,
+			       "%s", modem_data[info]->cmd);
 	if (err != 0) {
 		return -EIO;
 	}

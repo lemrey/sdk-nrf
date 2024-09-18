@@ -65,7 +65,7 @@ extern "C" {
 #include "ble_srv_common.h"
 
 /* TODO, Kconfig ?*/
-#define NRF_BLE_QWR_BLE_OBSERVER_PRIO 1
+#define NRF_BLE_QWR_BLE_OBSERVER_PRIO 2
 
 /**@brief   Macro for defining a nrf_ble_qwr instance.
  *

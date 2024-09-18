@@ -468,7 +468,7 @@ uint32_t bsp_init(uint32_t type, bsp_event_callback_t callback)
         {
             err_code = app_button_init((app_button_cfg_t *)app_buttons,
                                        BUTTONS_NUMBER,
-                                       APP_TIMER_TICKS(50));
+                                       APP_TIMER_TICKS(100));
 	if (err_code) {
 		while(1);
 	    }

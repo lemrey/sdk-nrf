@@ -14,7 +14,7 @@ static int irq_init(void)
 	#define VECTOR_ADDRESS ((uintptr_t)_vector_start)
 
 #ifdef CONFIG_NRF5_SDK_IRQ_CONNECT_GPIOTE
-        IRQ_CONNECT(GPIOTE_IRQn, 2, nrfx_isr, nrfx_gpiote_0_irq_handler, 0);
+        IRQ_CONNECT(GPIOTE_IRQn, 5, nrfx_isr, nrfx_gpiote_0_irq_handler, 0);
 #endif
 
 	uint32_t err = sd_softdevice_vector_table_base_set(VECTOR_ADDRESS);

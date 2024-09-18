@@ -83,6 +83,7 @@
 #include "nrf_ble_qwr.h"
 #include "nrf_pwr_mgmt.h"
 #include "peer_manager_handler.h"
+#include <nrf_sdm.h>
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -1372,8 +1373,6 @@ static void ble_stack_init(void)
     // Enable BLE stack.
     err_code = nrf_sdh_ble_enable(&ram_start);
     APP_ERROR_CHECK(err_code);
-
-
 }
 
 
@@ -1513,7 +1512,6 @@ static void advertising_init(void)
     ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
 }
 
-
 /**@brief Function for initializing buttons and leds.
  *
  * @param[out] p_erase_bonds  Will be true if the clear bonding button was pressed to wake the application up.
@@ -1532,6 +1530,47 @@ static void buttons_leds_init(bool * p_erase_bonds)
     *p_erase_bonds = (startup_event == BSP_EVENT_CLEAR_BONDING_DATA);
 }
 
+#if 0
+void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
+{
+	switch (id) {
+#if defined(CONFIG_SOFTDEVICE)
+        case NRF_FAULT_ID_SD_ASSERT:
+            NRF_LOG_ERROR("SOFTDEVICE: ASSERTION FAILED");
+            break;
+        case NRF_FAULT_ID_APP_MEMACC:
+            NRF_LOG_ERROR("SOFTDEVICE: INVALID MEMORY ACCESS");
+            break;
+#endif
+        case NRF_FAULT_ID_SDK_ASSERT:
+        {
+            assert_info_t * p_info = (assert_info_t *)info;
+            NRF_LOG_ERROR("ASSERTION FAILED at %s:%u",
+                          p_info->p_file_name,
+                          p_info->line_num);
+            break;
+        }
+        case NRF_FAULT_ID_SDK_ERROR:
+        {
+            error_info_t * p_info = (error_info_t *)info;
+            NRF_LOG_ERROR("ERROR %u [%s] at %s:%u\r\nPC at: 0x%08x",
+                          p_info->err_code,
+                          nrf_strerror_get(p_info->err_code),
+                          p_info->p_file_name,
+                          p_info->line_num,
+                          pc);
+             NRF_LOG_ERROR("End of error report");
+            break;
+        }
+        default:
+            NRF_LOG_ERROR("UNKNOWN FAULT at 0x%08X", pc);
+            break;
+    }
+
+    NRF_BREAKPOINT_COND;
+    // On assert, the system can only recover with a reset.
+}
+#endif
 
 #if 0
 /**@brief Function for initializing the nrf log module.
@@ -1574,29 +1613,42 @@ static void idle_state_handle(void)
  */
 int main(void)
 {
-    bool erase_bonds;
+    bool erase_bonds = false;
 
     // Initialize.
     //log_init();
     timers_init();
-    buttons_leds_init(&erase_bonds);
     power_management_init();
-    ble_stack_init();
     scheduler_init();
+    buttons_leds_init(&erase_bonds);
+
+    NRF_LOG_INFO("HID Keyboard example started.");
+
+    ble_stack_init();
+
+    NRF_LOG_INFO("BLE STACK INITED");
     gap_params_init();
+    NRF_LOG_INFO("BLE GAP INITED");
     gatt_init();
+    NRF_LOG_INFO("BLE GATT INITED");
     advertising_init();
+    NRF_LOG_INFO("BLE ADV INITED");
     services_init();
+    NRF_LOG_INFO("BLE SERVICES INITED");
     sensor_simulator_init();
     conn_params_init();
     buffer_init();
     peer_manager_init();
+    NRF_LOG_INFO("PM INITED");
 
     // Start execution.
-    NRF_LOG_INFO("HID Keyboard example started.");
     timers_start();
+    //NRF_LOG_INFO("TIMER START");
+    //NRF_LOG_INFO("ADVERTISING START");
     advertising_start(erase_bonds);
 
+	    NRF_LOG_INFO("MAIN LOOP");
+out:
     // Enter main loop.
     for (;;)
     {

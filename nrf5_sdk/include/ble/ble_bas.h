@@ -81,7 +81,7 @@ extern "C" {
 #endif
 
 /* TODO:kconfig ?*/
-#define BLE_BAS_BLE_OBSERVER_PRIO 1
+#define BLE_BAS_BLE_OBSERVER_PRIO 2
 
 /**@brief Macro for defining a ble_bas instance.
  *

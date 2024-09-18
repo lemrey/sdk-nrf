@@ -40,10 +40,13 @@
 
 #include "nrf_ble_gatt.h"
 
+#include "nrf_log.h"
 #if 0
 #define NRF_LOG_MODULE_NAME nrf_ble_gatt
 #include "nrf_log.h"
 NRF_LOG_MODULE_REGISTER();
+#else
+LOG_MODULE_REGISTER(nrf_ble_gatt);
 #endif
 
 #include "nrf_strerror.h"

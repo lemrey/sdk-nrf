@@ -237,7 +237,7 @@ uint32_t app_button_init(app_button_cfg_t const *       p_buttons,
     };
 
 /* TODO what? */
-#if HAXXXOR
+#if 1
     if (detection_delay < 2*APP_TIMER_MIN_TIMEOUT_TICKS)
     {
         return NRF_ERROR_INVALID_PARAM;

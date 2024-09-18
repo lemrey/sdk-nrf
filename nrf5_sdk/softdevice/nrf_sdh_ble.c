@@ -8,6 +8,8 @@
 #include "nrf_strerror.h"
 
 
+#include "nrf_log.h"
+#if 0
 #define NRF_LOG_MODULE_NAME nrf_sdh_ble
 #if NRF_SDH_BLE_LOG_ENABLED
     #define NRF_LOG_LEVEL       NRF_SDH_BLE_LOG_LEVEL
@@ -18,7 +20,9 @@
 #endif // NRF_SDH_BLE_LOG_ENABLED
 #include "nrf_log.h"
 NRF_LOG_MODULE_REGISTER();
-
+#else
+LOG_MODULE_REGISTER(nrf_sdh_ble);
+#endif
 
 // Create section set "sdh_ble_observers".
 NRF_SECTION_SET_DEF(sdh_ble_observers, nrf_sdh_ble_evt_observer_t,

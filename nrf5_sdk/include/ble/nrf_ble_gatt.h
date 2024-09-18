@@ -61,7 +61,7 @@ extern "C" {
 #endif
 
 /* TODO, Kconfig ?*/
-#define NRF_BLE_GATT_BLE_OBSERVER_PRIO 1
+#define NRF_BLE_GATT_BLE_OBSERVER_PRIO 2
 
 /**@brief   Macro for defining a nrf_ble_gatt instance.
  *

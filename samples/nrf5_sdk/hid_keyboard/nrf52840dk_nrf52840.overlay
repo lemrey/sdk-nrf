@@ -16,7 +16,8 @@
 };
 
 &sram0 {
-	reg = <0x20002000 DT_SIZE_K(200)>;
+	//reg = <0x20002260 DT_SIZE_K(200)>;
+	reg = <0x20003000 DT_SIZE_K(200)>;
 };
 
 
@@ -25,4 +26,8 @@
 		zephyr,flash = &app_rom;
 		zephyr,sram = &sram0;
 	};
+};
+
+&rtc1 {
+	interrupts = <0x11 5>;
 };

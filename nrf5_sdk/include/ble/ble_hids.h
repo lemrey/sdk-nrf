@@ -83,7 +83,7 @@ extern "C" {
 #endif
 
 /* TODO, KCONFIG ? */
-#define BLE_HIDS_BLE_OBSERVER_PRIO 1
+#define BLE_HIDS_BLE_OBSERVER_PRIO 2
 
 /**@brief Allocate static data for keeping host connection contexts.
  *
