@@ -683,7 +683,7 @@ static ssize_t nrf9x_socket_offload_sendmsg(void *obj, const struct msghdr *msg,
 	for (i = 0; i < msg->msg_iovlen; i++) {
 		len += msg->msg_iov[i].iov_len;
 	}
-
+// random
 	if (len <= sizeof(buf)) {
 		/* Protect `buf` access with a mutex. */
 		k_mutex_lock(&sendmsg_lock, K_FOREVER);
