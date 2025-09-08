@@ -10,6 +10,7 @@
  * @brief nrf9x socket offload provider
  */
 
+
 #include <nrf_modem.h>
 #include <nrf_modem_os.h>
 #include <errno.h>
@@ -29,6 +30,7 @@
 #include <zephyr/net/conn_mgr_connectivity_impl.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/sys/util_macro.h>
+#include <zephyr/sys/atomic.h>
 
 #if defined(CONFIG_POSIX_API)
 #include <zephyr/posix/poll.h>
@@ -51,6 +53,7 @@ static struct nrf_sock_ctx {
 	int nrf_fd; /* nRF socket descriptior. */
 	struct k_mutex *lock; /* Mutex associated with the socket. */
 	struct k_poll_signal poll; /* poll() signal. */
+	atomic_t pollers;
 } offload_ctx[NRF_MODEM_MAX_SOCKET_COUNT];
 
 static K_MUTEX_DEFINE(ctx_lock);
@@ -72,6 +75,7 @@ static struct nrf_sock_ctx *allocate_ctx(int nrf_fd)
 		if (offload_ctx[i].nrf_fd == -1) {
 			ctx = &offload_ctx[i];
 			ctx->nrf_fd = nrf_fd;
+			k_poll_signal_init(&ctx->poll);
 			break;
 		}
 	}
@@ -898,7 +902,6 @@ static int nrf9x_poll_prepare(struct nrf_sock_ctx *ctx, struct zsock_pollfd *pfd
 		return -1;
 	}
 
-	k_poll_signal_init(&ctx->poll);
 	k_poll_event_init(*pev, K_POLL_TYPE_SIGNAL, K_POLL_MODE_NOTIFY_ONLY, &ctx->poll);
 
 	err = nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_POLLCB, &pcb, sizeof(pcb));
@@ -908,6 +911,8 @@ static int nrf9x_poll_prepare(struct nrf_sock_ctx *ctx, struct zsock_pollfd *pfd
 
 	/* Let other sockets use another k_poll_event */
 	(*pev)++;
+
+	atomic_inc(&ctx->pollers);
 
 	signaled = 0;
 	flags = 0;
@@ -938,6 +943,12 @@ static int nrf9x_poll_update(struct nrf_sock_ctx *ctx, struct zsock_pollfd *pfd,
 	}
 
 	pfd->revents = flags;
+
+	__ASSERT_NO_MSG(ctx->pollers > 0);
+	/* This is the last callback, reset the signal*/
+	if (atomic_dec(&ctx->pollers) == 1) {
+		k_poll_signal_reset(&ctx->poll);
+	}
 
 	return 0;
 }
